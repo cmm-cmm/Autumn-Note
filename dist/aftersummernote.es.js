@@ -1,4 +1,4 @@
-function Re(s, t, e) {
+function ze(s, t, e) {
   return Math.min(Math.max(s, t), e);
 }
 function yt(s, t) {
@@ -7,7 +7,7 @@ function yt(s, t) {
     clearTimeout(e), e = setTimeout(() => s.apply(this, i), t);
   };
 }
-function Se(s, t) {
+function Re(s, t) {
   let e = 0;
   return function(...i) {
     const n = Date.now();
@@ -15,7 +15,7 @@ function Se(s, t) {
       return e = n, s.apply(this, i);
   };
 }
-function ze(...s) {
+function Se(...s) {
   return (t) => s.reduceRight((e, i) => i(e), t);
 }
 function He(s) {
@@ -275,7 +275,7 @@ function Et(s, t) {
 function k(s, t, e, i, n) {
   return { name: s, icon: t, tooltip: e, action: i, isActive: n };
 }
-const Mt = k("bold", "bold", "Bold (Ctrl+B)", () => Q(), () => document.queryCommandState("bold")), It = k("italic", "italic", "Italic (Ctrl+I)", () => tt(), () => document.queryCommandState("italic")), Lt = k("underline", "underline", "Underline (Ctrl+U)", () => et(), () => document.queryCommandState("underline")), At = k("strikethrough", "strikethrough", "Strikethrough", () => it(), () => document.queryCommandState("strikeThrough")), Bt = k("superscript", "superscript", "Superscript", () => st(), () => document.queryCommandState("superscript")), Rt = k("subscript", "subscript", "Subscript", () => nt(), () => document.queryCommandState("subscript")), St = k("alignLeft", "align-left", "Align Left", () => at()), zt = k("alignCenter", "align-center", "Align Center", () => ht()), Ht = k("alignRight", "align-right", "Align Right", () => ct()), Nt = k("alignJustify", "align-justify", "Justify", () => dt()), Pt = k("ul", "list-ul", "Unordered List", () => ft()), $t = k("ol", "list-ol", "Ordered List", () => mt()), Ot = k("indent", "indent", "Indent", () => ut()), jt = k("outdent", "outdent", "Outdent", () => pt()), Dt = k("undo", "undo", "Undo (Ctrl+Z)", (s) => s.invoke("editor.undo")), Wt = k("redo", "redo", "Redo (Ctrl+Y)", (s) => s.invoke("editor.redo")), Ft = k("hr", "minus", "Horizontal Rule", () => p("insertHorizontalRule")), Ut = k("link", "link", "Insert Link", (s) => s.invoke("linkDialog.show")), Vt = k("image", "image", "Insert Image", (s) => s.invoke("imageDialog.show")), qt = k("video", "video", "Insert Video", (s) => s.invoke("videoDialog.show")), Yt = {
+const It = k("bold", "bold", "Bold (Ctrl+B)", () => Q(), () => document.queryCommandState("bold")), Mt = k("italic", "italic", "Italic (Ctrl+I)", () => tt(), () => document.queryCommandState("italic")), Lt = k("underline", "underline", "Underline (Ctrl+U)", () => et(), () => document.queryCommandState("underline")), Bt = k("strikethrough", "strikethrough", "Strikethrough", () => it(), () => document.queryCommandState("strikeThrough")), At = k("superscript", "superscript", "Superscript", () => st(), () => document.queryCommandState("superscript")), zt = k("subscript", "subscript", "Subscript", () => nt(), () => document.queryCommandState("subscript")), Rt = k("alignLeft", "align-left", "Align Left", () => at()), St = k("alignCenter", "align-center", "Align Center", () => ht()), Ht = k("alignRight", "align-right", "Align Right", () => ct()), Nt = k("alignJustify", "align-justify", "Justify", () => dt()), Pt = k("ul", "list-ul", "Unordered List", () => ft()), $t = k("ol", "list-ol", "Ordered List", () => mt()), Ot = k("indent", "indent", "Indent", () => ut()), jt = k("outdent", "outdent", "Outdent", () => pt()), Dt = k("undo", "undo", "Undo (Ctrl+Z)", (s) => s.invoke("editor.undo")), Wt = k("redo", "redo", "Redo (Ctrl+Y)", (s) => s.invoke("editor.redo")), Ft = k("hr", "minus", "Horizontal Rule", () => p("insertHorizontalRule")), Ut = k("link", "link", "Insert Link", (s) => s.invoke("linkDialog.show")), Vt = k("image", "image", "Insert Image", (s) => s.invoke("imageDialog.show")), qt = k("video", "video", "Insert Video", (s) => s.invoke("videoDialog.show")), Yt = {
   name: "table",
   type: "grid",
   icon: "table",
@@ -312,10 +312,10 @@ const Mt = k("bold", "bold", "Bold (Ctrl+B)", () => Q(), () => document.queryCom
 }, Qt = [
   [Kt],
   [Dt, Wt],
-  [Mt, It, Lt, At],
-  [Bt, Rt],
+  [It, Mt, Lt, Bt],
+  [At, zt],
   [Zt, Jt],
-  [St, zt, Ht, Nt],
+  [Rt, St, Ht, Nt],
   [Pt, $t, Ot, jt],
   [Ft, Ut, Vt, qt, Yt],
   [Xt, Gt]
@@ -866,19 +866,19 @@ class le {
     const m = [];
     for (let C = 1; C <= 10; C++)
       for (let T = 1; T <= 10; T++) {
-        const M = a("div", {
+        const I = a("div", {
           class: "asn-table-cell",
           "data-row": String(C),
           "data-col": String(T)
         });
-        m.push(M), u.appendChild(M);
+        m.push(I), u.appendChild(I);
       }
     c.appendChild(u), c.appendChild(y);
     let v = !1;
     const _ = (C, T) => {
-      m.forEach((M) => {
-        const R = +M.getAttribute("data-row"), b = +M.getAttribute("data-col");
-        M.classList.toggle("active", R <= C && b <= T);
+      m.forEach((I) => {
+        const S = +I.getAttribute("data-row"), b = +I.getAttribute("data-col");
+        I.classList.toggle("active", S <= C && b <= T);
       }), y.textContent = C && T ? `${C} × ${T}` : "Insert Table";
     }, f = () => {
       v = !0, c.style.display = "block", l.setAttribute("aria-expanded", "true");
@@ -886,18 +886,18 @@ class le {
       v = !1, c.style.display = "none", l.setAttribute("aria-expanded", "false"), _(0, 0);
     }, O = h(l, "click", (C) => {
       C.stopPropagation(), v ? x() : f();
-    }), B = h(u, "mouseover", (C) => {
+    }), R = h(u, "mouseover", (C) => {
       const T = C.target.closest(".asn-table-cell");
       T && _(+T.getAttribute("data-row"), +T.getAttribute("data-col"));
     }), N = h(u, "mouseleave", () => _(0, 0)), j = h(u, "click", (C) => {
       const T = C.target.closest(".asn-table-cell");
       if (!T) return;
-      const M = +T.getAttribute("data-row"), R = +T.getAttribute("data-col");
-      x(), this.context.invoke("editor.focus"), t.action(this.context, M, R);
+      const I = +T.getAttribute("data-row"), S = +T.getAttribute("data-col");
+      x(), this.context.invoke("editor.focus"), t.action(this.context, I, S);
     }), D = h(document, "click", () => {
       v && x();
     });
-    return this._disposers.push(O, B, N, j, D), n.appendChild(l), n.appendChild(c), n;
+    return this._disposers.push(O, R, N, j, D), n.appendChild(l), n.appendChild(c), n;
   }
   /**
    * Creates a split color-picker widget:
@@ -958,31 +958,31 @@ class le {
     y.style.display = "none";
     const m = a("div", { class: "asn-color-swatches" });
     e.forEach((b) => {
-      const S = a("div", { class: "asn-color-swatch", title: b, "data-color": b });
-      S.style.background = b, m.appendChild(S);
+      const H = a("div", { class: "asn-color-swatch", title: b, "data-color": b });
+      H.style.background = b, m.appendChild(H);
     });
     const v = a("div", { class: "asn-color-custom" }), _ = a("input", { type: "color", value: i, title: "Custom color" }), f = a("span", {}, ["Custom color"]);
     v.appendChild(_), v.appendChild(f), y.appendChild(m), y.appendChild(v);
     let x = !1;
     const O = () => {
       x = !0, y.style.display = "block", u.setAttribute("aria-expanded", "true");
-    }, B = () => {
+    }, R = () => {
       x = !1, y.style.display = "none", u.setAttribute("aria-expanded", "false");
     }, N = (b) => {
-      i = b, c.style.background = b, _.value = b, this.context.invoke("editor.focus"), t.action(this.context, b), this.context.invoke("editor.afterCommand"), B();
+      i = b, c.style.background = b, _.value = b, this.context.invoke("editor.focus"), t.action(this.context, b), this.context.invoke("editor.afterCommand"), R();
     }, j = h(l, "click", (b) => {
       b.preventDefault(), this.context.invoke("editor.focus"), t.action(this.context, i), this.context.invoke("editor.afterCommand");
     }), D = h(u, "click", (b) => {
-      b.stopPropagation(), x ? B() : O();
+      b.stopPropagation(), x ? R() : O();
     }), C = h(m, "click", (b) => {
-      const S = b.target.closest(".asn-color-swatch");
-      S && N(S.dataset.color);
+      const H = b.target.closest(".asn-color-swatch");
+      H && N(H.dataset.color);
     }), T = h(_, "change", (b) => {
       N(b.target.value);
-    }), M = h(document, "click", (b) => {
-      x && !n.contains(b.target) && B();
-    }), R = h(y, "click", (b) => b.stopPropagation());
-    return this._disposers.push(j, D, C, T, M, R), n.appendChild(l), n.appendChild(u), n.appendChild(y), n;
+    }), I = h(document, "click", (b) => {
+      x && !n.contains(b.target) && R();
+    }), S = h(y, "click", (b) => b.stopPropagation());
+    return this._disposers.push(j, D, C, T, I, S), n.appendChild(l), n.appendChild(u), n.appendChild(y), n;
   }
   /**
    * Creates a <select> dropdown for font-family (or similar) options.
@@ -2028,10 +2028,11 @@ class be {
     i.selectNode(t), e.removeAllRanges(), e.addRange(i), document.execCommand("unlink"), this.context.invoke("editor.afterCommand");
   }
 }
-const z = {
+const B = {
   floatLeft: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1"/><line x1="12" y1="6" x2="22" y2="6"/><line x1="12" y1="9" x2="22" y2="9"/><line x1="12" y1="12" x2="22" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>',
   floatRight: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="8" height="8" rx="1"/><line x1="2" y1="6" x2="12" y2="6"/><line x1="2" y1="9" x2="12" y2="9"/><line x1="2" y1="12" x2="12" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>',
   floatNone: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="19" x2="17" y2="19"/></svg>',
+  alignCenter: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>',
   originalSize: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
   deleteImg: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
 }, ke = 100, Ce = 180;
@@ -2070,7 +2071,7 @@ class Te {
       role: "toolbar",
       "aria-label": "Image actions"
     });
-    return t.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Image", t.appendChild(this._label), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(z.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(z.floatNone, "No Float", () => this._setFloat("")), this._floatRightBtn = this._makeBtn(z.floatRight, "Float Right", () => this._setFloat("right")), t.appendChild(this._floatLeftBtn), t.appendChild(this._floatNoneBtn), t.appendChild(this._floatRightBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(z.originalSize, "Original Size", () => this._resetSize()), t.appendChild(this._originalBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(z.deleteImg, "Delete Image", () => this._delete(), !0), t.appendChild(this._deleteBtn), this._disposers.push(
+    return t.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Image", t.appendChild(this._label), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(B.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(B.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn(B.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn(B.floatRight, "Float Right", () => this._setFloat("right")), t.appendChild(this._floatLeftBtn), t.appendChild(this._floatNoneBtn), t.appendChild(this._alignCenterBtn), t.appendChild(this._floatRightBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(B.originalSize, "Original Size", () => this._resetSize()), t.appendChild(this._originalBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(B.deleteImg, "Delete Image", () => this._delete(), !0), t.appendChild(this._deleteBtn), this._disposers.push(
       h(t, "mouseenter", () => this._clearTimers()),
       h(t, "mouseleave", () => this._scheduleHide())
     ), t;
@@ -2121,7 +2122,11 @@ class Te {
   // ---------------------------------------------------------------------------
   _setFloat(t) {
     const e = this._activeImg;
-    e && (e.style.float = t, t === "left" ? (e.style.marginRight = "12px", e.style.marginLeft = "") : t === "right" ? (e.style.marginLeft = "12px", e.style.marginRight = "") : (e.style.marginLeft = "", e.style.marginRight = ""), this.context.invoke("editor.afterCommand"), this.context.invoke("imageResizer.updateOverlay"), this._positionNear(e));
+    e && (e.style.float = t, e.style.display = "", e.style.marginLeft = t === "right" ? "12px" : "", e.style.marginRight = t === "left" ? "12px" : "", this.context.invoke("editor.afterCommand"), this.context.invoke("imageResizer.updateOverlay"), this._positionNear(e));
+  }
+  _setCenter() {
+    const t = this._activeImg;
+    t && (t.style.float = "", t.style.display = "block", t.style.marginLeft = "auto", t.style.marginRight = "auto", this.context.invoke("editor.afterCommand"), this.context.invoke("imageResizer.updateOverlay"), this._positionNear(t));
   }
   _resetSize() {
     const t = this._activeImg;
@@ -2132,14 +2137,15 @@ class Te {
     t && (this._hide(), this.context.invoke("imageResizer.deselect"), t.parentNode && t.parentNode.removeChild(t), this.context.invoke("editor.afterCommand"));
   }
 }
-const H = {
+const A = {
   floatLeft: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1"/><line x1="12" y1="6" x2="22" y2="6"/><line x1="12" y1="9" x2="22" y2="9"/><line x1="12" y1="12" x2="22" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>',
   floatRight: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="8" height="8" rx="1"/><line x1="2" y1="6" x2="12" y2="6"/><line x1="2" y1="9" x2="12" y2="9"/><line x1="2" y1="12" x2="12" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>',
   floatNone: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="19" x2="17" y2="19"/></svg>',
+  alignCenter: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>',
   originalSize: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
   deleteVideo: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
-}, Ee = 100, Me = 180;
-class Ie {
+}, Ee = 100, Ie = 180;
+class Me {
   /** @param {import('../Context.js').Context} context */
   constructor(t) {
     this.context = t, this._el = null, this._activeWrapper = null, this._showTimer = null, this._hideTimer = null, this._disposers = [];
@@ -2173,7 +2179,7 @@ class Ie {
       role: "toolbar",
       "aria-label": "Video actions"
     });
-    return t.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Video", t.appendChild(this._label), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(H.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(H.floatNone, "No Float", () => this._setFloat("")), this._floatRightBtn = this._makeBtn(H.floatRight, "Float Right", () => this._setFloat("right")), t.appendChild(this._floatLeftBtn), t.appendChild(this._floatNoneBtn), t.appendChild(this._floatRightBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(H.originalSize, "Original Size", () => this._resetSize()), t.appendChild(this._originalBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(H.deleteVideo, "Delete Video", () => this._delete(), !0), t.appendChild(this._deleteBtn), this._disposers.push(
+    return t.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Video", t.appendChild(this._label), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(A.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(A.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn(A.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn(A.floatRight, "Float Right", () => this._setFloat("right")), t.appendChild(this._floatLeftBtn), t.appendChild(this._floatNoneBtn), t.appendChild(this._alignCenterBtn), t.appendChild(this._floatRightBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(A.originalSize, "Original Size", () => this._resetSize()), t.appendChild(this._originalBtn), t.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(A.deleteVideo, "Delete Video", () => this._delete(), !0), t.appendChild(this._deleteBtn), this._disposers.push(
       h(t, "mouseenter", () => this._clearTimers()),
       h(t, "mouseleave", () => this._scheduleHide())
     ), t;
@@ -2203,7 +2209,7 @@ class Ie {
     }, Ee));
   }
   _scheduleHide() {
-    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Me));
+    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Ie));
   }
   _show(t) {
     this._el.style.display = "flex", this._positionNear(t);
@@ -2224,7 +2230,11 @@ class Ie {
   // ---------------------------------------------------------------------------
   _setFloat(t) {
     const e = this._activeWrapper;
-    e && (e.style.float = t, t === "left" ? (e.style.marginRight = "12px", e.style.marginLeft = "") : t === "right" ? (e.style.marginLeft = "12px", e.style.marginRight = "") : (e.style.marginLeft = "", e.style.marginRight = ""), this.context.invoke("editor.afterCommand"), this.context.invoke("videoResizer.updateOverlay"), this._positionNear(e));
+    e && (e.style.float = t, e.style.display = "inline-block", e.style.marginLeft = t === "right" ? "12px" : "", e.style.marginRight = t === "left" ? "12px" : "", this.context.invoke("editor.afterCommand"), this.context.invoke("videoResizer.updateOverlay"), this._positionNear(e));
+  }
+  _setCenter() {
+    const t = this._activeWrapper;
+    t && (t.style.float = "", t.style.display = "block", t.style.marginLeft = "auto", t.style.marginRight = "auto", this.context.invoke("editor.afterCommand"), this.context.invoke("videoResizer.updateOverlay"), this._positionNear(t));
   }
   _resetSize() {
     const t = this._activeWrapper;
@@ -2278,7 +2288,7 @@ const w = {
   { name: "image", label: "Insert Image", icon: w.image, action: (s) => s.invoke("imageDialog.show") },
   { name: "video", label: "Insert Video", icon: w.video, action: (s) => s.invoke("videoDialog.show") }
 ];
-class Ae {
+class Be {
   /** @param {import('../Context.js').Context} context */
   constructor(t) {
     this.context = t, this.options = t.options || {}, this._items = this.options.contextMenu && this.options.contextMenu.items || Le, this.el = null, this._disposers = [], this._menuDisposers = [], this._targetCell = null, this._sizePopover = null, this._lastX = 0, this._lastY = 0;
@@ -2525,7 +2535,7 @@ class Ae {
     this._sizePopover && (this._sizePopover.style.display = "none"), this._sizeApply = null;
   }
 }
-class Be {
+class Ae {
   /**
    * @param {HTMLElement} targetEl - The element to replace with the editor
    * @param {import('./settings.js').AsnOptions} [userOptions]
@@ -2549,7 +2559,7 @@ class Be {
       const n = new i(this);
       n.initialize(), this._modules.set(e, n);
     };
-    t("editor", re), t("toolbar", le), t("statusbar", ae), t("clipboard", he), t("contextMenu", Ae), t("placeholder", ce), t("codeview", de), t("fullscreen", ue), t("linkDialog", pe), t("imageDialog", fe), t("videoDialog", me), t("imageResizer", ye), t("videoResizer", ve), t("linkTooltip", be), t("imageTooltip", Te), t("videoTooltip", Ie);
+    t("editor", re), t("toolbar", le), t("statusbar", ae), t("clipboard", he), t("contextMenu", Be), t("placeholder", ce), t("codeview", de), t("fullscreen", ue), t("linkDialog", pe), t("imageDialog", fe), t("videoDialog", me), t("imageResizer", ye), t("videoResizer", ve), t("linkTooltip", be), t("imageTooltip", Te), t("videoTooltip", Me);
   }
   _bindEditorEvents(t) {
     const e = h(t, "focus", () => {
@@ -2705,24 +2715,24 @@ function gi(s, t) {
 function yi(s, t) {
   return s.some(t);
 }
-const I = navigator.userAgent, _i = {
+const M = navigator.userAgent, _i = {
   /** True if browser is Chrome */
-  isChrome: /Chrome\//.test(I),
+  isChrome: /Chrome\//.test(M),
   /** True if browser is Firefox */
-  isFF: /Firefox\//.test(I),
+  isFF: /Firefox\//.test(M),
   /** True if browser is Safari (not Chrome) */
-  isSafari: /^((?!chrome|android).)*safari/i.test(I),
+  isSafari: /^((?!chrome|android).)*safari/i.test(M),
   /** True if browser is Edge (Chromium) */
-  isEdge: /Edg\//.test(I),
+  isEdge: /Edg\//.test(M),
   /** True if running on macOS */
-  isMac: /Macintosh/.test(I),
+  isMac: /Macintosh/.test(M),
   /** True if running on mobile */
-  isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(I),
+  isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(M),
   /** True if touch is supported */
   isTouch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
   /** Modifier key name depending on platform */
-  modifierKey: /Macintosh/.test(I) ? "metaKey" : "ctrlKey"
-}, A = /* @__PURE__ */ new WeakMap(), vi = {
+  modifierKey: /Macintosh/.test(M) ? "metaKey" : "ctrlKey"
+}, z = /* @__PURE__ */ new WeakMap(), vi = {
   /**
    * Creates (or returns existing) editor instance on one or more elements.
    *
@@ -2732,9 +2742,9 @@ const I = navigator.userAgent, _i = {
    */
   create(s, t = {}) {
     const i = X(s).map((n) => {
-      if (A.has(n)) return A.get(n);
-      const o = new Be(n, t);
-      return o.initialize(), A.set(n, o), o;
+      if (z.has(n)) return z.get(n);
+      const o = new Ae(n, t);
+      return o.initialize(), z.set(n, o), o;
     });
     return i.length === 1 ? i[0] : i;
   },
@@ -2744,8 +2754,8 @@ const I = navigator.userAgent, _i = {
    */
   destroy(s) {
     X(s).forEach((t) => {
-      const e = A.get(t);
-      e && (e.destroy(), A.delete(t));
+      const e = z.get(t);
+      e && (e.destroy(), z.delete(t));
     });
   },
   /**
@@ -2755,7 +2765,7 @@ const I = navigator.userAgent, _i = {
    */
   getInstance(s) {
     const t = typeof s == "string" ? document.querySelector(s) : s;
-    return t && A.get(t) || null;
+    return t && z.get(t) || null;
   },
   /** Default options (can be mutated globally before calling create). */
   defaults: gt,
@@ -2766,7 +2776,7 @@ function X(s) {
   return typeof s == "string" ? Array.from(document.querySelectorAll(s)) : s instanceof Element ? [s] : s instanceof NodeList || Array.isArray(s) ? Array.from(s) : [];
 }
 export {
-  Be as Context,
+  Ae as Context,
   _t as ELEMENT_NODE,
   vt as TEXT_NODE,
   V as WrappedRange,
@@ -2775,11 +2785,11 @@ export {
   yi as any,
   qe as children,
   fi as chunk,
-  Re as clamp,
+  ze as clamp,
   U as closest,
   Y as closestPara,
   oi as collapsedRange,
-  ze as compose,
+  Se as compose,
   a as createElement,
   K as currentRange,
   yt as debounce,
@@ -2827,7 +2837,7 @@ export {
   Xe as remove,
   li as splitText,
   di as tail,
-  Se as throttle,
+  Re as throttle,
   pi as unique,
   Ge as unwrap,
   q as withSavedRange,
