@@ -49,6 +49,7 @@ export class Toolbar {
         let el;
         if (btnDef.type === 'select') el = this._createSelect(btnDef);
         else if (btnDef.type === 'grid') el = this._createGridPicker(btnDef);
+        else if (btnDef.type === 'colorpicker') el = this._createColorPicker(btnDef);
         else el = this._createButton(btnDef);
         groupEl.appendChild(el);
       });
@@ -178,6 +179,138 @@ export class Toolbar {
   }
 
   /**
+   * Creates a split color-picker widget:
+   *   [icon + strip | ▾] — left applies current color, right opens swatch popup.
+   * @param {{ name: string, type: 'colorpicker', tooltip: string, defaultColor: string, action: Function }} def
+   * @returns {HTMLDivElement}
+   */
+  _createColorPicker(def) {
+    const PRESETS = [
+      // Grayscale
+      '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
+      // Saturated
+      '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
+      // Pastel
+      '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
+    ];
+
+    let currentColor = def.defaultColor || '#000000';
+
+    const wrap = createElement('div', { class: 'asn-color-picker-wrap' });
+
+    const useBootstrap = !!this.options.useBootstrap;
+    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : 'asn-btn';
+
+    // ---- Apply button (icon + color strip) ----
+    const applyBtn = createElement('button', {
+      type: 'button',
+      class: `${baseClass} asn-color-btn`,
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+    });
+
+    const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    const iconSvg = def.name === 'foreColor'
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
+
+    applyBtn.innerHTML = iconSvg;
+    const strip = createElement('span', { class: 'asn-color-strip' });
+    strip.style.background = currentColor;
+    applyBtn.appendChild(strip);
+
+    // ---- Arrow button (open popup) ----
+    const arrowBtn = createElement('button', {
+      type: 'button',
+      class: `${baseClass} asn-color-arrow`,
+      title: `Choose ${def.name === 'foreColor' ? 'text' : 'highlight'} color`,
+      'aria-haspopup': 'true',
+      'aria-expanded': 'false',
+    });
+    arrowBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>`;
+
+    // ---- Popup ----
+    const popup = createElement('div', { class: 'asn-color-popup' });
+    popup.style.display = 'none';
+
+    const swatches = createElement('div', { class: 'asn-color-swatches' });
+    PRESETS.forEach((color) => {
+      const sw = createElement('div', { class: 'asn-color-swatch', title: color, 'data-color': color });
+      sw.style.background = color;
+      swatches.appendChild(sw);
+    });
+
+    const customRow = createElement('div', { class: 'asn-color-custom' });
+    const colorInput = createElement('input', { type: 'color', value: currentColor, title: 'Custom color' });
+    const customLabel = createElement('span', {}, ['Custom color']);
+    customRow.appendChild(colorInput);
+    customRow.appendChild(customLabel);
+
+    popup.appendChild(swatches);
+    popup.appendChild(customRow);
+
+    // ---- State ----
+    let isOpen = false;
+
+    const openPopup = () => {
+      isOpen = true;
+      popup.style.display = 'block';
+      arrowBtn.setAttribute('aria-expanded', 'true');
+    };
+
+    const closePopup = () => {
+      isOpen = false;
+      popup.style.display = 'none';
+      arrowBtn.setAttribute('aria-expanded', 'false');
+    };
+
+    const applyColor = (color) => {
+      currentColor = color;
+      strip.style.background = color;
+      colorInput.value = color;
+      this.context.invoke('editor.focus');
+      def.action(this.context, color);
+      this.context.invoke('editor.afterCommand');
+      closePopup();
+    };
+
+    const d1 = on(applyBtn, 'click', (e) => {
+      e.preventDefault();
+      this.context.invoke('editor.focus');
+      def.action(this.context, currentColor);
+      this.context.invoke('editor.afterCommand');
+    });
+
+    const d2 = on(arrowBtn, 'click', (e) => {
+      e.stopPropagation();
+      if (isOpen) closePopup(); else openPopup();
+    });
+
+    const d3 = on(swatches, 'click', (e) => {
+      const sw = e.target.closest('.asn-color-swatch');
+      if (sw) applyColor(sw.dataset.color);
+    });
+
+    const d4 = on(colorInput, 'change', (e) => {
+      applyColor(e.target.value);
+    });
+
+    const d5 = on(document, 'click', (e) => {
+      if (isOpen && !wrap.contains(e.target)) closePopup();
+    });
+
+    const d6 = on(popup, 'click', (e) => e.stopPropagation());
+
+    this._disposers.push(d1, d2, d3, d4, d5, d6);
+
+    wrap.appendChild(applyBtn);
+    wrap.appendChild(arrowBtn);
+    wrap.appendChild(popup);
+    return wrap;
+  }
+
+  /**
    * Creates a <select> dropdown for font-family (or similar) options.
    * @param {import('./Buttons.js').DropdownDef} def
    * @returns {HTMLSelectElement}
@@ -280,6 +413,9 @@ export class Toolbar {
       // View
       ['code',          svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
       ['expand',        svgWrap('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')],
+      // Color pickers
+      ['foreColor',     svgWrap('<path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>')],
+      ['backColor',     svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
     ]);
 
     const faPrefix = this.options.fontAwesomeClass || 'fas';
@@ -305,6 +441,8 @@ export class Toolbar {
       ['image', 'fa-image'],
       ['code', 'fa-code'],
       ['expand', 'fa-expand'],
+      ['foreColor', 'fa-font'],
+      ['backColor', 'fa-highlighter'],
     ]);
 
     const useFaNow = hasFontAwesome();

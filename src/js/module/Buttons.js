@@ -134,6 +134,30 @@ export const codeviewBtn = btn('codeview', 'code', 'HTML Code View', (ctx) => ct
 export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => ctx.invoke('fullscreen.toggle'), (ctx) => ctx.invoke('fullscreen.isActive'));
 
 // ---------------------------------------------------------------------------
+// Text / background colour pickers
+// ---------------------------------------------------------------------------
+
+/** @type {{ name: string, type: 'colorpicker', icon: string, tooltip: string, defaultColor: string, action: Function }} */
+export const foreColorBtn = {
+  name: 'foreColor',
+  type: 'colorpicker',
+  icon: 'foreColor',
+  tooltip: 'Text Color',
+  defaultColor: '#e11d48',
+  action: (ctx, color) => Style.foreColor(color),
+};
+
+/** @type {{ name: string, type: 'colorpicker', icon: string, tooltip: string, defaultColor: string, action: Function }} */
+export const backColorBtn = {
+  name: 'backColor',
+  type: 'colorpicker',
+  icon: 'backColor',
+  tooltip: 'Highlight Color',
+  defaultColor: '#fbbf24',
+  action: (ctx, color) => Style.backColor(color),
+};
+
+// ---------------------------------------------------------------------------
 // Default toolbar layout
 // ---------------------------------------------------------------------------
 
@@ -146,6 +170,7 @@ export const defaultToolbar = [
   [undoBtn, redoBtn],
   [boldBtn, italicBtn, underlineBtn, strikeBtn],
   [superscriptBtn, subscriptBtn],
+  [foreColorBtn, backColorBtn],
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn],

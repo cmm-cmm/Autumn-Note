@@ -23,6 +23,8 @@ import { VideoDialog } from './module/VideoDialog.js';
 import { ImageResizer } from './module/ImageResizer.js';
 import { VideoResizer } from './module/VideoResizer.js';
 import { LinkTooltip } from './module/LinkTooltip.js';
+import { ImageTooltip } from './module/ImageTooltip.js';
+import { VideoTooltip } from './module/VideoTooltip.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
 export class Context {
@@ -110,6 +112,8 @@ export class Context {
     register('imageResizer', ImageResizer);
     register('videoResizer', VideoResizer);
     register('linkTooltip', LinkTooltip);
+    register('imageTooltip', ImageTooltip);
+    register('videoTooltip', VideoTooltip);
   }
 
   _bindEditorEvents(editable) {

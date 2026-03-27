@@ -170,6 +170,118 @@
   min-height: 16px;
 }
 
+// =============================================================================
+// Color picker (text color / highlight color) toolbar widget
+// =============================================================================
+
+.asn-color-picker-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+// Left part: icon + color strip stacked vertically
+.asn-color-btn {
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 4px 6px 3px !important;
+  height: auto !important;
+  min-height: $asn-btn-height;
+
+  .asn-color-strip {
+    display: block;
+    width: 100%;
+    min-width: 14px;
+    height: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+}
+
+// Right part: small chevron arrow to open popup
+.asn-color-arrow {
+  padding: 0 3px !important;
+  min-width: unset !important;
+  border-left: 1px solid transparent;
+
+  &:hover {
+    border-left-color: $asn-border;
+  }
+}
+
+// Swatch popup panel
+.asn-color-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1100;
+  background: $asn-bg;
+  border: 1px solid $asn-border;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 184px;
+  user-select: none;
+}
+
+.asn-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 18px);
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.asn-color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.25);
+    z-index: 1;
+    outline: 2px solid $asn-primary;
+    outline-offset: 1px;
+  }
+}
+
+.asn-color-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid $asn-border;
+
+  input[type='color'] {
+    width: 28px;
+    height: 22px;
+    padding: 1px 2px;
+    border: 1px solid $asn-border;
+    border-radius: 3px;
+    cursor: pointer;
+    background: none;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::-webkit-color-swatch-wrapper { padding: 0; }
+    &::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+    &:hover {
+      border-color: $asn-primary;
+    }
+  }
+
+  span {
+    font-size: 11px;
+    color: $asn-muted;
+    flex: 1;
+  }
+}
+
 .asn-btn {
   display: inline-flex;
   align-items: center;
@@ -394,6 +506,31 @@
     background: $asn-bg-btn-active;
     color: $asn-primary;
   }
+
+  // Danger variant — used for Delete actions in image/video tooltips
+  &.asn-link-tooltip-btn--danger {
+    color: #ef4444;
+
+    svg { stroke: #ef4444; }
+
+    &:hover {
+      background: rgba(#ef4444, 0.08);
+      color: #dc2626;
+      svg { stroke: #dc2626; }
+    }
+  }
+}
+
+// Shared modifier classes for image and video tooltips
+// (re-use all .asn-link-tooltip styles, only override the label colour)
+.asn-image-tooltip .asn-link-tooltip-url {
+  color: $asn-text;
+  font-weight: 500;
+}
+
+.asn-video-tooltip .asn-link-tooltip-url {
+  color: #7c3aed; // violet to match video accent
+  font-weight: 500;
 }
 
 // Size popover (column width / row height)

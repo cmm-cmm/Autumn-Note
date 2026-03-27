@@ -185,14 +185,10 @@ export class ContextMenu {
     this._lastY = event.clientY;
     const img     = event.target.closest('img');
     const wrapper  = !img && event.target.closest('.asn-video-wrapper');
-    const cell     = !img && !wrapper && event.target.closest('td, th');
+    // If right-click is on image or video, let the tooltip handle actions — show default menu
+    const cell     = event.target.closest('td, th');
     this._targetCell = cell || null;
-    // Priority: image → video → table → default
-    const items = img
-      ? this._buildCombinedImageItems(img)
-      : wrapper
-        ? this._buildCombinedVideoItems(wrapper)
-        : (cell ? this._buildCombinedItems(cell) : this._items);
+    const items = cell ? this._buildCombinedItems(cell) : this._items;
     this._renderItems(items);
     this.showAt(event.clientX, event.clientY);
   }
@@ -226,131 +222,6 @@ export class ContextMenu {
     if (!this.el) return;
     this.el.style.display = 'none';
     this.el.setAttribute('aria-hidden', 'true');
-  }
-
-  // ---------------------------------------------------------------------------
-  // Image context menu items
-  // ---------------------------------------------------------------------------
-
-  /** Default items + "Image Format ▶" when right-clicking on an image. */
-  _buildCombinedImageItems(img) {
-    return [
-      ...this._items,
-      { separator: true },
-      {
-        name: 'imageFormat',
-        label: 'Image Format',
-        icon: ICONS.image,
-        navigate: () => this._buildImageSubItems(img),
-      },
-    ];
-  }
-
-  /** Image sub-menu with ← Back at the top. */
-  _buildImageSubItems(img) {
-    return [
-      { back: true, label: 'Image Format', navigate: () => this._buildCombinedImageItems(img) },
-      { separator: true },
-      { name: 'floatLeft',    label: 'Float Left',     icon: ICONS.floatLeft,    action: () => this._setImageFloat(img, 'left') },
-      { name: 'floatRight',   label: 'Float Right',    icon: ICONS.floatRight,   action: () => this._setImageFloat(img, 'right') },
-      { name: 'floatNone',    label: 'Float None',     icon: ICONS.floatNone,    action: () => this._setImageFloat(img, '') },
-      { separator: true },
-      { name: 'originalSize', label: 'Original Size',  icon: ICONS.originalSize, action: () => this._resetImageSize(img) },
-      { separator: true },
-      { name: 'deleteImg',    label: 'Delete Image',   icon: ICONS.deleteImg,    action: () => this._deleteImage(img) },
-    ];
-  }
-
-  // ---------------------------------------------------------------------------
-  // Image operations
-  // ---------------------------------------------------------------------------
-
-  _setImageFloat(img, value) {
-    img.style.float = value;
-    if (value === 'left')       { img.style.marginRight = '12px'; img.style.marginLeft  = ''; }
-    else if (value === 'right') { img.style.marginLeft  = '12px'; img.style.marginRight = ''; }
-    else                        { img.style.marginLeft  = '';     img.style.marginRight = ''; }
-    this.context.invoke('editor.afterCommand');
-    this.context.invoke('imageResizer.updateOverlay');
-  }
-
-  _resetImageSize(img) {
-    img.style.width  = '';
-    img.style.height = '';
-    this.context.invoke('editor.afterCommand');
-    this.context.invoke('imageResizer.updateOverlay');
-  }
-
-  _deleteImage(img) {
-    this.context.invoke('imageResizer.deselect');
-    if (img.parentNode) img.parentNode.removeChild(img);
-    this.context.invoke('editor.afterCommand');
-  }
-
-  // ---------------------------------------------------------------------------
-  // Video context menu items
-  // ---------------------------------------------------------------------------
-
-  /** Default items + "Video Format ▶" when right-clicking on a video wrapper. */
-  _buildCombinedVideoItems(wrapper) {
-    return [
-      ...this._items,
-      { separator: true },
-      {
-        name: 'videoFormat',
-        label: 'Video Format',
-        icon: ICONS.video,
-        navigate: () => this._buildVideoSubItems(wrapper),
-      },
-    ];
-  }
-
-  /** Video sub-menu with ← Back at the top. */
-  _buildVideoSubItems(wrapper) {
-    return [
-      { back: true, label: 'Video Format', navigate: () => this._buildCombinedVideoItems(wrapper) },
-      { separator: true },
-      { name: 'videoFloatLeft',  label: 'Float Left',    icon: ICONS.floatLeft,   action: () => this._setVideoFloat(wrapper, 'left') },
-      { name: 'videoFloatRight', label: 'Float Right',   icon: ICONS.floatRight,  action: () => this._setVideoFloat(wrapper, 'right') },
-      { name: 'videoFloatNone',  label: 'Float None',    icon: ICONS.floatNone,   action: () => this._setVideoFloat(wrapper, '') },
-      { separator: true },
-      { name: 'videoOriginal',   label: 'Original Size', icon: ICONS.originalSize, action: () => this._resetVideoSize(wrapper) },
-      { separator: true },
-      { name: 'deleteVideo',     label: 'Delete Video',  icon: ICONS.deleteVideo, action: () => this._deleteVideo(wrapper) },
-    ];
-  }
-
-  // ---------------------------------------------------------------------------
-  // Video operations
-  // ---------------------------------------------------------------------------
-
-  _setVideoFloat(wrapper, value) {
-    wrapper.style.float = value;
-    if (value === 'left')       { wrapper.style.marginRight = '12px'; wrapper.style.marginLeft  = ''; }
-    else if (value === 'right') { wrapper.style.marginLeft  = '12px'; wrapper.style.marginRight = ''; }
-    else                        { wrapper.style.marginLeft  = '';     wrapper.style.marginRight = ''; }
-    this.context.invoke('editor.afterCommand');
-    this.context.invoke('videoResizer.updateOverlay');
-  }
-
-  _resetVideoSize(wrapper) {
-    const embed = wrapper.querySelector('iframe, video');
-    wrapper.style.width  = '';
-    wrapper.style.height = '';
-    if (embed) {
-      embed.removeAttribute('width');
-      embed.removeAttribute('height');
-      embed.style.width  = '';
-      embed.style.height = '';
-    }
-    this.context.invoke('editor.afterCommand');
-    this.context.invoke('videoResizer.updateOverlay');
-  }
-
-  _deleteVideo(wrapper) {
-    this.context.invoke('videoResizer.deselect');
-    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-    this.context.invoke('editor.afterCommand');
   }
 
   // ---------------------------------------------------------------------------
