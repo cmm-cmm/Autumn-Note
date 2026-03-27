@@ -7,6 +7,20 @@
 import * as Style from '../editing/Style.js';
 
 // ---------------------------------------------------------------------------
+// Dropdown definition helper
+// ---------------------------------------------------------------------------
+
+/**
+ * @typedef {object} DropdownDef
+ * @property {string}   name       - unique identifier
+ * @property {'select'} type       - discriminator for Toolbar renderer
+ * @property {string}   tooltip
+ * @property {string[]} [items]    - overridden at render time from options
+ * @property {Function} action     - called with (context, value)
+ * @property {Function} [getValue] - called with (context) to get current value
+ */
+
+// ---------------------------------------------------------------------------
 // Button factory helpers
 // ---------------------------------------------------------------------------
 
@@ -85,6 +99,21 @@ export const linkBtn = btn('link', 'link', 'Insert Link', (ctx) => ctx.invoke('l
 export const imageBtn = btn('image', 'image', 'Insert Image', (ctx) => ctx.invoke('imageDialog.show'));
 
 // ---------------------------------------------------------------------------
+// Font family dropdown
+// ---------------------------------------------------------------------------
+
+/** @type {DropdownDef} */
+export const fontFamilyBtn = {
+  name: 'fontFamily',
+  type: 'select',
+  tooltip: 'Font Family',
+  action: (ctx, value) => Style.fontName(value),
+  getValue: () => {
+    try { return document.queryCommandValue('fontName') || ''; } catch { return ''; }
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Code view / fullscreen
 // ---------------------------------------------------------------------------
 
@@ -100,6 +129,7 @@ export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => 
  * Each sub-array is a button group (separated by a divider).
  */
 export const defaultToolbar = [
+  [fontFamilyBtn],
   [undoBtn, redoBtn],
   [boldBtn, italicBtn, underlineBtn, strikeBtn],
   [superscriptBtn, subscriptBtn],

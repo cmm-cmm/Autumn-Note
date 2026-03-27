@@ -39,6 +39,12 @@ export function renderLayout(targetEl, options) {
     editable.innerHTML = (targetEl.innerHTML || '').trim();
   }
 
+  // Apply default font family so the editable renders in the configured font
+  const defaultFont = options.defaultFontFamily || (options.fontFamilies && options.fontFamilies[0]);
+  if (defaultFont) {
+    editable.style.fontFamily = defaultFont;
+  }
+
   // Apply height options
   if (options.height) {
     editable.style.minHeight = `${options.height}px`;

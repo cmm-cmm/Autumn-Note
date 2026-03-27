@@ -46,11 +46,52 @@ export class Toolbar {
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'asn-btn-group' });
       group.forEach((btnDef) => {
-        const btn = this._createButton(btnDef);
-        groupEl.appendChild(btn);
+        const el = btnDef.type === 'select'
+          ? this._createSelect(btnDef)
+          : this._createButton(btnDef);
+        groupEl.appendChild(el);
       });
       this.el.appendChild(groupEl);
     });
+  }
+
+  /**
+   * Creates a <select> dropdown for font-family (or similar) options.
+   * @param {import('./Buttons.js').DropdownDef} def
+   * @returns {HTMLSelectElement}
+   */
+  _createSelect(def) {
+    const items = (def.name === 'fontFamily')
+      ? (this.options.fontFamilies || [])
+      : (def.items || []);
+
+    const select = createElement('select', {
+      class: 'asn-select',
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+    });
+
+    // Blank "placeholder" option
+    const placeholder = createElement('option', { value: '' }, ['Font']);
+    select.appendChild(placeholder);
+
+    items.forEach((font) => {
+      const opt = createElement('option', { value: font }, [font]);
+      opt.style.fontFamily = font;
+      select.appendChild(opt);
+    });
+
+    const disposer = on(select, 'change', (e) => {
+      const value = e.target.value;
+      if (!value) return;
+      this.context.invoke('editor.focus');
+      def.action(this.context, value);
+      this.context.invoke('editor.afterCommand');
+    });
+
+    this._disposers.push(disposer);
+    return select;
   }
 
   /**
@@ -181,17 +222,34 @@ export class Toolbar {
 
   refresh() {
     if (!this.el) return;
-    const buttons = this.el.querySelectorAll('[data-btn]');
     const toolbar = this.options.toolbar || [];
     const btnMap = new Map(toolbar.flat().map((b) => [b.name, b]));
 
-    buttons.forEach((btn) => {
-      const name = btn.getAttribute('data-btn');
-      const def = btnMap.get(name);
+    // Sync button active states
+    this.el.querySelectorAll('button[data-btn]').forEach((btn) => {
+      const def = btnMap.get(btn.getAttribute('data-btn'));
       if (def && typeof def.isActive === 'function') {
-        const active = def.isActive(this.context);
-        btn.classList.toggle('active', !!active);
+        btn.classList.toggle('active', !!def.isActive(this.context));
       }
+    });
+
+    // Sync select dropdowns (e.g. font family) with current cursor position
+    this.el.querySelectorAll('select[data-btn]').forEach((select) => {
+      const def = btnMap.get(select.getAttribute('data-btn'));
+      if (!def || typeof def.getValue !== 'function') return;
+      // queryCommandValue returns the font name, possibly quoted — strip quotes
+      let raw = (def.getValue(this.context) || '').replace(/["']/g, '').trim();
+      // Fallback: when no selection/font set, use the configured default font
+      if (!raw) {
+        raw = this.options.defaultFontFamily
+          || (this.options.fontFamilies && this.options.fontFamilies[0])
+          || '';
+      }
+      // Try to match against available options (case-insensitive)
+      const matched = Array.from(select.options).find(
+        (opt) => opt.value && opt.value.toLowerCase() === raw.toLowerCase()
+      );
+      select.value = matched ? matched.value : '';
     });
   }
 

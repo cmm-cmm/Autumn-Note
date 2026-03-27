@@ -1,13 +1,13 @@
-function Zt(e, t, i) {
+function Qt(e, t, i) {
   return Math.min(Math.max(e, t), i);
 }
-function tt(e, t) {
+function et(e, t) {
   let i;
   return function(...n) {
     clearTimeout(i), i = setTimeout(() => e.apply(this, n), t);
   };
 }
-function Qt(e, t) {
+function te(e, t) {
   let i = 0;
   return function(...n) {
     const s = Date.now();
@@ -15,19 +15,19 @@ function Qt(e, t) {
       return i = s, e.apply(this, n);
   };
 }
-function te(...e) {
+function ee(...e) {
   return (t) => e.reduceRight((i, n) => n(i), t);
 }
-function ee(e) {
+function ie(e) {
   return e;
 }
-function ie(e) {
+function ne(e) {
   return e == null;
 }
-function ne(e) {
+function se(e) {
   return typeof e == "string";
 }
-function se(e) {
+function oe(e) {
   return typeof e == "function";
 }
 function B(e, t) {
@@ -40,7 +40,7 @@ function B(e, t) {
 function I(e) {
   return e !== null && typeof e == "object" && !Array.isArray(e);
 }
-function oe(e) {
+function re(e) {
   return e ? {
     top: Math.round(e.top),
     left: Math.round(e.left),
@@ -50,7 +50,7 @@ function oe(e) {
     right: Math.round(e.right)
   } : null;
 }
-const et = 1, it = 3, f = (e) => e && e.nodeType === et, R = (e) => e && e.nodeType === it, nt = (e) => f(e) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(e.nodeName), st = (e) => f(e) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(e.nodeName), ot = (e) => f(e) && /^(li)$/i.test(e.nodeName), re = (e) => f(e) && /^(ul|ol)$/i.test(e.nodeName), ae = (e) => f(e) && e.nodeName.toUpperCase() === "TABLE", le = (e) => f(e) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(e.nodeName), rt = (e) => f(e) && e.isContentEditable, ce = (e) => f(e) && e.nodeName.toUpperCase() === "A", he = (e) => f(e) && e.nodeName.toUpperCase() === "IMG";
+const it = 1, nt = 3, f = (e) => e && e.nodeType === it, R = (e) => e && e.nodeType === nt, st = (e) => f(e) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(e.nodeName), ot = (e) => f(e) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(e.nodeName), rt = (e) => f(e) && /^(li)$/i.test(e.nodeName), ae = (e) => f(e) && /^(ul|ol)$/i.test(e.nodeName), le = (e) => f(e) && e.nodeName.toUpperCase() === "TABLE", ce = (e) => f(e) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(e.nodeName), at = (e) => f(e) && e.isContentEditable, he = (e) => f(e) && e.nodeName.toUpperCase() === "A", ue = (e) => f(e) && e.nodeName.toUpperCase() === "IMG";
 function L(e, t, i) {
   let n = e;
   for (; n && n !== i; ) {
@@ -59,26 +59,26 @@ function L(e, t, i) {
   }
   return null;
 }
-function N(e, t) {
-  return L(e, st, t);
+function S(e, t) {
+  return L(e, ot, t);
 }
-function ue(e, t) {
+function de(e, t) {
   const i = [];
   let n = e.parentNode;
   for (; n && n !== t; )
     i.push(n), n = n.parentNode;
   return i;
 }
-function de(e) {
+function pe(e) {
   return Array.from(e.childNodes);
 }
-function pe(e) {
+function fe(e) {
   let t = e.previousSibling;
   for (; t && !f(t); )
     t = t.previousSibling;
   return t;
 }
-function fe(e) {
+function me(e) {
   let t = e.nextSibling;
   for (; t && !f(t); )
     t = t.nextSibling;
@@ -92,10 +92,10 @@ function r(e, t = {}, i = []) {
     typeof s == "string" ? n.appendChild(document.createTextNode(s)) : n.appendChild(s);
   return n;
 }
-function me(e) {
+function ge(e) {
   e && e.parentNode && e.parentNode.removeChild(e);
 }
-function ge(e) {
+function ye(e) {
   const t = e.parentNode;
   if (t) {
     for (; e.firstChild; )
@@ -103,31 +103,31 @@ function ge(e) {
     t.removeChild(e);
   }
 }
-function ye(e, t) {
+function be(e, t) {
   return e.parentNode.insertBefore(t, e), t.appendChild(e), t;
 }
-function be(e, t) {
+function xe(e, t) {
   t.nextSibling ? t.parentNode.insertBefore(e, t.nextSibling) : t.parentNode.appendChild(e);
 }
-function xe(e) {
+function _e(e) {
   return R(e) ? e.nodeValue : e.textContent || "";
 }
-function _e(e) {
-  return R(e) ? !e.nodeValue : nt(e) ? !1 : !e.textContent.trim() && !e.querySelector("img, video, hr, table");
-}
 function ve(e) {
-  return e.outerHTML;
+  return R(e) ? !e.nodeValue : st(e) ? !1 : !e.textContent.trim() && !e.querySelector("img, video, hr, table");
 }
 function Ce(e) {
+  return e.outerHTML;
+}
+function we(e) {
   const t = document.createRange();
   t.selectNodeContents(e), t.collapse(!1);
   const i = window.getSelection();
   i && (i.removeAllRanges(), i.addRange(t));
 }
-function we(e) {
-  return !!L(e, rt);
+function ke(e) {
+  return !!L(e, at);
 }
-function h(e, t, i, n) {
+function u(e, t, i, n) {
   return e.addEventListener(t, i, n), () => e.removeEventListener(t, i, n);
 }
 class T {
@@ -209,7 +209,7 @@ class T {
     i.insertNode(n);
   }
 }
-function z(e) {
+function F(e) {
   return new T(
     e.startContainer,
     e.startOffset,
@@ -217,39 +217,39 @@ function z(e) {
     e.endOffset
   );
 }
-function S(e) {
+function N(e) {
   const t = window.getSelection();
   if (!t || t.rangeCount === 0) return null;
   const i = t.getRangeAt(0);
-  return e && !e.contains(i.commonAncestorContainer) ? null : z(i);
+  return e && !e.contains(i.commonAncestorContainer) ? null : F(i);
 }
-function ke(e) {
+function Me(e) {
   return new T(e, 0, e, e.childNodes.length);
 }
-function Me(e, t = 0) {
+function Ee(e, t = 0) {
   return new T(e, t, e, t);
 }
-function Ee(e) {
+function Ie(e) {
   const t = window.getSelection();
   return !t || t.rangeCount === 0 ? !1 : e.contains(t.getRangeAt(0).commonAncestorContainer);
 }
-function U(e) {
+function z(e) {
   const t = window.getSelection();
   if (!t || t.rangeCount === 0) {
     e(null);
     return;
   }
   const i = t.getRangeAt(0).cloneRange();
-  e(z(i)), t.removeAllRanges(), t.addRange(i);
+  e(F(i)), t.removeAllRanges(), t.addRange(i);
 }
-function Ie(e, t) {
+function Ae(e, t) {
   const i = e.splitText(t);
   return [e, i];
 }
 function l(e, t = null) {
   return document.execCommand(e, !1, t);
 }
-const j = () => l("bold"), O = () => l("italic"), P = () => l("underline"), D = () => l("strikeThrough"), $ = () => l("superscript"), F = () => l("subscript"), at = (e) => l("foreColor", e), lt = (e) => l("hiliteColor", e), ct = (e) => l("fontName", e);
+const U = () => l("bold"), j = () => l("italic"), O = () => l("underline"), P = () => l("strikeThrough"), D = () => l("superscript"), $ = () => l("subscript"), lt = (e) => l("foreColor", e), ct = (e) => l("hiliteColor", e), q = (e) => l("fontName", e);
 function ht(e) {
   l("fontSize", "7"), document.querySelectorAll('font[size="7"]').forEach((t) => {
     const i = document.createElement("span");
@@ -257,43 +257,39 @@ function ht(e) {
     t.parentNode.removeChild(t);
   });
 }
-const ut = (e) => l("formatBlock", `<${e}>`), q = () => l("justifyLeft"), K = () => l("justifyCenter"), V = () => l("justifyRight"), W = () => l("justifyFull"), Y = () => l("indent"), X = () => l("outdent"), G = () => l("insertUnorderedList"), J = () => l("insertOrderedList");
-function dt(e, t) {
-  const i = r("table", { class: "asn-table" }), n = r("tbody");
-  i.appendChild(n);
-  for (let s = 0; s < t; s++) {
-    const o = r("tr");
-    for (let a = 0; a < e; a++) {
-      const d = r("td", {}, [" "]);
-      o.appendChild(d);
-    }
-    n.appendChild(o);
-  }
-  return i;
-}
-function pt(e, t) {
-  const i = dt(e, t);
-  l("insertHTML", i.outerHTML);
-}
-function u(e, t, i, n, s) {
+const ut = (e) => l("formatBlock", `<${e}>`), K = () => l("justifyLeft"), V = () => l("justifyCenter"), W = () => l("justifyRight"), Y = () => l("justifyFull"), G = () => l("indent"), X = () => l("outdent"), J = () => l("insertUnorderedList"), Z = () => l("insertOrderedList");
+function d(e, t, i, n, s) {
   return { name: e, icon: t, tooltip: i, action: n, isActive: s };
 }
-const ft = u("bold", "bold", "Bold (Ctrl+B)", () => j(), () => document.queryCommandState("bold")), mt = u("italic", "italic", "Italic (Ctrl+I)", () => O(), () => document.queryCommandState("italic")), gt = u("underline", "underline", "Underline (Ctrl+U)", () => P(), () => document.queryCommandState("underline")), yt = u("strikethrough", "strikethrough", "Strikethrough", () => D(), () => document.queryCommandState("strikeThrough")), bt = u("superscript", "superscript", "Superscript", () => $(), () => document.queryCommandState("superscript")), xt = u("subscript", "subscript", "Subscript", () => F(), () => document.queryCommandState("subscript")), _t = u("alignLeft", "align-left", "Align Left", () => q()), vt = u("alignCenter", "align-center", "Align Center", () => K()), Ct = u("alignRight", "align-right", "Align Right", () => V()), wt = u("alignJustify", "align-justify", "Justify", () => W()), kt = u("ul", "list-ul", "Unordered List", () => G()), Mt = u("ol", "list-ol", "Ordered List", () => J()), Et = u("indent", "indent", "Indent", () => Y()), It = u("outdent", "outdent", "Outdent", () => X()), At = u("undo", "undo", "Undo (Ctrl+Z)", (e) => e.invoke("editor.undo")), Lt = u("redo", "redo", "Redo (Ctrl+Y)", (e) => e.invoke("editor.redo")), Tt = u("hr", "minus", "Horizontal Rule", () => l("insertHorizontalRule")), Nt = u("link", "link", "Insert Link", (e) => e.invoke("linkDialog.show")), St = u("image", "image", "Insert Image", (e) => e.invoke("imageDialog.show")), Ht = u("codeview", "code", "HTML Code View", (e) => e.invoke("codeview.toggle"), (e) => e.invoke("codeview.isActive")), Bt = u("fullscreen", "expand", "Fullscreen", (e) => e.invoke("fullscreen.toggle"), (e) => e.invoke("fullscreen.isActive")), Rt = [
-  [At, Lt],
-  [ft, mt, gt, yt],
-  [bt, xt],
-  [_t, vt, Ct, wt],
-  [kt, Mt, Et, It],
-  [Tt, Nt, St],
-  [Ht, Bt]
-], Z = {
+const dt = d("bold", "bold", "Bold (Ctrl+B)", () => U(), () => document.queryCommandState("bold")), pt = d("italic", "italic", "Italic (Ctrl+I)", () => j(), () => document.queryCommandState("italic")), ft = d("underline", "underline", "Underline (Ctrl+U)", () => O(), () => document.queryCommandState("underline")), mt = d("strikethrough", "strikethrough", "Strikethrough", () => P(), () => document.queryCommandState("strikeThrough")), gt = d("superscript", "superscript", "Superscript", () => D(), () => document.queryCommandState("superscript")), yt = d("subscript", "subscript", "Subscript", () => $(), () => document.queryCommandState("subscript")), bt = d("alignLeft", "align-left", "Align Left", () => K()), xt = d("alignCenter", "align-center", "Align Center", () => V()), _t = d("alignRight", "align-right", "Align Right", () => W()), vt = d("alignJustify", "align-justify", "Justify", () => Y()), Ct = d("ul", "list-ul", "Unordered List", () => J()), wt = d("ol", "list-ol", "Ordered List", () => Z()), kt = d("indent", "indent", "Indent", () => G()), Mt = d("outdent", "outdent", "Outdent", () => X()), Et = d("undo", "undo", "Undo (Ctrl+Z)", (e) => e.invoke("editor.undo")), It = d("redo", "redo", "Redo (Ctrl+Y)", (e) => e.invoke("editor.redo")), At = d("hr", "minus", "Horizontal Rule", () => l("insertHorizontalRule")), Lt = d("link", "link", "Insert Link", (e) => e.invoke("linkDialog.show")), Tt = d("image", "image", "Insert Image", (e) => e.invoke("imageDialog.show")), St = {
+  name: "fontFamily",
+  type: "select",
+  tooltip: "Font Family",
+  action: (e, t) => q(t),
+  getValue: () => {
+    try {
+      return document.queryCommandValue("fontName") || "";
+    } catch {
+      return "";
+    }
+  }
+}, Nt = d("codeview", "code", "HTML Code View", (e) => e.invoke("codeview.toggle"), (e) => e.invoke("codeview.isActive")), Ht = d("fullscreen", "expand", "Fullscreen", (e) => e.invoke("fullscreen.toggle"), (e) => e.invoke("fullscreen.isActive")), Bt = [
+  [St],
+  [Et, It],
+  [dt, pt, ft, mt],
+  [gt, yt],
+  [bt, xt, _t, vt],
+  [Ct, wt, kt, Mt],
+  [At, Lt, Tt],
+  [Nt, Ht]
+], Q = {
   placeholder: "",
   height: 200,
   minHeight: 100,
   maxHeight: 0,
   focus: !1,
   resizeable: !0,
-  toolbar: Rt,
+  toolbar: Bt,
   // UI integration options
   // If `useBootstrap` is true, toolbar buttons will use the Bootstrap button classes
   // (set `toolbarButtonClass` to customize). Works with Bootstrap 4 and 5.
@@ -312,9 +308,24 @@ const ft = u("bold", "bold", "Bold (Ctrl+B)", () => j(), () => document.queryCom
   onChange: null,
   onFocus: null,
   onBlur: null,
-  onImageUpload: null
+  onImageUpload: null,
+  // Default font family applied to the editor and shown in the dropdown when no explicit font is set
+  defaultFontFamily: "Arial",
+  // Font families shown in the toolbar font-family dropdown
+  fontFamilies: [
+    "Arial",
+    "Arial Black",
+    "Comic Sans MS",
+    "Courier New",
+    "Georgia",
+    "Impact",
+    "Tahoma",
+    "Times New Roman",
+    "Trebuchet MS",
+    "Verdana"
+  ]
 };
-function zt(e, t) {
+function Rt(e, t) {
   const i = r("div", { class: "asn-container" }), n = r("div", {
     class: "asn-editable",
     contenteditable: "true",
@@ -323,10 +334,12 @@ function zt(e, t) {
     "aria-label": "Rich text editor",
     role: "textbox"
   });
-  return e.tagName === "TEXTAREA" ? n.innerHTML = (e.value || "").trim() : n.innerHTML = (e.innerHTML || "").trim(), t.height && (n.style.minHeight = `${t.height}px`), t.minHeight && (n.style.minHeight = `${t.minHeight}px`), t.maxHeight && (n.style.maxHeight = `${t.maxHeight}px`), i.appendChild(n), e.style.display = "none", e.insertAdjacentElement("afterend", i), { container: i, editable: n };
+  e.tagName === "TEXTAREA" ? n.innerHTML = (e.value || "").trim() : n.innerHTML = (e.innerHTML || "").trim();
+  const s = t.defaultFontFamily || t.fontFamilies && t.fontFamilies[0];
+  return s && (n.style.fontFamily = s), t.height && (n.style.minHeight = `${t.height}px`), t.minHeight && (n.style.minHeight = `${t.minHeight}px`), t.maxHeight && (n.style.maxHeight = `${t.maxHeight}px`), i.appendChild(n), e.style.display = "none", e.insertAdjacentElement("afterend", i), { container: i, editable: n };
 }
-const Ut = 100;
-class jt {
+const Ft = 100;
+class zt {
   /**
    * @param {HTMLElement} editable - the contenteditable element
    */
@@ -340,7 +353,7 @@ class jt {
     return this.editable.innerHTML;
   }
   _savePoint() {
-    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1)), this.stack.push({ html: this._serialize() }), this.stack.length > Ut ? this.stack.shift() : this.stackOffset++;
+    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1)), this.stack.push({ html: this._serialize() }), this.stack.length > Ft ? this.stack.shift() : this.stackOffset++;
   }
   _restore(t) {
     t && (this.editable.innerHTML = t.html);
@@ -381,6 +394,23 @@ class jt {
   canRedo() {
     return this.stackOffset < this.stack.length - 1;
   }
+}
+function Ut(e, t) {
+  const i = r("table", { class: "asn-table" }), n = r("tbody");
+  i.appendChild(n);
+  for (let s = 0; s < t; s++) {
+    const o = r("tr");
+    for (let a = 0; a < e; a++) {
+      const h = r("td", {}, [" "]);
+      o.appendChild(h);
+    }
+    n.appendChild(o);
+  }
+  return i;
+}
+function jt(e, t) {
+  const i = Ut(e, t);
+  l("insertHTML", i.outerHTML);
 }
 const A = {
   BACKSPACE: "Backspace",
@@ -431,10 +461,10 @@ function k(e, t) {
 }
 function Ot(e, t, i = {}) {
   if (E(e, A.TAB)) {
-    const n = S(t);
+    const n = N(t);
     if (!n) return !1;
-    const s = N(n.sc, t);
-    if (s && ot(s))
+    const s = S(n.sc, t);
+    if (s && rt(s))
       return e.preventDefault(), e.shiftKey ? l("outdent") : l("indent"), !0;
     if (s && s.nodeName.toUpperCase() === "PRE")
       return e.preventDefault(), l("insertText", "    "), !0;
@@ -442,9 +472,9 @@ function Ot(e, t, i = {}) {
       return e.preventDefault(), l("insertText", " ".repeat(i.tabSize)), !0;
   }
   if (E(e, A.ENTER) && !e.shiftKey) {
-    const n = S(t);
+    const n = N(t);
     if (!n) return !1;
-    const s = N(n.sc, t);
+    const s = S(n.sc, t);
     if (s && s.nodeName.toUpperCase() === "BLOCKQUOTE") {
       const o = n.toNativeRange();
       if (o.setStart(s, s.childNodes.length), o.toString() === "" && n.isCollapsed())
@@ -465,7 +495,7 @@ class Pt {
   // ---------------------------------------------------------------------------
   initialize() {
     const t = this.context.layoutInfo.editable;
-    return this._history = new jt(t), this._bindEvents(t), this;
+    return this._history = new zt(t), this._bindEvents(t), this;
   }
   destroy() {
     this._disposers.forEach((t) => t()), this._disposers = [], this._history = null;
@@ -476,9 +506,9 @@ class Pt {
   _bindEvents(t) {
     const i = (o) => this._onKeydown(o), n = () => this.afterCommand(), s = () => this.context.invoke("toolbar.refresh");
     this._disposers.push(
-      h(t, "keydown", i),
-      h(t, "keyup", n),
-      h(document, "selectionchange", s)
+      u(t, "keydown", i),
+      u(t, "keyup", n),
+      u(document, "selectionchange", s)
     );
   }
   _onKeydown(t) {
@@ -568,46 +598,46 @@ class Pt {
   // Style commands (delegated to Style module)
   // ---------------------------------------------------------------------------
   bold() {
-    j(), this.afterCommand();
+    U(), this.afterCommand();
   }
   italic() {
-    O(), this.afterCommand();
+    j(), this.afterCommand();
   }
   underline() {
-    P(), this.afterCommand();
+    O(), this.afterCommand();
   }
   strikethrough() {
-    D(), this.afterCommand();
+    P(), this.afterCommand();
   }
   superscript() {
-    $(), this.afterCommand();
+    D(), this.afterCommand();
   }
   subscript() {
-    F(), this.afterCommand();
+    $(), this.afterCommand();
   }
   justifyLeft() {
-    q(), this.afterCommand();
-  }
-  justifyCenter() {
     K(), this.afterCommand();
   }
-  justifyRight() {
+  justifyCenter() {
     V(), this.afterCommand();
   }
-  justifyFull() {
+  justifyRight() {
     W(), this.afterCommand();
   }
-  indent() {
+  justifyFull() {
     Y(), this.afterCommand();
+  }
+  indent() {
+    G(), this.afterCommand();
   }
   outdent() {
     X(), this.afterCommand();
   }
   insertUL() {
-    G(), this.afterCommand();
+    J(), this.afterCommand();
   }
   insertOL() {
-    J(), this.afterCommand();
+    Z(), this.afterCommand();
   }
   /**
    * @param {string} tagName - e.g. 'h1', 'p', 'blockquote'
@@ -619,19 +649,19 @@ class Pt {
    * @param {string} color
    */
   foreColor(t) {
-    at(t), this.afterCommand();
+    lt(t), this.afterCommand();
   }
   /**
    * @param {string} color
    */
   backColor(t) {
-    lt(t), this.afterCommand();
+    ct(t), this.afterCommand();
   }
   /**
    * @param {string} name
    */
   fontName(t) {
-    ct(t), this.afterCommand();
+    q(t), this.afterCommand();
   }
   /**
    * @param {string} size - e.g. '14px'
@@ -662,8 +692,8 @@ class Pt {
     if (!(s.toString().trim().length > 0))
       l("insertHTML", `<a href="${o}"${n ? ' target="_blank" rel="noopener noreferrer"' : ""}>${i || o}</a>`);
     else if (l("createLink", o), n) {
-      const d = this._getClosestAnchor();
-      d && (d.setAttribute("target", "_blank"), d.setAttribute("rel", "noopener noreferrer"));
+      const h = this._getClosestAnchor();
+      h && (h.setAttribute("target", "_blank"), h.setAttribute("rel", "noopener noreferrer"));
     }
     this.afterCommand();
   }
@@ -688,7 +718,7 @@ class Pt {
    * @param {number} rows
    */
   insertTable(t, i) {
-    pt(t, i), this.afterCommand();
+    jt(t, i), this.afterCommand();
   }
   // ---------------------------------------------------------------------------
   // Helpers
@@ -755,10 +785,32 @@ class Dt {
     (this.options.toolbar || []).forEach((i) => {
       const n = r("div", { class: "asn-btn-group" });
       i.forEach((s) => {
-        const o = this._createButton(s);
+        const o = s.type === "select" ? this._createSelect(s) : this._createButton(s);
         n.appendChild(o);
       }), this.el.appendChild(n);
     });
+  }
+  /**
+   * Creates a <select> dropdown for font-family (or similar) options.
+   * @param {import('./Buttons.js').DropdownDef} def
+   * @returns {HTMLSelectElement}
+   */
+  _createSelect(t) {
+    const i = t.name === "fontFamily" ? this.options.fontFamilies || [] : t.items || [], n = r("select", {
+      class: "asn-select",
+      title: t.tooltip || "",
+      "data-btn": t.name,
+      "aria-label": t.tooltip || t.name
+    }), s = r("option", { value: "" }, ["Font"]);
+    n.appendChild(s), i.forEach((a) => {
+      const h = r("option", { value: a }, [a]);
+      h.style.fontFamily = a, n.appendChild(h);
+    });
+    const o = u(n, "change", (a) => {
+      const h = a.target.value;
+      h && (this.context.invoke("editor.focus"), t.action(this.context, h), this.context.invoke("editor.afterCommand"));
+    });
+    return this._disposers.push(o), n;
   }
   /**
    * @param {import('./Buttons.js').ButtonDef} btnDef
@@ -771,10 +823,10 @@ class Dt {
       title: t.tooltip || "",
       "data-btn": t.name,
       "aria-label": t.tooltip || t.name
-    }), d = !!this.options.useFontAwesome, y = () => {
-      if (!d) return !1;
+    }), h = !!this.options.useFontAwesome, y = () => {
+      if (!h) return !1;
       if (document.querySelector(".fa, .fas, .far, .fal, .fab, .fa-solid")) return !0;
-      const g = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((Q) => Q.href || "").join(" ");
+      const g = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((tt) => tt.href || "").join(" ");
       return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(g);
     }, p = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"', c = (g) => `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${p} style="display:block">${g}</svg>`, m = /* @__PURE__ */ new Map([
       // Format
@@ -832,7 +884,7 @@ class Dt {
       g ? a.innerHTML = `<i class="${x} ${g}" aria-hidden="true"></i>` : m.has(t.icon) ? a.innerHTML = m.get(t.icon) : a.textContent = t.icon || t.name;
     } else
       m.has(t.icon) ? a.innerHTML = m.get(t.icon) : m.has(t.name) ? a.innerHTML = m.get(t.name) : a.textContent = t.icon || t.name;
-    const v = h(a, "click", (g) => {
+    const v = u(a, "click", (g) => {
       g.preventDefault(), this.context.invoke("editor.focus"), t.action(this.context), this.refresh();
     });
     return this._disposers.push(v), a;
@@ -842,13 +894,19 @@ class Dt {
   // ---------------------------------------------------------------------------
   refresh() {
     if (!this.el) return;
-    const t = this.el.querySelectorAll("[data-btn]"), i = this.options.toolbar || [], n = new Map(i.flat().map((s) => [s.name, s]));
-    t.forEach((s) => {
-      const o = s.getAttribute("data-btn"), a = n.get(o);
-      if (a && typeof a.isActive == "function") {
-        const d = a.isActive(this.context);
-        s.classList.toggle("active", !!d);
-      }
+    const t = this.options.toolbar || [], i = new Map(t.flat().map((n) => [n.name, n]));
+    this.el.querySelectorAll("button[data-btn]").forEach((n) => {
+      const s = i.get(n.getAttribute("data-btn"));
+      s && typeof s.isActive == "function" && n.classList.toggle("active", !!s.isActive(this.context));
+    }), this.el.querySelectorAll("select[data-btn]").forEach((n) => {
+      const s = i.get(n.getAttribute("data-btn"));
+      if (!s || typeof s.getValue != "function") return;
+      let o = (s.getValue(this.context) || "").replace(/["']/g, "").trim();
+      o || (o = this.options.defaultFontFamily || this.options.fontFamilies && this.options.fontFamilies[0] || "");
+      const a = Array.from(n.options).find(
+        (h) => h.value && h.value.toLowerCase() === o.toLowerCase()
+      );
+      n.value = a ? a.value : "";
     });
   }
   /**
@@ -900,7 +958,7 @@ class $t {
       s.style.height = `${c}px`;
     }, a = () => {
       document.removeEventListener("mousemove", o), document.removeEventListener("mouseup", a);
-    }, y = h(t, "mousedown", (p) => {
+    }, y = u(t, "mousedown", (p) => {
       i = p.clientY, n = s.offsetHeight, document.addEventListener("mousemove", o), document.addEventListener("mouseup", a), p.preventDefault();
     });
     this._disposers.push(y);
@@ -909,7 +967,7 @@ class $t {
   // Counter update
   // ---------------------------------------------------------------------------
   _bindContentEvents() {
-    const t = this.context.layoutInfo.editable, i = tt(() => this.update(), 200), n = h(t, "input", i);
+    const t = this.context.layoutInfo.editable, i = et(() => this.update(), 200), n = u(t, "input", i);
     this._disposers.push(n);
   }
   update() {
@@ -918,7 +976,7 @@ class $t {
     this._wordCountEl.textContent = `Words: ${n}`, this._charCountEl.textContent = `Chars: ${s}`;
   }
 }
-class Ft {
+class qt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -926,7 +984,7 @@ class Ft {
     this.context = t, this.options = t.options, this._disposers = [];
   }
   initialize() {
-    const t = this.context.layoutInfo.editable, i = h(t, "paste", (n) => this._onPaste(n));
+    const t = this.context.layoutInfo.editable, i = u(t, "paste", (n) => this._onPaste(n));
     return this._disposers.push(i), this;
   }
   destroy() {
@@ -968,8 +1026,8 @@ class Ft {
       Array.from(o.attributes).forEach((a) => {
         a.name.startsWith("on") && o.removeAttribute(a.name);
       }), ["href", "src", "action"].forEach((a) => {
-        const d = o.getAttribute(a);
-        d && /^\s*javascript:/i.test(d) && o.removeAttribute(a);
+        const h = o.getAttribute(a);
+        h && /^\s*javascript:/i.test(h) && o.removeAttribute(a);
       });
     }), n.body.innerHTML;
   }
@@ -982,7 +1040,7 @@ class Ft {
     return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 }
-class qt {
+class Kt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -992,7 +1050,7 @@ class qt {
   initialize() {
     const t = this.context.layoutInfo.editable, i = this.options.placeholder || "";
     i && (t.dataset.placeholder = i);
-    const n = () => this._update(), s = h(t, "input", n), o = h(t, "focus", n), a = h(t, "blur", n);
+    const n = () => this._update(), s = u(t, "input", n), o = u(t, "focus", n), a = u(t, "blur", n);
     return this._disposers.push(s, o, a), this._update(), this;
   }
   destroy() {
@@ -1003,7 +1061,7 @@ class qt {
     t.classList.toggle("asn-placeholder", i);
   }
 }
-class Kt {
+class Vt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1078,7 +1136,7 @@ class Kt {
     }), n.body.innerHTML;
   }
 }
-class Vt {
+class Wt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1086,7 +1144,7 @@ class Vt {
     this.context = t, this._active = !1, this._disposers = [], this._prevHeight = "";
   }
   initialize() {
-    const t = h(document, "keydown", (i) => {
+    const t = u(document, "keydown", (i) => {
       this._active && E(i, A.ESCAPE) && this.deactivate();
     });
     return this._disposers.push(t), this;
@@ -1114,7 +1172,7 @@ class Vt {
     t.classList.remove("asn-fullscreen"), i.style.height = this._prevHeight, document.body.style.overflow = "", this._active = !1, this.context.invoke("toolbar.refresh");
   }
 }
-class Wt {
+class Yt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1138,7 +1196,7 @@ class Wt {
    * Pre-fills with the currently selected link if present.
    */
   show() {
-    U((t) => {
+    z((t) => {
       this._savedRange = t;
     }), this._prefill(), this._open();
   }
@@ -1161,7 +1219,7 @@ class Wt {
     this._urlInput = o;
     const a = r("label", { class: "asn-label" });
     a.textContent = "Display Text";
-    const d = r("input", {
+    const h = r("input", {
       type: "text",
       class: "asn-input",
       placeholder: "Link text",
@@ -1169,7 +1227,7 @@ class Wt {
       name: "linkText",
       autocomplete: "off"
     });
-    this._textInput = d;
+    this._textInput = h;
     const y = r("label", { class: "asn-label asn-label-inline" }), p = r("input", {
       type: "checkbox",
       id: "asn-link-newtab",
@@ -1179,8 +1237,8 @@ class Wt {
     const c = r("div", { class: "asn-dialog-actions" }), m = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
     m.textContent = "Insert";
     const x = r("button", { type: "button", class: "asn-btn" });
-    x.textContent = "Cancel", c.appendChild(m), c.appendChild(x), i.append(n, s, o, a, d, y, c), t.appendChild(i);
-    const w = h(m, "click", () => this._onInsert()), _ = h(x, "click", () => this._close()), v = h(t, "click", (g) => {
+    x.textContent = "Cancel", c.appendChild(m), c.appendChild(x), i.append(n, s, o, a, h, y, c), t.appendChild(i);
+    const w = u(m, "click", () => this._onInsert()), _ = u(x, "click", () => this._close()), v = u(t, "click", (g) => {
       g.target === t && this._close();
     });
     return this._disposers.push(w, _, v), t;
@@ -1218,7 +1276,7 @@ class Wt {
     this._dialog && (this._dialog.style.display = "none"), this._savedRange = null;
   }
 }
-class Yt {
+class Gt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1238,7 +1296,7 @@ class Yt {
   // Public API
   // ---------------------------------------------------------------------------
   show() {
-    U((t) => {
+    z((t) => {
       this._savedRange = t;
     }), this._urlInput.value = "", this._altInput.value = "", this._fileInput && (this._fileInput.value = ""), this._open();
   }
@@ -1264,13 +1322,13 @@ class Yt {
     this._urlInput = o;
     const a = r("label", { class: "asn-label" });
     a.textContent = "Alt Text";
-    const d = r("input", {
+    const h = r("input", {
       type: "text",
       class: "asn-input",
       placeholder: "Describe the image",
       autocomplete: "off"
     });
-    if (this._altInput = d, this.options.allowImageUpload !== !1) {
+    if (this._altInput = h, this.options.allowImageUpload !== !1) {
       const _ = r("label", { class: "asn-label" });
       _.textContent = "Or upload a file";
       const v = r("input", {
@@ -1279,14 +1337,14 @@ class Yt {
         accept: "image/*"
       });
       this._fileInput = v;
-      const g = h(v, "change", () => this._onFileChange());
+      const g = u(v, "change", () => this._onFileChange());
       this._disposers.push(g), i.append(_, v);
     }
     const y = r("div", { class: "asn-dialog-actions" }), p = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
     p.textContent = "Insert";
     const c = r("button", { type: "button", class: "asn-btn" });
-    c.textContent = "Cancel", y.appendChild(p), y.appendChild(c), i.append(n, s, o, a, d, y), t.appendChild(i);
-    const m = h(p, "click", () => this._onInsert()), x = h(c, "click", () => this._close()), w = h(t, "click", (_) => {
+    c.textContent = "Cancel", y.appendChild(p), y.appendChild(c), i.append(n, s, o, a, h, y), t.appendChild(i);
+    const m = u(p, "click", () => this._onInsert()), x = u(c, "click", () => this._close()), w = u(t, "click", (_) => {
       _.target === t && this._close();
     });
     return this._disposers.push(m, x, w), t;
@@ -1348,7 +1406,7 @@ const b = {
   { name: "link", label: "Insert Link", icon: b.link, action: (e) => e.invoke("linkDialog.open") },
   { name: "image", label: "Insert Image", icon: b.image, action: (e) => e.invoke("imageDialog.open") }
 ];
-class Gt {
+class Jt {
   /** @param {import('../Context.js').Context} context */
   constructor(t) {
     this.context = t, this.options = t.options || {}, this._items = this.options.contextMenu && this.options.contextMenu.items || Xt, this.el = null, this._disposers = [];
@@ -1356,9 +1414,9 @@ class Gt {
   initialize() {
     this.el = r("div", { class: "asn-contextmenu", role: "menu", "aria-hidden": "true" }), this.el.style.display = "none", document.body.appendChild(this.el), this._renderItems();
     const t = this.context.layoutInfo && this.context.layoutInfo.editable;
-    return t && this._disposers.push(h(t, "contextmenu", (i) => this._onContextMenu(i))), this._disposers.push(h(document, "click", (i) => this._maybeHide(i))), this._disposers.push(h(document, "keydown", (i) => {
+    return t && this._disposers.push(u(t, "contextmenu", (i) => this._onContextMenu(i))), this._disposers.push(u(document, "click", (i) => this._maybeHide(i))), this._disposers.push(u(document, "keydown", (i) => {
       i.key === "Escape" && this.hide();
-    })), this._disposers.push(h(window, "scroll", () => this.hide(), { passive: !0 })), this;
+    })), this._disposers.push(u(window, "scroll", () => this.hide(), { passive: !0 })), this;
   }
   destroy() {
     this._disposers.forEach((t) => {
@@ -1382,7 +1440,7 @@ class Gt {
       }
       const n = r("span", { class: "asn-context-label" }, [t.label || t.name]);
       i.appendChild(n);
-      const s = h(i, "click", (o) => {
+      const s = u(i, "click", (o) => {
         o.stopPropagation(), this.hide();
         try {
           t.action(this.context);
@@ -1411,36 +1469,36 @@ class Gt {
     this.el && (this.el.style.display = "none", this.el.setAttribute("aria-hidden", "true"));
   }
 }
-class Jt {
+class Zt {
   /**
    * @param {HTMLElement} targetEl - The element to replace with the editor
    * @param {import('./settings.js').AsnOptions} [userOptions]
    */
   constructor(t, i = {}) {
-    this.targetEl = t, this.options = B(Z, i), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
+    this.targetEl = t, this.options = B(Q, i), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
   }
   // ---------------------------------------------------------------------------
   // Initialisation
   // ---------------------------------------------------------------------------
   initialize() {
-    const { container: t, editable: i } = zt(this.targetEl, this.options);
+    const { container: t, editable: i } = Rt(this.targetEl, this.options);
     this.layoutInfo.container = t, this.layoutInfo.editable = i, this._registerModules();
     const n = this._modules.get("toolbar");
     n && n.el && (t.insertBefore(n.el, i), this.layoutInfo.toolbar = n.el);
     const s = this._modules.get("statusbar");
-    return s && s.el && (t.appendChild(s.el), this.layoutInfo.statusbar = s.el), this._bindEditorEvents(i), this.options.focus && i.focus(), this._alive = !0, this;
+    return s && s.el && (t.appendChild(s.el), this.layoutInfo.statusbar = s.el), this._bindEditorEvents(i), this.options.focus && i.focus(), this._alive = !0, this.invoke("toolbar.refresh"), this;
   }
   _registerModules() {
     const t = (i, n) => {
       const s = new n(this);
       s.initialize(), this._modules.set(i, s);
     };
-    t("editor", Pt), t("toolbar", Dt), t("statusbar", $t), t("clipboard", Ft), t("contextMenu", Gt), t("placeholder", qt), t("codeview", Kt), t("fullscreen", Vt), t("linkDialog", Wt), t("imageDialog", Yt);
+    t("editor", Pt), t("toolbar", Dt), t("statusbar", $t), t("clipboard", qt), t("contextMenu", Jt), t("placeholder", Kt), t("codeview", Vt), t("fullscreen", Wt), t("linkDialog", Yt), t("imageDialog", Gt);
   }
   _bindEditorEvents(t) {
-    const i = h(t, "focus", () => {
+    const i = u(t, "focus", () => {
       this.layoutInfo.container.classList.add("asn-focused"), typeof this.options.onFocus == "function" && this.options.onFocus(this);
-    }), n = h(t, "blur", () => {
+    }), n = u(t, "blur", () => {
       this.layoutInfo.container.classList.remove("asn-focused"), this._syncToTarget(), typeof this.options.onBlur == "function" && this.options.onBlur(this);
     });
     this._disposers.push(i, n);
@@ -1555,31 +1613,31 @@ class Jt {
     (this.targetEl.tagName === "TEXTAREA" || this.targetEl.tagName === "INPUT") && (this.targetEl.value = this.getHTML());
   }
 }
-function Ae(e) {
+function Le(e) {
   return e[e.length - 1];
 }
-function Le(e) {
+function Te(e) {
   return e[0];
 }
-function Te(e, t = 1) {
+function Se(e, t = 1) {
   return e.slice(0, e.length - t);
 }
 function Ne(e, t = 1) {
   return e.slice(t);
 }
-function Se(e) {
+function He(e) {
   return e.reduce((t, i) => t.concat(i), []);
 }
-function He(e) {
+function Be(e) {
   return [...new Set(e)];
 }
-function Be(e, t) {
+function Re(e, t) {
   const i = [];
   for (let n = 0; n < e.length; n += t)
     i.push(e.slice(n, n + t));
   return i;
 }
-function Re(e, t) {
+function Fe(e, t) {
   return e.reduce((i, n) => {
     const s = t(n);
     return i[s] || (i[s] = []), i[s].push(n), i;
@@ -1619,7 +1677,7 @@ const C = navigator.userAgent, je = {
   create(e, t = {}) {
     const n = H(e).map((s) => {
       if (M.has(s)) return M.get(s);
-      const o = new Jt(s, t);
+      const o = new Zt(s, t);
       return o.initialize(), M.set(s, o), o;
     });
     return n.length === 1 ? n[0] : n;
@@ -1644,7 +1702,7 @@ const C = navigator.userAgent, je = {
     return t && M.get(t) || null;
   },
   /** Default options (can be mutated globally before calling create). */
-  defaults: Z,
+  defaults: Q,
   /** Library version */
   version: "1.0.0"
 };
@@ -1652,71 +1710,71 @@ function H(e) {
   return typeof e == "string" ? Array.from(document.querySelectorAll(e)) : e instanceof Element ? [e] : e instanceof NodeList || Array.isArray(e) ? Array.from(e) : [];
 }
 export {
-  Jt as Context,
-  et as ELEMENT_NODE,
-  it as TEXT_NODE,
+  Zt as Context,
+  it as ELEMENT_NODE,
+  nt as TEXT_NODE,
   T as WrappedRange,
   ze as all,
-  ue as ancestors,
+  de as ancestors,
   Ue as any,
-  de as children,
-  Be as chunk,
-  Zt as clamp,
+  pe as children,
+  Re as chunk,
+  Qt as clamp,
   L as closest,
-  N as closestPara,
-  Me as collapsedRange,
-  te as compose,
+  S as closestPara,
+  Ee as collapsedRange,
+  ee as compose,
   r as createElement,
-  S as currentRange,
-  tt as debounce,
+  N as currentRange,
+  et as debounce,
   Oe as default,
-  Z as defaultOptions,
+  Q as defaultOptions,
   je as env,
-  Le as first,
-  Se as flatten,
-  z as fromNativeRange,
-  Re as groupBy,
-  ee as identity,
-  Te as initial,
-  be as insertAfter,
-  ce as isAnchor,
-  rt as isEditable,
+  Te as first,
+  He as flatten,
+  F as fromNativeRange,
+  Fe as groupBy,
+  ie as identity,
+  Se as initial,
+  xe as insertAfter,
+  he as isAnchor,
+  at as isEditable,
   f as isElement,
-  _e as isEmpty,
-  se as isFunction,
-  he as isImage,
-  le as isInline,
-  we as isInsideEditable,
+  ve as isEmpty,
+  oe as isFunction,
+  ue as isImage,
+  ce as isInline,
+  ke as isInsideEditable,
   E as isKey,
-  ot as isLi,
-  re as isList,
+  rt as isLi,
+  ae as isList,
   k as isModifier,
-  ie as isNil,
-  st as isPara,
+  ne as isNil,
+  ot as isPara,
   I as isPlainObject,
-  Ee as isSelectionInside,
-  ne as isString,
-  ae as isTable,
+  Ie as isSelectionInside,
+  se as isString,
+  le as isTable,
   R as isText,
-  nt as isVoid,
+  st as isVoid,
   A as key,
-  Ae as last,
+  Le as last,
   B as mergeDeep,
-  fe as nextElement,
-  xe as nodeValue,
-  h as on,
-  ve as outerHtml,
-  Ce as placeCaret,
-  pe as prevElement,
-  ke as rangeFromElement,
-  oe as rect2bnd,
-  me as remove,
-  Ie as splitText,
+  me as nextElement,
+  _e as nodeValue,
+  u as on,
+  Ce as outerHtml,
+  we as placeCaret,
+  fe as prevElement,
+  Me as rangeFromElement,
+  re as rect2bnd,
+  ge as remove,
+  Ae as splitText,
   Ne as tail,
-  Qt as throttle,
-  He as unique,
-  ge as unwrap,
-  U as withSavedRange,
-  ye as wrap
+  te as throttle,
+  Be as unique,
+  ye as unwrap,
+  z as withSavedRange,
+  be as wrap
 };
 //# sourceMappingURL=aftersummernote.es.js.map

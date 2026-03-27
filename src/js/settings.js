@@ -53,4 +53,19 @@ export const defaultOptions = {
   onFocus: null,
   onBlur: null,
   onImageUpload: null,
+  // Default font family applied to the editor and shown in the dropdown when no explicit font is set
+  defaultFontFamily: 'Arial',
+  // Font families shown in the toolbar font-family dropdown
+  fontFamilies: [
+    'Arial',
+    'Arial Black',
+    'Comic Sans MS',
+    'Courier New',
+    'Georgia',
+    'Impact',
+    'Tahoma',
+    'Times New Roman',
+    'Trebuchet MS',
+    'Verdana',
+  ],
 };

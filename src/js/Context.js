@@ -78,6 +78,10 @@ export class Context {
     }
 
     this._alive = true;
+
+    // Initial toolbar sync so dropdowns show the correct font on load
+    this.invoke('toolbar.refresh');
+
     return this;
   }
 
