@@ -304,6 +304,75 @@
   }
 }
 
+// ---------------------------------------------------------------------------
+// Link tooltip
+// ---------------------------------------------------------------------------
+
+.asn-link-tooltip {
+  position: fixed;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+  padding: 0 6px;
+  background: $asn-bg;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius-sm;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  pointer-events: all;
+
+  // URL preview label
+  .asn-link-tooltip-url {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: $asn-primary;
+    cursor: default;
+    padding: 0 4px;
+  }
+
+  // Vertical divider
+  .asn-link-tooltip-sep {
+    width: 1px;
+    height: 18px;
+    background: $asn-border;
+    flex-shrink: 0;
+    margin: 0 2px;
+  }
+}
+
+.asn-link-tooltip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: $asn-radius-sm;
+  background: transparent;
+  color: $asn-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  svg { stroke: currentColor; display: block; }
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    color: $asn-text;
+  }
+
+  &:active,
+  &.asn-link-tooltip-btn--copied {
+    background: $asn-bg-btn-active;
+    color: $asn-primary;
+  }
+}
+
 // Size popover (column width / row height)
 .asn-size-popover {
   position: fixed;

@@ -20,6 +20,7 @@ import { Fullscreen } from './module/Fullscreen.js';
 import { LinkDialog } from './module/LinkDialog.js';
 import { ImageDialog } from './module/ImageDialog.js';
 import { ImageResizer } from './module/ImageResizer.js';
+import { LinkTooltip } from './module/LinkTooltip.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
 export class Context {
@@ -104,6 +105,7 @@ export class Context {
     register('linkDialog', LinkDialog);
     register('imageDialog', ImageDialog);
     register('imageResizer', ImageResizer);
+    register('linkTooltip', LinkTooltip);
   }
 
   _bindEditorEvents(editable) {

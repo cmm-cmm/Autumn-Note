@@ -1,13 +1,13 @@
-function pe(i, t, e) {
+function ye(i, t, e) {
   return Math.min(Math.max(i, t), e);
 }
-function dt(i, t) {
+function ut(i, t) {
   let e;
   return function(...s) {
     clearTimeout(e), e = setTimeout(() => i.apply(this, s), t);
   };
 }
-function fe(i, t) {
+function xe(i, t) {
   let e = 0;
   return function(...s) {
     const n = Date.now();
@@ -15,32 +15,32 @@ function fe(i, t) {
       return e = n, i.apply(this, s);
   };
 }
-function me(...i) {
+function _e(...i) {
   return (t) => i.reduceRight((e, s) => s(e), t);
 }
-function ge(i) {
+function ve(i) {
   return i;
 }
-function ye(i) {
+function be(i) {
   return i == null;
 }
-function xe(i) {
+function we(i) {
   return typeof i == "string";
 }
-function ve(i) {
+function ke(i) {
   return typeof i == "function";
 }
 function F(i, t) {
   const e = Object.assign({}, i);
-  if (z(i) && z(t))
+  if (R(i) && R(t))
     for (const s of Object.keys(t))
-      z(t[s]) && s in i ? e[s] = F(i[s], t[s]) : e[s] = t[s];
+      R(t[s]) && s in i ? e[s] = F(i[s], t[s]) : e[s] = t[s];
   return e;
 }
-function z(i) {
+function R(i) {
   return i !== null && typeof i == "object" && !Array.isArray(i);
 }
-function be(i) {
+function Ce(i) {
   return i ? {
     top: Math.round(i.top),
     left: Math.round(i.left),
@@ -50,8 +50,8 @@ function be(i) {
     right: Math.round(i.right)
   } : null;
 }
-const ut = 1, pt = 3, k = (i) => i && i.nodeType === ut, O = (i) => i && i.nodeType === pt, ft = (i) => k(i) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(i.nodeName), mt = (i) => k(i) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(i.nodeName), gt = (i) => k(i) && /^(li)$/i.test(i.nodeName), _e = (i) => k(i) && /^(ul|ol)$/i.test(i.nodeName), we = (i) => k(i) && i.nodeName.toUpperCase() === "TABLE", Ce = (i) => k(i) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(i.nodeName), yt = (i) => k(i) && i.isContentEditable, ke = (i) => k(i) && i.nodeName.toUpperCase() === "A", Ie = (i) => k(i) && i.nodeName.toUpperCase() === "IMG";
-function B(i, t, e) {
+const pt = 1, ft = 3, C = (i) => i && i.nodeType === pt, D = (i) => i && i.nodeType === ft, mt = (i) => C(i) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(i.nodeName), gt = (i) => C(i) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(i.nodeName), yt = (i) => C(i) && /^(li)$/i.test(i.nodeName), Ie = (i) => C(i) && /^(ul|ol)$/i.test(i.nodeName), Me = (i) => C(i) && i.nodeName.toUpperCase() === "TABLE", Ae = (i) => C(i) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(i.nodeName), xt = (i) => C(i) && i.isContentEditable, Ee = (i) => C(i) && i.nodeName.toUpperCase() === "A", Te = (i) => C(i) && i.nodeName.toUpperCase() === "IMG";
+function H(i, t, e) {
   let s = i;
   for (; s && s !== e; ) {
     if (t(s)) return s;
@@ -59,28 +59,28 @@ function B(i, t, e) {
   }
   return null;
 }
-function N(i, t) {
-  return B(i, mt, t);
+function P(i, t) {
+  return H(i, gt, t);
 }
-function Me(i, t) {
+function Le(i, t) {
   const e = [];
   let s = i.parentNode;
   for (; s && s !== t; )
     e.push(s), s = s.parentNode;
   return e;
 }
-function Ee(i) {
+function Se(i) {
   return Array.from(i.childNodes);
 }
-function Ae(i) {
+function Be(i) {
   let t = i.previousSibling;
-  for (; t && !k(t); )
+  for (; t && !C(t); )
     t = t.previousSibling;
   return t;
 }
-function Le(i) {
+function Re(i) {
   let t = i.nextSibling;
-  for (; t && !k(t); )
+  for (; t && !C(t); )
     t = t.nextSibling;
   return t;
 }
@@ -92,10 +92,10 @@ function l(i, t = {}, e = []) {
     typeof n == "string" ? s.appendChild(document.createTextNode(n)) : s.appendChild(n);
   return s;
 }
-function Te(i) {
+function ze(i) {
   i && i.parentNode && i.parentNode.removeChild(i);
 }
-function Se(i) {
+function He(i) {
   const t = i.parentNode;
   if (t) {
     for (; i.firstChild; )
@@ -103,34 +103,34 @@ function Se(i) {
     t.removeChild(i);
   }
 }
-function ze(i, t) {
+function Ne(i, t) {
   return i.parentNode.insertBefore(t, i), t.appendChild(i), t;
 }
-function Re(i, t) {
+function Pe(i, t) {
   t.nextSibling ? t.parentNode.insertBefore(i, t.nextSibling) : t.parentNode.appendChild(i);
 }
-function Be(i) {
-  return O(i) ? i.nodeValue : i.textContent || "";
+function je(i) {
+  return D(i) ? i.nodeValue : i.textContent || "";
 }
-function He(i) {
-  return O(i) ? !i.nodeValue : ft(i) ? !1 : !i.textContent.trim() && !i.querySelector("img, video, hr, table");
+function Oe(i) {
+  return D(i) ? !i.nodeValue : mt(i) ? !1 : !i.textContent.trim() && !i.querySelector("img, video, hr, table");
 }
-function Ne(i) {
+function Fe(i) {
   return i.outerHTML;
 }
-function Pe(i) {
+function De(i) {
   const t = document.createRange();
   t.selectNodeContents(i), t.collapse(!1);
   const e = window.getSelection();
   e && (e.removeAllRanges(), e.addRange(t));
 }
-function je(i) {
-  return !!B(i, yt);
+function Ue(i) {
+  return !!H(i, xt);
 }
 function c(i, t, e, s) {
   return i.addEventListener(t, e, s), () => i.removeEventListener(t, e, s);
 }
-class H {
+class N {
   /**
    * @param {Node} sc - start container
    * @param {number} so - start offset
@@ -166,7 +166,7 @@ class H {
    */
   commonAncestor() {
     const e = this.toNativeRange().commonAncestorContainer;
-    return k(e) ? e : e.parentElement;
+    return C(e) ? e : e.parentElement;
   }
   /**
    * Returns the nearest paragraph/block ancestor within the editable area.
@@ -174,7 +174,7 @@ class H {
    * @returns {Element|null}
    */
   blockNode(t) {
-    return B(this.sc, (e) => k(e) && e !== t, t);
+    return H(this.sc, (e) => C(e) && e !== t, t);
   }
   /**
    * Returns either the selected text string or empty string.
@@ -209,47 +209,47 @@ class H {
     e.insertNode(s);
   }
 }
-function D(i) {
-  return new H(
+function U(i) {
+  return new N(
     i.startContainer,
     i.startOffset,
     i.endContainer,
     i.endOffset
   );
 }
-function P(i) {
+function j(i) {
   const t = window.getSelection();
   if (!t || t.rangeCount === 0) return null;
   const e = t.getRangeAt(0);
-  return i && !i.contains(e.commonAncestorContainer) ? null : D(e);
+  return i && !i.contains(e.commonAncestorContainer) ? null : U(e);
 }
-function Fe(i) {
-  return new H(i, 0, i, i.childNodes.length);
+function $e(i) {
+  return new N(i, 0, i, i.childNodes.length);
 }
-function Oe(i, t = 0) {
-  return new H(i, t, i, t);
+function We(i, t = 0) {
+  return new N(i, t, i, t);
 }
-function De(i) {
+function qe(i) {
   const t = window.getSelection();
   return !t || t.rangeCount === 0 ? !1 : i.contains(t.getRangeAt(0).commonAncestorContainer);
 }
-function U(i) {
+function $(i) {
   const t = window.getSelection();
   if (!t || t.rangeCount === 0) {
     i(null);
     return;
   }
   const e = t.getRangeAt(0).cloneRange();
-  i(D(e)), t.removeAllRanges(), t.addRange(e);
+  i(U(e)), t.removeAllRanges(), t.addRange(e);
 }
-function Ue(i, t) {
+function Ve(i, t) {
   const e = i.splitText(t);
   return [i, e];
 }
 function u(i, t = null) {
   return document.execCommand(i, !1, t);
 }
-const $ = () => u("bold"), q = () => u("italic"), W = () => u("underline"), V = () => u("strikeThrough"), K = () => u("superscript"), Y = () => u("subscript"), xt = (i) => u("foreColor", i), vt = (i) => u("hiliteColor", i), X = (i) => u("fontName", i);
+const W = () => u("bold"), q = () => u("italic"), V = () => u("underline"), K = () => u("strikeThrough"), Y = () => u("superscript"), X = () => u("subscript"), _t = (i) => u("foreColor", i), vt = (i) => u("hiliteColor", i), G = (i) => u("fontName", i);
 function bt(i) {
   u("fontSize", "7"), document.querySelectorAll('font[size="7"]').forEach((t) => {
     const e = document.createElement("span");
@@ -257,8 +257,8 @@ function bt(i) {
     t.parentNode.removeChild(t);
   });
 }
-const _t = (i) => u("formatBlock", `<${i}>`), G = () => u("justifyLeft"), J = () => u("justifyCenter"), Z = () => u("justifyRight"), Q = () => u("justifyFull"), tt = () => u("indent"), et = () => u("outdent"), it = () => u("insertUnorderedList"), st = () => u("insertOrderedList");
-function wt(i, t) {
+const wt = (i) => u("formatBlock", `<${i}>`), J = () => u("justifyLeft"), Z = () => u("justifyCenter"), Q = () => u("justifyRight"), tt = () => u("justifyFull"), et = () => u("indent"), it = () => u("outdent"), st = () => u("insertUnorderedList"), nt = () => u("insertOrderedList");
+function kt(i, t) {
   const e = document.createElement("table");
   e.style.borderCollapse = "collapse", e.style.width = "100%";
   const s = document.createElement("tbody");
@@ -275,19 +275,19 @@ function wt(i, t) {
 function g(i, t, e, s, n) {
   return { name: i, icon: t, tooltip: e, action: s, isActive: n };
 }
-const Ct = g("bold", "bold", "Bold (Ctrl+B)", () => $(), () => document.queryCommandState("bold")), kt = g("italic", "italic", "Italic (Ctrl+I)", () => q(), () => document.queryCommandState("italic")), It = g("underline", "underline", "Underline (Ctrl+U)", () => W(), () => document.queryCommandState("underline")), Mt = g("strikethrough", "strikethrough", "Strikethrough", () => V(), () => document.queryCommandState("strikeThrough")), Et = g("superscript", "superscript", "Superscript", () => K(), () => document.queryCommandState("superscript")), At = g("subscript", "subscript", "Subscript", () => Y(), () => document.queryCommandState("subscript")), Lt = g("alignLeft", "align-left", "Align Left", () => G()), Tt = g("alignCenter", "align-center", "Align Center", () => J()), St = g("alignRight", "align-right", "Align Right", () => Z()), zt = g("alignJustify", "align-justify", "Justify", () => Q()), Rt = g("ul", "list-ul", "Unordered List", () => it()), Bt = g("ol", "list-ol", "Ordered List", () => st()), Ht = g("indent", "indent", "Indent", () => tt()), Nt = g("outdent", "outdent", "Outdent", () => et()), Pt = g("undo", "undo", "Undo (Ctrl+Z)", (i) => i.invoke("editor.undo")), jt = g("redo", "redo", "Redo (Ctrl+Y)", (i) => i.invoke("editor.redo")), Ft = g("hr", "minus", "Horizontal Rule", () => u("insertHorizontalRule")), Ot = g("link", "link", "Insert Link", (i) => i.invoke("linkDialog.show")), Dt = g("image", "image", "Insert Image", (i) => i.invoke("imageDialog.show")), Ut = {
+const Ct = g("bold", "bold", "Bold (Ctrl+B)", () => W(), () => document.queryCommandState("bold")), It = g("italic", "italic", "Italic (Ctrl+I)", () => q(), () => document.queryCommandState("italic")), Mt = g("underline", "underline", "Underline (Ctrl+U)", () => V(), () => document.queryCommandState("underline")), At = g("strikethrough", "strikethrough", "Strikethrough", () => K(), () => document.queryCommandState("strikeThrough")), Et = g("superscript", "superscript", "Superscript", () => Y(), () => document.queryCommandState("superscript")), Tt = g("subscript", "subscript", "Subscript", () => X(), () => document.queryCommandState("subscript")), Lt = g("alignLeft", "align-left", "Align Left", () => J()), St = g("alignCenter", "align-center", "Align Center", () => Z()), Bt = g("alignRight", "align-right", "Align Right", () => Q()), Rt = g("alignJustify", "align-justify", "Justify", () => tt()), zt = g("ul", "list-ul", "Unordered List", () => st()), Ht = g("ol", "list-ol", "Ordered List", () => nt()), Nt = g("indent", "indent", "Indent", () => et()), Pt = g("outdent", "outdent", "Outdent", () => it()), jt = g("undo", "undo", "Undo (Ctrl+Z)", (i) => i.invoke("editor.undo")), Ot = g("redo", "redo", "Redo (Ctrl+Y)", (i) => i.invoke("editor.redo")), Ft = g("hr", "minus", "Horizontal Rule", () => u("insertHorizontalRule")), Dt = g("link", "link", "Insert Link", (i) => i.invoke("linkDialog.show")), Ut = g("image", "image", "Insert Image", (i) => i.invoke("imageDialog.show")), $t = {
   name: "table",
   type: "grid",
   icon: "table",
   tooltip: "Insert Table",
   action: (i, t, e) => {
-    wt(t, e), i.invoke("editor.afterCommand");
+    kt(t, e), i.invoke("editor.afterCommand");
   }
-}, $t = {
+}, Wt = {
   name: "fontFamily",
   type: "select",
   tooltip: "Font Family",
-  action: (i, t) => X(t),
+  action: (i, t) => G(t),
   getValue: () => {
     try {
       return document.queryCommandValue("fontName") || "";
@@ -295,23 +295,23 @@ const Ct = g("bold", "bold", "Bold (Ctrl+B)", () => $(), () => document.queryCom
       return "";
     }
   }
-}, qt = g("codeview", "code", "HTML Code View", (i) => i.invoke("codeview.toggle"), (i) => i.invoke("codeview.isActive")), Wt = g("fullscreen", "expand", "Fullscreen", (i) => i.invoke("fullscreen.toggle"), (i) => i.invoke("fullscreen.isActive")), Vt = [
-  [$t],
-  [Pt, jt],
-  [Ct, kt, It, Mt],
-  [Et, At],
-  [Lt, Tt, St, zt],
-  [Rt, Bt, Ht, Nt],
-  [Ft, Ot, Dt, Ut],
-  [qt, Wt]
-], nt = {
+}, qt = g("codeview", "code", "HTML Code View", (i) => i.invoke("codeview.toggle"), (i) => i.invoke("codeview.isActive")), Vt = g("fullscreen", "expand", "Fullscreen", (i) => i.invoke("fullscreen.toggle"), (i) => i.invoke("fullscreen.isActive")), Kt = [
+  [Wt],
+  [jt, Ot],
+  [Ct, It, Mt, At],
+  [Et, Tt],
+  [Lt, St, Bt, Rt],
+  [zt, Ht, Nt, Pt],
+  [Ft, Dt, Ut, $t],
+  [qt, Vt]
+], ot = {
   placeholder: "",
   height: 200,
   minHeight: 100,
   maxHeight: 0,
   focus: !1,
   resizeable: !0,
-  toolbar: Vt,
+  toolbar: Kt,
   // UI integration options
   // If `useBootstrap` is true, toolbar buttons will use the Bootstrap button classes
   // (set `toolbarButtonClass` to customize). Works with Bootstrap 4 and 5.
@@ -347,7 +347,7 @@ const Ct = g("bold", "bold", "Bold (Ctrl+B)", () => $(), () => document.queryCom
     "Verdana"
   ]
 };
-function Kt(i, t) {
+function Yt(i, t) {
   const e = l("div", { class: "asn-container" }), s = l("div", {
     class: "asn-editable",
     contenteditable: "true",
@@ -360,8 +360,8 @@ function Kt(i, t) {
   const n = t.defaultFontFamily || t.fontFamilies && t.fontFamilies[0];
   return n && (s.style.fontFamily = n), t.height && (s.style.minHeight = `${t.height}px`), t.minHeight && (s.style.minHeight = `${t.minHeight}px`), t.maxHeight && (s.style.maxHeight = `${t.maxHeight}px`), e.appendChild(s), i.style.display = "none", i.insertAdjacentElement("afterend", e), { container: e, editable: s };
 }
-const Yt = 100;
-class Xt {
+const Xt = 100;
+class Gt {
   /**
    * @param {HTMLElement} editable - the contenteditable element
    */
@@ -375,7 +375,7 @@ class Xt {
     return this.editable.innerHTML;
   }
   _savePoint() {
-    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1)), this.stack.push({ html: this._serialize() }), this.stack.length > Yt ? this.stack.shift() : this.stackOffset++;
+    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1)), this.stack.push({ html: this._serialize() }), this.stack.length > Xt ? this.stack.shift() : this.stackOffset++;
   }
   _restore(t) {
     t && (this.editable.innerHTML = t.html);
@@ -417,7 +417,7 @@ class Xt {
     return this.stackOffset < this.stack.length - 1;
   }
 }
-function Gt(i, t) {
+function Jt(i, t) {
   const e = l("table", { class: "asn-table" }), s = l("tbody");
   e.appendChild(s);
   for (let n = 0; n < t; n++) {
@@ -430,11 +430,11 @@ function Gt(i, t) {
   }
   return e;
 }
-function Jt(i, t) {
-  const e = Gt(i, t);
+function Zt(i, t) {
+  const e = Jt(i, t);
   u("insertHTML", e.outerHTML);
 }
-const R = {
+const z = {
   BACKSPACE: "Backspace",
   TAB: "Tab",
   ENTER: "Enter",
@@ -475,28 +475,28 @@ const R = {
   SLASH: "/",
   PERIOD: "."
 };
-function T(i, t) {
+function S(i, t) {
   return i.key === t || i.key === t.toUpperCase();
 }
-function E(i, t) {
-  return (i.ctrlKey || i.metaKey) && T(i, t);
+function A(i, t) {
+  return (i.ctrlKey || i.metaKey) && S(i, t);
 }
-function Zt(i, t, e = {}) {
-  if (T(i, R.TAB)) {
-    const s = P(t);
+function Qt(i, t, e = {}) {
+  if (S(i, z.TAB)) {
+    const s = j(t);
     if (!s) return !1;
-    const n = N(s.sc, t);
-    if (n && gt(n))
+    const n = P(s.sc, t);
+    if (n && yt(n))
       return i.preventDefault(), i.shiftKey ? u("outdent") : u("indent"), !0;
     if (n && n.nodeName.toUpperCase() === "PRE")
       return i.preventDefault(), u("insertText", "    "), !0;
     if (e.tabSize)
       return i.preventDefault(), u("insertText", " ".repeat(e.tabSize)), !0;
   }
-  if (T(i, R.ENTER) && !i.shiftKey) {
-    const s = P(t);
+  if (S(i, z.ENTER) && !i.shiftKey) {
+    const s = j(t);
     if (!s) return !1;
-    const n = N(s.sc, t);
+    const n = P(s.sc, t);
     if (n && n.nodeName.toUpperCase() === "BLOCKQUOTE") {
       const o = s.toNativeRange();
       if (o.setStart(n, n.childNodes.length), o.toString() === "" && s.isCollapsed())
@@ -505,7 +505,7 @@ function Zt(i, t, e = {}) {
   }
   return !1;
 }
-class Qt {
+class te {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -517,7 +517,7 @@ class Qt {
   // ---------------------------------------------------------------------------
   initialize() {
     const t = this.context.layoutInfo.editable;
-    return this._history = new Xt(t), this._bindEvents(t), this;
+    return this._history = new Gt(t), this._bindEvents(t), this;
   }
   destroy() {
     this._disposers.forEach((t) => t()), this._disposers = [], this._history = null;
@@ -535,24 +535,24 @@ class Qt {
   }
   _onKeydown(t) {
     const e = this.context.layoutInfo.editable;
-    if (!Zt(t, e, this.options)) {
-      if (E(t, "z") && !t.shiftKey) {
+    if (!Qt(t, e, this.options)) {
+      if (A(t, "z") && !t.shiftKey) {
         t.preventDefault(), this.undo();
         return;
       }
-      if (E(t, "z") && t.shiftKey || E(t, "y")) {
+      if (A(t, "z") && t.shiftKey || A(t, "y")) {
         t.preventDefault(), this.redo();
         return;
       }
-      if (E(t, "b")) {
+      if (A(t, "b")) {
         t.preventDefault(), this.bold();
         return;
       }
-      if (E(t, "i")) {
+      if (A(t, "i")) {
         t.preventDefault(), this.italic();
         return;
       }
-      if (E(t, "u")) {
+      if (A(t, "u")) {
         t.preventDefault(), this.underline();
         return;
       }
@@ -620,58 +620,58 @@ class Qt {
   // Style commands (delegated to Style module)
   // ---------------------------------------------------------------------------
   bold() {
-    $(), this.afterCommand();
+    W(), this.afterCommand();
   }
   italic() {
     q(), this.afterCommand();
   }
   underline() {
-    W(), this.afterCommand();
-  }
-  strikethrough() {
     V(), this.afterCommand();
   }
-  superscript() {
+  strikethrough() {
     K(), this.afterCommand();
   }
-  subscript() {
+  superscript() {
     Y(), this.afterCommand();
   }
-  justifyLeft() {
-    G(), this.afterCommand();
+  subscript() {
+    X(), this.afterCommand();
   }
-  justifyCenter() {
+  justifyLeft() {
     J(), this.afterCommand();
   }
-  justifyRight() {
+  justifyCenter() {
     Z(), this.afterCommand();
   }
-  justifyFull() {
+  justifyRight() {
     Q(), this.afterCommand();
   }
-  indent() {
+  justifyFull() {
     tt(), this.afterCommand();
   }
-  outdent() {
+  indent() {
     et(), this.afterCommand();
   }
-  insertUL() {
+  outdent() {
     it(), this.afterCommand();
   }
-  insertOL() {
+  insertUL() {
     st(), this.afterCommand();
+  }
+  insertOL() {
+    nt(), this.afterCommand();
   }
   /**
    * @param {string} tagName - e.g. 'h1', 'p', 'blockquote'
    */
   formatBlock(t) {
-    _t(t), this.afterCommand();
+    wt(t), this.afterCommand();
   }
   /**
    * @param {string} color
    */
   foreColor(t) {
-    xt(t), this.afterCommand();
+    _t(t), this.afterCommand();
   }
   /**
    * @param {string} color
@@ -683,7 +683,7 @@ class Qt {
    * @param {string} name
    */
   fontName(t) {
-    X(t), this.afterCommand();
+    G(t), this.afterCommand();
   }
   /**
    * @param {string} size - e.g. '14px'
@@ -740,7 +740,7 @@ class Qt {
    * @param {number} rows
    */
   insertTable(t, e) {
-    Jt(t, e), this.afterCommand();
+    Zt(t, e), this.afterCommand();
   }
   // ---------------------------------------------------------------------------
   // Helpers
@@ -784,7 +784,7 @@ class Qt {
     }), s.body.innerHTML;
   }
 }
-class te {
+class ee {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -827,54 +827,54 @@ class te {
       "aria-haspopup": "true",
       "aria-expanded": "false"
     });
-    if (!!this.options.useFontAwesome && (document.querySelector(".fa, .fas, .far, .fal, .fab, .fa-solid") || /fontawesome|font-awesome/.test(Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((v) => v.href).join(" ")))) {
-      const v = this.options.fontAwesomeClass || "fas";
-      a.innerHTML = `<i class="${v} fa-table" aria-hidden="true"></i>`;
+    if (!!this.options.useFontAwesome && (document.querySelector(".fa, .fas, .far, .fal, .fab, .fa-solid") || /fontawesome|font-awesome/.test(Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((_) => _.href).join(" ")))) {
+      const _ = this.options.fontAwesomeClass || "fas";
+      a.innerHTML = `<i class="${_} fa-table" aria-hidden="true"></i>`;
     } else {
-      const v = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-      a.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${v} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+      const _ = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+      a.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${_} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
     }
     const h = l("div", {
       class: "asn-table-picker-popup",
       role: "dialog",
       "aria-label": "Select table size"
-    }), f = l("div", { class: "asn-table-grid" }), _ = l("div", { class: "asn-table-label" });
-    _.textContent = "Insert Table";
+    }), f = l("div", { class: "asn-table-grid" }), b = l("div", { class: "asn-table-label" });
+    b.textContent = "Insert Table";
     const m = [];
-    for (let v = 1; v <= 10; v++)
-      for (let C = 1; C <= 10; C++) {
+    for (let _ = 1; _ <= 10; _++)
+      for (let k = 1; k <= 10; k++) {
         const I = l("div", {
           class: "asn-table-cell",
-          "data-row": String(v),
-          "data-col": String(C)
+          "data-row": String(_),
+          "data-col": String(k)
         });
         m.push(I), f.appendChild(I);
       }
-    h.appendChild(f), h.appendChild(_);
+    h.appendChild(f), h.appendChild(b);
     let w = !1;
-    const b = (v, C) => {
+    const v = (_, k) => {
       m.forEach((I) => {
-        const S = +I.getAttribute("data-row"), ht = +I.getAttribute("data-col");
-        I.classList.toggle("active", S <= v && ht <= C);
-      }), _.textContent = v && C ? `${v} × ${C}` : "Insert Table";
+        const B = +I.getAttribute("data-row"), dt = +I.getAttribute("data-col");
+        I.classList.toggle("active", B <= _ && dt <= k);
+      }), b.textContent = _ && k ? `${_} × ${k}` : "Insert Table";
     }, x = () => {
       w = !0, h.style.display = "block", a.setAttribute("aria-expanded", "true");
-    }, L = () => {
-      w = !1, h.style.display = "none", a.setAttribute("aria-expanded", "false"), b(0, 0);
-    }, ot = c(a, "click", (v) => {
-      v.stopPropagation(), w ? L() : x();
-    }), rt = c(f, "mouseover", (v) => {
-      const C = v.target.closest(".asn-table-cell");
-      C && b(+C.getAttribute("data-row"), +C.getAttribute("data-col"));
-    }), at = c(f, "mouseleave", () => b(0, 0)), lt = c(f, "click", (v) => {
-      const C = v.target.closest(".asn-table-cell");
-      if (!C) return;
-      const I = +C.getAttribute("data-row"), S = +C.getAttribute("data-col");
-      L(), this.context.invoke("editor.focus"), t.action(this.context, I, S);
-    }), ct = c(document, "click", () => {
-      w && L();
+    }, T = () => {
+      w = !1, h.style.display = "none", a.setAttribute("aria-expanded", "false"), v(0, 0);
+    }, rt = c(a, "click", (_) => {
+      _.stopPropagation(), w ? T() : x();
+    }), at = c(f, "mouseover", (_) => {
+      const k = _.target.closest(".asn-table-cell");
+      k && v(+k.getAttribute("data-row"), +k.getAttribute("data-col"));
+    }), lt = c(f, "mouseleave", () => v(0, 0)), ct = c(f, "click", (_) => {
+      const k = _.target.closest(".asn-table-cell");
+      if (!k) return;
+      const I = +k.getAttribute("data-row"), B = +k.getAttribute("data-col");
+      T(), this.context.invoke("editor.focus"), t.action(this.context, I, B);
+    }), ht = c(document, "click", () => {
+      w && T();
     });
-    return this._disposers.push(ot, rt, at, lt, ct), n.appendChild(a), n.appendChild(h), n;
+    return this._disposers.push(rt, at, lt, ct, ht), n.appendChild(a), n.appendChild(h), n;
   }
   /**
    * Creates a <select> dropdown for font-family (or similar) options.
@@ -912,7 +912,7 @@ class te {
     }), a = !!this.options.useFontAwesome, d = () => {
       if (!a) return !1;
       if (document.querySelector(".fa, .fas, .far, .fal, .fab, .fa-solid")) return !0;
-      const x = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((L) => L.href || "").join(" ");
+      const x = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((T) => T.href || "").join(" ");
       return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(x);
     }, y = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"', h = (x) => `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${y} style="display:block">${x}</svg>`, f = /* @__PURE__ */ new Map([
       // Format
@@ -943,7 +943,7 @@ class te {
       // View
       ["code", h('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
       ["expand", h('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')]
-    ]), _ = this.options.fontAwesomeClass || "fas", m = /* @__PURE__ */ new Map([
+    ]), b = this.options.fontAwesomeClass || "fas", m = /* @__PURE__ */ new Map([
       ["bold", "fa-bold"],
       ["italic", "fa-italic"],
       ["underline", "fa-underline"],
@@ -968,13 +968,13 @@ class te {
     ]);
     if (d()) {
       const x = m.get(t.icon) || m.get(t.name) || null;
-      x ? r.innerHTML = `<i class="${_} ${x}" aria-hidden="true"></i>` : f.has(t.icon) ? r.innerHTML = f.get(t.icon) : r.textContent = t.icon || t.name;
+      x ? r.innerHTML = `<i class="${b} ${x}" aria-hidden="true"></i>` : f.has(t.icon) ? r.innerHTML = f.get(t.icon) : r.textContent = t.icon || t.name;
     } else
       f.has(t.icon) ? r.innerHTML = f.get(t.icon) : f.has(t.name) ? r.innerHTML = f.get(t.name) : r.textContent = t.icon || t.name;
-    const b = c(r, "click", (x) => {
+    const v = c(r, "click", (x) => {
       x.preventDefault(), this.context.invoke("editor.focus"), t.action(this.context), this.refresh();
     });
-    return this._disposers.push(b), r;
+    return this._disposers.push(v), r;
   }
   // ---------------------------------------------------------------------------
   // State refresh (active / disabled states)
@@ -1009,7 +1009,7 @@ class te {
     this.el && (this.el.style.display = "none");
   }
 }
-class ee {
+class ie {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1054,7 +1054,7 @@ class ee {
   // Counter update
   // ---------------------------------------------------------------------------
   _bindContentEvents() {
-    const t = this.context.layoutInfo.editable, e = dt(() => this.update(), 200), s = c(t, "input", e);
+    const t = this.context.layoutInfo.editable, e = ut(() => this.update(), 200), s = c(t, "input", e);
     this._disposers.push(s);
   }
   update() {
@@ -1063,7 +1063,7 @@ class ee {
     this._wordCountEl.textContent = `Words: ${s}`, this._charCountEl.textContent = `Chars: ${n}`;
   }
 }
-class ie {
+class se {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1127,7 +1127,7 @@ class ie {
     return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 }
-class se {
+class ne {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1148,7 +1148,7 @@ class se {
     t.classList.toggle("asn-placeholder", e);
   }
 }
-class ne {
+class oe {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1223,7 +1223,7 @@ class ne {
     }), s.body.innerHTML;
   }
 }
-class oe {
+class re {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1232,7 +1232,7 @@ class oe {
   }
   initialize() {
     const t = c(document, "keydown", (e) => {
-      this._active && T(e, R.ESCAPE) && this.deactivate();
+      this._active && S(e, z.ESCAPE) && this.deactivate();
     });
     return this._disposers.push(t), this;
   }
@@ -1259,7 +1259,7 @@ class oe {
     t.classList.remove("asn-fullscreen"), e.style.height = this._prevHeight, document.body.style.overflow = "", this._active = !1, this.context.invoke("toolbar.refresh");
   }
 }
-class re {
+class ae {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1283,7 +1283,7 @@ class re {
    * Pre-fills with the currently selected link if present.
    */
   show() {
-    U((t) => {
+    $((t) => {
       this._savedRange = t;
     }), this._prefill(), this._open();
   }
@@ -1323,12 +1323,12 @@ class re {
     this._tabCheckbox = y, d.appendChild(y), d.appendChild(document.createTextNode(" Open in new tab"));
     const h = l("div", { class: "asn-dialog-actions" }), f = l("button", { type: "button", class: "asn-btn asn-btn-primary" });
     f.textContent = "Insert";
-    const _ = l("button", { type: "button", class: "asn-btn" });
-    _.textContent = "Cancel", h.appendChild(f), h.appendChild(_), e.append(s, n, o, r, a, d, h), t.appendChild(e);
-    const m = c(f, "click", () => this._onInsert()), w = c(_, "click", () => this._close()), b = c(t, "click", (x) => {
+    const b = l("button", { type: "button", class: "asn-btn" });
+    b.textContent = "Cancel", h.appendChild(f), h.appendChild(b), e.append(s, n, o, r, a, d, h), t.appendChild(e);
+    const m = c(f, "click", () => this._onInsert()), w = c(b, "click", () => this._close()), v = c(t, "click", (x) => {
       x.target === t && this._close();
     });
-    return this._disposers.push(m, w, b), t;
+    return this._disposers.push(m, w, v), t;
   }
   // ---------------------------------------------------------------------------
   // Actions
@@ -1363,7 +1363,7 @@ class re {
     this._dialog && (this._dialog.style.display = "none"), this._savedRange = null;
   }
 }
-class ae {
+class le {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1383,7 +1383,7 @@ class ae {
   // Public API
   // ---------------------------------------------------------------------------
   show() {
-    U((t) => {
+    $((t) => {
       this._savedRange = t;
     }), this._urlInput.value = "", this._altInput.value = "", this._fileInput && (this._fileInput.value = ""), this._open();
   }
@@ -1418,23 +1418,23 @@ class ae {
     if (this._altInput = a, this.options.allowImageUpload !== !1) {
       const w = l("label", { class: "asn-label" });
       w.textContent = "Or upload a file";
-      const b = l("input", {
+      const v = l("input", {
         type: "file",
         class: "asn-input",
         accept: "image/*"
       });
-      this._fileInput = b;
-      const x = c(b, "change", () => this._onFileChange());
-      this._disposers.push(x), e.append(w, b);
+      this._fileInput = v;
+      const x = c(v, "change", () => this._onFileChange());
+      this._disposers.push(x), e.append(w, v);
     }
     const d = l("div", { class: "asn-dialog-actions" }), y = l("button", { type: "button", class: "asn-btn asn-btn-primary" });
     y.textContent = "Insert";
     const h = l("button", { type: "button", class: "asn-btn" });
     h.textContent = "Cancel", d.appendChild(y), d.appendChild(h), e.append(s, n, o, r, a, d), t.appendChild(e);
-    const f = c(y, "click", () => this._onInsert()), _ = c(h, "click", () => this._close()), m = c(t, "click", (w) => {
+    const f = c(y, "click", () => this._onInsert()), b = c(h, "click", () => this._close()), m = c(t, "click", (w) => {
       w.target === t && this._close();
     });
-    return this._disposers.push(f, _, m), t;
+    return this._disposers.push(f, b, m), t;
   }
   // ---------------------------------------------------------------------------
   // Actions
@@ -1467,7 +1467,7 @@ class ae {
     this._dialog && (this._dialog.style.display = "none"), this._savedRange = null;
   }
 }
-const le = [
+const ce = [
   { pos: "nw", cursor: "nw-resize" },
   { pos: "n", cursor: "n-resize" },
   { pos: "ne", cursor: "ne-resize" },
@@ -1477,7 +1477,7 @@ const le = [
   { pos: "sw", cursor: "sw-resize" },
   { pos: "w", cursor: "w-resize" }
 ];
-class ce {
+class he {
   /** @param {import('../Context.js').Context} context */
   constructor(t) {
     this.context = t, this._activeImg = null, this._overlay = null, this._disposers = [];
@@ -1521,7 +1521,7 @@ class ce {
   // ---------------------------------------------------------------------------
   _buildOverlay() {
     const t = document.createElement("div");
-    return t.className = "asn-image-resizer", t.style.display = "none", le.forEach(({ pos: e }) => {
+    return t.className = "asn-image-resizer", t.style.display = "none", ce.forEach(({ pos: e }) => {
       const s = document.createElement("div");
       s.className = `asn-resize-handle asn-resize-${e}`, s.dataset.handle = e, this._disposers.push(
         c(s, "mousedown", (n) => {
@@ -1551,14 +1551,125 @@ class ce {
   _startResize(t, e) {
     const s = this._activeImg;
     if (!s) return;
-    const n = t.clientX, o = t.clientY, r = s.offsetWidth || s.naturalWidth || 100, a = s.offsetHeight || s.naturalHeight || 100, d = r / a, y = e.length === 2, h = (_) => {
-      const m = _.clientX - n, w = _.clientY - o;
-      let b = r, x = a;
-      e.includes("e") && (b = Math.max(20, r + m)), e.includes("w") && (b = Math.max(20, r - m)), e.includes("s") && (x = Math.max(20, a + w)), e.includes("n") && (x = Math.max(20, a - w)), y && (Math.abs(m) >= Math.abs(w) ? x = Math.max(20, Math.round(b / d)) : b = Math.max(20, Math.round(x * d))), s.style.width = `${b}px`, s.style.height = `${x}px`, this._updateOverlayPosition();
+    const n = t.clientX, o = t.clientY, r = s.offsetWidth || s.naturalWidth || 100, a = s.offsetHeight || s.naturalHeight || 100, d = r / a, y = e.length === 2, h = (b) => {
+      const m = b.clientX - n, w = b.clientY - o;
+      let v = r, x = a;
+      e.includes("e") && (v = Math.max(20, r + m)), e.includes("w") && (v = Math.max(20, r - m)), e.includes("s") && (x = Math.max(20, a + w)), e.includes("n") && (x = Math.max(20, a - w)), y && (Math.abs(m) >= Math.abs(w) ? x = Math.max(20, Math.round(v / d)) : v = Math.max(20, Math.round(x * d))), s.style.width = `${v}px`, s.style.height = `${x}px`, this._updateOverlayPosition();
     }, f = () => {
       document.removeEventListener("mousemove", h), document.removeEventListener("mouseup", f), this.context.invoke("editor.afterCommand");
     };
     document.addEventListener("mousemove", h), document.addEventListener("mouseup", f);
+  }
+}
+const L = {
+  open: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  edit: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  unlink: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"/><path d="M5.17 11.75l-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"/><line x1="8" y1="2" x2="8" y2="5"/><line x1="2" y1="8" x2="5" y2="8"/><line x1="16" y1="19" x2="16" y2="22"/><line x1="19" y1="16" x2="22" y2="16"/></svg>',
+  copy: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'
+}, de = 120, ue = 200;
+class pe {
+  /** @param {import('../Context.js').Context} context */
+  constructor(t) {
+    this.context = t, this._el = null, this._activeAnchor = null, this._showTimer = null, this._hideTimer = null, this._disposers = [];
+  }
+  initialize() {
+    this._el = this._buildTooltip(), document.body.appendChild(this._el);
+    const t = this.context.layoutInfo.editable;
+    return this._disposers.push(
+      // Detect when pointer enters a link
+      c(t, "mouseover", (e) => {
+        const s = e.target.closest("a[href]");
+        s && t.contains(s) && this._scheduleShow(s);
+      }),
+      // Detect when pointer leaves the editable area entirely
+      c(t, "mouseout", (e) => {
+        const s = e.relatedTarget;
+        (!s || !t.contains(s) && !this._el.contains(s)) && this._scheduleHide();
+      })
+    ), this;
+  }
+  destroy() {
+    this._clearTimers(), this._disposers.forEach((t) => t()), this._disposers = [], this._el && this._el.parentNode && this._el.parentNode.removeChild(this._el), this._el = null;
+  }
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
+  _buildTooltip() {
+    const t = l("div", { class: "asn-link-tooltip", role: "toolbar", "aria-label": "Link actions" });
+    return t.style.display = "none", this._urlLabel = l("span", { class: "asn-link-tooltip-url" }), t.appendChild(this._urlLabel), t.appendChild(l("div", { class: "asn-link-tooltip-sep" })), this._openBtn = this._makeBtn(L.open, "Open link", () => this._openLink()), this._copyBtn = this._makeBtn(L.copy, "Copy URL", () => this._copyLink()), this._editBtn = this._makeBtn(L.edit, "Edit link", () => this._editLink()), this._unlinkBtn = this._makeBtn(L.unlink, "Remove link", () => this._unlink()), t.appendChild(this._openBtn), t.appendChild(this._copyBtn), t.appendChild(this._editBtn), t.appendChild(this._unlinkBtn), this._disposers.push(
+      c(t, "mouseenter", () => this._clearTimers()),
+      c(t, "mouseleave", () => this._scheduleHide())
+    ), t;
+  }
+  _makeBtn(t, e, s) {
+    const n = l("button", { type: "button", class: "asn-link-tooltip-btn", title: e });
+    return n.innerHTML = t, this._disposers.push(c(n, "click", (o) => {
+      o.preventDefault(), o.stopPropagation(), s();
+    })), n;
+  }
+  // ---------------------------------------------------------------------------
+  // Show / Hide logic
+  // ---------------------------------------------------------------------------
+  _scheduleShow(t) {
+    this._activeAnchor === t && this._el.style.display !== "none" || (clearTimeout(this._hideTimer), this._hideTimer = null, clearTimeout(this._showTimer), this._showTimer = setTimeout(() => {
+      this._activeAnchor = t, this._show(t);
+    }, de));
+  }
+  _scheduleHide() {
+    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => {
+      this._hide();
+    }, ue));
+  }
+  _show(t) {
+    const e = t.getAttribute("href") || "";
+    this._urlLabel.textContent = this._truncateUrl(e), this._urlLabel.title = e, this._el.style.display = "flex", this._positionNear(t);
+  }
+  _hide() {
+    this._el.style.display = "none", this._activeAnchor = null, this._clearTimers();
+  }
+  _clearTimers() {
+    clearTimeout(this._showTimer), clearTimeout(this._hideTimer), this._showTimer = null, this._hideTimer = null;
+  }
+  _positionNear(t) {
+    const e = t.getBoundingClientRect(), s = this._el.offsetWidth || 260, n = this._el.offsetHeight || 34, o = 6;
+    let r = e.bottom + o, a = e.left;
+    r + n > window.innerHeight - o && (r = e.top - n - o), a + s > window.innerWidth - o && (a = window.innerWidth - s - o), a < o && (a = o), this._el.style.top = `${r}px`, this._el.style.left = `${a}px`;
+  }
+  _truncateUrl(t) {
+    try {
+      const e = new URL(t), s = e.host + (e.pathname !== "/" ? e.pathname : "");
+      return s.length > 48 ? s.slice(0, 48) + "…" : s;
+    } catch {
+      return t.length > 48 ? t.slice(0, 48) + "…" : t;
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Actions
+  // ---------------------------------------------------------------------------
+  _openLink() {
+    const t = this._activeAnchor && this._activeAnchor.getAttribute("href");
+    t && window.open(t, "_blank", "noopener,noreferrer"), this._hide();
+  }
+  _copyLink() {
+    const t = this._activeAnchor && this._activeAnchor.getAttribute("href");
+    t && navigator.clipboard.writeText(t).catch(() => {
+      const e = document.createElement("textarea");
+      e.value = t, e.style.position = "fixed", e.style.opacity = "0", document.body.appendChild(e), e.select(), document.execCommand("copy"), document.body.removeChild(e);
+    }), this._copyBtn && (this._copyBtn.classList.add("asn-link-tooltip-btn--copied"), setTimeout(() => this._copyBtn && this._copyBtn.classList.remove("asn-link-tooltip-btn--copied"), 1e3));
+  }
+  _editLink() {
+    const t = this._activeAnchor;
+    if (!t) return;
+    this._hide();
+    const e = window.getSelection(), s = document.createRange();
+    s.selectNodeContents(t), e.removeAllRanges(), e.addRange(s), this.context.invoke("linkDialog.show");
+  }
+  _unlink() {
+    const t = this._activeAnchor;
+    if (!t) return;
+    this._hide();
+    const e = window.getSelection(), s = document.createRange();
+    s.selectNode(t), e.removeAllRanges(), e.addRange(s), document.execCommand("unlink"), this.context.invoke("editor.afterCommand");
   }
 }
 const p = {
@@ -1591,7 +1702,7 @@ const p = {
   floatNone: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="19" x2="17" y2="19"/></svg>',
   originalSize: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
   deleteImg: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
-}, he = [
+}, fe = [
   { name: "undo", label: "Undo", icon: p.undo, action: (i) => i.invoke("editor.undo") },
   { name: "redo", label: "Redo", icon: p.redo, action: (i) => i.invoke("editor.redo") },
   { separator: !0 },
@@ -1606,10 +1717,10 @@ const p = {
   { name: "link", label: "Insert Link", icon: p.link, action: (i) => i.invoke("linkDialog.show") },
   { name: "image", label: "Insert Image", icon: p.image, action: (i) => i.invoke("imageDialog.show") }
 ];
-class de {
+class me {
   /** @param {import('../Context.js').Context} context */
   constructor(t) {
-    this.context = t, this.options = t.options || {}, this._items = this.options.contextMenu && this.options.contextMenu.items || he, this.el = null, this._disposers = [], this._menuDisposers = [], this._targetCell = null, this._sizePopover = null, this._lastX = 0, this._lastY = 0;
+    this.context = t, this.options = t.options || {}, this._items = this.options.contextMenu && this.options.contextMenu.items || fe, this.el = null, this._disposers = [], this._menuDisposers = [], this._targetCell = null, this._sizePopover = null, this._lastX = 0, this._lastY = 0;
   }
   initialize() {
     this.el = l("div", { class: "asn-contextmenu", role: "menu", "aria-hidden": "true" }), this.el.style.display = "none", document.body.appendChild(this.el), this._sizePopover = this._buildSizePopover(), document.body.appendChild(this._sizePopover), this._renderItems(this._items);
@@ -1862,10 +1973,10 @@ class de {
       m > 0 && typeof this._sizeApply == "function" && this._sizeApply(m), this._hideSizePopover();
     }), h = c(a, "click", () => this._hideSizePopover()), f = c(n, "keydown", (m) => {
       m.key === "Enter" && (m.preventDefault(), d.click()), m.key === "Escape" && this._hideSizePopover();
-    }), _ = c(document, "click", (m) => {
+    }), b = c(document, "click", (m) => {
       this._sizePopover && this._sizePopover.style.display !== "none" && !this._sizePopover.contains(m.target) && this._hideSizePopover();
     });
-    return this._disposers.push(y, h, f, _), t;
+    return this._disposers.push(y, h, f, b), t;
   }
   _openSizePopover(t, e) {
     if (!this._sizePopover) return;
@@ -1895,19 +2006,19 @@ class de {
     this._sizePopover && (this._sizePopover.style.display = "none"), this._sizeApply = null;
   }
 }
-class ue {
+class ge {
   /**
    * @param {HTMLElement} targetEl - The element to replace with the editor
    * @param {import('./settings.js').AsnOptions} [userOptions]
    */
   constructor(t, e = {}) {
-    this.targetEl = t, this.options = F(nt, e), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
+    this.targetEl = t, this.options = F(ot, e), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
   }
   // ---------------------------------------------------------------------------
   // Initialisation
   // ---------------------------------------------------------------------------
   initialize() {
-    const { container: t, editable: e } = Kt(this.targetEl, this.options);
+    const { container: t, editable: e } = Yt(this.targetEl, this.options);
     this.layoutInfo.container = t, this.layoutInfo.editable = e, this._registerModules();
     const s = this._modules.get("toolbar");
     s && s.el && (t.insertBefore(s.el, e), this.layoutInfo.toolbar = s.el);
@@ -1919,7 +2030,7 @@ class ue {
       const n = new s(this);
       n.initialize(), this._modules.set(e, n);
     };
-    t("editor", Qt), t("toolbar", te), t("statusbar", ee), t("clipboard", ie), t("contextMenu", de), t("placeholder", se), t("codeview", ne), t("fullscreen", oe), t("linkDialog", re), t("imageDialog", ae), t("imageResizer", ce);
+    t("editor", te), t("toolbar", ee), t("statusbar", ie), t("clipboard", se), t("contextMenu", me), t("placeholder", ne), t("codeview", oe), t("fullscreen", re), t("linkDialog", ae), t("imageDialog", le), t("imageResizer", he), t("linkTooltip", pe);
   }
   _bindEditorEvents(t) {
     const e = c(t, "focus", () => {
@@ -2039,43 +2150,43 @@ class ue {
     (this.targetEl.tagName === "TEXTAREA" || this.targetEl.tagName === "INPUT") && (this.targetEl.value = this.getHTML());
   }
 }
-function $e(i) {
+function Ke(i) {
   return i[i.length - 1];
 }
-function qe(i) {
+function Ye(i) {
   return i[0];
 }
-function We(i, t = 1) {
+function Xe(i, t = 1) {
   return i.slice(0, i.length - t);
 }
-function Ve(i, t = 1) {
+function Ge(i, t = 1) {
   return i.slice(t);
 }
-function Ke(i) {
+function Je(i) {
   return i.reduce((t, e) => t.concat(e), []);
 }
-function Ye(i) {
+function Ze(i) {
   return [...new Set(i)];
 }
-function Xe(i, t) {
+function Qe(i, t) {
   const e = [];
   for (let s = 0; s < i.length; s += t)
     e.push(i.slice(s, s + t));
   return e;
 }
-function Ge(i, t) {
+function ti(i, t) {
   return i.reduce((e, s) => {
     const n = t(s);
     return e[n] || (e[n] = []), e[n].push(s), e;
   }, {});
 }
-function Je(i, t) {
+function ei(i, t) {
   return i.every(t);
 }
-function Ze(i, t) {
+function ii(i, t) {
   return i.some(t);
 }
-const M = navigator.userAgent, Qe = {
+const M = navigator.userAgent, si = {
   /** True if browser is Chrome */
   isChrome: /Chrome\//.test(M),
   /** True if browser is Firefox */
@@ -2092,7 +2203,7 @@ const M = navigator.userAgent, Qe = {
   isTouch: "ontouchstart" in window || navigator.maxTouchPoints > 0,
   /** Modifier key name depending on platform */
   modifierKey: /Macintosh/.test(M) ? "metaKey" : "ctrlKey"
-}, A = /* @__PURE__ */ new WeakMap(), ti = {
+}, E = /* @__PURE__ */ new WeakMap(), ni = {
   /**
    * Creates (or returns existing) editor instance on one or more elements.
    *
@@ -2101,10 +2212,10 @@ const M = navigator.userAgent, Qe = {
    * @returns {Context|Context[]} single Context or array of Contexts
    */
   create(i, t = {}) {
-    const s = j(i).map((n) => {
-      if (A.has(n)) return A.get(n);
-      const o = new ue(n, t);
-      return o.initialize(), A.set(n, o), o;
+    const s = O(i).map((n) => {
+      if (E.has(n)) return E.get(n);
+      const o = new ge(n, t);
+      return o.initialize(), E.set(n, o), o;
     });
     return s.length === 1 ? s[0] : s;
   },
@@ -2113,9 +2224,9 @@ const M = navigator.userAgent, Qe = {
    * @param {string|Element|NodeList|Element[]} selector
    */
   destroy(i) {
-    j(i).forEach((t) => {
-      const e = A.get(t);
-      e && (e.destroy(), A.delete(t));
+    O(i).forEach((t) => {
+      const e = E.get(t);
+      e && (e.destroy(), E.delete(t));
     });
   },
   /**
@@ -2125,82 +2236,82 @@ const M = navigator.userAgent, Qe = {
    */
   getInstance(i) {
     const t = typeof i == "string" ? document.querySelector(i) : i;
-    return t && A.get(t) || null;
+    return t && E.get(t) || null;
   },
   /** Default options (can be mutated globally before calling create). */
-  defaults: nt,
+  defaults: ot,
   /** Library version */
   version: "1.0.0"
 };
-function j(i) {
+function O(i) {
   return typeof i == "string" ? Array.from(document.querySelectorAll(i)) : i instanceof Element ? [i] : i instanceof NodeList || Array.isArray(i) ? Array.from(i) : [];
 }
 export {
-  ue as Context,
-  ut as ELEMENT_NODE,
-  pt as TEXT_NODE,
-  H as WrappedRange,
-  Je as all,
-  Me as ancestors,
-  Ze as any,
-  Ee as children,
-  Xe as chunk,
-  pe as clamp,
-  B as closest,
-  N as closestPara,
-  Oe as collapsedRange,
-  me as compose,
+  ge as Context,
+  pt as ELEMENT_NODE,
+  ft as TEXT_NODE,
+  N as WrappedRange,
+  ei as all,
+  Le as ancestors,
+  ii as any,
+  Se as children,
+  Qe as chunk,
+  ye as clamp,
+  H as closest,
+  P as closestPara,
+  We as collapsedRange,
+  _e as compose,
   l as createElement,
-  P as currentRange,
-  dt as debounce,
-  ti as default,
-  nt as defaultOptions,
-  Qe as env,
-  qe as first,
-  Ke as flatten,
-  D as fromNativeRange,
-  Ge as groupBy,
-  ge as identity,
-  We as initial,
-  Re as insertAfter,
-  ke as isAnchor,
-  yt as isEditable,
-  k as isElement,
-  He as isEmpty,
-  ve as isFunction,
-  Ie as isImage,
-  Ce as isInline,
-  je as isInsideEditable,
-  T as isKey,
-  gt as isLi,
-  _e as isList,
-  E as isModifier,
-  ye as isNil,
-  mt as isPara,
-  z as isPlainObject,
-  De as isSelectionInside,
-  xe as isString,
-  we as isTable,
-  O as isText,
-  ft as isVoid,
-  R as key,
-  $e as last,
+  j as currentRange,
+  ut as debounce,
+  ni as default,
+  ot as defaultOptions,
+  si as env,
+  Ye as first,
+  Je as flatten,
+  U as fromNativeRange,
+  ti as groupBy,
+  ve as identity,
+  Xe as initial,
+  Pe as insertAfter,
+  Ee as isAnchor,
+  xt as isEditable,
+  C as isElement,
+  Oe as isEmpty,
+  ke as isFunction,
+  Te as isImage,
+  Ae as isInline,
+  Ue as isInsideEditable,
+  S as isKey,
+  yt as isLi,
+  Ie as isList,
+  A as isModifier,
+  be as isNil,
+  gt as isPara,
+  R as isPlainObject,
+  qe as isSelectionInside,
+  we as isString,
+  Me as isTable,
+  D as isText,
+  mt as isVoid,
+  z as key,
+  Ke as last,
   F as mergeDeep,
-  Le as nextElement,
-  Be as nodeValue,
+  Re as nextElement,
+  je as nodeValue,
   c as on,
-  Ne as outerHtml,
-  Pe as placeCaret,
-  Ae as prevElement,
-  Fe as rangeFromElement,
-  be as rect2bnd,
-  Te as remove,
-  Ue as splitText,
-  Ve as tail,
-  fe as throttle,
-  Ye as unique,
-  Se as unwrap,
-  U as withSavedRange,
-  ze as wrap
+  Fe as outerHtml,
+  De as placeCaret,
+  Be as prevElement,
+  $e as rangeFromElement,
+  Ce as rect2bnd,
+  ze as remove,
+  Ve as splitText,
+  Ge as tail,
+  xe as throttle,
+  Ze as unique,
+  He as unwrap,
+  $ as withSavedRange,
+  Ne as wrap
 };
 //# sourceMappingURL=aftersummernote.es.js.map
