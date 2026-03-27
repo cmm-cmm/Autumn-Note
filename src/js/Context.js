@@ -19,7 +19,9 @@ import { Codeview } from './module/Codeview.js';
 import { Fullscreen } from './module/Fullscreen.js';
 import { LinkDialog } from './module/LinkDialog.js';
 import { ImageDialog } from './module/ImageDialog.js';
+import { VideoDialog } from './module/VideoDialog.js';
 import { ImageResizer } from './module/ImageResizer.js';
+import { VideoResizer } from './module/VideoResizer.js';
 import { LinkTooltip } from './module/LinkTooltip.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
@@ -104,7 +106,9 @@ export class Context {
     register('fullscreen', Fullscreen);
     register('linkDialog', LinkDialog);
     register('imageDialog', ImageDialog);
+    register('videoDialog', VideoDialog);
     register('imageResizer', ImageResizer);
+    register('videoResizer', VideoResizer);
     register('linkTooltip', LinkTooltip);
   }
 

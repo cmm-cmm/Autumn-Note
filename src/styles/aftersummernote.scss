@@ -284,6 +284,29 @@
     display: inline-block;
   }
 
+  .asn-video-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 4px 0;
+
+    iframe,
+    video {
+      display: block;
+      max-width: 100%;
+    }
+
+    // Transparent overlay that intercepts mouse events on <iframe> embeds.
+    // iframes swallow all pointer events and prevent them from bubbling to the
+    // editable area; the shield sits on top so clicks/contextmenu bubble normally.
+    .asn-video-shield {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      cursor: default;
+    }
+  }
+
   // Table styles — target both classed and unclassed tables
   table, .asn-table {
     border-collapse: collapse;
@@ -527,6 +550,13 @@
   margin-top: 6px;
 }
 
+.asn-dialog-hint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: $asn-muted;
+  min-height: 16px;
+}
+
 .asn-label {
   display: block;
   font-size: 13px;
@@ -707,5 +737,48 @@
   .asn-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
   .asn-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
   .asn-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+}
+
+// ---------------------------------------------------------------------------
+// Video resize overlay
+// ---------------------------------------------------------------------------
+
+$asn-video-accent: #8b5cf6; // violet-500
+
+.asn-video-resizer {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  border: 2px solid $asn-video-accent;
+  pointer-events: none;
+
+  .asn-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: $asn-video-accent;
+    border: 1px solid #fff;
+    border-radius: 1px;
+    box-sizing: border-box;
+    pointer-events: all;
+  }
+
+  // Corners
+  .asn-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
+  .asn-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
+  .asn-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
+  .asn-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
+
+  // Edge midpoints
+  .asn-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
+  .asn-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
+  .asn-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
+  .asn-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+}
+
+// Selected video wrapper highlight (applied to .asn-video-wrapper)
+.asn-video-selected {
+  outline: 2px solid $asn-video-accent;
+  outline-offset: 1px;
 }
 

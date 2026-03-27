@@ -271,6 +271,17 @@ export class Editor {
   }
 
   /**
+   * Inserts a video embed (iframe or <video> element).
+   * The html string is already validated/built by VideoDialog.
+   * @param {string} html
+   */
+  insertVideo(html) {
+    if (!html) return;
+    Style.execCommand('insertHTML', html);
+    this.afterCommand();
+  }
+
+  /**
    * Inserts a table.
    * @param {number} cols
    * @param {number} rows

@@ -13,6 +13,7 @@ const ICONS = {
   underline: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>`,
   link: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
   image:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  video:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
   // Table operations
   rowAbove:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3v7"/><path d="M9 7l3-4 3 4"/></svg>`,
   rowBelow:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 12v7"/><path d="M9 17l3 4 3-4"/></svg>`,
@@ -32,6 +33,9 @@ const ICONS = {
   floatNone:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="19" x2="17" y2="19"/></svg>`,
   originalSize:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
   deleteImg:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  // Video format operations
+  videoAlign:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
+  deleteVideo: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
 };
 
 const defaultItems = [
@@ -48,6 +52,7 @@ const defaultItems = [
   { separator: true },
   { name: 'link',      label: 'Insert Link',  icon: ICONS.link,      action: (ctx) => ctx.invoke('linkDialog.show') },
   { name: 'image',     label: 'Insert Image', icon: ICONS.image,     action: (ctx) => ctx.invoke('imageDialog.show') },
+  { name: 'video',     label: 'Insert Video', icon: ICONS.video,     action: (ctx) => ctx.invoke('videoDialog.show') },
 ];
 
 export class ContextMenu {
@@ -178,13 +183,16 @@ export class ContextMenu {
     event.preventDefault();
     this._lastX = event.clientX;
     this._lastY = event.clientY;
-    const img  = event.target.closest('img');
-    const cell = !img && event.target.closest('td, th');
+    const img     = event.target.closest('img');
+    const wrapper  = !img && event.target.closest('.asn-video-wrapper');
+    const cell     = !img && !wrapper && event.target.closest('td, th');
     this._targetCell = cell || null;
-    // Image takes priority; then table cell; then default
+    // Priority: image → video → table → default
     const items = img
       ? this._buildCombinedImageItems(img)
-      : (cell ? this._buildCombinedItems(cell) : this._items);
+      : wrapper
+        ? this._buildCombinedVideoItems(wrapper)
+        : (cell ? this._buildCombinedItems(cell) : this._items);
     this._renderItems(items);
     this.showAt(event.clientX, event.clientY);
   }
@@ -276,6 +284,72 @@ export class ContextMenu {
   _deleteImage(img) {
     this.context.invoke('imageResizer.deselect');
     if (img.parentNode) img.parentNode.removeChild(img);
+    this.context.invoke('editor.afterCommand');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Video context menu items
+  // ---------------------------------------------------------------------------
+
+  /** Default items + "Video Format ▶" when right-clicking on a video wrapper. */
+  _buildCombinedVideoItems(wrapper) {
+    return [
+      ...this._items,
+      { separator: true },
+      {
+        name: 'videoFormat',
+        label: 'Video Format',
+        icon: ICONS.video,
+        navigate: () => this._buildVideoSubItems(wrapper),
+      },
+    ];
+  }
+
+  /** Video sub-menu with ← Back at the top. */
+  _buildVideoSubItems(wrapper) {
+    return [
+      { back: true, label: 'Video Format', navigate: () => this._buildCombinedVideoItems(wrapper) },
+      { separator: true },
+      { name: 'videoFloatLeft',  label: 'Float Left',    icon: ICONS.floatLeft,   action: () => this._setVideoFloat(wrapper, 'left') },
+      { name: 'videoFloatRight', label: 'Float Right',   icon: ICONS.floatRight,  action: () => this._setVideoFloat(wrapper, 'right') },
+      { name: 'videoFloatNone',  label: 'Float None',    icon: ICONS.floatNone,   action: () => this._setVideoFloat(wrapper, '') },
+      { separator: true },
+      { name: 'videoOriginal',   label: 'Original Size', icon: ICONS.originalSize, action: () => this._resetVideoSize(wrapper) },
+      { separator: true },
+      { name: 'deleteVideo',     label: 'Delete Video',  icon: ICONS.deleteVideo, action: () => this._deleteVideo(wrapper) },
+    ];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Video operations
+  // ---------------------------------------------------------------------------
+
+  _setVideoFloat(wrapper, value) {
+    wrapper.style.float = value;
+    if (value === 'left')       { wrapper.style.marginRight = '12px'; wrapper.style.marginLeft  = ''; }
+    else if (value === 'right') { wrapper.style.marginLeft  = '12px'; wrapper.style.marginRight = ''; }
+    else                        { wrapper.style.marginLeft  = '';     wrapper.style.marginRight = ''; }
+    this.context.invoke('editor.afterCommand');
+    this.context.invoke('videoResizer.updateOverlay');
+  }
+
+  _resetVideoSize(wrapper) {
+    const embed = wrapper.querySelector('iframe, video');
+    wrapper.style.width  = '';
+    wrapper.style.height = '';
+    if (embed) {
+      embed.removeAttribute('width');
+      embed.removeAttribute('height');
+      embed.style.width  = '';
+      embed.style.height = '';
+    }
+    this.context.invoke('editor.afterCommand');
+    this.context.invoke('videoResizer.updateOverlay');
+  }
+
+  _deleteVideo(wrapper) {
+    this.context.invoke('videoResizer.deselect');
+    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     this.context.invoke('editor.afterCommand');
   }
 
