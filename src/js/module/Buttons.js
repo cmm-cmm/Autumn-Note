@@ -98,6 +98,18 @@ export const hrBtn = btn('hr', 'minus', 'Horizontal Rule', () => Style.execComma
 export const linkBtn = btn('link', 'link', 'Insert Link', (ctx) => ctx.invoke('linkDialog.show'));
 export const imageBtn = btn('image', 'image', 'Insert Image', (ctx) => ctx.invoke('imageDialog.show'));
 
+/** @type {ButtonDef & { type: 'grid' }} */
+export const tableBtn = {
+  name: 'table',
+  type: 'grid',
+  icon: 'table',
+  tooltip: 'Insert Table',
+  action: (ctx, rows, cols) => {
+    Style.insertTable(rows, cols);
+    ctx.invoke('editor.afterCommand');
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Font family dropdown
 // ---------------------------------------------------------------------------
@@ -135,6 +147,6 @@ export const defaultToolbar = [
   [superscriptBtn, subscriptBtn],
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
-  [hrBtn, linkBtn, imageBtn],
+  [hrBtn, linkBtn, imageBtn, tableBtn],
   [codeviewBtn, fullscreenBtn],
 ];

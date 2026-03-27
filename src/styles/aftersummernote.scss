@@ -121,6 +121,55 @@
   }
 }
 
+// Table grid picker
+.asn-table-picker-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.asn-table-picker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: $asn-bg;
+  border: 1px solid $asn-border;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 1100;
+  user-select: none;
+}
+
+.asn-table-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 18px);
+  gap: 2px;
+}
+
+.asn-table-cell {
+  width: 18px;
+  height: 18px;
+  border: 1px solid $asn-border;
+  border-radius: 2px;
+  cursor: pointer;
+  background: $asn-bg;
+  transition: background $asn-transition, border-color $asn-transition;
+
+  &.active {
+    background: rgba($asn-primary, 0.15);
+    border-color: $asn-primary;
+  }
+}
+
+.asn-table-label {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: $asn-muted;
+  min-height: 16px;
+}
+
 .asn-btn {
   display: inline-flex;
   align-items: center;

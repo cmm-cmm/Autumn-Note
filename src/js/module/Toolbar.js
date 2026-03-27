@@ -46,13 +46,135 @@ export class Toolbar {
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'asn-btn-group' });
       group.forEach((btnDef) => {
-        const el = btnDef.type === 'select'
-          ? this._createSelect(btnDef)
-          : this._createButton(btnDef);
+        let el;
+        if (btnDef.type === 'select') el = this._createSelect(btnDef);
+        else if (btnDef.type === 'grid') el = this._createGridPicker(btnDef);
+        else el = this._createButton(btnDef);
         groupEl.appendChild(el);
       });
       this.el.appendChild(groupEl);
     });
+  }
+
+  /**
+   * Creates a table-grid picker button with a hoverable row/col selector popup.
+   * @param {import('./Buttons.js').ButtonDef} def
+   * @returns {HTMLDivElement}
+   */
+  _createGridPicker(def) {
+    const ROWS = 10;
+    const COLS = 10;
+
+    const wrap = createElement('div', { class: 'asn-table-picker-wrap' });
+
+    const useBootstrap = !!this.options.useBootstrap;
+    const baseClass = useBootstrap
+      ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light')
+      : 'asn-btn';
+    const btn = createElement('button', {
+      type: 'button',
+      class: baseClass,
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+      'aria-haspopup': 'true',
+      'aria-expanded': 'false',
+    });
+
+    // Set icon — inline SVG (table) with optional FontAwesome fallback
+    const useFA = !!this.options.useFontAwesome;
+    const faReady = useFA && (
+      document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid') ||
+      /fontawesome|font-awesome/.test(Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href).join(' '))
+    );
+    if (faReady) {
+      const faPrefix = this.options.fontAwesomeClass || 'fas';
+      btn.innerHTML = `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`;
+    } else {
+      const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+    }
+
+    // Popup
+    const popup = createElement('div', {
+      class: 'asn-table-picker-popup',
+      role: 'dialog',
+      'aria-label': 'Select table size',
+    });
+    const grid = createElement('div', { class: 'asn-table-grid' });
+    const label = createElement('div', { class: 'asn-table-label' });
+    label.textContent = 'Insert Table';
+
+    const cells = [];
+    for (let r = 1; r <= ROWS; r++) {
+      for (let c = 1; c <= COLS; c++) {
+        const cell = createElement('div', {
+          class: 'asn-table-cell',
+          'data-row': String(r),
+          'data-col': String(c),
+        });
+        cells.push(cell);
+        grid.appendChild(cell);
+      }
+    }
+
+    popup.appendChild(grid);
+    popup.appendChild(label);
+
+    let isOpen = false;
+
+    const setHighlight = (rows, cols) => {
+      cells.forEach((cell) => {
+        const r = +cell.getAttribute('data-row');
+        const c = +cell.getAttribute('data-col');
+        cell.classList.toggle('active', r <= rows && c <= cols);
+      });
+      label.textContent = (rows && cols) ? `${rows} × ${cols}` : 'Insert Table';
+    };
+
+    const openPopup = () => {
+      isOpen = true;
+      popup.style.display = 'block';
+      btn.setAttribute('aria-expanded', 'true');
+    };
+
+    const closePopup = () => {
+      isOpen = false;
+      popup.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
+      setHighlight(0, 0);
+    };
+
+    const d1 = on(btn, 'click', (e) => {
+      e.stopPropagation();
+      if (isOpen) closePopup(); else openPopup();
+    });
+
+    const d2 = on(grid, 'mouseover', (e) => {
+      const cell = e.target.closest('.asn-table-cell');
+      if (!cell) return;
+      setHighlight(+cell.getAttribute('data-row'), +cell.getAttribute('data-col'));
+    });
+
+    const d3 = on(grid, 'mouseleave', () => setHighlight(0, 0));
+
+    const d4 = on(grid, 'click', (e) => {
+      const cell = e.target.closest('.asn-table-cell');
+      if (!cell) return;
+      const rows = +cell.getAttribute('data-row');
+      const cols = +cell.getAttribute('data-col');
+      closePopup();
+      this.context.invoke('editor.focus');
+      def.action(this.context, rows, cols);
+    });
+
+    const d5 = on(document, 'click', () => { if (isOpen) closePopup(); });
+
+    this._disposers.push(d1, d2, d3, d4, d5);
+
+    wrap.appendChild(btn);
+    wrap.appendChild(popup);
+    return wrap;
   }
 
   /**
@@ -153,6 +275,7 @@ export class Toolbar {
       ['minus',         svgWrap('<line x1="5" y1="12" x2="19" y2="12"/>')],
       ['link',          svgWrap('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>')],
       ['image',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>')],
+      ['table',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>')],
       // View
       ['code',          svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
       ['expand',        svgWrap('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')],
