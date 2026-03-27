@@ -284,8 +284,8 @@
     display: inline-block;
   }
 
-  // Table styles
-  .asn-table {
+  // Table styles — target both classed and unclassed tables
+  table, .asn-table {
     border-collapse: collapse;
     width: 100%;
     margin: 0.75em 0;
@@ -294,12 +294,67 @@
       border: 1px solid $asn-border;
       padding: 6px 10px;
       min-width: 40px;
+      vertical-align: top;
     }
 
     th {
       background: $asn-bg-toolbar;
       font-weight: 600;
     }
+  }
+}
+
+// Size popover (column width / row height)
+.asn-size-popover {
+  position: fixed;
+  background: $asn-bg;
+  border: 1px solid $asn-border;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1200;
+  min-width: 200px;
+
+  .asn-size-popover-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: $asn-text;
+    margin-bottom: 10px;
+  }
+
+  .asn-size-popover-body {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .asn-size-input {
+    width: 80px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid $asn-border;
+    border-radius: $asn-radius-sm;
+    font-size: 13px;
+    font-family: inherit;
+    color: $asn-text;
+    outline: none;
+
+    &:focus {
+      border-color: $asn-primary;
+      box-shadow: 0 0 0 2px rgba($asn-primary, 0.15);
+    }
+  }
+
+  .asn-size-unit {
+    font-size: 12px;
+    color: $asn-muted;
+  }
+
+  .asn-size-popover-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
   }
 }
 
