@@ -532,6 +532,51 @@
     .asn-context-icon svg {
       stroke: #fff;
     }
+
+    .asn-context-chevron svg {
+      stroke: #fff;
+    }
+  }
+}
+
+// Submenu entry — chevron on the right
+.asn-context-submenu {
+  .asn-context-chevron {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    color: $asn-muted;
+    flex-shrink: 0;
+
+    svg { display: block; }
+  }
+}
+
+// Back-navigation header button
+.asn-context-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 14px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $asn-border;
+  border-radius: 5px 5px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: $asn-muted;
+  cursor: pointer;
+  margin-bottom: 3px;
+  transition: background 0.12s, color 0.12s;
+
+  .asn-context-icon svg { stroke: $asn-muted; }
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    color: $asn-text;
+    .asn-context-icon svg { stroke: $asn-text; }
   }
 }
 

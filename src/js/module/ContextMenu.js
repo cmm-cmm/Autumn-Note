@@ -23,6 +23,9 @@ const ICONS = {
   mergeCells:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
   colWidth:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="7" y1="12" x2="17" y2="12"/><path d="M10 9l-3 3 3 3"/><path d="M14 9l3 3-3 3"/></svg>`,
   rowHeight:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`,
+  table:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
+  deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
+  back:        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`,
 };
 
 const defaultItems = [
@@ -101,22 +104,57 @@ export class ContextMenu {
 
     items.forEach((it) => {
       if (it.separator || it.sep) {
-        const sep = createElement('div', { class: 'asn-context-sep' });
-        this.el.appendChild(sep);
+        this.el.appendChild(createElement('div', { class: 'asn-context-sep' }));
         return;
       }
 
-      const btn = createElement('button', { type: 'button', class: 'asn-context-item', 'data-name': it.name || '' });
+      // Back-navigation header
+      if (it.back) {
+        const backBtn = createElement('button', { type: 'button', class: 'asn-context-back' });
+        const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+        iconSpan.innerHTML = ICONS.back;
+        backBtn.appendChild(iconSpan);
+        backBtn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || 'Back']));
+        const off = on(backBtn, 'click', (e) => {
+          e.stopPropagation();
+          this._renderItems(it.navigate());
+          this._reposition();
+        });
+        this._menuDisposers.push(off);
+        this.el.appendChild(backBtn);
+        return;
+      }
 
+      // Submenu-navigate item (shows ▶ chevron, re-renders without closing)
+      if (it.navigate) {
+        const btn = createElement('button', { type: 'button', class: 'asn-context-item asn-context-submenu', 'data-name': it.name || '' });
+        if (it.icon) {
+          const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+          iconSpan.innerHTML = it.icon;
+          btn.appendChild(iconSpan);
+        }
+        btn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || it.name]));
+        const chevron = createElement('span', { class: 'asn-context-chevron', 'aria-hidden': 'true' });
+        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        btn.appendChild(chevron);
+        const off = on(btn, 'click', (e) => {
+          e.stopPropagation();
+          this._renderItems(it.navigate());
+          this._reposition();
+        });
+        this._menuDisposers.push(off);
+        this.el.appendChild(btn);
+        return;
+      }
+
+      // Regular item
+      const btn = createElement('button', { type: 'button', class: 'asn-context-item', 'data-name': it.name || '' });
       if (it.icon) {
         const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = it.icon;
         btn.appendChild(iconSpan);
       }
-
-      const labelSpan = createElement('span', { class: 'asn-context-label' }, [it.label || it.name]);
-      btn.appendChild(labelSpan);
-
+      btn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || it.name]));
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
         this.hide();
@@ -136,7 +174,8 @@ export class ContextMenu {
     this._lastY = event.clientY;
     const cell = event.target.closest('td, th');
     this._targetCell = cell || null;
-    const items = cell ? this._buildTableItems(cell) : this._items;
+    // Always show default items; append Table Format entry when inside a table cell
+    const items = cell ? this._buildCombinedItems(cell) : this._items;
     this._renderItems(items);
     this.showAt(event.clientX, event.clientY);
   }
@@ -149,14 +188,21 @@ export class ContextMenu {
   showAt(x, y) {
     if (!this.el) return;
     this.el.style.display = 'block';
+    this._reposition(x, y);
+    this.el.setAttribute('aria-hidden', 'false');
+  }
+
+  _reposition(x, y) {
+    if (!this.el) return;
+    const rx = x !== undefined ? x : this._lastX;
+    const ry = y !== undefined ? y : this._lastY;
     const rect = this.el.getBoundingClientRect();
-    let left = x;
-    let top = y;
+    let left = rx;
+    let top = ry;
     if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 8;
     if (top + rect.height > window.innerHeight) top = window.innerHeight - rect.height - 8;
-    this.el.style.left = left + 'px';
-    this.el.style.top = top + 'px';
-    this.el.setAttribute('aria-hidden', 'false');
+    this.el.style.left = `${left}px`;
+    this.el.style.top = `${top}px`;
   }
 
   hide() {
@@ -169,8 +215,25 @@ export class ContextMenu {
   // Table context menu items
   // ---------------------------------------------------------------------------
 
-  _buildTableItems(cell) {
+  /** Default items + "Table Format ▶" entry when right-clicking inside a cell. */
+  _buildCombinedItems(cell) {
     return [
+      ...this._items,
+      { separator: true },
+      {
+        name: 'tableFormat',
+        label: 'Table Format',
+        icon: ICONS.table,
+        navigate: () => this._buildTableSubItems(cell),
+      },
+    ];
+  }
+
+  /** Table sub-menu with ← Back at the top. */
+  _buildTableSubItems(cell) {
+    return [
+      { back: true, label: 'Table Format', navigate: () => this._buildCombinedItems(cell) },
+      { separator: true },
       { name: 'addRowAbove', label: 'Add Row Above',    icon: ICONS.rowAbove,   action: () => this._addRow(cell, 'above') },
       { name: 'addRowBelow', label: 'Add Row Below',    icon: ICONS.rowBelow,   action: () => this._addRow(cell, 'below') },
       { separator: true },
@@ -182,8 +245,10 @@ export class ContextMenu {
       { separator: true },
       { name: 'mergeCells',  label: 'Merge Cells',      icon: ICONS.mergeCells, action: () => this._mergeCells(cell) },
       { separator: true },
-      { name: 'colWidth',    label: 'Column Width\u2026',  icon: ICONS.colWidth,   action: () => this._openSizePopover('col', cell) },
-      { name: 'rowHeight',   label: 'Row Height\u2026',    icon: ICONS.rowHeight,  action: () => this._openSizePopover('row', cell) },
+      { name: 'colWidth',    label: 'Column Width\u2026',   icon: ICONS.colWidth,   action: () => this._openSizePopover('col', cell) },
+      { name: 'rowHeight',   label: 'Row Height\u2026',     icon: ICONS.rowHeight,  action: () => this._openSizePopover('row', cell) },
+      { separator: true },
+      { name: 'deleteTable', label: 'Delete Table',        icon: ICONS.deleteTable, action: () => this._deleteTable(cell) },
     ];
   }
 
@@ -247,6 +312,13 @@ export class ContextMenu {
       const c = r.cells[colIndex];
       if (c) r.removeChild(c);
     });
+    this.context.invoke('editor.afterCommand');
+  }
+
+  _deleteTable(cell) {
+    const table = cell.closest('table');
+    if (!table) return;
+    table.parentNode.removeChild(table);
     this.context.invoke('editor.afterCommand');
   }
 
