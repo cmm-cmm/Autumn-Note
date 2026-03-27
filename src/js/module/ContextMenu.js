@@ -26,6 +26,12 @@ const ICONS = {
   table:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
   deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
   back:        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`,
+  // Image format operations
+  floatLeft:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1"/><line x1="12" y1="6" x2="22" y2="6"/><line x1="12" y1="9" x2="22" y2="9"/><line x1="12" y1="12" x2="22" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>`,
+  floatRight:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="8" height="8" rx="1"/><line x1="2" y1="6" x2="12" y2="6"/><line x1="2" y1="9" x2="12" y2="9"/><line x1="2" y1="12" x2="12" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>`,
+  floatNone:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="3" y1="19" x2="17" y2="19"/></svg>`,
+  originalSize:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
+  deleteImg:   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
 };
 
 const defaultItems = [
@@ -172,10 +178,13 @@ export class ContextMenu {
     event.preventDefault();
     this._lastX = event.clientX;
     this._lastY = event.clientY;
-    const cell = event.target.closest('td, th');
+    const img  = event.target.closest('img');
+    const cell = !img && event.target.closest('td, th');
     this._targetCell = cell || null;
-    // Always show default items; append Table Format entry when inside a table cell
-    const items = cell ? this._buildCombinedItems(cell) : this._items;
+    // Image takes priority; then table cell; then default
+    const items = img
+      ? this._buildCombinedImageItems(img)
+      : (cell ? this._buildCombinedItems(cell) : this._items);
     this._renderItems(items);
     this.showAt(event.clientX, event.clientY);
   }
@@ -209,6 +218,65 @@ export class ContextMenu {
     if (!this.el) return;
     this.el.style.display = 'none';
     this.el.setAttribute('aria-hidden', 'true');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Image context menu items
+  // ---------------------------------------------------------------------------
+
+  /** Default items + "Image Format ▶" when right-clicking on an image. */
+  _buildCombinedImageItems(img) {
+    return [
+      ...this._items,
+      { separator: true },
+      {
+        name: 'imageFormat',
+        label: 'Image Format',
+        icon: ICONS.image,
+        navigate: () => this._buildImageSubItems(img),
+      },
+    ];
+  }
+
+  /** Image sub-menu with ← Back at the top. */
+  _buildImageSubItems(img) {
+    return [
+      { back: true, label: 'Image Format', navigate: () => this._buildCombinedImageItems(img) },
+      { separator: true },
+      { name: 'floatLeft',    label: 'Float Left',     icon: ICONS.floatLeft,    action: () => this._setImageFloat(img, 'left') },
+      { name: 'floatRight',   label: 'Float Right',    icon: ICONS.floatRight,   action: () => this._setImageFloat(img, 'right') },
+      { name: 'floatNone',    label: 'Float None',     icon: ICONS.floatNone,    action: () => this._setImageFloat(img, '') },
+      { separator: true },
+      { name: 'originalSize', label: 'Original Size',  icon: ICONS.originalSize, action: () => this._resetImageSize(img) },
+      { separator: true },
+      { name: 'deleteImg',    label: 'Delete Image',   icon: ICONS.deleteImg,    action: () => this._deleteImage(img) },
+    ];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Image operations
+  // ---------------------------------------------------------------------------
+
+  _setImageFloat(img, value) {
+    img.style.float = value;
+    if (value === 'left')       { img.style.marginRight = '12px'; img.style.marginLeft  = ''; }
+    else if (value === 'right') { img.style.marginLeft  = '12px'; img.style.marginRight = ''; }
+    else                        { img.style.marginLeft  = '';     img.style.marginRight = ''; }
+    this.context.invoke('editor.afterCommand');
+    this.context.invoke('imageResizer.updateOverlay');
+  }
+
+  _resetImageSize(img) {
+    img.style.width  = '';
+    img.style.height = '';
+    this.context.invoke('editor.afterCommand');
+    this.context.invoke('imageResizer.updateOverlay');
+  }
+
+  _deleteImage(img) {
+    this.context.invoke('imageResizer.deselect');
+    if (img.parentNode) img.parentNode.removeChild(img);
+    this.context.invoke('editor.afterCommand');
   }
 
   // ---------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import { Codeview } from './module/Codeview.js';
 import { Fullscreen } from './module/Fullscreen.js';
 import { LinkDialog } from './module/LinkDialog.js';
 import { ImageDialog } from './module/ImageDialog.js';
+import { ImageResizer } from './module/ImageResizer.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
 export class Context {
@@ -102,6 +103,7 @@ export class Context {
     register('fullscreen', Fullscreen);
     register('linkDialog', LinkDialog);
     register('imageDialog', ImageDialog);
+    register('imageResizer', ImageResizer);
   }
 
   _bindEditorEvents(editable) {
