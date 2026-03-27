@@ -11,7 +11,6 @@
 
 import '../styles/aftersummernote.scss';
 import { Context } from './Context.js';
-import { mergeDeep } from './core/func.js';
 import { defaultOptions } from './settings.js';
 
 // Re-export for tree-shaking / module consumers

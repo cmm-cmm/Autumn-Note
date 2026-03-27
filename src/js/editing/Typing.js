@@ -3,8 +3,8 @@
  * Inspired by Summernote's Typing module
  */
 
-import { key, isKey, isModifier } from '../core/key.js';
-import { closestPara, isLi, isList, createElement, isEmpty } from '../core/dom.js';
+import { key, isKey } from '../core/key.js';
+import { closestPara, isLi } from '../core/dom.js';
 import { execCommand } from './Style.js';
 import { currentRange } from '../core/range.js';
 

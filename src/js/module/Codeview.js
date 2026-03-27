@@ -3,7 +3,7 @@
  * Inspired by Summernote's Codeview module
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement } from '../core/dom.js';
 
 export class Codeview {
   /**

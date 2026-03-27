@@ -4,11 +4,10 @@
  * Inspired by Summernote's Editor module.
  */
 
-import { currentRange } from '../core/range.js';
 import { History } from '../editing/History.js';
 import * as Style from '../editing/Style.js';
 import { insertTable } from '../editing/Table.js';
-import { key, isModifier } from '../core/key.js';
+import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 

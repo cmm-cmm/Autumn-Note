@@ -5,7 +5,6 @@
  */
 
 import * as Style from '../editing/Style.js';
-import { insertTable } from '../editing/Table.js';
 
 // ---------------------------------------------------------------------------
 // Button factory helpers

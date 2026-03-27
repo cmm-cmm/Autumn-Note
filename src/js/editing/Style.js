@@ -3,7 +3,7 @@
  * Rewritten from Summernote's approach using vanilla JS + execCommand fallback
  */
 
-import { closest, isElement, isPara, ancestors } from '../core/dom.js';
+import { closest, isElement, isPara } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
