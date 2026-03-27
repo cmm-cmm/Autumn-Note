@@ -1503,8 +1503,8 @@ const p = {
   { name: "italic", label: "Italic", icon: p.italic, action: (i) => i.invoke("editor.italic") },
   { name: "underline", label: "Underline", icon: p.underline, action: (i) => i.invoke("editor.underline") },
   { separator: !0 },
-  { name: "link", label: "Insert Link", icon: p.link, action: (i) => i.invoke("linkDialog.open") },
-  { name: "image", label: "Insert Image", icon: p.image, action: (i) => i.invoke("imageDialog.open") }
+  { name: "link", label: "Insert Link", icon: p.link, action: (i) => i.invoke("linkDialog.show") },
+  { name: "image", label: "Insert Image", icon: p.image, action: (i) => i.invoke("imageDialog.show") }
 ];
 class ce {
   /** @param {import('../Context.js').Context} context */
