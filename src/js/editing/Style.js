@@ -166,6 +166,54 @@ export function insertTable(rows, cols) {
 }
 
 // ---------------------------------------------------------------------------
+// Line-height helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies a line-height value to every block-level element that intersects
+ * the current selection.
+ * @param {string} value - unitless multiplier, e.g. '1.5'
+ */
+export function lineHeight(value) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+
+  const range = sel.getRangeAt(0);
+  const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'PRE', 'TD', 'TH']);
+
+  const nearestBlock = (node) => {
+    let el = node instanceof Element ? node : node.parentElement;
+    while (el) {
+      if (BLOCK_TAGS.has(el.tagName)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  if (range.collapsed) {
+    const block = nearestBlock(range.startContainer);
+    if (block) block.style.lineHeight = value;
+    return;
+  }
+
+  // For a range selection, collect all unique block ancestors of text nodes
+  const blocks = new Set();
+  const iter = document.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, null);
+  let textNode;
+  while ((textNode = iter.nextNode())) {
+    if (range.intersectsNode(textNode)) {
+      const block = nearestBlock(textNode);
+      if (block) blocks.add(block);
+    }
+  }
+  if (blocks.size === 0) {
+    const block = nearestBlock(range.commonAncestorContainer);
+    if (block) blocks.add(block);
+  }
+  blocks.forEach((block) => { block.style.lineHeight = value; });
+}
+
+// ---------------------------------------------------------------------------
 // Style query helpers
 // ---------------------------------------------------------------------------
 

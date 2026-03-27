@@ -127,6 +127,32 @@ export const fontFamilyBtn = {
 };
 
 // ---------------------------------------------------------------------------
+// Line-height dropdown
+// ---------------------------------------------------------------------------
+
+/** @type {DropdownDef} */
+export const lineHeightBtn = {
+  name: 'lineHeight',
+  type: 'select',
+  tooltip: 'Line Height',
+  placeholder: '\u2195 Line',
+  selectClass: 'asn-select-narrow',
+  items: ['1.0', '1.15', '1.5', '1.75', '2.0', '2.5', '3.0'],
+  action: (_ctx, value) => Style.lineHeight(value),
+  getValue: () => {
+    try {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return '';
+      const BLOCKS = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH']);
+      let el = sel.getRangeAt(0).startContainer;
+      if (el.nodeType === 3) el = el.parentElement;
+      while (el && !BLOCKS.has(el.tagName)) el = el.parentElement;
+      return el ? (el.style.lineHeight || '') : '';
+    } catch { return ''; }
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Code view / fullscreen
 // ---------------------------------------------------------------------------
 
@@ -166,7 +192,7 @@ export const backColorBtn = {
  * Each sub-array is a button group (separated by a divider).
  */
 export const defaultToolbar = [
-  [fontFamilyBtn],
+  [fontFamilyBtn, lineHeightBtn],
   [undoBtn, redoBtn],
   [boldBtn, italicBtn, underlineBtn, strikeBtn],
   [superscriptBtn, subscriptBtn],

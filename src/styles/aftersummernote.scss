@@ -121,6 +121,13 @@
   }
 }
 
+// Narrow variant — used for short-value selects such as Line Height
+.asn-select-narrow {
+  min-width: 76px;
+  max-width: 90px;
+  padding-right: 20px;
+}
+
 // Table grid picker
 .asn-table-picker-wrap {
   position: relative;

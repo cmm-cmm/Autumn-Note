@@ -320,20 +320,22 @@ export class Toolbar {
       ? (this.options.fontFamilies || [])
       : (def.items || []);
 
+    const cls = def.selectClass ? `asn-select ${def.selectClass}` : 'asn-select';
     const select = createElement('select', {
-      class: 'asn-select',
+      class: cls,
       title: def.tooltip || '',
       'data-btn': def.name,
       'aria-label': def.tooltip || def.name,
     });
 
     // Blank "placeholder" option
-    const placeholder = createElement('option', { value: '' }, ['Font']);
+    const placeholderText = def.placeholder || 'Font';
+    const placeholder = createElement('option', { value: '' }, [placeholderText]);
     select.appendChild(placeholder);
 
-    items.forEach((font) => {
-      const opt = createElement('option', { value: font }, [font]);
-      opt.style.fontFamily = font;
+    items.forEach((item) => {
+      const opt = createElement('option', { value: item }, [item]);
+      if (def.name === 'fontFamily') opt.style.fontFamily = item;
       select.appendChild(opt);
     });
 
