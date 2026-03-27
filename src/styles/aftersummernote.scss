@@ -780,6 +780,12 @@
       stroke: #fff;
     }
   }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: default;
+    pointer-events: none;
+  }
 }
 
 // Submenu entry — chevron on the right

@@ -36,6 +36,10 @@ const ICONS = {
   // Video format operations
   videoAlign:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
   deleteVideo: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  // Format painter operations
+  copyFormat:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  pasteFormat: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>`,
+  removeFormat:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>`,
 };
 
 const defaultItems = [
@@ -49,6 +53,10 @@ const defaultItems = [
   { name: 'bold',      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
   { name: 'italic',    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },
   { name: 'underline', label: 'Underline',    icon: ICONS.underline, action: (ctx) => ctx.invoke('editor.underline') },
+  { separator: true },
+  { name: 'copyFormat',   label: 'Copy Format',   icon: ICONS.copyFormat,   action: (ctx) => ctx.invoke('contextMenu.copyFormat') },
+  { name: 'pasteFormat',  label: 'Paste Format',  icon: ICONS.pasteFormat,  action: (ctx) => ctx.invoke('contextMenu.pasteFormat'), disabled: (ctx) => !ctx.invoke('contextMenu.hasCopiedFormat') },
+  { name: 'removeFormat', label: 'Remove Format', icon: ICONS.removeFormat, action: (ctx) => ctx.invoke('contextMenu.removeFormat') },
   { separator: true },
   { name: 'link',      label: 'Insert Link',  icon: ICONS.link,      action: (ctx) => ctx.invoke('linkDialog.show') },
   { name: 'image',     label: 'Insert Image', icon: ICONS.image,     action: (ctx) => ctx.invoke('imageDialog.show') },
@@ -68,6 +76,8 @@ export class ContextMenu {
     this._sizePopover = null;
     this._lastX = 0;
     this._lastY = 0;
+    this._copiedFormat = null;
+    this._savedRange = null;
   }
 
   initialize() {
@@ -160,6 +170,7 @@ export class ContextMenu {
 
       // Regular item
       const btn = createElement('button', { type: 'button', class: 'asn-context-item', 'data-name': it.name || '' });
+      if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) btn.disabled = true;
       if (it.icon) {
         const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = it.icon;
@@ -183,6 +194,8 @@ export class ContextMenu {
     event.preventDefault();
     this._lastX = event.clientX;
     this._lastY = event.clientY;
+    const winSel = window.getSelection();
+    this._savedRange = (winSel && winSel.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     const img     = event.target.closest('img');
     const wrapper  = !img && event.target.closest('.asn-video-wrapper');
     // If right-click is on image or video, let the tooltip handle actions — show default menu
@@ -447,6 +460,143 @@ export class ContextMenu {
   _hideSizePopover() {
     if (this._sizePopover) this._sizePopover.style.display = 'none';
     this._sizeApply = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Format operations (Copy Format / Paste Format / Remove Format)
+  // ---------------------------------------------------------------------------
+
+  /** Returns true if a format has been copied — used to disable Paste Format. */
+  hasCopiedFormat() { return !!this._copiedFormat; }
+
+  /** Snapshot inline styles at the selection anchor node. */
+  copyFormat() {
+    const range = this._savedRange;
+    if (!range) return;
+    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (!node || !editable || !editable.contains(node)) return;
+
+    // Walk up to collect explicitly-set inline properties from the nearest styled ancestor
+    const cs = window.getComputedStyle(node);
+
+    // Detect if an explicit font-family / font-size is set on an element (not just inherited)
+    const explicitFontFamily = this._findExplicitStyle(node, editable, 'fontFamily');
+    const explicitFontSize   = this._findExplicitStyle(node, editable, 'fontSize');
+
+    this._copiedFormat = {
+      bold:            parseInt(cs.fontWeight, 10) >= 700,
+      italic:          cs.fontStyle === 'italic' || cs.fontStyle === 'oblique',
+      underline:       (cs.textDecorationLine || '').includes('underline'),
+      strikethrough:   (cs.textDecorationLine || '').includes('line-through'),
+      fontFamily:      explicitFontFamily,
+      fontSize:        explicitFontSize,
+      color:           this._isDefaultColor(cs.color) ? null : cs.color,
+      backgroundColor: cs.backgroundColor,
+    };
+  }
+
+  /** Walk up the tree looking for a property explicitly set in inline style. Returns null if only inherited. */
+  _findExplicitStyle(node, boundary, prop) {
+    let el = node;
+    while (el && el !== boundary && el !== document.body) {
+      if (el.style && el.style[prop]) return el.style[prop];
+      // also check font element attributes
+      if (el.nodeName === 'FONT') {
+        if (prop === 'fontFamily' && el.getAttribute('face')) return el.getAttribute('face');
+        if (prop === 'fontSize'   && el.getAttribute('size')) {
+          // font size attribute is 1-7; skip these since we need px
+          return null;
+        }
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  /** Checks if a computed color looks like the default browser text color (black). */
+  _isDefaultColor(color) {
+    return !color || color === 'rgb(0, 0, 0)' || color === 'rgba(0, 0, 0, 0)' || color === 'transparent';
+  }
+
+  /** Apply the most-recently copied format to the saved selection. */
+  pasteFormat() {
+    if (!this._copiedFormat || !this._savedRange) return;
+    const fmt = this._copiedFormat;
+    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    if (!editable) return;
+
+    // CRITICAL: focus the editable FIRST, then restore selection.
+    // Calling focus() after addRange() can wipe the selection in Chrome/Firefox.
+    editable.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(this._savedRange.cloneRange());
+
+    // Strip existing inline formatting so we start from a clean state.
+    // After removeFormat, bold/italic/underline/strikethrough are guaranteed off.
+    document.execCommand('removeFormat');
+
+    // Apply each format positively — no toggle-check needed after removeFormat.
+    if (fmt.bold)          document.execCommand('bold');
+    if (fmt.italic)        document.execCommand('italic');
+    if (fmt.underline)     document.execCommand('underline');
+    if (fmt.strikethrough) document.execCommand('strikeThrough');
+
+    if (fmt.color) document.execCommand('foreColor', false, fmt.color);
+
+    const isTransparent = (c) => !c || c === 'rgba(0, 0, 0, 0)' || c === 'transparent';
+    if (!isTransparent(fmt.backgroundColor)) {
+      document.execCommand('hiliteColor', false, fmt.backgroundColor);
+    }
+
+    // Font size — use a unique data-marker to avoid touching pre-existing font[size="7"] nodes.
+    if (fmt.fontSize) {
+      const marker = `fs-${Date.now()}`;
+      document.execCommand('fontSize', false, '7');
+      editable.querySelectorAll('font[size="7"]').forEach((el) => el.setAttribute('data-asn-tmp', marker));
+      editable.querySelectorAll(`[data-asn-tmp="${marker}"]`).forEach((el) => {
+        const span = document.createElement('span');
+        span.style.fontSize = fmt.fontSize;
+        el.parentNode.insertBefore(span, el);
+        while (el.firstChild) span.appendChild(el.firstChild);
+        el.parentNode.removeChild(el);
+      });
+    }
+
+    // Font family — only apply if it was explicitly set (not just inherited default).
+    if (fmt.fontFamily) {
+      document.execCommand('fontName', false, fmt.fontFamily);
+    }
+
+    this.context.invoke('editor.afterCommand');
+  }
+
+  /** Strip all inline formatting from the saved selection. */
+  removeFormat() {
+    if (!this._savedRange) return;
+    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    if (!editable) return;
+
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(this._savedRange.cloneRange());
+    editable.focus();
+
+    document.execCommand('removeFormat');
+
+    const range = sel.getRangeAt(0);
+    const root = range.commonAncestorContainer;
+    const rootEl = root.nodeType === Node.TEXT_NODE ? root.parentElement : root;
+    const iter = document.createNodeIterator(rootEl, NodeFilter.SHOW_ELEMENT);
+    let el;
+    while ((el = iter.nextNode())) {
+      if (!editable.contains(el) || el === editable) continue;
+      try { if (range.intersectsNode(el)) el.removeAttribute('style'); } catch { /* ignore */ }
+    }
+
+    this.context.invoke('editor.afterCommand');
   }
 }
 
