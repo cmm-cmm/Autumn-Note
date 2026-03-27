@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AfterSummerNote — Dev</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    p  { margin: 0 0 20px; color: #6b7280; }
+    #editor-wrapper { max-width: 860px; }
+    #output {
+      max-width: 860px;
+      margin-top: 20px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #374151;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>AfterSummerNote</h1>
+  <p>A modern WYSIWYG editor — no jQuery required.</p>
+
+  <div id="editor-wrapper">
+    <textarea id="editor">
+      <p>Hello, <strong>AfterSummerNote</strong>! ✨</p>
+      <p>Start typing to edit this content.</p>
+    </textarea>
+  </div>
+
+  <div>
+    <strong>HTML Output:</strong>
+    <div id="output"></div>
+  </div>
+
+  <script type="module">
+    import AfterSummerNote from '/src/js/index.js';
+
+    const editor = AfterSummerNote.create('#editor', {
+      placeholder: 'Start typing here…',
+      height: 300,
+      onChange(html) {
+        document.getElementById('output').textContent = html;
+      },
+    });
+
+    // Expose to console for dev testing
+    window.editor = editor;
+    document.getElementById('output').textContent = editor.getHTML();
+  </script>
+</body>
+</html>

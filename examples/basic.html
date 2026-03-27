@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AfterSummerNote — Basic Example</title>
+  <link rel="stylesheet" href="../dist/aftersummernote.css" />
+  <style>
+    body {
+      margin: 40px auto;
+      max-width: 860px;
+      font-family: system-ui, sans-serif;
+      padding: 0 16px;
+    }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    pre {
+      margin-top: 20px;
+      padding: 14px;
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Basic Example</h1>
+  <label for="editor">Rich Text Editor</label>
+  <div id="editor">
+    <p>Edit me!</p>
+  </div>
+
+  <h2>HTML Output</h2>
+  <pre id="output"></pre>
+
+  <script src="../dist/aftersummernote.umd.js"></script>
+  <script>
+    const editor = AfterSummerNote.create('#editor', {
+      placeholder: 'Start writing…',
+      height: 250,
+      onChange(html) {
+        document.getElementById('output').textContent = html;
+      },
+    });
+    document.getElementById('output').textContent = editor.getHTML();
+  </script>
+</body>
+</html>

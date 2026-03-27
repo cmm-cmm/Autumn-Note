@@ -1,0 +1,106 @@
+/**
+ * index.js - Public entry point for AfterSummerNote
+ *
+ * Usage (module):
+ *   import AfterSummerNote from 'aftersummernote';
+ *   const editor = AfterSummerNote.create('#my-editor', { placeholder: 'Start typing…' });
+ *
+ * Usage (UMD / script tag):
+ *   const editor = AfterSummerNote.create('#my-editor');
+ */
+
+import '../styles/aftersummernote.scss';
+import { Context } from './Context.js';
+import { mergeDeep } from './core/func.js';
+import { defaultOptions } from './settings.js';
+
+// Re-export for tree-shaking / module consumers
+export { Context } from './Context.js';
+export { defaultOptions } from './settings.js';
+export * from './core/dom.js';
+export * from './core/range.js';
+export * from './core/func.js';
+export * from './core/key.js';
+export * from './core/lists.js';
+export * from './core/env.js';
+
+// ---------------------------------------------------------------------------
+// Main factory
+// ---------------------------------------------------------------------------
+
+/** @type {WeakMap<Element, Context>} */
+const instances = new WeakMap();
+
+const AfterSummerNote = {
+  /**
+   * Creates (or returns existing) editor instance on one or more elements.
+   *
+   * @param {string|Element|NodeList|Element[]} selector
+   * @param {import('./settings.js').AsnOptions} [options]
+   * @returns {Context|Context[]} single Context or array of Contexts
+   */
+  create(selector, options = {}) {
+    const elements = resolveElements(selector);
+    const ctxs = elements.map((el) => {
+      if (instances.has(el)) return instances.get(el);
+      const ctx = new Context(el, options);
+      ctx.initialize();
+      instances.set(el, ctx);
+      return ctx;
+    });
+    return ctxs.length === 1 ? ctxs[0] : ctxs;
+  },
+
+  /**
+   * Destroys the editor(s) on the given selector.
+   * @param {string|Element|NodeList|Element[]} selector
+   */
+  destroy(selector) {
+    resolveElements(selector).forEach((el) => {
+      const ctx = instances.get(el);
+      if (ctx) {
+        ctx.destroy();
+        instances.delete(el);
+      }
+    });
+  },
+
+  /**
+   * Returns the Context instance for a given element (or null).
+   * @param {string|Element} selector
+   * @returns {Context|null}
+   */
+  getInstance(selector) {
+    const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    return el ? instances.get(el) || null : null;
+  },
+
+  /** Default options (can be mutated globally before calling create). */
+  defaults: defaultOptions,
+
+  /** Library version */
+  version: '1.0.0',
+};
+
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+/**
+ * @param {string|Element|NodeList|Element[]} selector
+ * @returns {Element[]}
+ */
+function resolveElements(selector) {
+  if (typeof selector === 'string') {
+    return Array.from(document.querySelectorAll(selector));
+  }
+  if (selector instanceof Element) {
+    return [selector];
+  }
+  if (selector instanceof NodeList || Array.isArray(selector)) {
+    return Array.from(selector);
+  }
+  return [];
+}
+
+export default AfterSummerNote;
