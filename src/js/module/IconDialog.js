@@ -330,7 +330,7 @@ export class IconDialog {
       class: 'asn-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Insert icon',
+      'aria-label': 'Insert FA icon',
     });
 
     const box = createElement('div', { class: 'asn-dialog-box asn-icon-box' });
@@ -338,7 +338,7 @@ export class IconDialog {
     // Title row
     const titleRow = createElement('div', { class: 'asn-icon-title-row' });
     const title = createElement('h3', { class: 'asn-dialog-title' });
-    title.textContent = 'Insert Icon';
+    title.textContent = 'Insert FA Icon';
     const closeBtn = createElement('button', { type: 'button', class: 'asn-icon-close', 'aria-label': 'Close' });
     closeBtn.innerHTML = '&times;';
     titleRow.append(title, closeBtn);
@@ -423,7 +423,7 @@ export class IconDialog {
     // Actions
     const btnRow = createElement('div', { class: 'asn-dialog-actions' });
     const insertBtn = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary', disabled: '' });
-    insertBtn.textContent = 'Insert Icon';
+    insertBtn.textContent = 'Insert FA Icon';
     const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.append(insertBtn, cancelBtn);

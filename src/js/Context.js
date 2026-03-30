@@ -27,6 +27,7 @@ import { ImageTooltip } from './module/ImageTooltip.js';
 import { VideoTooltip } from './module/VideoTooltip.js';
 import { TableTooltip } from './module/TableTooltip.js';
 import { CodeTooltip } from './module/CodeTooltip.js';
+import { EmojiDialog } from './module/EmojiDialog.js';
 import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
@@ -119,6 +120,7 @@ export class Context {
     register('videoTooltip', VideoTooltip);
     register('tableTooltip', TableTooltip);
     register('codeTooltip', CodeTooltip);
+    register('emojiDialog', EmojiDialog);
     register('iconDialog', IconDialog);
   }
 

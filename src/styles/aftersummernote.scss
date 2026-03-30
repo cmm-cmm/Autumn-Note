@@ -1196,3 +1196,56 @@ $asn-video-accent: #8b5cf6; // violet-500
   font-family: monospace;
 }
 
+// ---------------------------------------------------------------------------
+// Emoji dialog
+// ---------------------------------------------------------------------------
+
+.asn-emoji-box {
+  width: min(520px, 95vw);
+  gap: 0;
+  padding: 20px;
+}
+
+.asn-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 42px);
+  gap: 2px;
+  max-height: 288px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 4px;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius;
+  scrollbar-width: thin;
+  scrollbar-color: $asn-border transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $asn-border; border-radius: 3px; }
+}
+
+.asn-emoji-cell {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: $asn-radius-sm;
+  background: none;
+  cursor: pointer;
+  transition: background $asn-transition, border-color $asn-transition;
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    border-color: $asn-border;
+  }
+
+  &:active {
+    background: $asn-bg-btn-active;
+  }
+}
+
