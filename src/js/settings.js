@@ -44,7 +44,6 @@ export const defaultOptions = {
   // If `useBootstrap` is true, toolbar buttons will use the Bootstrap button classes
   // (set `toolbarButtonClass` to customize). Works with Bootstrap 4 and 5.
   useBootstrap: false,
-  bootstrapVersion: 5,
   toolbarButtonClass: 'btn btn-sm btn-light',
   // Icon options — uses Font Awesome by default. Consumers must include Font Awesome CSS.
   useFontAwesome: true,
