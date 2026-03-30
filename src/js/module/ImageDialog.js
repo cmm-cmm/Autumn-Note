@@ -139,7 +139,9 @@ export class ImageDialog {
     // Validate file size (max 5 MB by default)
     const maxSize = (this.options.maxImageSize || 5) * 1024 * 1024;
     if (file.size > maxSize) {
-      alert(`Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`);
+      const message = `Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`;
+      console.warn('[AutumnNote] ImageDialog:', message);
+      this.context.triggerEvent('imageError', { file, message });
       this._fileInput.value = '';
       return;
     }
