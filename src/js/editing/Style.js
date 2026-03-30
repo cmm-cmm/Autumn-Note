@@ -140,32 +140,6 @@ export const insertUnorderedList = () => execCommand('insertUnorderedList');
  */
 export const insertOrderedList = () => execCommand('insertOrderedList');
 
-/**
- * Inserts a rows×cols HTML table at the current cursor position.
- * @param {number} rows
- * @param {number} cols
- */
-export function insertTable(rows, cols) {
-  const table = document.createElement('table');
-  table.style.borderCollapse = 'collapse';
-  table.style.width = '100%';
-  const tbody = document.createElement('tbody');
-  for (let r = 0; r < rows; r++) {
-    const tr = document.createElement('tr');
-    for (let c = 0; c < cols; c++) {
-      const td = document.createElement('td');
-      td.style.border = '1px solid #dee2e6';
-      td.style.padding = '6px 12px';
-      td.style.minWidth = '40px';
-      td.innerHTML = '&#8203;';
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  execCommand('insertHTML', table.outerHTML);
-}
-
 // ---------------------------------------------------------------------------
 // Line-height helper
 // ---------------------------------------------------------------------------

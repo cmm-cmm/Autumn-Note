@@ -120,7 +120,10 @@ export class VideoDialog {
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    this._disposers.push(d0, d1, d2, d3, d4);
+    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
+    document.addEventListener('keydown', onKeydown);
+    const d5 = () => document.removeEventListener('keydown', onKeydown);
+    this._disposers.push(d0, d1, d2, d3, d4, d5);
 
     return overlay;
   }

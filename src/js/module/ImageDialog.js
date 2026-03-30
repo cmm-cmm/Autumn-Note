@@ -120,7 +120,10 @@ export class ImageDialog {
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    this._disposers.push(d1, d2, d3);
+    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
+    document.addEventListener('keydown', onKeydown);
+    const d4 = () => document.removeEventListener('keydown', onKeydown);
+    this._disposers.push(d1, d2, d3, d4);
 
     return overlay;
   }
