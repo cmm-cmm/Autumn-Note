@@ -1,5 +1,5 @@
 /**
- * aftersummernote.scss — Main stylesheet for the AfterSummerNote editor
+ * autumnnote.scss — Main stylesheet for the AutumnNote editor
  * Inspired by Summernote — rewritten with cleaner, modern CSS
  */
 
@@ -9,15 +9,15 @@
 // Container
 // =============================================================================
 
-.asn-container {
+.an-container {
   display: flex;
   flex-direction: column;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius;
-  font-family: $asn-font-family;
-  font-size: $asn-font-size;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  font-family: $an-font-family;
+  font-size: $an-font-size;
   box-sizing: border-box;
-  background: $asn-bg;
+  background: $an-bg;
   overflow: hidden;
 
   *,
@@ -26,25 +26,25 @@
     box-sizing: border-box;
   }
 
-  &.asn-focused {
-    border-color: $asn-primary;
-    box-shadow: 0 0 0 3px rgba($asn-primary, 0.15);
+  &.an-focused {
+    border-color: $an-primary;
+    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
   }
 
-  &.asn-disabled {
+  &.an-disabled {
     opacity: 0.6;
     pointer-events: none;
     user-select: none;
   }
 
-  &.asn-fullscreen {
+  &.an-fullscreen {
     position: fixed;
     inset: 0;
     z-index: 9990;
     border-radius: 0;
     border: none;
 
-    .asn-editable {
+    .an-editable {
       flex: 1;
       max-height: none !important;
     }
@@ -55,26 +55,26 @@
 // Toolbar
 // =============================================================================
 
-.asn-toolbar {
+.an-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: $asn-toolbar-gap;
-  padding: $asn-toolbar-pad;
-  background: $asn-bg-toolbar;
-  border-bottom: 1px solid $asn-border;
+  gap: $an-toolbar-gap;
+  padding: $an-toolbar-pad;
+  background: $an-bg-toolbar;
+  border-bottom: 1px solid $an-border;
   user-select: none;
 }
 
-.asn-btn-group {
+.an-btn-group {
   display: flex;
   align-items: center;
   gap: 2px;
 
   // Separator between groups
-  & + .asn-btn-group {
+  & + .an-btn-group {
     position: relative;
-    padding-left: $asn-toolbar-gap + 4px;
+    padding-left: $an-toolbar-gap + 4px;
 
     &::before {
       content: '';
@@ -83,37 +83,37 @@
       top: 15%;
       height: 70%;
       width: 1px;
-      background: $asn-border;
+      background: $an-border;
     }
   }
 }
 
 // Font-family (and generic) select dropdown in toolbar
-.asn-select {
-  height: $asn-btn-height;
+.an-select {
+  height: $an-btn-height;
   padding: 0 24px 0 8px;
-  background: $asn-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 7px center;
+  background: $an-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 7px center;
   background-size: 8px 5px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius-sm;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
   font-family: inherit;
   font-size: 12px;
-  color: $asn-text;
+  color: $an-text;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   min-width: 110px;
   max-width: 160px;
-  transition: border-color $asn-transition, box-shadow $asn-transition;
+  transition: border-color $an-transition, box-shadow $an-transition;
 
   &:hover {
-    border-color: $asn-primary;
+    border-color: $an-primary;
   }
 
   &:focus {
     outline: none;
-    border-color: $asn-primary;
-    box-shadow: 0 0 0 2px rgba($asn-primary, 0.15);
+    border-color: $an-primary;
+    box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
   }
 
   option {
@@ -122,32 +122,32 @@
 }
 
 // Narrow variant — used for short-value selects such as Line Height
-.asn-select-narrow {
+.an-select-narrow {
   min-width: 76px;
   max-width: 90px;
   padding-right: 20px;
 }
 
 // Paragraph-style variant — Normal/H1-H6/Quote/Code labels
-.asn-select-style {
+.an-select-style {
   min-width: 80px;
   max-width: 92px;
   padding-right: 20px;
 }
 
 // Table grid picker
-.asn-table-picker-wrap {
+.an-table-picker-wrap {
   position: relative;
   display: inline-flex;
 }
 
-.asn-table-picker-popup {
+.an-table-picker-popup {
   display: none;
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  background: $asn-bg;
-  border: 1px solid $asn-border;
+  background: $an-bg;
+  border: 1px solid $an-border;
   border-radius: 6px;
   padding: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -155,60 +155,60 @@
   user-select: none;
 }
 
-.asn-table-grid {
+.an-table-grid {
   display: grid;
   grid-template-columns: repeat(10, 18px);
   gap: 2px;
 }
 
-.asn-table-cell {
+.an-table-cell {
   width: 18px;
   height: 18px;
-  border: 1px solid $asn-border;
+  border: 1px solid $an-border;
   border-radius: 2px;
   cursor: pointer;
-  background: $asn-bg;
-  transition: background $asn-transition, border-color $asn-transition;
+  background: $an-bg;
+  transition: background $an-transition, border-color $an-transition;
 
   &.active {
-    background: rgba($asn-primary, 0.15);
-    border-color: $asn-primary;
+    background: rgba($an-primary, 0.15);
+    border-color: $an-primary;
   }
 }
 
-.asn-table-label {
+.an-table-label {
   margin-top: 6px;
   text-align: center;
   font-size: 12px;
-  color: $asn-muted;
+  color: $an-muted;
   min-height: 16px;
 }
 
 // Context menu — inline table grid panel
-.asn-context-table-grid-panel {
+.an-context-table-grid-panel {
   padding: 6px 8px 8px;
-  border-top: 1px solid $asn-border;
+  border-top: 1px solid $an-border;
 }
 
 // =============================================================================
 // Color picker (text color / highlight color) toolbar widget
 // =============================================================================
 
-.asn-color-picker-wrap {
+.an-color-picker-wrap {
   position: relative;
   display: inline-flex;
   align-items: stretch;
 }
 
 // Left part: icon + color strip stacked vertically
-.asn-color-btn {
+.an-color-btn {
   flex-direction: column !important;
   gap: 2px !important;
   padding: 4px 6px 3px !important;
   height: auto !important;
-  min-height: $asn-btn-height;
+  min-height: $an-btn-height;
 
-  .asn-color-strip {
+  .an-color-strip {
     display: block;
     width: 100%;
     min-width: 14px;
@@ -219,24 +219,24 @@
 }
 
 // Right part: small chevron arrow to open popup
-.asn-color-arrow {
+.an-color-arrow {
   padding: 0 3px !important;
   min-width: unset !important;
   border-left: 1px solid transparent;
 
   &:hover {
-    border-left-color: $asn-border;
+    border-left-color: $an-border;
   }
 }
 
 // Swatch popup panel
-.asn-color-popup {
+.an-color-popup {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   z-index: 1100;
-  background: $asn-bg;
-  border: 1px solid $asn-border;
+  background: $an-bg;
+  border: 1px solid $an-border;
   border-radius: 6px;
   padding: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -244,14 +244,14 @@
   user-select: none;
 }
 
-.asn-color-swatches {
+.an-color-swatches {
   display: grid;
   grid-template-columns: repeat(8, 18px);
   gap: 3px;
   margin-bottom: 8px;
 }
 
-.asn-color-swatch {
+.an-color-swatch {
   width: 18px;
   height: 18px;
   border-radius: 2px;
@@ -263,23 +263,23 @@
   &:hover {
     transform: scale(1.25);
     z-index: 1;
-    outline: 2px solid $asn-primary;
+    outline: 2px solid $an-primary;
     outline-offset: 1px;
   }
 }
 
-.asn-color-custom {
+.an-color-custom {
   display: flex;
   align-items: center;
   gap: 8px;
   padding-top: 6px;
-  border-top: 1px solid $asn-border;
+  border-top: 1px solid $an-border;
 
   input[type='color'] {
     width: 28px;
     height: 22px;
     padding: 1px 2px;
-    border: 1px solid $asn-border;
+    border: 1px solid $an-border;
     border-radius: 3px;
     cursor: pointer;
     background: none;
@@ -291,33 +291,33 @@
     &::-webkit-color-swatch { border: none; border-radius: 2px; }
 
     &:hover {
-      border-color: $asn-primary;
+      border-color: $an-primary;
     }
   }
 
   span {
     font-size: 11px;
-    color: $asn-muted;
+    color: $an-muted;
     flex: 1;
   }
 }
 
-.asn-btn {
+.an-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: $asn-btn-height;
-  min-width: $asn-btn-height;
-  padding: $asn-btn-padding;
+  height: $an-btn-height;
+  min-width: $an-btn-height;
+  padding: $an-btn-padding;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: $asn-radius-sm;
-  color: $asn-text;
+  border-radius: $an-radius-sm;
+  color: $an-text;
   font-family: inherit;
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
-  transition: background $asn-transition, border-color $asn-transition, color $asn-transition;
+  transition: background $an-transition, border-color $an-transition, color $an-transition;
   white-space: nowrap;
   text-decoration: none;
 
@@ -329,40 +329,40 @@
   }
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    border-color: $asn-border;
-    color: $asn-primary;
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
+    color: $an-primary;
 
     svg {
-      stroke: $asn-primary;
+      stroke: $an-primary;
     }
   }
 
   &:focus-visible {
-    outline: 2px solid $asn-primary;
+    outline: 2px solid $an-primary;
     outline-offset: 1px;
   }
 
   &.active {
-    background: $asn-bg-btn-active;
-    border-color: $asn-primary;
-    color: $asn-primary-hover;
+    background: $an-bg-btn-active;
+    border-color: $an-primary;
+    color: $an-primary-hover;
 
     svg {
-      stroke: $asn-primary-hover;
+      stroke: $an-primary-hover;
     }
   }
 
-  &.asn-btn-primary {
-    background: $asn-primary;
-    border-color: $asn-primary;
+  &.an-btn-primary {
+    background: $an-primary;
+    border-color: $an-primary;
     color: #fff;
 
     svg { stroke: #fff; }
 
     &:hover {
-      background: $asn-primary-hover;
-      border-color: $asn-primary-hover;
+      background: $an-primary-hover;
+      border-color: $an-primary-hover;
     }
   }
 }
@@ -371,20 +371,20 @@
 // Editable area
 // =============================================================================
 
-.asn-editable {
+.an-editable {
   flex: 1;
-  padding: $asn-editable-pad;
+  padding: $an-editable-pad;
   min-height: 200px;
   outline: none;
-  line-height: $asn-line-height;
-  color: $asn-text;
+  line-height: $an-line-height;
+  color: $an-text;
   overflow-y: auto;
   word-break: break-word;
 
   // Placeholder
-  &.asn-placeholder::before {
+  &.an-placeholder::before {
     content: attr(data-placeholder);
-    color: $asn-muted;
+    color: $an-muted;
     pointer-events: none;
     position: absolute;
   }
@@ -397,14 +397,14 @@
   blockquote {
     margin: 0.5em 0 0.5em 1em;
     padding: 0.5em 1em;
-    border-left: 4px solid $asn-border;
-    color: $asn-muted;
+    border-left: 4px solid $an-border;
+    color: $an-muted;
   }
   pre, code {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.9em;
-    background: $asn-bg-toolbar;
-    border-radius: $asn-radius-sm;
+    background: $an-bg-toolbar;
+    border-radius: $an-radius-sm;
   }
   pre     { padding: 0.75em 1em; overflow-x: auto; }
   code    { padding: 0.1em 0.3em; }
@@ -414,7 +414,7 @@
   pre[class*='language-'] {
     background: #2d2d2d;
     color: #ccc;
-    border-radius: $asn-radius-sm;
+    border-radius: $an-radius-sm;
 
     > code[class*='language-'] {
       background: transparent;
@@ -422,15 +422,15 @@
       padding: 0;
     }
   }
-  a       { color: $asn-primary; }
-  hr      { border: none; border-top: 2px solid $asn-border; margin: 1em 0; }
-  img.asn-image {
+  a       { color: $an-primary; }
+  hr      { border: none; border-top: 2px solid $an-border; margin: 1em 0; }
+  img.an-image {
     max-width: 100%;
     height: auto;
     display: inline-block;
   }
 
-  .asn-video-wrapper {
+  .an-video-wrapper {
     position: relative;
     display: inline-block;
     max-width: 100%;
@@ -445,7 +445,7 @@
     // Transparent overlay that intercepts mouse events on <iframe> embeds.
     // iframes swallow all pointer events and prevent them from bubbling to the
     // editable area; the shield sits on top so clicks/contextmenu bubble normally.
-    .asn-video-shield {
+    .an-video-shield {
       position: absolute;
       inset: 0;
       z-index: 2;
@@ -454,20 +454,20 @@
   }
 
   // Table styles — target both classed and unclassed tables
-  table, .asn-table {
+  table, .an-table {
     border-collapse: collapse;
     width: 100%;
     margin: 0.75em 0;
 
     td, th {
-      border: 1px solid $asn-border;
+      border: 1px solid $an-border;
       padding: 6px 10px;
       min-width: 40px;
       vertical-align: top;
     }
 
     th {
-      background: $asn-bg-toolbar;
+      background: $an-bg-toolbar;
       font-weight: 600;
     }
   }
@@ -477,7 +477,7 @@
 // Link tooltip
 // ---------------------------------------------------------------------------
 
-.asn-link-tooltip {
+.an-link-tooltip {
   position: fixed;
   z-index: 1300;
   display: flex;
@@ -485,36 +485,36 @@
   gap: 2px;
   height: 30px;
   padding: 0 6px;
-  background: $asn-bg;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius-sm;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   white-space: nowrap;
   pointer-events: all;
 
   // URL preview label
-  .asn-link-tooltip-url {
+  .an-link-tooltip-url {
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
-    color: $asn-primary;
+    color: $an-primary;
     cursor: default;
     padding: 0 4px;
   }
 
   // Vertical divider
-  .asn-link-tooltip-sep {
+  .an-link-tooltip-sep {
     width: 1px;
     height: 18px;
-    background: $asn-border;
+    background: $an-border;
     flex-shrink: 0;
     margin: 0 2px;
   }
 }
 
-.asn-link-tooltip-btn {
+.an-link-tooltip-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -522,27 +522,27 @@
   height: 24px;
   padding: 0;
   border: none;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
   background: transparent;
-  color: $asn-muted;
+  color: $an-muted;
   cursor: pointer;
   flex-shrink: 0;
 
   svg { stroke: currentColor; display: block; }
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    color: $asn-text;
+    background: $an-bg-btn-hover;
+    color: $an-text;
   }
 
   &:active,
-  &.asn-link-tooltip-btn--copied {
-    background: $asn-bg-btn-active;
-    color: $asn-primary;
+  &.an-link-tooltip-btn--copied {
+    background: $an-bg-btn-active;
+    color: $an-primary;
   }
 
   // Danger variant — used for Delete actions in image/video tooltips
-  &.asn-link-tooltip-btn--danger {
+  &.an-link-tooltip-btn--danger {
     color: #ef4444;
 
     svg { stroke: #ef4444; }
@@ -556,23 +556,23 @@
 }
 
 // Shared modifier classes for image and video tooltips
-// (re-use all .asn-link-tooltip styles, only override the label colour)
-.asn-image-tooltip .asn-link-tooltip-url {
-  color: $asn-text;
+// (re-use all .an-link-tooltip styles, only override the label colour)
+.an-image-tooltip .an-link-tooltip-url {
+  color: $an-text;
   font-weight: 500;
 }
 
-.asn-video-tooltip .asn-link-tooltip-url {
+.an-video-tooltip .an-link-tooltip-url {
   color: #7c3aed; // violet to match video accent
   font-weight: 500;
 }
 
-.asn-table-tooltip .asn-link-tooltip-url {
+.an-table-tooltip .an-link-tooltip-url {
   color: #0369a1; // sky blue for table
   font-weight: 500;
 }
 
-.asn-code-tooltip .asn-link-tooltip-url {
+.an-code-tooltip .an-link-tooltip-url {
   color: #059669; // emerald green for code
   font-weight: 500;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -581,53 +581,53 @@
 }
 
 // Size popover (column width / row height)
-.asn-size-popover {
+.an-size-popover {
   position: fixed;
-  background: $asn-bg;
-  border: 1px solid $asn-border;
+  background: $an-bg;
+  border: 1px solid $an-border;
   border-radius: 8px;
   padding: 12px 14px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 1200;
   min-width: 200px;
 
-  .asn-size-popover-title {
+  .an-size-popover-title {
     font-size: 12px;
     font-weight: 600;
-    color: $asn-text;
+    color: $an-text;
     margin-bottom: 10px;
   }
 
-  .asn-size-popover-body {
+  .an-size-popover-body {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-bottom: 12px;
   }
 
-  .asn-size-input {
+  .an-size-input {
     width: 80px;
     height: 28px;
     padding: 0 8px;
-    border: 1px solid $asn-border;
-    border-radius: $asn-radius-sm;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
     font-size: 13px;
     font-family: inherit;
-    color: $asn-text;
+    color: $an-text;
     outline: none;
 
     &:focus {
-      border-color: $asn-primary;
-      box-shadow: 0 0 0 2px rgba($asn-primary, 0.15);
+      border-color: $an-primary;
+      box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
     }
   }
 
-  .asn-size-unit {
+  .an-size-unit {
     font-size: 12px;
-    color: $asn-muted;
+    color: $an-muted;
   }
 
-  .asn-size-popover-actions {
+  .an-size-popover-actions {
     display: flex;
     justify-content: flex-end;
     gap: 6px;
@@ -638,18 +638,18 @@
 // Codeview textarea
 // =============================================================================
 
-.asn-codeview {
+.an-codeview {
   flex: 1;
   width: 100%;
   min-height: 200px;
-  padding: $asn-editable-pad;
+  padding: $an-editable-pad;
   border: none;
   outline: none;
   resize: vertical;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 13px;
   line-height: 1.5;
-  color: $asn-text;
+  color: $an-text;
   background: #1e1e2e;
   color: #cdd6f4;
 }
@@ -658,32 +658,32 @@
 // Statusbar
 // =============================================================================
 
-.asn-statusbar {
+.an-statusbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: $asn-statusbar-h;
+  height: $an-statusbar-h;
   padding: 0 8px;
-  background: $asn-statusbar-bg;
-  border-top: 1px solid $asn-border;
+  background: $an-statusbar-bg;
+  border-top: 1px solid $an-border;
   font-size: 11px;
-  color: $asn-muted;
+  color: $an-muted;
   user-select: none;
 }
 
-.asn-status-info {
+.an-status-info {
   display: flex;
   gap: 12px;
 }
 
-.asn-resize-handle {
+.an-resize-handle {
   width: 14px;
   height: 14px;
   cursor: ns-resize;
   background: repeating-linear-gradient(
     -45deg,
-    $asn-border,
-    $asn-border 1px,
+    $an-border,
+    $an-border 1px,
     transparent 1px,
     transparent 3px
   );
@@ -699,56 +699,56 @@
 // Dialogs
 // =============================================================================
 
-.asn-dialog-overlay {
+.an-dialog-overlay {
   display: none; // toggled via JS
   position: fixed;
   inset: 0;
-  z-index: $asn-dialog-z;
-  background: $asn-dialog-bg;
+  z-index: $an-dialog-z;
+  background: $an-dialog-bg;
   align-items: center;
   justify-content: center;
 }
 
-.asn-dialog-box {
-  background: $asn-bg;
-  border-radius: $asn-dialog-radius;
+.an-dialog-box {
+  background: $an-bg;
+  border-radius: $an-dialog-radius;
   padding: 24px;
-  width: min($asn-dialog-width, 95vw);
+  width: min($an-dialog-width, 95vw);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.asn-dialog-title {
+.an-dialog-title {
   margin: 0 0 4px;
   font-size: 16px;
   font-weight: 600;
-  color: $asn-text;
+  color: $an-text;
 }
 
-.asn-dialog-actions {
+.an-dialog-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
   margin-top: 6px;
 }
 
-.asn-dialog-hint {
+.an-dialog-hint {
   margin: -4px 0 0;
   font-size: 12px;
-  color: $asn-muted;
+  color: $an-muted;
   min-height: 16px;
 }
 
-.asn-label {
+.an-label {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: $asn-text;
+  color: $an-text;
   margin-bottom: 2px;
 
-  &.asn-label-inline {
+  &.an-label-inline {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -757,21 +757,21 @@
   }
 }
 
-.asn-input {
+.an-input {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius-sm;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
   font-family: inherit;
-  font-size: $asn-font-size;
-  color: $asn-text;
-  background: $asn-bg;
+  font-size: $an-font-size;
+  color: $an-text;
+  background: $an-bg;
   outline: none;
-  transition: border-color $asn-transition, box-shadow $asn-transition;
+  transition: border-color $an-transition, box-shadow $an-transition;
 
   &:focus {
-    border-color: $asn-primary;
-    box-shadow: 0 0 0 3px rgba($asn-primary, 0.15);
+    border-color: $an-primary;
+    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
   }
 }
 
@@ -779,11 +779,11 @@
 // Context menu
 // ---------------------------------------------------------------------------
 
-.asn-contextmenu {
+.an-contextmenu {
   position: fixed;
   z-index: 10050;
-  background: $asn-bg;
-  border: 1px solid $asn-border;
+  background: $an-bg;
+  border: 1px solid $an-border;
   border-radius: 8px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
   min-width: 180px;
@@ -792,7 +792,7 @@
   user-select: none;
 }
 
-.asn-context-item {
+.an-context-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -803,20 +803,20 @@
   border: none;
   border-radius: 5px;
   font-size: 13px;
-  color: $asn-text;
+  color: $an-text;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
   line-height: 1.4;
 
   &:hover {
-    background: $asn-primary;
+    background: $an-primary;
     color: #fff;
 
-    .asn-context-icon svg {
+    .an-context-icon svg {
       stroke: #fff;
     }
 
-    .asn-context-chevron svg {
+    .an-context-chevron svg {
       stroke: #fff;
     }
   }
@@ -829,12 +829,12 @@
 }
 
 // Submenu entry — chevron on the right
-.asn-context-submenu {
-  .asn-context-chevron {
+.an-context-submenu {
+  .an-context-chevron {
     display: flex;
     align-items: center;
     margin-left: auto;
-    color: $asn-muted;
+    color: $an-muted;
     flex-shrink: 0;
 
     svg { display: block; }
@@ -842,7 +842,7 @@
 }
 
 // Back-navigation header button
-.asn-context-back {
+.an-context-back {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -851,31 +851,31 @@
   padding: 6px 14px 8px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid $asn-border;
+  border-bottom: 1px solid $an-border;
   border-radius: 5px 5px 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: $asn-muted;
+  color: $an-muted;
   cursor: pointer;
   margin-bottom: 3px;
   transition: background 0.12s, color 0.12s;
 
-  .asn-context-icon svg { stroke: $asn-muted; }
+  .an-context-icon svg { stroke: $an-muted; }
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    color: $asn-text;
-    .asn-context-icon svg { stroke: $asn-text; }
+    background: $an-bg-btn-hover;
+    color: $an-text;
+    .an-context-icon svg { stroke: $an-text; }
   }
 }
 
-.asn-context-icon {
+.an-context-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   width: 16px;
-  color: $asn-muted;
+  color: $an-muted;
   transition: color 0.12s;
 
   svg {
@@ -884,32 +884,32 @@
   }
 }
 
-.asn-context-label {
+.an-context-label {
   flex: 1;
 }
 
-.asn-context-sep {
+.an-context-sep {
   height: 1px;
   margin: 5px 10px;
-  background: $asn-border;
+  background: $an-border;
 }
 
 // ---------------------------------------------------------------------------
 // Image resize overlay
 // ---------------------------------------------------------------------------
 
-.asn-image-resizer {
+.an-image-resizer {
   position: fixed;
   z-index: 10000;
   box-sizing: border-box;
-  border: 2px solid $asn-primary;
+  border: 2px solid $an-primary;
   pointer-events: none;
 
-  .asn-resize-handle {
+  .an-resize-handle {
     position: absolute;
     width: 8px;
     height: 8px;
-    background: $asn-primary;
+    background: $an-primary;
     border: 1px solid #fff;
     border-radius: 1px;
     box-sizing: border-box;
@@ -917,36 +917,36 @@
   }
 
   // Corners
-  .asn-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
-  .asn-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
-  .asn-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
-  .asn-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
+  .an-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
+  .an-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
+  .an-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
+  .an-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
 
   // Edge midpoints
-  .asn-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
-  .asn-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
-  .asn-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
-  .asn-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+  .an-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
+  .an-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
+  .an-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
+  .an-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
 }
 
 // ---------------------------------------------------------------------------
 // Video resize overlay
 // ---------------------------------------------------------------------------
 
-$asn-video-accent: #8b5cf6; // violet-500
+$an-video-accent: #8b5cf6; // violet-500
 
-.asn-video-resizer {
+.an-video-resizer {
   position: fixed;
   z-index: 10000;
   box-sizing: border-box;
-  border: 2px solid $asn-video-accent;
+  border: 2px solid $an-video-accent;
   pointer-events: none;
 
-  .asn-resize-handle {
+  .an-resize-handle {
     position: absolute;
     width: 8px;
     height: 8px;
-    background: $asn-video-accent;
+    background: $an-video-accent;
     border: 1px solid #fff;
     border-radius: 1px;
     box-sizing: border-box;
@@ -954,21 +954,21 @@ $asn-video-accent: #8b5cf6; // violet-500
   }
 
   // Corners
-  .asn-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
-  .asn-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
-  .asn-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
-  .asn-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
+  .an-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
+  .an-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
+  .an-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
+  .an-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
 
   // Edge midpoints
-  .asn-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
-  .asn-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
-  .asn-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
-  .asn-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+  .an-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
+  .an-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
+  .an-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
+  .an-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
 }
 
-// Selected video wrapper highlight (applied to .asn-video-wrapper)
-.asn-video-selected {
-  outline: 2px solid $asn-video-accent;
+// Selected video wrapper highlight (applied to .an-video-wrapper)
+.an-video-selected {
+  outline: 2px solid $an-video-accent;
   outline-offset: 1px;
 }
 
@@ -977,25 +977,25 @@ $asn-video-accent: #8b5cf6; // violet-500
 // ---------------------------------------------------------------------------
 
 // Wider box override
-.asn-icon-box {
+.an-icon-box {
   width: min(596px, 95vw);
   gap: 0;
   padding: 20px;
 }
 
 // Title row with close button
-.asn-icon-title-row {
+.an-icon-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
 
-  .asn-dialog-title {
+  .an-dialog-title {
     margin: 0;
   }
 }
 
-.asn-icon-close {
+.an-icon-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1006,59 +1006,59 @@ $asn-video-accent: #8b5cf6; // violet-500
   line-height: 1;
   background: none;
   border: none;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
   cursor: pointer;
-  color: $asn-muted;
+  color: $an-muted;
   flex-shrink: 0;
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    color: $asn-text;
+    background: $an-bg-btn-hover;
+    color: $an-text;
   }
 }
 
 // Search
-.asn-icon-search {
+.an-icon-search {
   width: 100%;
   margin-bottom: 10px;
   box-sizing: border-box;
 }
 
 // Category tabs
-.asn-icon-cats {
+.an-icon-cats {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 10px;
 }
 
-.asn-icon-cat {
+.an-icon-cat {
   height: 26px;
   padding: 0 10px;
   font-size: 12px;
-  font-family: $asn-font-family;
+  font-family: $an-font-family;
   background: none;
-  border: 1px solid $asn-border;
+  border: 1px solid $an-border;
   border-radius: 13px;
   cursor: pointer;
-  color: $asn-muted;
+  color: $an-muted;
   white-space: nowrap;
-  transition: background $asn-transition, color $asn-transition, border-color $asn-transition;
+  transition: background $an-transition, color $an-transition, border-color $an-transition;
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    color: $asn-text;
+    background: $an-bg-btn-hover;
+    color: $an-text;
   }
 
   &.active {
-    background: $asn-primary;
-    border-color: $asn-primary;
+    background: $an-primary;
+    border-color: $an-primary;
     color: #fff;
   }
 }
 
 // Icon grid
-.asn-icon-grid {
+.an-icon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 56px);
   gap: 3px;
@@ -1066,18 +1066,18 @@ $asn-video-accent: #8b5cf6; // violet-500
   overflow-y: auto;
   margin-bottom: 10px;
   padding: 4px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius;
-  background: $asn-bg;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  background: $an-bg;
   scrollbar-width: thin;
-  scrollbar-color: $asn-border transparent;
+  scrollbar-color: $an-border transparent;
 
   &::-webkit-scrollbar       { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: $asn-border; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: $an-border; border-radius: 3px; }
 }
 
-.asn-icon-cell {
+.an-icon-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1087,19 +1087,19 @@ $asn-video-accent: #8b5cf6; // violet-500
   height: 52px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
   background: none;
   cursor: pointer;
-  font-family: $asn-font-family;
+  font-family: $an-font-family;
   font-size: 10px;
-  color: $asn-muted;
-  transition: background $asn-transition, border-color $asn-transition;
+  color: $an-muted;
+  transition: background $an-transition, border-color $an-transition;
   overflow: hidden;
   box-sizing: border-box;
 
   i {
     font-size: 17px;
-    color: $asn-text;
+    color: $an-text;
     line-height: 1;
     pointer-events: none;
   }
@@ -1113,61 +1113,61 @@ $asn-video-accent: #8b5cf6; // violet-500
   }
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    border-color: $asn-border;
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
   }
 
   &.active {
-    background: rgba($asn-primary, 0.1);
-    border-color: $asn-primary;
-    color: $asn-primary;
+    background: rgba($an-primary, 0.1);
+    border-color: $an-primary;
+    color: $an-primary;
 
-    i { color: $asn-primary; }
+    i { color: $an-primary; }
   }
 }
 
 // Empty state
-.asn-icon-empty {
+.an-icon-empty {
   grid-column: 1 / -1;
   padding: 24px 0;
   text-align: center;
-  color: $asn-muted;
+  color: $an-muted;
   font-size: 13px;
 }
 
 // Options row
-.asn-icon-options {
+.an-icon-options {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px 10px;
   margin-bottom: 10px;
 
-  .asn-label {
+  .an-label {
     margin: 0;
     font-size: 12px;
     white-space: nowrap;
   }
 }
 
-.asn-icon-option-select {
-  height: $asn-btn-height;
+.an-icon-option-select {
+  height: $an-btn-height;
   padding: 0 6px;
   font-size: 12px;
   width: auto;
 }
 
-.asn-icon-color {
+.an-icon-color {
   width: 32px;
-  height: $asn-btn-height;
+  height: $an-btn-height;
   padding: 2px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius-sm;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
   cursor: pointer;
   background: none;
 }
 
-.asn-icon-use-color {
+.an-icon-use-color {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1181,7 +1181,7 @@ $asn-video-accent: #8b5cf6; // violet-500
 }
 
 // Preview
-.asn-icon-preview {
+.an-icon-preview {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1190,23 +1190,23 @@ $asn-video-accent: #8b5cf6; // violet-500
   min-height: 72px;
   margin-bottom: 14px;
   padding: 10px 12px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius;
-  background: $asn-bg-toolbar;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  background: $an-bg-toolbar;
 
   i {
     line-height: 1;
   }
 
-  .asn-icon-preview-hint {
+  .an-icon-preview-hint {
     font-size: 12px;
-    color: $asn-muted;
+    color: $an-muted;
   }
 }
 
-.asn-icon-preview-name {
+.an-icon-preview-name {
   font-size: 12px;
-  color: $asn-muted;
+  color: $an-muted;
   font-family: monospace;
 }
 
@@ -1214,13 +1214,13 @@ $asn-video-accent: #8b5cf6; // violet-500
 // Emoji dialog
 // ---------------------------------------------------------------------------
 
-.asn-emoji-box {
+.an-emoji-box {
   width: min(520px, 95vw);
   gap: 0;
   padding: 20px;
 }
 
-.asn-emoji-grid {
+.an-emoji-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 42px);
   gap: 2px;
@@ -1228,17 +1228,17 @@ $asn-video-accent: #8b5cf6; // violet-500
   overflow-y: auto;
   margin-bottom: 10px;
   padding: 4px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
   scrollbar-width: thin;
-  scrollbar-color: $asn-border transparent;
+  scrollbar-color: $an-border transparent;
 
   &::-webkit-scrollbar { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: $asn-border; border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: $an-border; border-radius: 3px; }
 }
 
-.asn-emoji-cell {
+.an-emoji-cell {
   width: 42px;
   height: 42px;
   padding: 0;
@@ -1248,18 +1248,18 @@ $asn-video-accent: #8b5cf6; // violet-500
   font-size: 22px;
   line-height: 1;
   border: 1px solid transparent;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
   background: none;
   cursor: pointer;
-  transition: background $asn-transition, border-color $asn-transition;
+  transition: background $an-transition, border-color $an-transition;
 
   &:hover {
-    background: $asn-bg-btn-hover;
-    border-color: $asn-border;
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
   }
 
   &:active {
-    background: $asn-bg-btn-active;
+    background: $an-bg-btn-active;
   }
 }
 
@@ -1267,14 +1267,14 @@ $asn-video-accent: #8b5cf6; // violet-500
 // Sticky toolbar
 // =============================================================================
 
-.asn-sticky-toolbar {
+.an-sticky-toolbar {
   overflow: visible;
 
-  .asn-toolbar {
+  .an-toolbar {
     position: sticky;
-    top: var(--asn-sticky-top, 0px);
+    top: var(--an-sticky-top, 0px);
     z-index: 100;
-    border-radius: $asn-radius $asn-radius 0 0;
+    border-radius: $an-radius $an-radius 0 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
   }
 }
@@ -1283,8 +1283,8 @@ $asn-video-accent: #8b5cf6; // violet-500
 // Image caption — figure / figcaption
 // =============================================================================
 
-.asn-editable {
-  figure.asn-figure {
+.an-editable {
+  figure.an-figure {
     display: inline-block;
     max-width: 100%;
     margin: 0.75em 0;
@@ -1293,10 +1293,10 @@ $asn-video-accent: #8b5cf6; // violet-500
     img { display: block; max-width: 100%; }
   }
 
-  figcaption.asn-figcaption {
+  figcaption.an-figcaption {
     font-size: 0.85em;
     font-style: italic;
-    color: $asn-muted;
+    color: $an-muted;
     padding: 4px 0 2px;
     text-align: center;
     line-height: 1.4;
@@ -1304,7 +1304,7 @@ $asn-video-accent: #8b5cf6; // violet-500
     outline: none;
 
     &:focus {
-      background: rgba($asn-primary, 0.06);
+      background: rgba($an-primary, 0.06);
       border-radius: 2px;
     }
   }
@@ -1314,58 +1314,58 @@ $asn-video-accent: #8b5cf6; // violet-500
 // Keyboard shortcuts dialog
 // =============================================================================
 
-.asn-shortcuts-box {
+.an-shortcuts-box {
   width: min(480px, 95vw);
   max-height: 80vh;
   overflow-y: auto;
 }
 
-.asn-shortcuts-cat {
+.an-shortcuts-cat {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $asn-muted;
+  color: $an-muted;
   padding: 8px 0 4px;
-  border-bottom: 1px solid $asn-border;
+  border-bottom: 1px solid $an-border;
   margin-bottom: 2px;
 
-  & + .asn-shortcuts-table + & {
+  & + .an-shortcuts-table + & {
     margin-top: 10px;
   }
 }
 
-.asn-shortcuts-table {
+.an-shortcuts-table {
   display: flex;
   flex-direction: column;
 }
 
-.asn-shortcuts-row {
+.an-shortcuts-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 5px 4px;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
 
-  &:hover { background: $asn-bg-btn-hover; }
+  &:hover { background: $an-bg-btn-hover; }
 }
 
-.asn-shortcuts-key {
+.an-shortcuts-key {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 12px;
-  color: $asn-text;
-  background: $asn-bg-toolbar;
-  border: 1px solid $asn-border;
+  color: $an-text;
+  background: $an-bg-toolbar;
+  border: 1px solid $an-border;
   border-bottom-width: 2px;
-  border-radius: $asn-radius-sm;
+  border-radius: $an-radius-sm;
   padding: 2px 8px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.asn-shortcuts-action {
+.an-shortcuts-action {
   font-size: 13px;
-  color: $asn-text;
+  color: $an-text;
   flex: 1;
   padding-left: 14px;
 }
@@ -1374,44 +1374,44 @@ $asn-video-accent: #8b5cf6; // violet-500
 // Code block language selector (inside CodeTooltip)
 // =============================================================================
 
-.asn-code-lang-select {
+.an-code-lang-select {
   height: 22px;
   padding: 0 20px 0 6px;
-  border: 1px solid $asn-border;
-  border-radius: $asn-radius-sm;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
   font-family: inherit;
   font-size: 11px;
-  color: $asn-text;
-  background: $asn-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 5px center;
+  color: $an-text;
+  background: $an-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 5px center;
   background-size: 6px 4px;
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
 
-  &:focus { outline: none; border-color: $asn-primary; }
-  &:hover { border-color: $asn-primary; }
+  &:focus { outline: none; border-color: $an-primary; }
+  &:hover { border-color: $an-primary; }
 }
 
 // =============================================================================
 // Dark theme — apply via options: { theme: 'dark' }
 // =============================================================================
 
-.asn-theme-dark {
+.an-theme-dark {
   border-color: #3f3f5f;
   background: #1e1e2e;
   color: #cdd6f4;
 
-  &.asn-focused {
+  &.an-focused {
     border-color: #89b4fa;
     box-shadow: 0 0 0 3px rgba(#89b4fa, 0.2);
   }
 
-  .asn-toolbar {
+  .an-toolbar {
     background: #181825;
     border-color: #3f3f5f;
   }
 
-  .asn-btn {
+  .an-btn {
     color: #cdd6f4;
 
     &:hover {
@@ -1430,14 +1430,14 @@ $asn-video-accent: #8b5cf6; // violet-500
       svg { stroke: #89b4fa; }
     }
 
-    &.asn-btn-primary {
+    &.an-btn-primary {
       background: #3b5bdb;
       border-color: #3b5bdb;
       color: #fff;
     }
   }
 
-  .asn-select {
+  .an-select {
     background-color: #1e1e2e;
     border-color: #3f3f5f;
     color: #cdd6f4;
@@ -1445,7 +1445,7 @@ $asn-video-accent: #8b5cf6; // violet-500
     &:hover, &:focus { border-color: #89b4fa; }
   }
 
-  .asn-editable {
+  .an-editable {
     background: #1e1e2e;
     color: #cdd6f4;
 
@@ -1464,32 +1464,32 @@ $asn-video-accent: #8b5cf6; // violet-500
 
     hr { border-color: #3f3f5f; }
 
-    table, .asn-table {
+    table, .an-table {
       td, th { border-color: #3f3f5f; }
       th { background: #313244; }
     }
 
-    &.asn-placeholder::before { color: #6c7086; }
+    &.an-placeholder::before { color: #6c7086; }
 
-    figcaption.asn-figcaption { color: #6c7086; }
+    figcaption.an-figcaption { color: #6c7086; }
   }
 
-  .asn-statusbar {
+  .an-statusbar {
     background: #181825;
     border-color: #3f3f5f;
     color: #6c7086;
   }
 
-  .asn-link-tooltip,
-  .asn-contextmenu {
+  .an-link-tooltip,
+  .an-contextmenu {
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
   }
 
-  .asn-link-tooltip-url { color: #89b4fa; }
+  .an-link-tooltip-url { color: #89b4fa; }
 
-  .asn-link-tooltip-btn {
+  .an-link-tooltip-btn {
     color: #a6adc8;
 
     &:hover {
@@ -1498,19 +1498,19 @@ $asn-video-accent: #8b5cf6; // violet-500
     }
   }
 
-  .asn-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
+  .an-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
 
-  .asn-dialog-box {
+  .an-dialog-box {
     background: #24273a;
     color: #cdd6f4;
     border: 1px solid #3f3f5f;
   }
 
-  .asn-dialog-title { color: #cdd6f4; }
+  .an-dialog-title { color: #cdd6f4; }
 
-  .asn-label { color: #cdd6f4; }
+  .an-label { color: #cdd6f4; }
 
-  .asn-input {
+  .an-input {
     background: #313244;
     border-color: #3f3f5f;
     color: #cdd6f4;
@@ -1521,43 +1521,43 @@ $asn-video-accent: #8b5cf6; // violet-500
     }
   }
 
-  .asn-shortcuts-key {
+  .an-shortcuts-key {
     background: #313244;
     border-color: #3f3f5f;
     color: #cdd6f4;
   }
 
-  .asn-shortcuts-action { color: #cdd6f4; }
-  .asn-shortcuts-row:hover { background: #2a2a3e; }
+  .an-shortcuts-action { color: #cdd6f4; }
+  .an-shortcuts-row:hover { background: #2a2a3e; }
 
-  .asn-shortcuts-cat {
+  .an-shortcuts-cat {
     border-color: #3f3f5f;
     color: #a6adc8;
   }
 
-  .asn-code-lang-select {
+  .an-code-lang-select {
     background-color: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
   }
 
-  .asn-color-popup,
-  .asn-table-picker-popup,
-  .asn-size-popover {
+  .an-color-popup,
+  .an-table-picker-popup,
+  .an-size-popover {
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
   }
 
-  .asn-table-cell {
+  .an-table-cell {
     background: #24273a;
     border-color: #3f3f5f;
   }
 
-  .asn-context-item { color: #cdd6f4; }
-  .asn-context-sep { background: #3f3f5f; }
+  .an-context-item { color: #cdd6f4; }
+  .an-context-sep { background: #3f3f5f; }
 
-  .asn-icon-cat {
+  .an-icon-cat {
     border-color: #3f3f5f;
     color: #a6adc8;
 
@@ -1568,19 +1568,19 @@ $asn-video-accent: #8b5cf6; // violet-500
     }
   }
 
-  .asn-icon-search {
+  .an-icon-search {
     border-color: #3f3f5f;
     background: #313244;
     color: #cdd6f4;
   }
 
-  .asn-icon-cell {
+  .an-icon-cell {
     color: #cdd6f4;
 
     &:hover { background: #2a2a3e; }
   }
 
-  .asn-icon-close {
+  .an-icon-close {
     color: #a6adc8;
 
     &:hover {

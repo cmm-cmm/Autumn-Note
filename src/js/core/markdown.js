@@ -126,7 +126,7 @@ export function markdownToHTML(text) {
 function _inline(text) {
   // Images before links (they share [] syntax)
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
-    `<img src="${_escAttr(src)}" alt="${_escAttr(alt)}" class="asn-image">`);
+    `<img src="${_escAttr(src)}" alt="${_escAttr(alt)}" class="an-image">`);
   // Links
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
     `<a href="${_escAttr(href)}">${_esc(label)}</a>`);

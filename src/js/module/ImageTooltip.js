@@ -71,18 +71,18 @@ export class ImageTooltip {
 
   _buildTooltip() {
     const el = createElement('div', {
-      class: 'asn-link-tooltip asn-image-tooltip',
+      class: 'an-link-tooltip an-image-tooltip',
       role: 'toolbar',
       'aria-label': 'Image actions',
     });
     el.style.display = 'none';
 
     // Label showing "Image"
-    this._label = createElement('span', { class: 'asn-link-tooltip-url' });
+    this._label = createElement('span', { class: 'an-link-tooltip-url' });
     this._label.textContent = 'Image';
     el.appendChild(this._label);
 
-    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     this._floatLeftBtn    = this._makeBtn(ICONS.floatLeft,    'Float Left',     () => this._setFloat('left'));
     this._floatNoneBtn    = this._makeBtn(ICONS.floatNone,    'No Float',       () => this._setFloat(''));
@@ -94,18 +94,18 @@ export class ImageTooltip {
     el.appendChild(this._alignCenterBtn);
     el.appendChild(this._floatRightBtn);
 
-    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
 
     el.appendChild(this._originalBtn);
 
-    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     this._captionBtn = this._makeBtn(ICONS.caption, 'Add / Edit Caption', () => this._toggleCaption());
     el.appendChild(this._captionBtn);
 
-    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     this._deleteBtn = this._makeBtn(ICONS.deleteImg, 'Delete Image', () => this._delete(), true);
 
@@ -129,7 +129,7 @@ export class ImageTooltip {
   _makeBtn(icon, title, handler, isDanger = false) {
     const btn = createElement('button', {
       type: 'button',
-      class: isDanger ? 'asn-link-tooltip-btn asn-link-tooltip-btn--danger' : 'asn-link-tooltip-btn',
+      class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
       title,
     });
     btn.innerHTML = icon;
@@ -250,9 +250,9 @@ export class ImageTooltip {
     if (!img) return;
 
     // If already inside a figure, move focus to the figcaption
-    const existing = img.closest('figure.asn-figure');
+    const existing = img.closest('figure.an-figure');
     if (existing) {
-      const cap = existing.querySelector('figcaption.asn-figcaption');
+      const cap = existing.querySelector('figcaption.an-figcaption');
       if (cap) {
         this._hide();
         const range = document.createRange();
@@ -265,9 +265,9 @@ export class ImageTooltip {
 
     // Wrap image in <figure><figcaption>
     const figure = document.createElement('figure');
-    figure.className = 'asn-figure';
+    figure.className = 'an-figure';
     const figcaption = document.createElement('figcaption');
-    figcaption.className = 'asn-figcaption';
+    figcaption.className = 'an-figcaption';
     figcaption.textContent = 'Caption';
 
     img.parentNode.insertBefore(figure, img);

@@ -90,12 +90,12 @@ export class ImageResizer {
 
   _buildOverlay() {
     const overlay = document.createElement('div');
-    overlay.className = 'asn-image-resizer';
+    overlay.className = 'an-image-resizer';
     overlay.style.display = 'none';
 
     HANDLE_DEFS.forEach(({ pos }) => {
       const h = document.createElement('div');
-      h.className = `asn-resize-handle asn-resize-${pos}`;
+      h.className = `an-resize-handle an-resize-${pos}`;
       h.dataset.handle = pos;
       // Attach handle listeners here so they're torn down in destroy() via _disposers
       this._disposers.push(
@@ -125,23 +125,23 @@ export class ImageResizer {
     if (e.target === this._activeImg) return;
     if (this._overlay && this._overlay.contains(e.target)) return;
     // Don't deselect while interacting with the context menu
-    if (e.target.closest('.asn-contextmenu')) return;
+    if (e.target.closest('.an-contextmenu')) return;
     this._deselect();
   }
 
   _select(img) {
     if (this._activeImg && this._activeImg !== img) {
-      this._activeImg.classList.remove('asn-image-selected');
+      this._activeImg.classList.remove('an-image-selected');
     }
     this._activeImg = img;
-    img.classList.add('asn-image-selected');
+    img.classList.add('an-image-selected');
     this._updateOverlayPosition();
     this._overlay.style.display = 'block';
   }
 
   _deselect() {
     if (this._activeImg) {
-      this._activeImg.classList.remove('asn-image-selected');
+      this._activeImg.classList.remove('an-image-selected');
       this._activeImg = null;
     }
     if (this._overlay) this._overlay.style.display = 'none';

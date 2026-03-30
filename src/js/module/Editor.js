@@ -321,7 +321,7 @@ export class Editor {
   insertImage(src, alt = '') {
     const safeSrc = sanitiseUrl(src, { allowData: true });
     if (!safeSrc) return;
-    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="asn-image">`);
+    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="an-image">`);
     this.afterCommand();
   }
 

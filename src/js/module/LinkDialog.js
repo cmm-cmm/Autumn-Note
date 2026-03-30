@@ -59,43 +59,43 @@ export class LinkDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
-    const overlay = createElement('div', { class: 'asn-dialog-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Insert link' });
-    const box = createElement('div', { class: 'asn-dialog-box' });
+    const overlay = createElement('div', { class: 'an-dialog-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Insert link' });
+    const box = createElement('div', { class: 'an-dialog-box' });
 
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Insert Link';
 
     // URL field
-    const urlLabel = createElement('label', { class: 'asn-label' });
+    const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = 'URL';
     const urlInput = createElement('input', {
       type: 'url',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: 'https://',
-      id: 'asn-link-url',
+      id: 'an-link-url',
       name: 'url',
       autocomplete: 'off',
     });
     this._urlInput = urlInput;
 
     // Text field
-    const textLabel = createElement('label', { class: 'asn-label' });
+    const textLabel = createElement('label', { class: 'an-label' });
     textLabel.textContent = 'Display Text';
     const textInput = createElement('input', {
       type: 'text',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: 'Link text',
-      id: 'asn-link-text',
+      id: 'an-link-text',
       name: 'linkText',
       autocomplete: 'off',
     });
     this._textInput = textInput;
 
     // Open in new tab
-    const tabLabel = createElement('label', { class: 'asn-label asn-label-inline' });
+    const tabLabel = createElement('label', { class: 'an-label an-label-inline' });
     const tabCheckbox = createElement('input', {
       type: 'checkbox',
-      id: 'asn-link-newtab',
+      id: 'an-link-newtab',
       name: 'openInNewTab',
     });
     this._tabCheckbox = tabCheckbox;
@@ -103,10 +103,10 @@ export class LinkDialog {
     tabLabel.appendChild(document.createTextNode(' Open in new tab'));
 
     // Buttons
-    const btnRow = createElement('div', { class: 'asn-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary' });
+    const btnRow = createElement('div', { class: 'an-dialog-actions' });
+    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
     insertBtn.textContent = 'Insert';
-    const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
+    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);

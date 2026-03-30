@@ -54,7 +54,7 @@ export class Codeview {
     const html = editable.innerHTML;
 
     this._textarea = createElement('textarea', {
-      class: 'asn-codeview',
+      class: 'an-codeview',
       spellcheck: 'false',
       autocomplete: 'off',
       autocorrect: 'off',

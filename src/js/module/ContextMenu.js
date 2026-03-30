@@ -69,7 +69,7 @@ export class ContextMenu {
   }
 
   initialize() {
-    this.el = createElement('div', { class: 'asn-contextmenu', role: 'menu', 'aria-hidden': 'true' });
+    this.el = createElement('div', { class: 'an-contextmenu', role: 'menu', 'aria-hidden': 'true' });
     this.el.style.display = 'none';
     document.body.appendChild(this.el);
 
@@ -106,17 +106,17 @@ export class ContextMenu {
 
     items.forEach((it) => {
       if (it.separator || it.sep) {
-        this.el.appendChild(createElement('div', { class: 'asn-context-sep' }));
+        this.el.appendChild(createElement('div', { class: 'an-context-sep' }));
         return;
       }
 
       // Back-navigation header
       if (it.back) {
-        const backBtn = createElement('button', { type: 'button', class: 'asn-context-back' });
-        const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+        const backBtn = createElement('button', { type: 'button', class: 'an-context-back' });
+        const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = ICONS.back;
         backBtn.appendChild(iconSpan);
-        backBtn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || 'Back']));
+        backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || 'Back']));
         const off = on(backBtn, 'click', (e) => {
           e.stopPropagation();
           this._renderItems(it.navigate());
@@ -129,14 +129,14 @@ export class ContextMenu {
 
       // Submenu-navigate item (shows ▶ chevron, re-renders without closing)
       if (it.navigate) {
-        const btn = createElement('button', { type: 'button', class: 'asn-context-item asn-context-submenu', 'data-name': it.name || '' });
+        const btn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', 'data-name': it.name || '' });
         if (it.icon) {
-          const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+          const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
           iconSpan.innerHTML = it.icon;
           btn.appendChild(iconSpan);
         }
-        btn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || it.name]));
-        const chevron = createElement('span', { class: 'asn-context-chevron', 'aria-hidden': 'true' });
+        btn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || it.name]));
+        const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
         chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
         btn.appendChild(chevron);
         const off = on(btn, 'click', (e) => {
@@ -152,31 +152,31 @@ export class ContextMenu {
       // Table grid picker item — expands an inline grid panel when clicked
       if (it.tableGrid) {
         const GRID_ROWS = 8, GRID_COLS = 8;
-        const wrapper = createElement('div', { class: 'asn-context-table-wrap' });
+        const wrapper = createElement('div', { class: 'an-context-table-wrap' });
 
-        const headerBtn = createElement('button', { type: 'button', class: 'asn-context-item asn-context-submenu', 'data-name': it.name || 'table' });
+        const headerBtn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', 'data-name': it.name || 'table' });
         if (it.icon) {
-          const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+          const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
           iconSpan.innerHTML = it.icon;
           headerBtn.appendChild(iconSpan);
         }
-        headerBtn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || 'Insert Table']));
-        const chevron = createElement('span', { class: 'asn-context-chevron', 'aria-hidden': 'true' });
+        headerBtn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || 'Insert Table']));
+        const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
         chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
         headerBtn.appendChild(chevron);
 
-        const panel = createElement('div', { class: 'asn-context-table-grid-panel' });
+        const panel = createElement('div', { class: 'an-context-table-grid-panel' });
         panel.style.display = 'none';
 
-        const gridEl = createElement('div', { class: 'asn-table-grid' });
+        const gridEl = createElement('div', { class: 'an-table-grid' });
         gridEl.style.gridTemplateColumns = `repeat(${GRID_COLS}, 16px)`;
-        const labelEl = createElement('div', { class: 'asn-table-label' });
+        const labelEl = createElement('div', { class: 'an-table-label' });
         labelEl.textContent = 'Insert Table';
 
         const cells = [];
         for (let r = 1; r <= GRID_ROWS; r++) {
           for (let c = 1; c <= GRID_COLS; c++) {
-            const cell = createElement('div', { class: 'asn-table-cell', 'data-row': String(r), 'data-col': String(c) });
+            const cell = createElement('div', { class: 'an-table-cell', 'data-row': String(r), 'data-col': String(c) });
             cell.style.width = '16px';
             cell.style.height = '16px';
             cells.push(cell);
@@ -234,14 +234,14 @@ export class ContextMenu {
       }
 
       // Regular item
-      const btn = createElement('button', { type: 'button', class: 'asn-context-item', 'data-name': it.name || '' });
+      const btn = createElement('button', { type: 'button', class: 'an-context-item', 'data-name': it.name || '' });
       if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) btn.disabled = true;
       if (it.icon) {
-        const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+        const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = it.icon;
         btn.appendChild(iconSpan);
       }
-      btn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || it.name]));
+      btn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || it.name]));
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
         this.hide();
@@ -389,8 +389,8 @@ export class ContextMenu {
     if (fmt.fontSize) {
       const marker = `fs-${Date.now()}`;
       document.execCommand('fontSize', false, '7');
-      editable.querySelectorAll('font[size="7"]').forEach((el) => el.setAttribute('data-asn-tmp', marker));
-      editable.querySelectorAll(`[data-asn-tmp="${marker}"]`).forEach((el) => {
+      editable.querySelectorAll('font[size="7"]').forEach((el) => el.setAttribute('data-an-tmp', marker));
+      editable.querySelectorAll(`[data-an-tmp="${marker}"]`).forEach((el) => {
         const span = document.createElement('span');
         span.style.fontSize = fmt.fontSize;
         el.parentNode.insertBefore(span, el);

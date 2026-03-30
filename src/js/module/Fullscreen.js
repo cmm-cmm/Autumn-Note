@@ -58,7 +58,7 @@ export class Fullscreen {
     // can be restored when exiting fullscreen.
     this._prevHeight = container.style.height;
 
-    container.classList.add('asn-fullscreen');
+    container.classList.add('an-fullscreen');
     // Clear any resize-imposed height so the fullscreen CSS (inset:0) takes over.
     container.style.height = '';
     document.body.style.overflow = 'hidden';
@@ -70,7 +70,7 @@ export class Fullscreen {
     if (!this._active) return;
     const container = this.context.layoutInfo.container;
 
-    container.classList.remove('asn-fullscreen');
+    container.classList.remove('an-fullscreen');
     // Restore whatever explicit height the user had set via the resize handle.
     container.style.height = this._prevHeight;
     document.body.style.overflow = '';

@@ -17,7 +17,7 @@ import { execCommand } from './Style.js';
  * @returns {HTMLTableElement}
  */
 export function createTable(cols, rows) {
-  const table = createElement('table', { class: 'asn-table' });
+  const table = createElement('table', { class: 'an-table' });
   const tbody = createElement('tbody');
   table.appendChild(tbody);
 

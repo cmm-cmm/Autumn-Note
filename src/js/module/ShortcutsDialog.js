@@ -74,21 +74,21 @@ export class ShortcutsDialog {
 
   _buildDialog() {
     const overlay = createElement('div', {
-      class: 'asn-dialog-overlay',
+      class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Keyboard Shortcuts',
     });
 
-    const box = createElement('div', { class: 'asn-dialog-box asn-shortcuts-box' });
+    const box = createElement('div', { class: 'an-dialog-box an-shortcuts-box' });
 
     // Title row with close button
-    const titleRow = createElement('div', { class: 'asn-icon-title-row' });
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Keyboard Shortcuts';
     const closeBtn = createElement('button', {
       type: 'button',
-      class: 'asn-icon-close',
+      class: 'an-icon-close',
       'aria-label': 'Close',
     });
     closeBtn.textContent = '×';
@@ -97,16 +97,16 @@ export class ShortcutsDialog {
     box.appendChild(titleRow);
 
     SHORTCUTS.forEach(({ category, items }) => {
-      const catEl = createElement('div', { class: 'asn-shortcuts-cat' });
+      const catEl = createElement('div', { class: 'an-shortcuts-cat' });
       catEl.textContent = category;
       box.appendChild(catEl);
 
-      const table = createElement('div', { class: 'asn-shortcuts-table' });
+      const table = createElement('div', { class: 'an-shortcuts-table' });
       items.forEach(({ keys, action }) => {
-        const row = createElement('div', { class: 'asn-shortcuts-row' });
-        const keyEl = createElement('span', { class: 'asn-shortcuts-key' });
+        const row = createElement('div', { class: 'an-shortcuts-row' });
+        const keyEl = createElement('span', { class: 'an-shortcuts-key' });
         keyEl.textContent = keys;
-        const actEl = createElement('span', { class: 'asn-shortcuts-action' });
+        const actEl = createElement('span', { class: 'an-shortcuts-action' });
         actEl.textContent = action;
         row.append(keyEl, actEl);
         table.appendChild(row);

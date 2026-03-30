@@ -23,7 +23,7 @@ export class Toolbar {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this.el = createElement('div', { class: 'asn-toolbar' });
+    this.el = createElement('div', { class: 'an-toolbar' });
     // Detect FontAwesome once at toolbar build time to avoid re-querying the DOM
     // for every button rendered.
     this._faReady = this._detectFontAwesome();
@@ -47,7 +47,7 @@ export class Toolbar {
   _buildButtons() {
     const toolbar = this.options.toolbar || [];
     toolbar.forEach((group) => {
-      const groupEl = createElement('div', { class: 'asn-btn-group' });
+      const groupEl = createElement('div', { class: 'an-btn-group' });
       group.forEach((btnDef) => {
         let el;
         if (btnDef.type === 'select') el = this._createSelect(btnDef);
@@ -69,12 +69,12 @@ export class Toolbar {
     const ROWS = 10;
     const COLS = 10;
 
-    const wrap = createElement('div', { class: 'asn-table-picker-wrap' });
+    const wrap = createElement('div', { class: 'an-table-picker-wrap' });
 
     const useBootstrap = !!this.options.useBootstrap;
     const baseClass = useBootstrap
       ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light')
-      : 'asn-btn';
+      : 'an-btn';
     const btn = createElement('button', {
       type: 'button',
       class: baseClass,
@@ -96,19 +96,19 @@ export class Toolbar {
 
     // Popup
     const popup = createElement('div', {
-      class: 'asn-table-picker-popup',
+      class: 'an-table-picker-popup',
       role: 'dialog',
       'aria-label': 'Select table size',
     });
-    const grid = createElement('div', { class: 'asn-table-grid' });
-    const label = createElement('div', { class: 'asn-table-label' });
+    const grid = createElement('div', { class: 'an-table-grid' });
+    const label = createElement('div', { class: 'an-table-label' });
     label.textContent = 'Insert Table';
 
     const cells = [];
     for (let r = 1; r <= ROWS; r++) {
       for (let c = 1; c <= COLS; c++) {
         const cell = createElement('div', {
-          class: 'asn-table-cell',
+          class: 'an-table-cell',
           'data-row': String(r),
           'data-col': String(c),
         });
@@ -150,7 +150,7 @@ export class Toolbar {
     });
 
     const d2 = on(grid, 'mouseover', (e) => {
-      const cell = e.target.closest('.asn-table-cell');
+      const cell = e.target.closest('.an-table-cell');
       if (!cell) return;
       setHighlight(+cell.getAttribute('data-row'), +cell.getAttribute('data-col'));
     });
@@ -158,7 +158,7 @@ export class Toolbar {
     const d3 = on(grid, 'mouseleave', () => setHighlight(0, 0));
 
     const d4 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.asn-table-cell');
+      const cell = e.target.closest('.an-table-cell');
       if (!cell) return;
       const rows = +cell.getAttribute('data-row');
       const cols = +cell.getAttribute('data-col');
@@ -194,15 +194,15 @@ export class Toolbar {
 
     let currentColor = def.defaultColor || '#000000';
 
-    const wrap = createElement('div', { class: 'asn-color-picker-wrap' });
+    const wrap = createElement('div', { class: 'an-color-picker-wrap' });
 
     const useBootstrap = !!this.options.useBootstrap;
-    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : 'asn-btn';
+    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : 'an-btn';
 
     // ---- Apply button (icon + color strip) ----
     const applyBtn = createElement('button', {
       type: 'button',
-      class: `${baseClass} asn-color-btn`,
+      class: `${baseClass} an-color-btn`,
       title: def.tooltip || '',
       'data-btn': def.name,
       'aria-label': def.tooltip || def.name,
@@ -214,14 +214,14 @@ export class Toolbar {
       : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
 
     applyBtn.innerHTML = iconSvg;
-    const strip = createElement('span', { class: 'asn-color-strip' });
+    const strip = createElement('span', { class: 'an-color-strip' });
     strip.style.background = currentColor;
     applyBtn.appendChild(strip);
 
     // ---- Arrow button (open popup) ----
     const arrowBtn = createElement('button', {
       type: 'button',
-      class: `${baseClass} asn-color-arrow`,
+      class: `${baseClass} an-color-arrow`,
       title: `Choose ${def.name === 'foreColor' ? 'text' : 'highlight'} color`,
       'aria-haspopup': 'true',
       'aria-expanded': 'false',
@@ -229,17 +229,17 @@ export class Toolbar {
     arrowBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>`;
 
     // ---- Popup ----
-    const popup = createElement('div', { class: 'asn-color-popup' });
+    const popup = createElement('div', { class: 'an-color-popup' });
     popup.style.display = 'none';
 
-    const swatches = createElement('div', { class: 'asn-color-swatches' });
+    const swatches = createElement('div', { class: 'an-color-swatches' });
     PRESETS.forEach((color) => {
-      const sw = createElement('div', { class: 'asn-color-swatch', title: color, 'data-color': color });
+      const sw = createElement('div', { class: 'an-color-swatch', title: color, 'data-color': color });
       sw.style.background = color;
       swatches.appendChild(sw);
     });
 
-    const customRow = createElement('div', { class: 'asn-color-custom' });
+    const customRow = createElement('div', { class: 'an-color-custom' });
     const colorInput = createElement('input', { type: 'color', value: currentColor, title: 'Custom color' });
     const customLabel = createElement('span', {}, ['Custom color']);
     customRow.appendChild(colorInput);
@@ -286,7 +286,7 @@ export class Toolbar {
     });
 
     const d3 = on(swatches, 'click', (e) => {
-      const sw = e.target.closest('.asn-color-swatch');
+      const sw = e.target.closest('.an-color-swatch');
       if (sw) applyColor(sw.dataset.color);
     });
 
@@ -318,7 +318,7 @@ export class Toolbar {
       ? (this.options.fontFamilies || [])
       : (def.items || []);
 
-    const cls = def.selectClass ? `asn-select ${def.selectClass}` : 'asn-select';
+    const cls = def.selectClass ? `an-select ${def.selectClass}` : 'an-select';
     const select = createElement('select', {
       class: cls,
       title: def.tooltip || '',
@@ -358,7 +358,7 @@ export class Toolbar {
   _createButton(btnDef) {
     // Determine classes based on whether the consumer wants Bootstrap styling
     const useBootstrap = !!this.options.useBootstrap;
-    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : `asn-btn`;
+    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : `an-btn`;
     const extra = btnDef.className ? ` ${btnDef.className}` : '';
     const classAttr = `${baseClass}${extra}`;
 

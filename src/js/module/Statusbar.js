@@ -27,12 +27,12 @@ export class Statusbar {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this.el = createElement('div', { class: 'asn-statusbar' });
+    this.el = createElement('div', { class: 'an-statusbar' });
 
     // Resize handle
     if (this.options.resizeable !== false) {
       const handle = createElement('div', {
-        class: 'asn-resize-handle',
+        class: 'an-resize-handle',
         title: 'Resize editor',
         'aria-hidden': 'true',
       });
@@ -41,9 +41,9 @@ export class Statusbar {
     }
 
     // Counters
-    this._wordCountEl = createElement('span', { class: 'asn-word-count' });
-    this._charCountEl = createElement('span', { class: 'asn-char-count' });
-    const info = createElement('div', { class: 'asn-status-info' });
+    this._wordCountEl = createElement('span', { class: 'an-word-count' });
+    this._charCountEl = createElement('span', { class: 'an-char-count' });
+    const info = createElement('div', { class: 'an-status-info' });
     info.appendChild(this._wordCountEl);
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);

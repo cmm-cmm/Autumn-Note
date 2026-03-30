@@ -1,15 +1,15 @@
 /**
- * index.js - Public entry point for AfterSummerNote
+ * index.js - Public entry point for AutumnNote
  *
  * Usage (module):
- *   import AfterSummerNote from 'aftersummernote';
- *   const editor = AfterSummerNote.create('#my-editor', { placeholder: 'Start typing…' });
+ *   import AutumnNote from 'autumnnote';
+ *   const editor = AutumnNote.create('#my-editor', { placeholder: 'Start typing…' });
  *
  * Usage (UMD / script tag):
- *   const editor = AfterSummerNote.create('#my-editor');
+ *   const editor = AutumnNote.create('#my-editor');
  */
 
-import '../styles/aftersummernote.scss';
+import '../styles/autumnnote.scss';
 import { Context } from './Context.js';
 import { defaultOptions } from './settings.js';
 
@@ -31,7 +31,7 @@ export * from './core/sanitise.js';
 /** @type {WeakMap<Element, Context>} */
 const instances = new WeakMap();
 
-const AfterSummerNote = {
+const AutumnNote = {
   /**
    * Creates (or returns existing) editor instance on one or more elements.
    *
@@ -103,4 +103,4 @@ function resolveElements(selector) {
   return [];
 }
 
-export default AfterSummerNote;
+export default AutumnNote;

@@ -128,13 +128,13 @@ export class Context {
 
   _bindEditorEvents(editable) {
     const d1 = on(editable, 'focus', () => {
-      this.layoutInfo.container.classList.add('asn-focused');
+      this.layoutInfo.container.classList.add('an-focused');
       if (typeof this.options.onFocus === 'function') {
         this.options.onFocus(this);
       }
     });
     const d2 = on(editable, 'blur', () => {
-      this.layoutInfo.container.classList.remove('asn-focused');
+      this.layoutInfo.container.classList.remove('an-focused');
       // Sync content back to original element
       this._syncToTarget();
       if (typeof this.options.onBlur === 'function') {
@@ -160,13 +160,13 @@ export class Context {
     const module = this._modules.get(moduleName);
     if (!module) {
       if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
-        console.warn(`[AfterSummerNote] invoke: module "${moduleName}" not found (path: "${path}")`);
+        console.warn(`[AutumnNote] invoke: module "${moduleName}" not found (path: "${path}")`);
       }
       return undefined;
     }
     if (typeof module[methodName] !== 'function') {
       if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
-        console.warn(`[AfterSummerNote] invoke: method "${methodName}" not found on module "${moduleName}" (path: "${path}")`);
+        console.warn(`[AutumnNote] invoke: method "${methodName}" not found on module "${moduleName}" (path: "${path}")`);
       }
       return undefined;
     }
@@ -262,10 +262,10 @@ export class Context {
     const editable = this.layoutInfo.editable;
     if (disabled) {
       editable.setAttribute('contenteditable', 'false');
-      this.layoutInfo.container.classList.add('asn-disabled');
+      this.layoutInfo.container.classList.add('an-disabled');
     } else {
       editable.setAttribute('contenteditable', 'true');
-      this.layoutInfo.container.classList.remove('asn-disabled');
+      this.layoutInfo.container.classList.remove('an-disabled');
     }
   }
 

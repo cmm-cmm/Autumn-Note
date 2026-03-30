@@ -1,4 +1,4 @@
-# AfterSummerNote
+# AutumnNote
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](#)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -61,7 +61,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **No jQuery** — pure vanilla ES2022, zero runtime dependencies
 - **Bootstrap friendly** — optional Bootstrap 4/5 styling for toolbar buttons (`useBootstrap: true`)
 - **FontAwesome ready** — auto-detects FA on the page; falls back to built-in SVG icons
-- **Plugin-ready** — register custom modules via `AfterSummerNote.defaults`
+- **Plugin-ready** — register custom modules via `AutumnNote.defaults`
 - **Tree-shakeable** — ES module build; all core utilities are individually exported
 
 ### Security
@@ -76,14 +76,14 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 ### npm / pnpm / yarn
 
 ```bash
-npm install aftersummernote
+npm install AutumnNote
 ```
 
 ### CDN
 
 ```html
-<link rel="stylesheet" href="dist/aftersummernote.css" />
-<script src="dist/aftersummernote.umd.js"></script>
+<link rel="stylesheet" href="dist/AutumnNote.css" />
+<script src="dist/AutumnNote.umd.js"></script>
 ```
 
 > **FontAwesome icons** — the editor auto-detects FontAwesome on the page and falls back to built-in SVG icons when absent. To enable FA icons, include the FA stylesheet:
@@ -102,9 +102,9 @@ npm install aftersummernote
 ### ES Module
 
 ```js
-import AfterSummerNote from 'aftersummernote';
+import AutumnNote from 'AutumnNote';
 
-const editor = AfterSummerNote.create('#my-editor', {
+const editor = AutumnNote.create('#my-editor', {
   placeholder: 'Start typing…',
   height: 300,
   onChange(html) {
@@ -117,16 +117,16 @@ const editor = AfterSummerNote.create('#my-editor', {
 
 ```html
 <div id="my-editor"><p>Hello!</p></div>
-<script src="dist/aftersummernote.umd.js"></script>
+<script src="dist/AutumnNote.umd.js"></script>
 <script>
-  const editor = AfterSummerNote.create('#my-editor');
+  const editor = AutumnNote.create('#my-editor');
 </script>
 ```
 
 ### With Bootstrap 5
 
 ```js
-const editor = AfterSummerNote.create('#my-editor', {
+const editor = AutumnNote.create('#my-editor', {
   useBootstrap: true,
   bootstrapVersion: 5,
   toolbarButtonClass: 'btn btn-sm btn-light',
@@ -136,7 +136,7 @@ const editor = AfterSummerNote.create('#my-editor', {
 ### With FontAwesome 6
 
 ```js
-const editor = AfterSummerNote.create('#my-editor', {
+const editor = AutumnNote.create('#my-editor', {
   useFontAwesome: true,
   fontAwesomeClass: 'fa-solid',  // FA 6 prefix
 });
@@ -150,10 +150,10 @@ const editor = AfterSummerNote.create('#my-editor', {
 
 | Method | Description |
 |---|---|
-| `AfterSummerNote.create(selector, options?)` | Creates editor instance(s). `selector` can be a CSS string, `Element`, `NodeList`, or `Element[]`. Returns a `Context` for a single match, or `Context[]` for multiple. |
-| `AfterSummerNote.destroy(selector)` | Destroys editor(s) matching the selector and restores the original element. |
-| `AfterSummerNote.getInstance(selector)` | Returns the `Context` for a given element, or `null` if not initialised. |
-| `AfterSummerNote.defaults` | Global default options object. Mutate before calling `create()` to apply project-wide settings. |
+| `AutumnNote.create(selector, options?)` | Creates editor instance(s). `selector` can be a CSS string, `Element`, `NodeList`, or `Element[]`. Returns a `Context` for a single match, or `Context[]` for multiple. |
+| `AutumnNote.destroy(selector)` | Destroys editor(s) matching the selector and restores the original element. |
+| `AutumnNote.getInstance(selector)` | Returns the `Context` for a given element, or `null` if not initialised. |
+| `AutumnNote.defaults` | Global default options object. Mutate before calling `create()` to apply project-wide settings. |
 
 ### Context (editor instance)
 
@@ -179,7 +179,7 @@ const editor = AfterSummerNote.create('#my-editor', {
 #### Subscribing to events
 
 ```js
-const editor = AfterSummerNote.create('#editor');
+const editor = AutumnNote.create('#editor');
 
 // Subscribe
 const unsub = editor.on('change', (html) => {
@@ -292,16 +292,16 @@ Clicking inside any table opens a floating tooltip with the following actions:
 The `toolbar` option accepts an array of button groups. Each group is a sub-array of button definition objects:
 
 ```js
-import AfterSummerNote from 'aftersummernote';
+import AutumnNote from 'AutumnNote';
 import {
   boldBtn, italicBtn, underlineBtn, strikeBtn,
   foreColorBtn, backColorBtn,
   linkBtn, imageBtn, videoBtn, tableBtn,
   emojiBtn, iconBtn,
   codeviewBtn, fullscreenBtn,
-} from 'aftersummernote/src/js/module/Buttons.js';
+} from 'AutumnNote/src/js/module/Buttons.js';
 
-AfterSummerNote.create('#editor', {
+AutumnNote.create('#editor', {
   toolbar: [
     [boldBtn, italicBtn, underlineBtn, strikeBtn],
     [foreColorBtn, backColorBtn],
@@ -338,10 +338,10 @@ AfterSummerNote.create('#editor', {
 ### Setting global defaults
 
 ```js
-import AfterSummerNote from 'aftersummernote';
+import AutumnNote from 'AutumnNote';
 
 // Apply once before any create() calls
-Object.assign(AfterSummerNote.defaults, {
+Object.assign(AutumnNote.defaults, {
   height: 400,
   placeholder: 'Write something…',
   fontAwesomeClass: 'fa-solid',
@@ -354,7 +354,7 @@ Object.assign(AfterSummerNote.defaults, {
 ## Custom Image Upload
 
 ```js
-AfterSummerNote.create('#editor', {
+AutumnNote.create('#editor', {
   allowImageUpload: true,
   onImageUpload(files) {
     const formData = new FormData();
@@ -375,12 +375,12 @@ AfterSummerNote.create('#editor', {
 ## Multiple Instances
 
 ```js
-const editors = AfterSummerNote.create('.rich-editor', { height: 250 });
+const editors = AutumnNote.create('.rich-editor', { height: 250 });
 // editors is Context[] when selector matches multiple elements
 
 // Iterate all instances
 document.querySelectorAll('.rich-editor').forEach((el) => {
-  const editor = AfterSummerNote.getInstance(el);
+  const editor = AutumnNote.getInstance(el);
   console.log(editor.getHTML());
 });
 ```
@@ -429,10 +429,10 @@ src/
 │   ├── Context.js            Editor instance hub — module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
 │   ├── renderer.js           DOM layout builder
-│   └── index.js              Public entry point + AfterSummerNote factory
+│   └── index.js              Public entry point + AutumnNote factory
 └── styles/
     ├── _variables.scss       SCSS design tokens (colours, spacing, radii, transitions)
-    └── aftersummernote.scss  Main stylesheet
+    └── AutumnNote.scss  Main stylesheet
 ```
 
 ---
@@ -454,15 +454,15 @@ npm test
 ```
 
 Build output in `dist/`:
-- `aftersummernote.es.js` — ES module (tree-shakeable)
-- `aftersummernote.umd.js` — UMD bundle (script tag / CommonJS)
-- `aftersummernote.css` — compiled stylesheet
+- `AutumnNote.es.js` — ES module (tree-shakeable)
+- `AutumnNote.umd.js` — UMD bundle (script tag / CommonJS)
+- `AutumnNote.css` — compiled stylesheet
 
 ---
 
 ## Comparison with Summernote
 
-| Feature | Summernote | AfterSummerNote |
+| Feature | Summernote | AutumnNote |
 |---|---|---|
 | jQuery required | Yes | No |
 | Bootstrap required | Optional | No |
@@ -523,7 +523,7 @@ MIT
 - **No jQuery** — pure vanilla ES2022, zero runtime dependencies
 - **Bootstrap friendly** — optional Bootstrap 4/5 styling for toolbar buttons (`useBootstrap: true`)
 - **FontAwesome ready** — auto-detects FA on the page; falls back to inline SVG icons
-- **Plugin-ready** — register custom modules via `AfterSummerNote.defaults`
+- **Plugin-ready** — register custom modules via `AutumnNote.defaults`
 - **Tree-shakeable** — ES module build; all core utilities are individually exported
 
 ### Security
@@ -538,14 +538,14 @@ MIT
 ### npm / pnpm / yarn
 
 ```bash
-npm install aftersummernote
+npm install AutumnNote
 ```
 
 ### CDN
 
 ```html
-<link rel="stylesheet" href="dist/aftersummernote.css" />
-<script src="dist/aftersummernote.umd.js"></script>
+<link rel="stylesheet" href="dist/AutumnNote.css" />
+<script src="dist/AutumnNote.umd.js"></script>
 ```
 
 > To use FontAwesome toolbar icons, include the FA stylesheet on your page. The editor auto-detects it and falls back to built-in SVG icons when FA is absent.
@@ -562,9 +562,9 @@ npm install aftersummernote
 ### ES Module
 
 ```js
-import AfterSummerNote from 'aftersummernote';
+import AutumnNote from 'AutumnNote';
 
-const editor = AfterSummerNote.create('#my-editor', {
+const editor = AutumnNote.create('#my-editor', {
   placeholder: 'Start typing…',
   height: 300,
   onChange(html) {
@@ -577,16 +577,16 @@ const editor = AfterSummerNote.create('#my-editor', {
 
 ```html
 <div id="my-editor"><p>Hello!</p></div>
-<script src="dist/aftersummernote.umd.js"></script>
+<script src="dist/AutumnNote.umd.js"></script>
 <script>
-  const editor = AfterSummerNote.create('#my-editor');
+  const editor = AutumnNote.create('#my-editor');
 </script>
 ```
 
 ### With Bootstrap 5
 
 ```js
-const editor = AfterSummerNote.create('#my-editor', {
+const editor = AutumnNote.create('#my-editor', {
   useBootstrap: true,
   bootstrapVersion: 5,
   toolbarButtonClass: 'btn btn-sm btn-light',
@@ -601,10 +601,10 @@ const editor = AfterSummerNote.create('#my-editor', {
 
 | Method | Description |
 |---|---|
-| `AfterSummerNote.create(selector, options?)` | Creates editor instance(s). Returns a `Context` (or array of `Context`). |
-| `AfterSummerNote.destroy(selector)` | Destroys editor(s) and restores the original element. |
-| `AfterSummerNote.getInstance(selector)` | Returns the `Context` for a given element, or `null`. |
-| `AfterSummerNote.defaults` | Global default options — mutate before calling `create()` to set project-wide defaults. |
+| `AutumnNote.create(selector, options?)` | Creates editor instance(s). Returns a `Context` (or array of `Context`). |
+| `AutumnNote.destroy(selector)` | Destroys editor(s) and restores the original element. |
+| `AutumnNote.getInstance(selector)` | Returns the `Context` for a given element, or `null`. |
+| `AutumnNote.defaults` | Global default options — mutate before calling `create()` to set project-wide defaults. |
 
 ### Context (editor instance)
 
@@ -664,14 +664,14 @@ const editor = AfterSummerNote.create('#my-editor', {
 The `toolbar` option accepts an array of button groups. Each group is an array of button definition objects imported from `Buttons.js`:
 
 ```js
-import AfterSummerNote from 'aftersummernote';
+import AutumnNote from 'AutumnNote';
 import {
   boldBtn, italicBtn, underlineBtn,
   linkBtn, imageBtn, emojiBtn, iconBtn,
   codeviewBtn, fullscreenBtn,
-} from 'aftersummernote/src/js/module/Buttons.js';
+} from 'AutumnNote/src/js/module/Buttons.js';
 
-AfterSummerNote.create('#editor', {
+AutumnNote.create('#editor', {
   toolbar: [
     [boldBtn, italicBtn, underlineBtn],
     [linkBtn, imageBtn, emojiBtn, iconBtn],
@@ -750,7 +750,7 @@ src/
 │   └── index.js              Public entry point
 └── styles/
     ├── _variables.scss       SCSS design tokens
-    └── aftersummernote.scss  Main stylesheet
+    └── AutumnNote.scss  Main stylesheet
 ```
 
 ---
@@ -775,7 +775,7 @@ npm test
 
 ## Comparison with Summernote
 
-| Feature | Summernote | AfterSummerNote |
+| Feature | Summernote | AutumnNote |
 |---|---|---|
 | jQuery required | Yes | No |
 | Bootstrap required | Optional | No |

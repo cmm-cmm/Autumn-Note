@@ -63,15 +63,15 @@ export class LinkTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
-    const el = createElement('div', { class: 'asn-link-tooltip', role: 'toolbar', 'aria-label': 'Link actions' });
+    const el = createElement('div', { class: 'an-link-tooltip', role: 'toolbar', 'aria-label': 'Link actions' });
     el.style.display = 'none';
 
     // URL preview text (truncated)
-    this._urlLabel = createElement('span', { class: 'asn-link-tooltip-url' });
+    this._urlLabel = createElement('span', { class: 'an-link-tooltip-url' });
     el.appendChild(this._urlLabel);
 
     // Separator
-    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     // Action buttons
     this._openBtn   = this._makeBtn(ICONS.open,   'Open link',   () => this._openLink());
@@ -94,7 +94,7 @@ export class LinkTooltip {
   }
 
   _makeBtn(icon, title, handler) {
-    const btn = createElement('button', { type: 'button', class: 'asn-link-tooltip-btn', title });
+    const btn = createElement('button', { type: 'button', class: 'an-link-tooltip-btn', title });
     btn.innerHTML = icon;
     this._disposers.push(on(btn, 'click', (e) => { e.preventDefault(); e.stopPropagation(); handler(); }));
     return btn;
@@ -204,8 +204,8 @@ export class LinkTooltip {
     }
     // Brief visual feedback  
     if (this._copyBtn) {
-      this._copyBtn.classList.add('asn-link-tooltip-btn--copied');
-      setTimeout(() => this._copyBtn && this._copyBtn.classList.remove('asn-link-tooltip-btn--copied'), 1000);
+      this._copyBtn.classList.add('an-link-tooltip-btn--copied');
+      setTimeout(() => this._copyBtn && this._copyBtn.classList.remove('an-link-tooltip-btn--copied'), 1000);
     }
   }
 

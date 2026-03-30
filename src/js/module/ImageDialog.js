@@ -58,33 +58,33 @@ export class ImageDialog {
 
   _buildDialog() {
     const overlay = createElement('div', {
-      class: 'asn-dialog-overlay',
+      class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Insert image',
     });
-    const box = createElement('div', { class: 'asn-dialog-box' });
+    const box = createElement('div', { class: 'an-dialog-box' });
 
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Insert Image';
 
     // URL tab
-    const urlLabel = createElement('label', { class: 'asn-label' });
+    const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = 'Image URL';
     const urlInput = createElement('input', {
       type: 'url',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: 'https://example.com/image.png',
       autocomplete: 'off',
     });
     this._urlInput = urlInput;
 
     // Alt text
-    const altLabel = createElement('label', { class: 'asn-label' });
+    const altLabel = createElement('label', { class: 'an-label' });
     altLabel.textContent = 'Alt Text';
     const altInput = createElement('input', {
       type: 'text',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: 'Describe the image',
       autocomplete: 'off',
     });
@@ -92,11 +92,11 @@ export class ImageDialog {
 
     // File upload (optional — embeds as base64)
     if (this.options.allowImageUpload !== false) {
-      const fileLabel = createElement('label', { class: 'asn-label' });
+      const fileLabel = createElement('label', { class: 'an-label' });
       fileLabel.textContent = 'Or upload a file';
       const fileInput = createElement('input', {
         type: 'file',
-        class: 'asn-input',
+        class: 'an-input',
         accept: 'image/*',
       });
       this._fileInput = fileInput;
@@ -106,10 +106,10 @@ export class ImageDialog {
     }
 
     // Buttons
-    const btnRow = createElement('div', { class: 'asn-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary' });
+    const btnRow = createElement('div', { class: 'an-dialog-actions' });
+    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
     insertBtn.textContent = 'Insert';
-    const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
+    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);

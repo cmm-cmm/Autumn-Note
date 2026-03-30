@@ -1,5 +1,5 @@
 // VideoResizer.js - Interactive resize handles for selected videos in the editor
-// Targets .asn-video-wrapper divs (containing <iframe> or <video>)
+// Targets .an-video-wrapper divs (containing <iframe> or <video>)
 import { on } from '../core/dom.js';
 
 const HANDLE_DEFS = [
@@ -17,7 +17,7 @@ export class VideoResizer {
   /** @param {import('../Context.js').Context} context */
   constructor(context) {
     this.context = context;
-    /** @type {HTMLElement|null} — the .asn-video-wrapper div */
+    /** @type {HTMLElement|null} — the .an-video-wrapper div */
     this._activeWrapper = null;
     this._overlay = null;
     this._disposers = [];
@@ -80,29 +80,29 @@ export class VideoResizer {
   // ---------------------------------------------------------------------------
 
   /**
-   * Walk up the DOM from `el` to find the nearest .asn-video-wrapper,
-   * or an iframe/video whose parent is .asn-video-wrapper.
+   * Walk up the DOM from `el` to find the nearest .an-video-wrapper,
+   * or an iframe/video whose parent is .an-video-wrapper.
    * @param {EventTarget} el
    * @returns {HTMLElement|null}
    */
   _findWrapper(el) {
     if (!el || !(el instanceof Element)) return null;
     // Direct hit on wrapper
-    if (el.classList && el.classList.contains('asn-video-wrapper')) return el;
+    if (el.classList && el.classList.contains('an-video-wrapper')) return el;
     // Child element (iframe, video, or nested)
-    const w = el.closest('.asn-video-wrapper');
+    const w = el.closest('.an-video-wrapper');
     if (w) return w;
     return null;
   }
 
   _buildOverlay() {
     const overlay = document.createElement('div');
-    overlay.className = 'asn-video-resizer';
+    overlay.className = 'an-video-resizer';
     overlay.style.display = 'none';
 
     HANDLE_DEFS.forEach(({ pos }) => {
       const h = document.createElement('div');
-      h.className = `asn-resize-handle asn-resize-${pos}`;
+      h.className = `an-resize-handle an-resize-${pos}`;
       h.dataset.handle = pos;
       this._disposers.push(
         on(h, 'mousedown', (e) => {
@@ -129,23 +129,23 @@ export class VideoResizer {
     if (!this._activeWrapper) return;
     if (this._activeWrapper.contains(e.target)) return;
     if (this._overlay && this._overlay.contains(e.target)) return;
-    if (e.target.closest('.asn-contextmenu')) return;
+    if (e.target.closest('.an-contextmenu')) return;
     this._deselect();
   }
 
   _select(wrapper) {
     if (this._activeWrapper && this._activeWrapper !== wrapper) {
-      this._activeWrapper.classList.remove('asn-video-selected');
+      this._activeWrapper.classList.remove('an-video-selected');
     }
     this._activeWrapper = wrapper;
-    wrapper.classList.add('asn-video-selected');
+    wrapper.classList.add('an-video-selected');
     this._updateOverlayPosition();
     this._overlay.style.display = 'block';
   }
 
   _deselect() {
     if (this._activeWrapper) {
-      this._activeWrapper.classList.remove('asn-video-selected');
+      this._activeWrapper.classList.remove('an-video-selected');
       this._activeWrapper = null;
     }
     if (this._overlay) this._overlay.style.display = 'none';

@@ -280,14 +280,14 @@ export class IconDialog {
    */
   _ensureFontAwesome() {
     // Already present (icon element or stylesheet link)?
-    if (document.getElementById('asn-fontawesome-css')) return;
+    if (document.getElementById('an-fontawesome-css')) return;
     const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
       .map((l) => l.href || '').join(' ');
     if (/fontawesome|font-awesome/.test(links)) return;
     if (document.querySelector('.fa-solid, .fas, .far, .fab')) return;
 
     const link = document.createElement('link');
-    link.id   = 'asn-fontawesome-css';
+    link.id   = 'an-fontawesome-css';
     link.rel  = 'stylesheet';
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
     link.crossOrigin = 'anonymous';
@@ -327,47 +327,47 @@ export class IconDialog {
 
   _buildDialog() {
     const overlay = createElement('div', {
-      class: 'asn-dialog-overlay',
+      class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Insert FA icon',
     });
 
-    const box = createElement('div', { class: 'asn-dialog-box asn-icon-box' });
+    const box = createElement('div', { class: 'an-dialog-box an-icon-box' });
 
     // Title row
-    const titleRow = createElement('div', { class: 'asn-icon-title-row' });
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Insert FA Icon';
-    const closeBtn = createElement('button', { type: 'button', class: 'asn-icon-close', 'aria-label': 'Close' });
+    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': 'Close' });
     closeBtn.innerHTML = '&times;';
     titleRow.append(title, closeBtn);
 
     // Search
     const searchInput = createElement('input', {
       type: 'search',
-      class: 'asn-input asn-icon-search',
+      class: 'an-input an-icon-search',
       placeholder: 'Search icons…',
       autocomplete: 'off',
     });
     this._searchInput = searchInput;
 
     // Category tabs
-    const catBar = createElement('div', { class: 'asn-icon-cats' });
-    const allTab = createElement('button', { type: 'button', class: 'asn-icon-cat active', 'data-cat': 'all' });
+    const catBar = createElement('div', { class: 'an-icon-cats' });
+    const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
     allTab.textContent = 'All';
     catBar.appendChild(allTab);
     ICON_CATEGORIES.forEach(({ id, label }) => {
-      const tab = createElement('button', { type: 'button', class: 'asn-icon-cat', 'data-cat': id });
+      const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
       tab.textContent = label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
 
     // Icon grid
-    const grid = createElement('div', { class: 'asn-icon-grid' });
+    const grid = createElement('div', { class: 'an-icon-grid' });
     ICON_LIST.forEach(([name, cat]) => {
-      const cell = createElement('button', { type: 'button', class: 'asn-icon-cell', 'data-name': name, 'data-cat': cat, title: name });
+      const cell = createElement('button', { type: 'button', class: 'an-icon-cell', 'data-name': name, 'data-cat': cat, title: name });
       const icon = createElement('i', { class: 'fa-solid fa-' + name, 'aria-hidden': 'true' });
       const label = createElement('span');
       label.textContent = name;
@@ -377,11 +377,11 @@ export class IconDialog {
     this._grid = grid;
 
     // Options row: style + size + color
-    const optRow = createElement('div', { class: 'asn-icon-options' });
+    const optRow = createElement('div', { class: 'an-icon-options' });
 
-    const styleLabel = createElement('label', { class: 'asn-label' });
+    const styleLabel = createElement('label', { class: 'an-label' });
     styleLabel.textContent = 'Style';
-    const styleSelect = createElement('select', { class: 'asn-input asn-icon-option-select' });
+    const styleSelect = createElement('select', { class: 'an-input an-icon-option-select' });
     [['fa-solid', 'Solid'], ['fa-regular', 'Regular'], ['fa-light', 'Light (Pro)']].forEach(([v, t]) => {
       const opt = createElement('option', { value: v });
       opt.textContent = t;
@@ -390,9 +390,9 @@ export class IconDialog {
     styleSelect.value = 'fa-solid';
     this._styleSelect = styleSelect;
 
-    const sizeLabel = createElement('label', { class: 'asn-label' });
+    const sizeLabel = createElement('label', { class: 'an-label' });
     sizeLabel.textContent = 'Size';
-    const sizeSelect = createElement('select', { class: 'asn-input asn-icon-option-select' });
+    const sizeSelect = createElement('select', { class: 'an-input an-icon-option-select' });
     [['', 'Inherit'], ['0.75em', '0.75em'], ['1em', '1em'], ['1.25em', '1.25em'], ['1.5em', '1.5em'], ['2em', '2em'], ['3em', '3em']].forEach(([v, t]) => {
       const opt = createElement('option', { value: v });
       if (v === '1em') opt.selected = true;
@@ -401,12 +401,12 @@ export class IconDialog {
     });
     this._sizeSelect = sizeSelect;
 
-    const colorLabel = createElement('label', { class: 'asn-label' });
+    const colorLabel = createElement('label', { class: 'an-label' });
     colorLabel.textContent = 'Color';
-    const colorInput = createElement('input', { type: 'color', class: 'asn-icon-color', value: '#000000' });
+    const colorInput = createElement('input', { type: 'color', class: 'an-icon-color', value: '#000000' });
     this._colorInput = colorInput;
 
-    const useColorLabel = createElement('label', { class: 'asn-label asn-label-inline asn-icon-use-color' });
+    const useColorLabel = createElement('label', { class: 'an-label an-label-inline an-icon-use-color' });
     const useColorCb = createElement('input', { type: 'checkbox', checked: '' });
     this._useColorCb = useColorCb;
     useColorLabel.append(useColorCb, document.createTextNode(' Use color'));
@@ -414,17 +414,17 @@ export class IconDialog {
     optRow.append(styleLabel, styleSelect, sizeLabel, sizeSelect, colorLabel, colorInput, useColorLabel);
 
     // Preview
-    const preview = createElement('div', { class: 'asn-icon-preview' });
-    const previewHint = createElement('span', { class: 'asn-icon-preview-hint' });
+    const preview = createElement('div', { class: 'an-icon-preview' });
+    const previewHint = createElement('span', { class: 'an-icon-preview-hint' });
     previewHint.textContent = 'Select an icon';
     preview.appendChild(previewHint);
     this._preview = preview;
 
     // Actions
-    const btnRow = createElement('div', { class: 'asn-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary', disabled: '' });
+    const btnRow = createElement('div', { class: 'an-dialog-actions' });
+    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary', disabled: '' });
     insertBtn.textContent = 'Insert FA Icon';
-    const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
+    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.append(insertBtn, cancelBtn);
     this._insertBtn = insertBtn;
@@ -450,7 +450,7 @@ export class IconDialog {
       }
     });
     const d7 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.asn-icon-cell');
+      const cell = e.target.closest('.an-icon-cell');
       if (cell) this._selectIcon(cell.dataset.name);
     });
     const d8 = on(styleSelect, 'change', () => this._updatePreview(this._selectedIcon));
@@ -474,7 +474,7 @@ export class IconDialog {
   // ---------------------------------------------------------------------------
 
   _updateCatTabs() {
-    this._catBar.querySelectorAll('.asn-icon-cat').forEach((tab) => {
+    this._catBar.querySelectorAll('.an-icon-cat').forEach((tab) => {
       tab.classList.toggle('active', tab.dataset.cat === this._activeCat);
     });
   }
@@ -482,7 +482,7 @@ export class IconDialog {
   _filterIcons(query, cat) {
     const q = (query || '').trim().toLowerCase();
     let visibleCount = 0;
-    this._grid.querySelectorAll('.asn-icon-cell').forEach((cell) => {
+    this._grid.querySelectorAll('.an-icon-cell').forEach((cell) => {
       const name = cell.dataset.name;
       const cellCat = cell.dataset.cat;
       const matchesCat = !cat || cat === 'all' || cellCat === cat;
@@ -492,9 +492,9 @@ export class IconDialog {
       if (visible) visibleCount++;
     });
     // Show empty state if needed
-    let empty = this._grid.querySelector('.asn-icon-empty');
+    let empty = this._grid.querySelector('.an-icon-empty');
     if (!empty) {
-      empty = createElement('div', { class: 'asn-icon-empty' });
+      empty = createElement('div', { class: 'an-icon-empty' });
       empty.textContent = 'No icons found';
       this._grid.appendChild(empty);
     }
@@ -504,7 +504,7 @@ export class IconDialog {
   _selectIcon(name) {
     this._selectedIcon = name;
     // Highlight selected cell
-    this._grid.querySelectorAll('.asn-icon-cell').forEach((cell) => {
+    this._grid.querySelectorAll('.an-icon-cell').forEach((cell) => {
       cell.classList.toggle('active', cell.dataset.name === name);
     });
     // Enable insert button
@@ -516,7 +516,7 @@ export class IconDialog {
   _updatePreview(name) {
     if (!this._preview) return;
     if (!name) {
-      this._preview.innerHTML = '<span class="asn-icon-preview-hint">Select an icon</span>';
+      this._preview.innerHTML = '<span class="an-icon-preview-hint">Select an icon</span>';
       return;
     }
     const cls   = (this._styleSelect && this._styleSelect.value) || 'fa-solid';
@@ -532,7 +532,7 @@ export class IconDialog {
       `<i class="${cls} fa-${name}" aria-hidden="true"${
         styleAttr ? ` style="${styleAttr}"` : ''
       }></i>` +
-      `<div class="asn-icon-preview-name">${cls} fa-${name}</div>`;
+      `<div class="an-icon-preview-name">${cls} fa-${name}</div>`;
   }
 
   // ---------------------------------------------------------------------------

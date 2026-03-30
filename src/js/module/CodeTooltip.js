@@ -73,14 +73,14 @@ export class CodeTooltip {
 
   _buildTooltip() {
     const el = createElement('div', {
-      class: 'asn-link-tooltip asn-code-tooltip',
+      class: 'an-link-tooltip an-code-tooltip',
       role: 'toolbar',
       'aria-label': 'Code block actions',
     });
     el.style.display = 'none';
 
     // Label
-    this._label = createElement('span', { class: 'asn-link-tooltip-url' });
+    this._label = createElement('span', { class: 'an-link-tooltip-url' });
     this._label.textContent = 'Code';
     el.appendChild(this._label);
 
@@ -88,7 +88,7 @@ export class CodeTooltip {
 
     // Language selector
     this._langSelect = createElement('select', {
-      class: 'asn-code-lang-select',
+      class: 'an-code-lang-select',
       title: 'Syntax Language',
       'aria-label': 'Syntax language',
     });
@@ -141,7 +141,7 @@ export class CodeTooltip {
   }
 
   _sep() {
-    return createElement('div', { class: 'asn-link-tooltip-sep' });
+    return createElement('div', { class: 'an-link-tooltip-sep' });
   }
 
   /**
@@ -153,7 +153,7 @@ export class CodeTooltip {
   _makeBtn(icon, title, handler, isDanger = false) {
     const btn = createElement('button', {
       type: 'button',
-      class: isDanger ? 'asn-link-tooltip-btn asn-link-tooltip-btn--danger' : 'asn-link-tooltip-btn',
+      class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
       title,
     });
     btn.innerHTML = icon;
@@ -271,11 +271,11 @@ export class CodeTooltip {
     if (!this._copyBtn) return;
     const original = this._copyBtn.innerHTML;
     this._copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-    this._copyBtn.classList.add('asn-link-tooltip-btn--copied');
+    this._copyBtn.classList.add('an-link-tooltip-btn--copied');
     setTimeout(() => {
       if (this._copyBtn) {
         this._copyBtn.innerHTML = original;
-        this._copyBtn.classList.remove('asn-link-tooltip-btn--copied');
+        this._copyBtn.classList.remove('an-link-tooltip-btn--copied');
       }
     }, 1400);
   }

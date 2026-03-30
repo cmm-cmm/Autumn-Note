@@ -60,37 +60,37 @@ export class VideoDialog {
 
   _buildDialog() {
     const overlay = createElement('div', {
-      class: 'asn-dialog-overlay',
+      class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Insert video',
     });
-    const box = createElement('div', { class: 'asn-dialog-box' });
+    const box = createElement('div', { class: 'an-dialog-box' });
 
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Insert Video';
 
     // URL input
-    const urlLabel = createElement('label', { class: 'asn-label' });
+    const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = 'Video URL';
     const urlInput = createElement('input', {
       type: 'url',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: 'YouTube, Vimeo, or direct .mp4 URL',
       autocomplete: 'off',
     });
     this._urlInput = urlInput;
 
     // Hint (detected source)
-    const hintEl = createElement('p', { class: 'asn-dialog-hint' });
+    const hintEl = createElement('p', { class: 'an-dialog-hint' });
     this._hintEl = hintEl;
 
     // Width
-    const widthLabel = createElement('label', { class: 'asn-label' });
+    const widthLabel = createElement('label', { class: 'an-label' });
     widthLabel.textContent = 'Width (px)';
     const widthInput = createElement('input', {
       type: 'number',
-      class: 'asn-input',
+      class: 'an-input',
       placeholder: '560',
       min: '80',
       max: '1920',
@@ -99,10 +99,10 @@ export class VideoDialog {
     this._widthInput = widthInput;
 
     // Buttons
-    const btnRow = createElement('div', { class: 'asn-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary' });
+    const btnRow = createElement('div', { class: 'an-dialog-actions' });
+    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
     insertBtn.textContent = 'Insert';
-    const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
+    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
@@ -216,22 +216,22 @@ export class VideoDialog {
 
     if (info && (info.type === 'YouTube' || info.type === 'YouTube Shorts' || info.type === 'Vimeo')) {
       return (
-        `<div class="asn-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
+        `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
         `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` +
         `frameborder="0" allowfullscreen ` +
         `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +
         `style="display:block;max-width:100%"></iframe>` +
-        `<div class="asn-video-shield"></div>` +
+        `<div class="an-video-shield"></div>` +
         `</div>`
       );
     }
 
     if (info && info.type === 'Direct video') {
       return (
-        `<div class="asn-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
+        `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
         `<video src="${info.embedUrl}" width="${width}" height="${height}" controls ` +
         `style="display:block;max-width:100%"></video>` +
-        `<div class="asn-video-shield"></div>` +
+        `<div class="an-video-shield"></div>` +
         `</div>`
       );
     }
@@ -247,10 +247,10 @@ export class VideoDialog {
     if (!safeSrc) return null;
 
     return (
-      `<div class="asn-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
+      `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
       `<video src="${safeSrc}" width="${width}" height="${height}" controls ` +
       `style="display:block;max-width:100%"></video>` +
-      `<div class="asn-video-shield"></div>` +
+      `<div class="an-video-shield"></div>` +
       `</div>`
     );
   }

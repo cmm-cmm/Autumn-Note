@@ -138,7 +138,7 @@ export const paragraphStyleBtn = {
   type: 'select',
   tooltip: 'Paragraph Style',
   placeholder: 'Style',
-  selectClass: 'asn-select-style',
+  selectClass: 'an-select-style',
   items: [
     { value: 'p',          label: 'Normal' },
     { value: 'h1',         label: 'H1'     },
@@ -169,7 +169,7 @@ export const lineHeightBtn = {
   type: 'select',
   tooltip: 'Line Height',
   placeholder: '\u2195 Line',
-  selectClass: 'asn-select-narrow',
+  selectClass: 'an-select-narrow',
   items: ['1.0', '1.15', '1.5', '1.75', '2.0', '2.5', '3.0'],
   action: (_ctx, value) => Style.lineHeight(value),
   getValue: () => {

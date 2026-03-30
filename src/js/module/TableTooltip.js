@@ -94,14 +94,14 @@ export class TableTooltip {
 
   _buildTooltip() {
     const el = createElement('div', {
-      class: 'asn-link-tooltip asn-table-tooltip',
+      class: 'an-link-tooltip an-table-tooltip',
       role: 'toolbar',
       'aria-label': 'Table actions',
     });
     el.style.display = 'none';
 
     // Label
-    this._label = createElement('span', { class: 'asn-link-tooltip-url' });
+    this._label = createElement('span', { class: 'an-link-tooltip-url' });
     this._label.textContent = 'Table';
     el.appendChild(this._label);
 
@@ -145,7 +145,7 @@ export class TableTooltip {
   }
 
   _sep() {
-    return createElement('div', { class: 'asn-link-tooltip-sep' });
+    return createElement('div', { class: 'an-link-tooltip-sep' });
   }
 
   /**
@@ -158,8 +158,8 @@ export class TableTooltip {
     const btn = createElement('button', {
       type: 'button',
       class: isDanger
-        ? 'asn-link-tooltip-btn asn-link-tooltip-btn--danger'
-        : 'asn-link-tooltip-btn',
+        ? 'an-link-tooltip-btn an-link-tooltip-btn--danger'
+        : 'an-link-tooltip-btn',
       title,
     });
     btn.innerHTML = icon;
@@ -348,22 +348,22 @@ export class TableTooltip {
   // ---------------------------------------------------------------------------
 
   _buildSizePopover() {
-    const popover = createElement('div', { class: 'asn-size-popover' });
+    const popover = createElement('div', { class: 'an-size-popover' });
     popover.style.display = 'none';
 
-    const titleEl = createElement('div', { class: 'asn-size-popover-title' });
-    const body    = createElement('div', { class: 'asn-size-popover-body' });
+    const titleEl = createElement('div', { class: 'an-size-popover-title' });
+    const body    = createElement('div', { class: 'an-size-popover-body' });
     const inputEl = createElement('input', {
-      type: 'number', class: 'asn-size-input', min: '1', max: '2000', step: '1',
+      type: 'number', class: 'an-size-input', min: '1', max: '2000', step: '1',
     });
-    const unitEl = createElement('span', { class: 'asn-size-unit' }, ['px']);
+    const unitEl = createElement('span', { class: 'an-size-unit' }, ['px']);
     body.appendChild(inputEl);
     body.appendChild(unitEl);
 
-    const actionsEl  = createElement('div', { class: 'asn-size-popover-actions' });
-    const cancelBtn  = createElement('button', { type: 'button', class: 'asn-btn' });
+    const actionsEl  = createElement('div', { class: 'an-size-popover-actions' });
+    const cancelBtn  = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
-    const applyBtn   = createElement('button', { type: 'button', class: 'asn-btn asn-btn-primary' });
+    const applyBtn   = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
     applyBtn.textContent = 'Apply';
     actionsEl.appendChild(cancelBtn);
     actionsEl.appendChild(applyBtn);

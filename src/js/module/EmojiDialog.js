@@ -553,48 +553,48 @@ export class EmojiDialog {
 
   _buildDialog() {
     const overlay = createElement('div', {
-      class: 'asn-dialog-overlay',
+      class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': 'Insert emoji',
     });
-    const box = createElement('div', { class: 'asn-dialog-box asn-emoji-box' });
+    const box = createElement('div', { class: 'an-dialog-box an-emoji-box' });
 
     // Title row
-    const titleRow = createElement('div', { class: 'asn-icon-title-row' });
-    const title = createElement('h3', { class: 'asn-dialog-title' });
+    const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = 'Insert Emoji';
-    const closeBtn = createElement('button', { type: 'button', class: 'asn-icon-close', 'aria-label': 'Close' });
+    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': 'Close' });
     closeBtn.innerHTML = '&times;';
     titleRow.append(title, closeBtn);
 
     // Search
     const searchInput = createElement('input', {
       type: 'search',
-      class: 'asn-input asn-icon-search',
+      class: 'an-input an-icon-search',
       placeholder: 'Search emojis…',
       autocomplete: 'off',
     });
     this._searchInput = searchInput;
 
     // Category tabs
-    const catBar = createElement('div', { class: 'asn-icon-cats' });
-    const allTab = createElement('button', { type: 'button', class: 'asn-icon-cat active', 'data-cat': 'all' });
+    const catBar = createElement('div', { class: 'an-icon-cats' });
+    const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
     allTab.textContent = 'All';
     catBar.appendChild(allTab);
     EMOJI_CATS.forEach(({ id, label }) => {
-      const tab = createElement('button', { type: 'button', class: 'asn-icon-cat', 'data-cat': id });
+      const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
       tab.textContent = label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
 
     // Emoji grid — one button per emoji, click = immediate insert
-    const grid = createElement('div', { class: 'asn-emoji-grid' });
+    const grid = createElement('div', { class: 'an-emoji-grid' });
     EMOJI_LIST.forEach(([char, keywords, cat]) => {
       const cell = createElement('button', {
         type: 'button',
-        class: 'asn-emoji-cell',
+        class: 'an-emoji-cell',
         'data-char': char,
         'data-keywords': keywords,
         'data-cat': cat,
@@ -606,8 +606,8 @@ export class EmojiDialog {
     this._grid = grid;
 
     // Cancel only — clicking an emoji inserts immediately
-    const btnRow = createElement('div', { class: 'asn-dialog-actions' });
-    const cancelBtn = createElement('button', { type: 'button', class: 'asn-btn' });
+    const btnRow = createElement('div', { class: 'an-dialog-actions' });
+    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = 'Cancel';
     btnRow.appendChild(cancelBtn);
 
@@ -628,7 +628,7 @@ export class EmojiDialog {
       }
     });
     const d6 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.asn-emoji-cell');
+      const cell = e.target.closest('.an-emoji-cell');
       if (cell) this._onEmojiClick(cell.dataset.char);
     });
     const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
@@ -644,7 +644,7 @@ export class EmojiDialog {
   // ---------------------------------------------------------------------------
 
   _updateCatTabs() {
-    this._catBar.querySelectorAll('.asn-icon-cat').forEach((tab) => {
+    this._catBar.querySelectorAll('.an-icon-cat').forEach((tab) => {
       tab.classList.toggle('active', tab.dataset.cat === this._activeCat);
     });
   }
@@ -652,16 +652,16 @@ export class EmojiDialog {
   _filterEmojis(query, cat) {
     const q = (query || '').trim().toLowerCase();
     let count = 0;
-    this._grid.querySelectorAll('.asn-emoji-cell').forEach((cell) => {
+    this._grid.querySelectorAll('.an-emoji-cell').forEach((cell) => {
       const matchCat   = !cat || cat === 'all' || cell.dataset.cat === cat;
       const matchQuery = !q || cell.dataset.keywords.includes(q) || cell.dataset.char === q;
       const visible = matchCat && matchQuery;
       cell.style.display = visible ? '' : 'none';
       if (visible) count++;
     });
-    let empty = this._grid.querySelector('.asn-icon-empty');
+    let empty = this._grid.querySelector('.an-icon-empty');
     if (!empty) {
-      empty = createElement('div', { class: 'asn-icon-empty' });
+      empty = createElement('div', { class: 'an-icon-empty' });
       empty.textContent = 'No emojis found';
       this._grid.appendChild(empty);
     }

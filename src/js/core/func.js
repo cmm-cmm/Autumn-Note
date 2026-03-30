@@ -96,7 +96,7 @@ export function isFunction(val) {
  * Arrays are cloned (shallow copy) rather than shared by reference so that
  * mutations to the merged result do not bleed back into the source object
  * (e.g. mutating `instance.options.fontFamilies` should not affect
- * `AfterSummerNote.defaults.fontFamilies`).
+ * `AutumnNote.defaults.fontFamilies`).
  * @param {object} target
  * @param {object} source
  * @returns {object}
