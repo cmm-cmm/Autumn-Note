@@ -32,6 +32,18 @@ describe('sanitiseHTML', () => {
     expect(sanitiseHTML('<button onclick="evil()">Click</button>')).not.toContain('<button');
   });
 
+  it('strips <style> tags and their content', () => {
+    const input = '<p>text</p><style>body { color: red }</style>';
+    expect(sanitiseHTML(input)).not.toContain('<style');
+    expect(sanitiseHTML(input)).not.toContain('color: red');
+  });
+
+  it('strips standalone <input> tags', () => {
+    const input = '<p>fill in: <input type="text" name="q"></p>';
+    expect(sanitiseHTML(input)).not.toContain('<input');
+    expect(sanitiseHTML(input)).toContain('fill in:');
+  });
+
   it('removes all on* event handler attributes', () => {
     const input = '<p onclick="evil()" onmouseover="bad()">text</p>';
     const result = sanitiseHTML(input);

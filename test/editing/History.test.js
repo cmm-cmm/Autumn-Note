@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { History } from '../../src/js/editing/History.js';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +64,7 @@ describe('History', () => {
       history.recordUndo();
     }
     expect(history.stack.length).toBeLessThanOrEqual(100);
+    expect(history.stackOffset).toBe(history.stack.length - 1);
   });
 
   // -------------------------------------------------------------------------

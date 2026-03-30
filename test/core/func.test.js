@@ -168,4 +168,11 @@ describe('mergeDeep', () => {
     const result = mergeDeep({ a: [1, 2] }, { a: [3] });
     expect(result.a).toEqual([3]);
   });
+
+  it('deep-clones nested source object when key is absent in target', () => {
+    const source = { nested: { a: 1 } };
+    const result = mergeDeep({}, source);
+    result.nested.a = 99;
+    expect(source.nested.a).toBe(1);
+  });
 });
