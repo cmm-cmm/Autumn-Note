@@ -25,12 +25,82 @@ export class History {
     return this.editable.innerHTML;
   }
 
+  /**
+   * Serializes the current selection as character offsets from the start of
+   * the editable element, so it can be restored after innerHTML replacement.
+   * @returns {{ start: number, end: number }|null}
+   */
+  _serializeSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!this.editable.contains(range.startContainer)) return null;
+    return {
+      start: this._charOffset(range.startContainer, range.startOffset),
+      end: this._charOffset(range.endContainer, range.endOffset),
+    };
+  }
+
+  /**
+   * Returns the character offset of (node, offset) from the beginning of
+   * the editable's text content.
+   * @param {Node} node
+   * @param {number} offset
+   * @returns {number}
+   */
+  _charOffset(node, offset) {
+    let count = 0;
+    const walker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
+    let cur;
+    while ((cur = walker.nextNode())) {
+      if (cur === node) return count + offset;
+      count += cur.length;
+    }
+    return count;
+  }
+
+  /**
+   * Restores a previously serialized selection inside the editable.
+   * @param {{ start: number, end: number }|null} saved
+   */
+  _restoreSelection(saved) {
+    if (!saved) return;
+    let startNode = null, startOff = 0;
+    let endNode = null, endOff = 0;
+    let count = 0;
+    const walker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
+    let cur;
+    while ((cur = walker.nextNode())) {
+      const len = cur.length;
+      if (!startNode && count + len >= saved.start) {
+        startNode = cur;
+        startOff = saved.start - count;
+      }
+      if (!endNode && count + len >= saved.end) {
+        endNode = cur;
+        endOff = saved.end - count;
+        break;
+      }
+      count += len;
+    }
+    if (!startNode) return;
+    if (!endNode) { endNode = startNode; endOff = startOff; }
+    try {
+      const range = document.createRange();
+      range.setStart(startNode, startOff);
+      range.setEnd(endNode, endOff);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (_) { /* detached node — ignore */ }
+  }
+
   _savePoint() {
     // Trim future history if we're mid-stack
     if (this.stackOffset < this.stack.length - 1) {
       this.stack = this.stack.slice(0, this.stackOffset + 1);
     }
-    this.stack.push({ html: this._serialize() });
+    this.stack.push({ html: this._serialize(), sel: this._serializeSelection() });
     if (this.stack.length > MAX_HISTORY) {
       this.stack.shift();
     } else {
@@ -41,6 +111,7 @@ export class History {
   _restore(point) {
     if (!point) return;
     this.editable.innerHTML = point.html;
+    this._restoreSelection(point.sel);
   }
 
   // ---------------------------------------------------------------------------

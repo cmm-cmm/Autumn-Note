@@ -36,29 +36,30 @@ export class Clipboard {
     const clipboardData = event.clipboardData || window.clipboardData;
     if (!clipboardData) return;
 
-    // If the option to keep HTML on paste is enabled, let the default happen
-    if (this.options.pasteAsPlainText === false) return;
-
-    // Default: strip formatting on paste (plain text only)
-    event.preventDefault();
-
-    let text = '';
-    if (clipboardData.types.includes('text/html') && this.options.pasteCleanHTML !== false) {
-      // Sanitise HTML — strip scripts, styles, event attributes
-      const raw = clipboardData.getData('text/html');
-      text = this._sanitiseHTML(raw);
-      execCommand('insertHTML', text);
-    } else {
-      text = clipboardData.getData('text/plain');
-      // Convert newlines to <br> or wrap in <p>
+    // Force plain-text only — strip all formatting
+    if (this.options.pasteAsPlainText) {
+      event.preventDefault();
+      const text = clipboardData.getData('text/plain');
       const html = text
         .split(/\r?\n/)
         .map((line) => `<p>${this._escapeHTML(line) || '<br>'}</p>`)
         .join('');
       execCommand('insertHTML', html);
+      this.context.invoke('editor.afterCommand');
+      return;
     }
 
-    this.context.invoke('editor.afterCommand');
+    // Default path: sanitise HTML on paste when pasteCleanHTML is true (default)
+    if (this.options.pasteCleanHTML !== false && clipboardData.types.includes('text/html')) {
+      event.preventDefault();
+      const raw = clipboardData.getData('text/html');
+      const clean = this._sanitiseHTML(raw);
+      execCommand('insertHTML', clean);
+      this.context.invoke('editor.afterCommand');
+      return;
+    }
+
+    // Otherwise let the browser handle paste natively
   }
 
   // ---------------------------------------------------------------------------
@@ -89,10 +90,12 @@ export class Clipboard {
           el.removeAttribute(attr.name);
         }
       });
-      // Strip javascript: href/src
-      ['href', 'src', 'action'].forEach((attrName) => {
+      // Strip javascript: and data: (except img src) from URL attributes
+      ['href', 'src', 'action', 'formaction'].forEach((attrName) => {
         const val = el.getAttribute(attrName);
-        if (val && /^\s*javascript:/i.test(val)) {
+        if (!val) return;
+        if (/^\s*javascript:/i.test(val)) { el.removeAttribute(attrName); return; }
+        if (/^\s*data:/i.test(val) && !(attrName === 'src' && el.tagName === 'IMG')) {
           el.removeAttribute(attrName);
         }
       });

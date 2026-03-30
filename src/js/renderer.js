@@ -6,6 +6,33 @@
 import { createElement } from './core/dom.js';
 
 /**
+ * Applies a basic sanitisation pass identical to Editor._sanitise, used
+ * when setting the initial innerHTML from the original element so that
+ * pre-loaded content is never trusted without inspection.
+ * @param {string} html
+ * @returns {string}
+ */
+function sanitiseInitialHTML(html) {
+  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+  ['script', 'style', 'iframe', 'object', 'embed', 'form'].forEach((tag) => {
+    doc.querySelectorAll(tag).forEach((el) => el.remove());
+  });
+  doc.querySelectorAll('*').forEach((el) => {
+    Array.from(el.attributes).forEach((attr) => {
+      if (attr.name.startsWith('on')) { el.removeAttribute(attr.name); return; }
+      if (['href', 'src', 'action', 'formaction'].includes(attr.name)) {
+        const val = attr.value.trim();
+        if (/^javascript:/i.test(val)) { el.removeAttribute(attr.name); return; }
+        if (/^data:/i.test(val) && !(attr.name === 'src' && el.tagName === 'IMG')) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    });
+  });
+  return doc.body.innerHTML;
+}
+
+/**
  * Renders the editor layout around the original element.
  *
  * Structure:
@@ -32,11 +59,11 @@ export function renderLayout(targetEl, options) {
     role: 'textbox',
   });
 
-  // Set initial content from original element
+  // Set initial content from original element (sanitised)
   if (targetEl.tagName === 'TEXTAREA') {
-    editable.innerHTML = (targetEl.value || '').trim();
+    editable.innerHTML = sanitiseInitialHTML((targetEl.value || '').trim());
   } else {
-    editable.innerHTML = (targetEl.innerHTML || '').trim();
+    editable.innerHTML = sanitiseInitialHTML((targetEl.innerHTML || '').trim());
   }
 
   // Apply default font family so the editable renders in the configured font

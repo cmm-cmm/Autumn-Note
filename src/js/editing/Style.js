@@ -76,11 +76,12 @@ export const fontName = (name) => execCommand('fontName', name);
  * Sets the font size (in pt or with unit) for the selection.
  * Uses a span-based approach to set px sizes precisely.
  * @param {string} size - e.g. '14px'
+ * @param {HTMLElement} [editable] - scoping element to avoid touching nodes outside this editor
  */
-export function fontSize(size) {
+export function fontSize(size, editable = document) {
   execCommand('fontSize', '7'); // placeholder
-  // Replace font elements with spans
-  document.querySelectorAll('font[size="7"]').forEach((el) => {
+  // Replace font elements with spans, scoped to the active editable
+  editable.querySelectorAll('font[size="7"]').forEach((el) => {
     const span = document.createElement('span');
     span.style.fontSize = size;
     el.parentNode.insertBefore(span, el);

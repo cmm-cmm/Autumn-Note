@@ -47,16 +47,38 @@ export class Editor {
   _bindEvents(editable) {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
-    // Record undo after keyup (throttled by history)
-    const onKeyup = () => this.afterCommand();
-    // Update toolbar button states on selection change
-    const onSelChange = () => this.context.invoke('toolbar.refresh');
+    // Only record undo / fire change when the key actually modifies content
+    const onKeyup = (event) => {
+      if (this._isContentKey(event)) this.afterCommand();
+    };
+    // Refresh toolbar on selection change, scoped to this editor
+    const onSelChange = () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
+        this.context.invoke('toolbar.refresh');
+      }
+    };
 
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'keyup', onKeyup),
       on(document, 'selectionchange', onSelChange),
     );
+  }
+
+  /**
+   * Returns true for keys that modify editor content (excludes navigation,
+   * modifier-only, and function keys).
+   * @param {KeyboardEvent} event
+   * @returns {boolean}
+   */
+  _isContentKey(event) {
+    const { key } = event;
+    if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab',
+         'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+         'Home', 'End', 'PageUp', 'PageDown', 'Escape'].includes(key)) return false;
+    if (key.startsWith('F') && key.length <= 3 && /^F\d+$/.test(key)) return false;
+    return true;
   }
 
   _onKeydown(event) {
@@ -209,7 +231,7 @@ export class Editor {
   /**
    * @param {string} size - e.g. '14px'
    */
-  fontSize(size) { Style.fontSize(size); this.afterCommand(); }
+  fontSize(size) { Style.fontSize(size, this.context.layoutInfo.editable); this.afterCommand(); }
 
   // ---------------------------------------------------------------------------
   // Insert helpers
@@ -237,7 +259,8 @@ export class Editor {
 
     const hasText = sel.toString().trim().length > 0;
     if (!hasText) {
-      Style.execCommand('insertHTML', `<a href="${safeUrl}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${text || safeUrl}</a>`);
+      const displayText = this._escapeAttr(text || safeUrl);
+      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${displayText}</a>`);
     } else {
       Style.execCommand('createLink', safeUrl);
       if (openInNewTab) {
@@ -265,9 +288,9 @@ export class Editor {
    * @param {string} [alt]
    */
   insertImage(src, alt = '') {
-    const safeSrc = this._sanitiseUrl(src);
+    const safeSrc = this._sanitiseUrl(src, { allowData: true });
     if (!safeSrc) return;
-    Style.execCommand('insertHTML', `<img src="${safeSrc}" alt="${alt}" class="asn-image">`);
+    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="asn-image">`);
     this.afterCommand();
   }
 
@@ -308,14 +331,16 @@ export class Editor {
   }
 
   /**
-   * Sanitises a URL, disallowing javascript: protocol.
+   * Sanitises a URL, blocking javascript: and optionally data: protocols.
    * @param {string} url
+   * @param {{ allowData?: boolean }} [opts]
    * @returns {string|null}
    */
-  _sanitiseUrl(url) {
+  _sanitiseUrl(url, { allowData = false } = {}) {
     try {
-      const parsed = new URL(url, window.location.href);
-      if (/^javascript:/i.test(parsed.protocol)) return null;
+      const trimmed = (url || '').trim();
+      if (/^javascript:/i.test(trimmed)) return null;
+      if (!allowData && /^data:/i.test(trimmed)) return null;
       return url;
     } catch (_) {
       return null;
@@ -323,7 +348,20 @@ export class Editor {
   }
 
   /**
-   * Basic HTML sanitiser to prevent XSS on setHTML.
+   * Escapes a string for safe use inside an HTML attribute value.
+   * @param {string} str
+   * @returns {string}
+   */
+  _escapeAttr(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /**
+   * HTML sanitiser to prevent XSS on setHTML / initial content load.
    * @param {string} html
    * @returns {string}
    */
@@ -335,9 +373,14 @@ export class Editor {
     });
     doc.querySelectorAll('*').forEach((el) => {
       Array.from(el.attributes).forEach((attr) => {
-        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
-        if (['href', 'src'].includes(attr.name) && /^\s*javascript:/i.test(attr.value)) {
-          el.removeAttribute(attr.name);
+        if (attr.name.startsWith('on')) { el.removeAttribute(attr.name); return; }
+        if (['href', 'src', 'action', 'formaction'].includes(attr.name)) {
+          const val = attr.value.trim();
+          if (/^javascript:/i.test(val)) { el.removeAttribute(attr.name); return; }
+          // Allow data: only on img[src] (base64 uploads); block everywhere else
+          if (/^data:/i.test(val) && !(attr.name === 'src' && el.tagName === 'IMG')) {
+            el.removeAttribute(attr.name);
+          }
         }
       });
     });
