@@ -35,9 +35,9 @@ export function renderLayout(targetEl, options) {
 
   // Set initial content from original element (sanitised)
   if (targetEl.tagName === 'TEXTAREA') {
-    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim());
+    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim(), { allowIframes: true });
   } else {
-    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim());
+    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim(), { allowIframes: true });
   }
 
   // Apply default font family so the editable renders in the configured font
@@ -46,11 +46,12 @@ export function renderLayout(targetEl, options) {
     editable.style.fontFamily = defaultFont;
   }
 
-  // Apply height options
+  // Apply height options.
+  // `height` sets the initial visible height (takes priority).
+  // `minHeight` is the drag-resize floor — only applied when no explicit `height` is given.
   if (options.height) {
     editable.style.minHeight = `${options.height}px`;
-  }
-  if (options.minHeight) {
+  } else if (options.minHeight) {
     editable.style.minHeight = `${options.minHeight}px`;
   }
   if (options.maxHeight) {

@@ -108,7 +108,7 @@ export const tableBtn = {
   icon: 'table',
   tooltip: 'Insert Table',
   action: (ctx, rows, cols) => {
-    Style.insertTable(rows, cols);
+    ctx.invoke('editor.insertTable', cols, rows);
     ctx.invoke('editor.afterCommand');
   },
 };

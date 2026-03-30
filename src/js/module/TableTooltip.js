@@ -254,11 +254,7 @@ export class TableTooltip {
     const colCount = Array.from(row.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
     const newRow = document.createElement('tr');
     for (let i = 0; i < colCount; i++) {
-      const td = document.createElement('td');
-      td.style.border  = '1px solid #dee2e6';
-      td.style.padding = '6px 12px';
-      td.innerHTML = '&#8203;';
-      newRow.appendChild(td);
+      newRow.appendChild(createElement('td', {}, ['\u00a0']));
     }
     if (position === 'above') row.parentElement.insertBefore(newRow, row);
     else row.insertAdjacentElement('afterend', newRow);
@@ -275,10 +271,7 @@ export class TableTooltip {
     const colIndex = Array.from(row.cells).indexOf(cell);
     Array.from(table.querySelectorAll('tr')).forEach((r) => {
       const cells = Array.from(r.cells);
-      const td = document.createElement('td');
-      td.style.border  = '1px solid #dee2e6';
-      td.style.padding = '6px 12px';
-      td.innerHTML = '&#8203;';
+      const td = createElement('td', {}, ['\u00a0']);
       const ref = position === 'left' ? cells[colIndex] : (cells[colIndex + 1] || null);
       r.insertBefore(td, ref);
     });

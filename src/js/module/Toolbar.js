@@ -28,6 +28,7 @@ export class Toolbar {
     // for every button rendered.
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
+    this._btnMap = new Map((this.options.toolbar || []).flat().map((b) => [b.name, b]));
     return this;
   }
 
@@ -471,6 +472,7 @@ export class Toolbar {
       // Restore focus to the editor before executing the action
       this.context.invoke('editor.focus');
       btnDef.action(this.context);
+      this.context.invoke('editor.afterCommand');
       this.refresh();
     });
 
@@ -495,8 +497,7 @@ export class Toolbar {
 
   refresh() {
     if (!this.el) return;
-    const toolbar = this.options.toolbar || [];
-    const btnMap = new Map(toolbar.flat().map((b) => [b.name, b]));
+    const btnMap = this._btnMap || new Map();
 
     // Sync button active states
     this.el.querySelectorAll('button[data-btn]').forEach((btn) => {

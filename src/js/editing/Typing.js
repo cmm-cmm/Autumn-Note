@@ -60,7 +60,7 @@ export function handleKeydown(event, editable, options = {}) {
     // Pressing Enter at the end of a blockquote should exit it
     if (para && para.nodeName.toUpperCase() === 'BLOCKQUOTE') {
       const native = range.toNativeRange();
-      native.setStart(para, para.childNodes.length);
+      native.setEnd(para, para.childNodes.length);
       if (native.toString() === '' && range.isCollapsed()) {
         event.preventDefault();
         execCommand('formatBlock', '<p>');

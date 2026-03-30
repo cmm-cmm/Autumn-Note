@@ -90,6 +90,8 @@ export class ImageDialog {
     });
     this._altInput = altInput;
 
+    box.append(title, urlLabel, urlInput, altLabel, altInput);
+
     // File upload (optional — embeds as base64)
     if (this.options.allowImageUpload !== false) {
       const fileLabel = createElement('label', { class: 'an-label' });
@@ -114,13 +116,16 @@ export class ImageDialog {
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
-    box.append(title, urlLabel, urlInput, altLabel, altInput, btnRow);
+    box.append(btnRow);
     overlay.appendChild(box);
 
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    this._disposers.push(d1, d2, d3);
+    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
+    document.addEventListener('keydown', onKeydown);
+    const d4 = () => document.removeEventListener('keydown', onKeydown);
+    this._disposers.push(d1, d2, d3, d4);
 
     return overlay;
   }
@@ -136,7 +141,9 @@ export class ImageDialog {
     // Validate file size (max 5 MB by default)
     const maxSize = (this.options.maxImageSize || 5) * 1024 * 1024;
     if (file.size > maxSize) {
-      alert(`Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`);
+      const message = `Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`;
+      console.warn('[AutumnNote] ImageDialog:', message);
+      this.context.triggerEvent('imageError', { file, message });
       this._fileInput.value = '';
       return;
     }

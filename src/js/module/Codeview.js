@@ -72,8 +72,8 @@ export class Codeview {
   deactivate() {
     if (!this._active || !this._textarea) return;
     const { editable } = this.context.layoutInfo;
-    // Sanitise the HTML typed in the textarea before applying
-    editable.innerHTML = sanitiseHTML(this._textarea.value);
+    // Sanitise the HTML typed in the textarea before applying (allow iframes for video embeds)
+    editable.innerHTML = sanitiseHTML(this._textarea.value, { allowIframes: true });
     this._textarea.parentNode.removeChild(this._textarea);
     this._textarea = null;
     editable.style.display = '';
@@ -110,25 +110,5 @@ export class Codeview {
       .join('\n');
   }
 
-  /**
-   * Basic HTML sanitiser — removes script/dangerous elements.
-   * @param {string} html
-   * @returns {string}
-   */
-  _sanitise(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(`<body>${html}</body>`, 'text/html');
-    ['script', 'style', 'iframe', 'object', 'embed', 'form'].forEach((tag) => {
-      doc.querySelectorAll(tag).forEach((el) => el.remove());
-    });
-    doc.querySelectorAll('*').forEach((el) => {
-      Array.from(el.attributes).forEach((attr) => {
-        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
-        if (['href', 'src'].includes(attr.name) && /^\s*javascript:/i.test(attr.value)) {
-          el.removeAttribute(attr.name);
-        }
-      });
-    });
-    return doc.body.innerHTML;
-  }
 }
+

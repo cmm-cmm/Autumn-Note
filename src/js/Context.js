@@ -135,13 +135,14 @@ export class Context {
     });
     const d2 = on(editable, 'blur', () => {
       this.layoutInfo.container.classList.remove('an-focused');
-      // Sync content back to original element
       this._syncToTarget();
       if (typeof this.options.onBlur === 'function') {
         this.options.onBlur(this);
       }
     });
-    this._disposers.push(d1, d2);
+    // Sync textarea/input value on every change so form.submit() always gets fresh content
+    const d3 = this.on('change', () => this._syncToTarget());
+    this._disposers.push(d1, d2, d3);
   }
 
   // ---------------------------------------------------------------------------

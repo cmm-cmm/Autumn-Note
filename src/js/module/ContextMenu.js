@@ -1,5 +1,6 @@
 // ContextMenu.js - Right-click context menu for editor actions
 import { createElement, on } from '../core/dom.js';
+import { sanitiseHTML } from '../core/sanitise.js';
 
 // SVG icon map — 16×16 Heroicons-style paths
 const ICONS = {
@@ -37,7 +38,39 @@ const defaultItems = [
   { separator: true },
   { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: () => document.execCommand('cut') },
   { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => document.execCommand('copy') },
-  { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: () => document.execCommand('paste') },
+  { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
+    if (!navigator.clipboard) return;
+    const editable = ctx.layoutInfo && ctx.layoutInfo.editable;
+    if (!editable) return;
+    // Prefer read() to get rich HTML; fall back to readText() for plain text
+    const doInsert = (html, text) => {
+      editable.focus();
+      if (html) {
+        const clean = sanitiseHTML(html);
+        document.execCommand('insertHTML', false, clean);
+      } else if (text) {
+        document.execCommand('insertText', false, text);
+      }
+      ctx.invoke('editor.afterCommand');
+    };
+    if (typeof navigator.clipboard.read === 'function') {
+      navigator.clipboard.read().then((items) => {
+        for (const item of items) {
+          if (item.types.includes('text/html')) {
+            item.getType('text/html').then((blob) => blob.text()).then((html) => doInsert(html, null));
+            return;
+          }
+        }
+        // No HTML item — fall through to plain text
+        navigator.clipboard.readText().then((text) => doInsert(null, text)).catch(() => {});
+      }).catch(() => {
+        // read() denied → try readText() as fallback
+        navigator.clipboard.readText().then((text) => doInsert(null, text)).catch(() => {});
+      });
+    } else if (typeof navigator.clipboard.readText === 'function') {
+      navigator.clipboard.readText().then((text) => doInsert(null, text)).catch(() => {});
+    }
+  } },
   { separator: true },
   { name: 'bold',      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
   { name: 'italic',    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },
@@ -413,10 +446,10 @@ export class ContextMenu {
     const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
     if (!editable) return;
 
+    editable.focus();
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
-    editable.focus();
 
     document.execCommand('removeFormat');
 

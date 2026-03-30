@@ -120,7 +120,10 @@ export class VideoDialog {
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    this._disposers.push(d0, d1, d2, d3, d4);
+    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
+    document.addEventListener('keydown', onKeydown);
+    const d5 = () => document.removeEventListener('keydown', onKeydown);
+    this._disposers.push(d0, d1, d2, d3, d4, d5);
 
     return overlay;
   }
@@ -227,9 +230,10 @@ export class VideoDialog {
     }
 
     if (info && info.type === 'Direct video') {
+      const src = info.embedUrl.replace(/"/g, '%22');
       return (
         `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
-        `<video src="${info.embedUrl}" width="${width}" height="${height}" controls ` +
+        `<video src="${src}" width="${width}" height="${height}" controls ` +
         `style="display:block;max-width:100%"></video>` +
         `<div class="an-video-shield"></div>` +
         `</div>`
@@ -246,9 +250,10 @@ export class VideoDialog {
     })();
     if (!safeSrc) return null;
 
+    const escapedSrc = safeSrc.replace(/"/g, '%22');
     return (
       `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
-      `<video src="${safeSrc}" width="${width}" height="${height}" controls ` +
+      `<video src="${escapedSrc}" width="${width}" height="${height}" controls ` +
       `style="display:block;max-width:100%"></video>` +
       `<div class="an-video-shield"></div>` +
       `</div>`

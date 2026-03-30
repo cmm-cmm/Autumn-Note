@@ -71,21 +71,6 @@ export class Editor {
     );
   }
 
-  /**
-   * Returns true for keys that modify editor content (excludes navigation,
-   * modifier-only, and function keys).
-   * @param {KeyboardEvent} event
-   * @returns {boolean}
-   */
-  _isContentKey(event) {
-    const { key } = event;
-    if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab',
-         'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-         'Home', 'End', 'PageUp', 'PageDown', 'Escape'].includes(key)) return false;
-    if (key.startsWith('F') && key.length <= 3 && /^F\d+$/.test(key)) return false;
-    return true;
-  }
-
   _onKeydown(event) {
     const editable = this.context.layoutInfo.editable;
 
@@ -208,14 +193,22 @@ export class Editor {
 
   undo() {
     if (this._history) {
+      clearTimeout(this._snapshotTimer);
+      this._snapshotTimer = null;
       this._history.undo();
+      this.context.invoke('toolbar.refresh');
+      this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
   }
 
   redo() {
     if (this._history) {
+      clearTimeout(this._snapshotTimer);
+      this._snapshotTimer = null;
       this._history.redo();
+      this.context.invoke('toolbar.refresh');
+      this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
   }

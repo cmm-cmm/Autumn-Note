@@ -241,6 +241,12 @@ const isFullscreen = editor.invoke('fullscreen.isActive'); // boolean
 | `onChange` | `Function` | `null` | `(html: string) => void` — shorthand for `editor.on('change', fn)`. |
 | `onFocus` | `Function` | `null` | `(context: Context) => void` — shorthand for `editor.on('focus', fn)`. |
 | `onBlur` | `Function` | `null` | `(context: Context) => void` — shorthand for `editor.on('blur', fn)`. |
+| `stickyToolbar` | `boolean` | `false` | Stick the toolbar to the viewport top when the page is scrolled. |
+| `stickyToolbarOffset` | `number` | `0` | Top offset in px for the sticky toolbar (e.g. height of a fixed navigation bar). |
+| `theme` | `string` | `'light'` | Colour theme: `'light'` or `'dark'`. |
+| `codeHighlight` | `boolean` | `false` | Auto-load Prism.js for syntax highlighting inside `<pre><code>` blocks. |
+| `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL used when auto-loading Prism assets. |
+| `markdownPaste` | `boolean` | `true` | Convert pasted Markdown text to HTML when no HTML is present in the clipboard. |
 
 ---
 
@@ -398,7 +404,9 @@ src/
 │   │   ├── func.js           General helpers (mergeDeep, debounce, …)
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
-│   │   └── env.js            Browser / platform detection
+│   │   ├── env.js            Browser / platform detection
+│   │   ├── markdown.js       Lightweight Markdown → HTML converter (paste handling)
+│   │   └── sanitise.js       DOM-based HTML and URL sanitiser (shared by all modules)
 │   ├── editing/
 │   │   ├── History.js        Undo / redo stack (100 levels)
 │   │   ├── Style.js          execCommand style wrappers
@@ -425,7 +433,8 @@ src/
 │   │   ├── TableTooltip.js   Floating toolbar for tables (row/col/cell management)
 │   │   ├── CodeTooltip.js    Floating toolbar for code blocks (copy / delete)
 │   │   ├── EmojiDialog.js    Unicode emoji picker (~380 emoji, 7 categories)
-│   │   └── IconDialog.js     FontAwesome icon picker (FA 6 Free Solid, 8 categories)
+│   │   ├── IconDialog.js     FontAwesome icon picker (FA 6 Free Solid, 8 categories)
+│   │   └── ShortcutsDialog.js Keyboard shortcuts reference dialog (Shift+?)
 │   ├── Context.js            Editor instance hub — module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
 │   ├── renderer.js           DOM layout builder
@@ -656,6 +665,12 @@ const editor = AutumnNote.create('#my-editor', {
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every change. |
 | `onFocus` | `Function` | `null` | `(context: Context) => void` |
 | `onBlur` | `Function` | `null` | `(context: Context) => void` |
+| `stickyToolbar` | `boolean` | `false` | Stick the toolbar to the viewport top when the page is scrolled. |
+| `stickyToolbarOffset` | `number` | `0` | Top offset in px for the sticky toolbar (e.g. height of a fixed navigation bar). |
+| `theme` | `string` | `'light'` | Colour theme: `'light'` or `'dark'`. |
+| `codeHighlight` | `boolean` | `false` | Auto-load Prism.js for syntax highlighting inside `<pre><code>` blocks. |
+| `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL used when auto-loading Prism assets. |
+| `markdownPaste` | `boolean` | `true` | Convert pasted Markdown text to HTML when no HTML is present in the clipboard. |
 
 ---
 
@@ -716,7 +731,9 @@ src/
 │   │   ├── func.js           General utility helpers
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
-│   │   └── env.js            Browser / platform detection
+│   │   ├── env.js            Browser / platform detection
+│   │   ├── markdown.js       Markdown → HTML converter
+│   │   └── sanitise.js       DOM-based HTML and URL sanitiser
 │   ├── editing/
 │   │   ├── History.js        Undo / redo stack
 │   │   ├── Style.js          execCommand style wrappers
@@ -743,7 +760,8 @@ src/
 │   │   ├── TableTooltip.js   Table context tooltip
 │   │   ├── CodeTooltip.js    Code block context tooltip
 │   │   ├── EmojiDialog.js    Unicode emoji picker
-│   │   └── IconDialog.js     FontAwesome icon picker
+│   │   ├── IconDialog.js     FontAwesome icon picker
+│   │   └── ShortcutsDialog.js Keyboard shortcuts dialog
 │   ├── Context.js            Editor instance hub
 │   ├── settings.js           Default options
 │   ├── renderer.js           DOM layout builder

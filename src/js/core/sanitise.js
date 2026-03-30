@@ -24,11 +24,12 @@ const URL_ATTRS = ['href', 'src', 'action', 'formaction'];
  * @param {string} html
  * @returns {string}
  */
-export function sanitiseHTML(html) {
+export function sanitiseHTML(html, { allowIframes = false } = {}) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
 
-  // Remove outright dangerous elements
-  PROHIBITED_TAGS.forEach((tag) => {
+  // Remove outright dangerous elements (optionally preserve iframes for video embeds)
+  const tags = allowIframes ? PROHIBITED_TAGS.filter((t) => t !== 'iframe') : PROHIBITED_TAGS;
+  tags.forEach((tag) => {
     doc.querySelectorAll(tag).forEach((el) => el.remove());
   });
 

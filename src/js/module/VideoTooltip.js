@@ -204,7 +204,7 @@ export class VideoTooltip {
     const wrapper = this._activeWrapper;
     if (!wrapper) return;
     wrapper.style.float        = value;
-    wrapper.style.display      = value ? 'inline-block' : 'inline-block';
+    wrapper.style.display      = value ? 'inline-block' : '';
     wrapper.style.marginLeft   = value === 'right' ? '12px' : '';
     wrapper.style.marginRight  = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');

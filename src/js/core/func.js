@@ -111,7 +111,7 @@ export function mergeDeep(target, source) {
     for (const key of Object.keys(source)) {
       if (isPlainObject(source[key])) {
         if (!(key in target)) {
-          output[key] = source[key];
+          output[key] = mergeDeep({}, source[key]);
         } else {
           output[key] = mergeDeep(target[key], source[key]);
         }

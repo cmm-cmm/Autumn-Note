@@ -75,8 +75,11 @@ const AutumnNote = {
     return el ? instances.get(el) || null : null;
   },
 
-  /** Default options (can be mutated globally before calling create). */
-  defaults: defaultOptions,
+  /** Returns a shallow copy of the default options (read-only snapshot). */
+  get defaults() { return { ...defaultOptions }; },
+
+  /** Merges properties into the global defaults, applied to all future instances. */
+  setDefaults(overrides) { Object.assign(defaultOptions, overrides); },
 
   /** Library version */
   version: '1.0.0',

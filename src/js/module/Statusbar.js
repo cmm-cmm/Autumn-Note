@@ -30,7 +30,7 @@ export class Statusbar {
     this.el = createElement('div', { class: 'an-statusbar' });
 
     // Resize handle
-    if (this.options.resizeable !== false) {
+    if (this.options.resizable !== false) {
       const handle = createElement('div', {
         class: 'an-resize-handle',
         title: 'Resize editor',
@@ -81,7 +81,8 @@ export class Statusbar {
 
     const onMouseMove = (event) => {
       const delta = event.clientY - startY;
-      const newHeight = Math.max(120, startH + delta);
+      const minH = this.options.minHeight || 100;
+      const newHeight = Math.max(minH, startH + delta);
       containerEl.style.height = `${newHeight}px`;
     };
 
