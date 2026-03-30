@@ -334,8 +334,10 @@ export class Toolbar {
     select.appendChild(placeholder);
 
     items.forEach((item) => {
-      const opt = createElement('option', { value: item }, [item]);
-      if (def.name === 'fontFamily') opt.style.fontFamily = item;
+      const value = (typeof item === 'object') ? item.value : item;
+      const label = (typeof item === 'object') ? item.label : item;
+      const opt = createElement('option', { value }, [label]);
+      if (def.name === 'fontFamily') opt.style.fontFamily = value;
       select.appendChild(opt);
     });
 

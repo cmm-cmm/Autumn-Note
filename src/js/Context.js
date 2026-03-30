@@ -26,6 +26,7 @@ import { LinkTooltip } from './module/LinkTooltip.js';
 import { ImageTooltip } from './module/ImageTooltip.js';
 import { VideoTooltip } from './module/VideoTooltip.js';
 import { TableTooltip } from './module/TableTooltip.js';
+import { CodeTooltip } from './module/CodeTooltip.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
 export class Context {
@@ -116,6 +117,7 @@ export class Context {
     register('imageTooltip', ImageTooltip);
     register('videoTooltip', VideoTooltip);
     register('tableTooltip', TableTooltip);
+    register('codeTooltip', CodeTooltip);
   }
 
   _bindEditorEvents(editable) {

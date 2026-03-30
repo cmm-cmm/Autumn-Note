@@ -127,6 +127,37 @@ export const fontFamilyBtn = {
 };
 
 // ---------------------------------------------------------------------------
+// Paragraph style dropdown (Normal / H1-H6 / Quote / Code)
+// ---------------------------------------------------------------------------
+
+/** @type {DropdownDef} */
+export const paragraphStyleBtn = {
+  name: 'paragraphStyle',
+  type: 'select',
+  tooltip: 'Paragraph Style',
+  placeholder: 'Style',
+  selectClass: 'asn-select-style',
+  items: [
+    { value: 'p',          label: 'Normal' },
+    { value: 'h1',         label: 'H1'     },
+    { value: 'h2',         label: 'H2'     },
+    { value: 'h3',         label: 'H3'     },
+    { value: 'h4',         label: 'H4'     },
+    { value: 'h5',         label: 'H5'     },
+    { value: 'h6',         label: 'H6'     },
+    { value: 'blockquote', label: 'Quote'  },
+    { value: 'pre',        label: 'Code'   },
+  ],
+  action: (_ctx, value) => Style.formatBlock(value),
+  getValue: () => {
+    try {
+      const raw = document.queryCommandValue('formatBlock').toLowerCase().replace(/[<>]/g, '');
+      return raw === 'div' ? 'p' : (raw || 'p');
+    } catch { return ''; }
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Line-height dropdown
 // ---------------------------------------------------------------------------
 
@@ -192,7 +223,7 @@ export const backColorBtn = {
  * Each sub-array is a button group (separated by a divider).
  */
 export const defaultToolbar = [
-  [fontFamilyBtn, lineHeightBtn],
+  [paragraphStyleBtn, fontFamilyBtn, lineHeightBtn],
   [undoBtn, redoBtn],
   [boldBtn, italicBtn, underlineBtn, strikeBtn],
   [superscriptBtn, subscriptBtn],

@@ -128,6 +128,13 @@
   padding-right: 20px;
 }
 
+// Paragraph-style variant — Normal/H1-H6/Quote/Code labels
+.asn-select-style {
+  min-width: 80px;
+  max-width: 92px;
+  padding-right: 20px;
+}
+
 // Table grid picker
 .asn-table-picker-wrap {
   position: relative;
@@ -549,6 +556,14 @@
 .asn-table-tooltip .asn-link-tooltip-url {
   color: #0369a1; // sky blue for table
   font-weight: 500;
+}
+
+.asn-code-tooltip .asn-link-tooltip-url {
+  color: #059669; // emerald green for code
+  font-weight: 500;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
 }
 
 // Size popover (column width / row height)
