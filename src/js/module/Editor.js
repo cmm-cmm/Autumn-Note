@@ -22,6 +22,8 @@ export class Editor {
     /** @type {History|null} */
     this._history = null;
     this._disposers = [];
+    /** @type {number|null} Timer handle for debounced undo snapshot */
+    this._snapshotTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -39,6 +41,8 @@ export class Editor {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     this._history = null;
+    clearTimeout(this._snapshotTimer);
+    this._snapshotTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -48,12 +52,9 @@ export class Editor {
   _bindEvents(editable) {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
-    // Record undo / fire change for key-driven mutations
-    const onKeyup = (event) => {
-      if (this._isContentKey(event)) this.afterCommand();
-    };
-    // Catch mutations from IME composition, voice input, spellcheck corrections,
-    // drag-drop text, and any other path that bypasses keyup.
+    // Catch ALL content mutations: typing, IME, spellcheck, voice, drag-drop text.
+    // We do NOT also listen to keyup for afterCommand — oninput covers every case
+    // and avoids calling afterCommand twice per keystroke.
     const onInput = () => this.afterCommand();
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
@@ -65,7 +66,6 @@ export class Editor {
 
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
-      on(editable, 'keyup', onKeyup),
       on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
     );
@@ -113,10 +113,27 @@ export class Editor {
   // ---------------------------------------------------------------------------
 
   afterCommand() {
-    if (this._history) this._history.recordUndo();
-    this.context.triggerEvent('change', this.getHTML());
+    // Immediate: keep toolbar and statusbar in sync on every mutation.
     this.context.invoke('toolbar.refresh');
     this.context.invoke('statusbar.update');
+    // Debounced: recording an undo snapshot and firing the change event require
+    // a full innerHTML serialization. Batching rapid keystrokes prevents the
+    // browser from re-serializing large content (e.g. embedded images) on every
+    // single key press.
+    this._scheduleSnapshot();
+  }
+
+  /**
+   * Schedules a debounced undo snapshot + change event.
+   * Resets the timer on each call so rapid typing produces one snapshot.
+   */
+  _scheduleSnapshot() {
+    clearTimeout(this._snapshotTimer);
+    this._snapshotTimer = setTimeout(() => {
+      this._snapshotTimer = null;
+      if (this._history) this._history.recordUndo();
+      this.context.triggerEvent('change', this.getHTML());
+    }, 400);
   }
 
   // ---------------------------------------------------------------------------
@@ -138,7 +155,10 @@ export class Editor {
    */
   getHTML() {
     // Strip zero-width spaces inserted after icons to allow caret placement.
-    return this.context.layoutInfo.editable.innerHTML.replace(/\u200B/g, '');
+    const raw = this.context.layoutInfo.editable.innerHTML.replace(/\u200B/g, '');
+    // Replace any blob: URLs (lightweight DOM references to pasted/dropped images)
+    // with their original data URLs so the returned HTML is fully self-contained.
+    return this.context.invoke('clipboard.resolveImages', raw) ?? raw;
   }
 
   /**

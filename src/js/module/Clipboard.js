@@ -19,6 +19,8 @@ export class Clipboard {
   }
 
   initialize() {
+    /** @type {Map<string, string>} Maps blob: URL (in DOM) → data: URL (serialisable) */
+    this._blobRegistry = new Map();
     const editable = this.context.layoutInfo.editable;
     this._disposers.push(
       on(editable, 'paste',    (e) => this._onPaste(e)),
@@ -31,6 +33,11 @@ export class Clipboard {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
+    // Release object URLs to free memory
+    if (this._blobRegistry) {
+      this._blobRegistry.forEach((_, blobUrl) => URL.revokeObjectURL(blobUrl));
+      this._blobRegistry.clear();
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -136,9 +143,39 @@ export class Clipboard {
 
       const alt = file.name.replace(/\.[^.]+$/, '');
       this._compressImage(file).then((dataUrl) => {
-        this.context.invoke('editor.insertImage', dataUrl, alt);
+        // Keep the large data URL in a JS Map; insert a lightweight blob: URL
+        // into the DOM so editable.innerHTML never contains the big base64 string.
+        const blob = this._dataUrlToBlob(dataUrl);
+        const blobUrl = URL.createObjectURL(blob);
+        this._blobRegistry.set(blobUrl, dataUrl);
+        this.context.invoke('editor.insertImage', blobUrl, alt);
       });
     });
+  }
+
+  /**
+   * Replaces any blob: URLs created by this module with their original data URLs.
+   * Called by Editor.getHTML() so the returned HTML is fully self-contained.
+   * @param {string} html
+   * @returns {string}
+   */
+  resolveImages(html) {
+    if (!this._blobRegistry || !this._blobRegistry.size) return html;
+    return html.replace(/blob:[^"'> \t\n\r]*/g, (url) => this._blobRegistry.get(url) || url);
+  }
+
+  /**
+   * Converts a data URL to a Blob (no FileReader — synchronous).
+   * @param {string} dataUrl
+   * @returns {Blob}
+   */
+  _dataUrlToBlob(dataUrl) {
+    const [header, b64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(b64);
+    const arr = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+    return new Blob([arr], { type: mime });
   }
 
   /**
