@@ -27,6 +27,8 @@ const ICONS = {
   copyFormat:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   pasteFormat: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>`,
   removeFormat:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>`,
+  // Table
+  table:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
 };
 
 const defaultItems = [
@@ -48,6 +50,7 @@ const defaultItems = [
   { name: 'link',      label: 'Insert Link',  icon: ICONS.link,      action: (ctx) => ctx.invoke('linkDialog.show') },
   { name: 'image',     label: 'Insert Image', icon: ICONS.image,     action: (ctx) => ctx.invoke('imageDialog.show') },
   { name: 'video',     label: 'Insert Video', icon: ICONS.video,     action: (ctx) => ctx.invoke('videoDialog.show') },
+  { name: 'table',     label: 'Insert Table', icon: ICONS.table,     tableGrid: true },
 ];
 
 export class ContextMenu {
@@ -143,6 +146,90 @@ export class ContextMenu {
         });
         this._menuDisposers.push(off);
         this.el.appendChild(btn);
+        return;
+      }
+
+      // Table grid picker item — expands an inline grid panel when clicked
+      if (it.tableGrid) {
+        const GRID_ROWS = 8, GRID_COLS = 8;
+        const wrapper = createElement('div', { class: 'asn-context-table-wrap' });
+
+        const headerBtn = createElement('button', { type: 'button', class: 'asn-context-item asn-context-submenu', 'data-name': it.name || 'table' });
+        if (it.icon) {
+          const iconSpan = createElement('span', { class: 'asn-context-icon', 'aria-hidden': 'true' });
+          iconSpan.innerHTML = it.icon;
+          headerBtn.appendChild(iconSpan);
+        }
+        headerBtn.appendChild(createElement('span', { class: 'asn-context-label' }, [it.label || 'Insert Table']));
+        const chevron = createElement('span', { class: 'asn-context-chevron', 'aria-hidden': 'true' });
+        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        headerBtn.appendChild(chevron);
+
+        const panel = createElement('div', { class: 'asn-context-table-grid-panel' });
+        panel.style.display = 'none';
+
+        const gridEl = createElement('div', { class: 'asn-table-grid' });
+        gridEl.style.gridTemplateColumns = `repeat(${GRID_COLS}, 16px)`;
+        const labelEl = createElement('div', { class: 'asn-table-label' });
+        labelEl.textContent = 'Insert Table';
+
+        const cells = [];
+        for (let r = 1; r <= GRID_ROWS; r++) {
+          for (let c = 1; c <= GRID_COLS; c++) {
+            const cell = createElement('div', { class: 'asn-table-cell', 'data-row': String(r), 'data-col': String(c) });
+            cell.style.width = '16px';
+            cell.style.height = '16px';
+            cells.push(cell);
+            gridEl.appendChild(cell);
+          }
+        }
+
+        const setHighlight = (rows, cols) => {
+          cells.forEach((cell) => {
+            cell.classList.toggle('active', +cell.dataset.row <= rows && +cell.dataset.col <= cols);
+          });
+          labelEl.textContent = (rows && cols) ? `${cols} × ${rows}` : 'Insert Table';
+        };
+
+        panel.appendChild(gridEl);
+        panel.appendChild(labelEl);
+
+        let expanded = false;
+        const offHeader = on(headerBtn, 'click', (e) => {
+          e.stopPropagation();
+          expanded = !expanded;
+          panel.style.display = expanded ? '' : 'none';
+          chevron.style.transform = expanded ? 'rotate(90deg)' : '';
+          this._reposition();
+        });
+        this._menuDisposers.push(offHeader);
+
+        const offMove = on(gridEl, 'mousemove', (e) => {
+          const cell = e.target.closest('[data-row]');
+          if (!cell) return;
+          setHighlight(+cell.dataset.row, +cell.dataset.col);
+        });
+        const offLeave = on(gridEl, 'mouseleave', () => setHighlight(0, 0));
+        const offClick = on(gridEl, 'click', (e) => {
+          const cell = e.target.closest('[data-row]');
+          if (!cell) return;
+          const rows = +cell.dataset.row;
+          const cols = +cell.dataset.col;
+          const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+          if (editable && this._savedRange) {
+            editable.focus();
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(this._savedRange.cloneRange());
+          }
+          this.hide();
+          this.context.invoke('editor.insertTable', cols, rows);
+        });
+        this._menuDisposers.push(offMove, offLeave, offClick);
+
+        wrapper.appendChild(headerBtn);
+        wrapper.appendChild(panel);
+        this.el.appendChild(wrapper);
         return;
       }
 

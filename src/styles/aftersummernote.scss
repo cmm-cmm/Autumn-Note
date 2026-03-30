@@ -177,6 +177,12 @@
   min-height: 16px;
 }
 
+// Context menu — inline table grid panel
+.asn-context-table-grid-panel {
+  padding: 6px 8px 8px;
+  border-top: 1px solid $asn-border;
+}
+
 // =============================================================================
 // Color picker (text color / highlight color) toolbar widget
 // =============================================================================
