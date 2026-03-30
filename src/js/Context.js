@@ -27,6 +27,7 @@ import { ImageTooltip } from './module/ImageTooltip.js';
 import { VideoTooltip } from './module/VideoTooltip.js';
 import { TableTooltip } from './module/TableTooltip.js';
 import { CodeTooltip } from './module/CodeTooltip.js';
+import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 
 export class Context {
@@ -118,6 +119,7 @@ export class Context {
     register('videoTooltip', VideoTooltip);
     register('tableTooltip', TableTooltip);
     register('codeTooltip', CodeTooltip);
+    register('iconDialog', IconDialog);
   }
 
   _bindEditorEvents(editable) {

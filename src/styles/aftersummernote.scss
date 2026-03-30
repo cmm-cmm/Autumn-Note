@@ -958,3 +958,241 @@ $asn-video-accent: #8b5cf6; // violet-500
   outline-offset: 1px;
 }
 
+// ---------------------------------------------------------------------------
+// Icon dialog
+// ---------------------------------------------------------------------------
+
+// Wider box override
+.asn-icon-box {
+  width: min(596px, 95vw);
+  gap: 0;
+  padding: 20px;
+}
+
+// Title row with close button
+.asn-icon-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+
+  .asn-dialog-title {
+    margin: 0;
+  }
+}
+
+.asn-icon-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  border-radius: $asn-radius-sm;
+  cursor: pointer;
+  color: $asn-muted;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    color: $asn-text;
+  }
+}
+
+// Search
+.asn-icon-search {
+  width: 100%;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+// Category tabs
+.asn-icon-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.asn-icon-cat {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: $asn-font-family;
+  background: none;
+  border: 1px solid $asn-border;
+  border-radius: 13px;
+  cursor: pointer;
+  color: $asn-muted;
+  white-space: nowrap;
+  transition: background $asn-transition, color $asn-transition, border-color $asn-transition;
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    color: $asn-text;
+  }
+
+  &.active {
+    background: $asn-primary;
+    border-color: $asn-primary;
+    color: #fff;
+  }
+}
+
+// Icon grid
+.asn-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 56px);
+  gap: 3px;
+  max-height: 256px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 4px;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius;
+  background: $asn-bg;
+  scrollbar-width: thin;
+  scrollbar-color: $asn-border transparent;
+
+  &::-webkit-scrollbar       { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $asn-border; border-radius: 3px; }
+}
+
+.asn-icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 56px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: $asn-radius-sm;
+  background: none;
+  cursor: pointer;
+  font-family: $asn-font-family;
+  font-size: 10px;
+  color: $asn-muted;
+  transition: background $asn-transition, border-color $asn-transition;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  i {
+    font-size: 17px;
+    color: $asn-text;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 52px;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: $asn-bg-btn-hover;
+    border-color: $asn-border;
+  }
+
+  &.active {
+    background: rgba($asn-primary, 0.1);
+    border-color: $asn-primary;
+    color: $asn-primary;
+
+    i { color: $asn-primary; }
+  }
+}
+
+// Empty state
+.asn-icon-empty {
+  grid-column: 1 / -1;
+  padding: 24px 0;
+  text-align: center;
+  color: $asn-muted;
+  font-size: 13px;
+}
+
+// Options row
+.asn-icon-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+
+  .asn-label {
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.asn-icon-option-select {
+  height: $asn-btn-height;
+  padding: 0 6px;
+  font-size: 12px;
+  width: auto;
+}
+
+.asn-icon-color {
+  width: 32px;
+  height: $asn-btn-height;
+  padding: 2px;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius-sm;
+  cursor: pointer;
+  background: none;
+}
+
+.asn-icon-use-color {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin: 0;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    cursor: pointer;
+  }
+}
+
+// Preview
+.asn-icon-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius;
+  background: $asn-bg-toolbar;
+
+  i {
+    line-height: 1;
+  }
+
+  .asn-icon-preview-hint {
+    font-size: 12px;
+    color: $asn-muted;
+  }
+}
+
+.asn-icon-preview-name {
+  font-size: 12px;
+  color: $asn-muted;
+  font-family: monospace;
+}
+

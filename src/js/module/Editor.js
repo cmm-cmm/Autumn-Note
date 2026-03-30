@@ -110,7 +110,8 @@ export class Editor {
    * @returns {string}
    */
   getHTML() {
-    return this.context.layoutInfo.editable.innerHTML;
+    // Strip zero-width spaces inserted after icons to allow caret placement.
+    return this.context.layoutInfo.editable.innerHTML.replace(/\u200B/g, '');
   }
 
   /**

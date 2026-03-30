@@ -98,6 +98,7 @@ export const hrBtn = btn('hr', 'minus', 'Horizontal Rule', () => Style.execComma
 export const linkBtn = btn('link', 'link', 'Insert Link', (ctx) => ctx.invoke('linkDialog.show'));
 export const imageBtn = btn('image', 'image', 'Insert Image', (ctx) => ctx.invoke('imageDialog.show'));
 export const videoBtn = btn('video', 'video', 'Insert Video', (ctx) => ctx.invoke('videoDialog.show'));
+export const iconBtn = btn('icon', 'icon', 'Insert Icon', (ctx) => ctx.invoke('iconDialog.show'));
 
 /** @type {ButtonDef & { type: 'grid' }} */
 export const tableBtn = {
@@ -230,6 +231,6 @@ export const defaultToolbar = [
   [foreColorBtn, backColorBtn],
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
-  [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn],
+  [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, iconBtn],
   [codeviewBtn, fullscreenBtn],
 ];
