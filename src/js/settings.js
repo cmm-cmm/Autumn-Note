@@ -12,7 +12,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [minHeight]         - Minimum height in px
  * @property {number}   [maxHeight]         - Maximum height in px (0 = unlimited)
  * @property {boolean}  [focus]             - Auto-focus on init
- * @property {boolean}  [resizeable]        - Show resize handle
+ * @property {boolean}  [resizable]         - Show resize handle
  * @property {Array}    [toolbar]           - Toolbar button group config
  * @property {boolean}  [pasteAsPlainText]  - Force plain-text paste
  * @property {boolean}  [pasteCleanHTML]    - Sanitise HTML on paste
@@ -38,7 +38,7 @@ export const defaultOptions = {
   minHeight: 100,
   maxHeight: 0,
   focus: false,
-  resizeable: true,
+  resizable: true,
   toolbar: defaultToolbar,
   // UI integration options
   // If `useBootstrap` is true, toolbar buttons will use the Bootstrap button classes
@@ -62,7 +62,7 @@ export const defaultOptions = {
   stickyToolbar: false,
   stickyToolbarOffset: 0,
   theme: 'light',
-  codeHighlight: false,
+  codeHighlight: true,
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
   markdownPaste: true,
   // Default font family applied to the editor and shown in the dropdown when no explicit font is set

@@ -208,14 +208,22 @@ export class Editor {
 
   undo() {
     if (this._history) {
+      clearTimeout(this._snapshotTimer);
+      this._snapshotTimer = null;
       this._history.undo();
+      this.context.invoke('toolbar.refresh');
+      this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
   }
 
   redo() {
     if (this._history) {
+      clearTimeout(this._snapshotTimer);
+      this._snapshotTimer = null;
       this._history.redo();
+      this.context.invoke('toolbar.refresh');
+      this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
   }

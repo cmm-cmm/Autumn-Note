@@ -30,7 +30,7 @@ export class Statusbar {
     this.el = createElement('div', { class: 'an-statusbar' });
 
     // Resize handle
-    if (this.options.resizeable !== false) {
+    if (this.options.resizable !== false) {
       const handle = createElement('div', {
         class: 'an-resize-handle',
         title: 'Resize editor',

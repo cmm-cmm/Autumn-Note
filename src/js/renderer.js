@@ -46,11 +46,12 @@ export function renderLayout(targetEl, options) {
     editable.style.fontFamily = defaultFont;
   }
 
-  // Apply height options
+  // Apply height options.
+  // `height` sets the initial visible height (takes priority).
+  // `minHeight` is the drag-resize floor — only applied when no explicit `height` is given.
   if (options.height) {
     editable.style.minHeight = `${options.height}px`;
-  }
-  if (options.minHeight) {
+  } else if (options.minHeight) {
     editable.style.minHeight = `${options.minHeight}px`;
   }
   if (options.maxHeight) {

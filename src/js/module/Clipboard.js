@@ -150,7 +150,9 @@ export class Clipboard {
     files.forEach((file) => {
       if (!file || !file.type.startsWith('image/')) return;
       if (file.size > maxBytes) {
-        alert(`Image "${file.name}" is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`);
+        const message = `Image "${file.name}" exceeds the ${this.options.maxImageSize || 5} MB size limit.`;
+        this.context.triggerEvent('imageError', { file, message });
+        console.warn(`[AutumnNote] ${message}`);
         return;
       }
 
