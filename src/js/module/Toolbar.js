@@ -472,6 +472,7 @@ export class Toolbar {
       // Restore focus to the editor before executing the action
       this.context.invoke('editor.focus');
       btnDef.action(this.context);
+      this.context.invoke('editor.afterCommand');
       this.refresh();
     });
 

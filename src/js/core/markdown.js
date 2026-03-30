@@ -131,18 +131,18 @@ function _inline(text) {
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
     `<a href="${_escAttr(href)}">${_esc(label)}</a>`);
   // Bold + italic  ***text***
-  text = text.replace(/\*{3}(.+?)\*{3}/g, '<strong><em>$1</em></strong>');
-  text = text.replace(/_{3}(.+?)_{3}/g,   '<strong><em>$1</em></strong>');
+  text = text.replace(/\*{3}(.+?)\*{3}/g, (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
+  text = text.replace(/_{3}(.+?)_{3}/g,   (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
   // Bold  **text**
-  text = text.replace(/\*{2}(.+?)\*{2}/g, '<strong>$1</strong>');
-  text = text.replace(/_{2}(.+?)_{2}/g,   '<strong>$1</strong>');
+  text = text.replace(/\*{2}(.+?)\*{2}/g, (_, c) => `<strong>${_esc(c)}</strong>`);
+  text = text.replace(/_{2}(.+?)_{2}/g,   (_, c) => `<strong>${_esc(c)}</strong>`);
   // Italic  *text*  _text_
-  text = text.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
-  text = text.replace(/_([^_\n]+?)_/g,   '<em>$1</em>');
+  text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${_esc(c)}</em>`);
+  text = text.replace(/_([^_\n]+?)_/g,   (_, c) => `<em>${_esc(c)}</em>`);
   // Strikethrough  ~~text~~
-  text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
+  text = text.replace(/~~(.+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
   // Inline code  `code`
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${_esc(c)}</code>`);
   return text;
 }
 
