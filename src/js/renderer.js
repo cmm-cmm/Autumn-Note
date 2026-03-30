@@ -35,9 +35,9 @@ export function renderLayout(targetEl, options) {
 
   // Set initial content from original element (sanitised)
   if (targetEl.tagName === 'TEXTAREA') {
-    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim());
+    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim(), { allowIframes: true });
   } else {
-    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim());
+    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim(), { allowIframes: true });
   }
 
   // Apply default font family so the editable renders in the configured font

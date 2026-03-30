@@ -631,7 +631,7 @@ export class EmojiDialog {
       const cell = e.target.closest('.an-emoji-cell');
       if (cell) this._onEmojiClick(cell.dataset.char);
     });
-    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
+    const onKeydown = (e) => { if (e.key === 'Escape' && this._dialog && this._dialog.style.display !== 'none') this._close(); };
     document.addEventListener('keydown', onKeydown);
     const d7 = () => document.removeEventListener('keydown', onKeydown);
 

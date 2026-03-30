@@ -459,7 +459,7 @@ export class IconDialog {
     const d11 = on(useColorCb, 'change', () => this._updatePreview(this._selectedIcon));
 
     const onKeydown = (e) => {
-      if (e.key === 'Escape') this._close();
+      if (e.key === 'Escape' && this._dialog && this._dialog.style.display !== 'none') this._close();
     };
     document.addEventListener('keydown', onKeydown);
     const d12 = () => document.removeEventListener('keydown', onKeydown);
