@@ -7,6 +7,7 @@
 import { on } from '../core/dom.js';
 import { execCommand } from '../editing/Style.js';
 import { sanitiseHTML } from '../core/sanitise.js';
+import { isMarkdown, markdownToHTML } from '../core/markdown.js';
 
 export class Clipboard {
   /**
@@ -74,7 +75,19 @@ export class Clipboard {
       return;
     }
 
-    // 3. Sanitise HTML on paste when pasteCleanHTML is true (default)
+    // 3. Markdown paste — only when no HTML is on the clipboard (pure text source)
+    if (this.options.markdownPaste !== false && !clipboardData.types.includes('text/html')) {
+      const text = clipboardData.getData('text/plain');
+      if (text && isMarkdown(text)) {
+        event.preventDefault();
+        const html = sanitiseHTML(markdownToHTML(text));
+        execCommand('insertHTML', html);
+        this.context.invoke('editor.afterCommand');
+        return;
+      }
+    }
+
+    // 4. Sanitise HTML on paste when pasteCleanHTML is true (default)
     if (this.options.pasteCleanHTML !== false && clipboardData.types.includes('text/html')) {
       event.preventDefault();
       const raw = clipboardData.getData('text/html');

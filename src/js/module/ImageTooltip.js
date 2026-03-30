@@ -10,6 +10,7 @@ const ICONS = {
   alignCenter: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>`,
   originalSize:`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
   deleteImg:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  caption:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/></svg>`,
 };
 
 const SHOW_DELAY = 100;
@@ -98,6 +99,11 @@ export class ImageTooltip {
     this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
 
     el.appendChild(this._originalBtn);
+
+    el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
+
+    this._captionBtn = this._makeBtn(ICONS.caption, 'Add / Edit Caption', () => this._toggleCaption());
+    el.appendChild(this._captionBtn);
 
     el.appendChild(createElement('div', { class: 'asn-link-tooltip-sep' }));
 
@@ -237,5 +243,44 @@ export class ImageTooltip {
     this.context.invoke('imageResizer.deselect');
     if (img.parentNode) img.parentNode.removeChild(img);
     this.context.invoke('editor.afterCommand');
+  }
+
+  _toggleCaption() {
+    const img = this._activeImg;
+    if (!img) return;
+
+    // If already inside a figure, move focus to the figcaption
+    const existing = img.closest('figure.asn-figure');
+    if (existing) {
+      const cap = existing.querySelector('figcaption.asn-figcaption');
+      if (cap) {
+        this._hide();
+        const range = document.createRange();
+        range.selectNodeContents(cap);
+        const sel = window.getSelection();
+        if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+      }
+      return;
+    }
+
+    // Wrap image in <figure><figcaption>
+    const figure = document.createElement('figure');
+    figure.className = 'asn-figure';
+    const figcaption = document.createElement('figcaption');
+    figcaption.className = 'asn-figcaption';
+    figcaption.textContent = 'Caption';
+
+    img.parentNode.insertBefore(figure, img);
+    figure.appendChild(img);
+    figure.appendChild(figcaption);
+
+    // Select caption text immediately
+    const range = document.createRange();
+    range.selectNodeContents(figcaption);
+    const sel = window.getSelection();
+    if (sel) { sel.removeAllRanges(); sel.addRange(range); }
+
+    this.context.invoke('editor.afterCommand');
+    this._hide();
   }
 }

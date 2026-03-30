@@ -191,6 +191,7 @@ export const lineHeightBtn = {
 
 export const codeviewBtn = btn('codeview', 'code', 'HTML Code View', (ctx) => ctx.invoke('codeview.toggle'), (ctx) => ctx.invoke('codeview.isActive'));
 export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => ctx.invoke('fullscreen.toggle'), (ctx) => ctx.invoke('fullscreen.isActive'));
+export const shortcutsBtn = btn('shortcuts', 'keyboard', 'Keyboard Shortcuts (Shift+?)', (ctx) => ctx.invoke('shortcutsDialog.show'));
 
 // ---------------------------------------------------------------------------
 // Text / background colour pickers
@@ -233,5 +234,5 @@ export const defaultToolbar = [
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
-  [codeviewBtn, fullscreenBtn],
+  [codeviewBtn, fullscreenBtn, shortcutsBtn],
 ];

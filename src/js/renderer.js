@@ -59,6 +59,19 @@ export function renderLayout(targetEl, options) {
 
   container.appendChild(editable);
 
+  // Apply dark theme
+  if (options.theme === 'dark') {
+    container.classList.add('asn-theme-dark');
+  }
+
+  // Configure sticky toolbar
+  if (options.stickyToolbar) {
+    container.classList.add('asn-sticky-toolbar');
+    if (options.stickyToolbarOffset) {
+      container.style.setProperty('--asn-sticky-top', `${options.stickyToolbarOffset}px`);
+    }
+  }
+
   // Hide the original element; keep it in DOM for form submission
   targetEl.style.display = 'none';
   targetEl.insertAdjacentElement('afterend', container);

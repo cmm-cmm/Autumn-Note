@@ -106,6 +106,12 @@ export class Editor {
     if (isModifier(event, 'b')) { event.preventDefault(); this.bold(); return; }
     if (isModifier(event, 'i')) { event.preventDefault(); this.italic(); return; }
     if (isModifier(event, 'u')) { event.preventDefault(); this.underline(); return; }
+
+    // Show keyboard shortcuts dialog: Shift+?
+    if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      this.context.invoke('shortcutsDialog.show');
+    }
   }
 
   // ---------------------------------------------------------------------------

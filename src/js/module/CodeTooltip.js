@@ -23,11 +23,14 @@ export class CodeTooltip {
     this._hideTimer = null;
     this._disposers = [];
     this._copyBtn = null;
+    this._langSelect = null;
+    this._prismScript = null; // script element while Prism is loading
   }
 
   initialize() {
     this._el = this._buildTooltip();
     document.body.appendChild(this._el);
+    this._ensurePrism();
 
     const editable = this.context.layoutInfo.editable;
 
@@ -80,6 +83,30 @@ export class CodeTooltip {
     this._label = createElement('span', { class: 'asn-link-tooltip-url' });
     this._label.textContent = 'Code';
     el.appendChild(this._label);
+
+    el.appendChild(this._sep());
+
+    // Language selector
+    this._langSelect = createElement('select', {
+      class: 'asn-code-lang-select',
+      title: 'Syntax Language',
+      'aria-label': 'Syntax language',
+    });
+    const LANGUAGES = [
+      ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
+      ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['json', 'JSON'],
+      ['xml', 'XML'], ['bash', 'Bash / Shell'], ['sql', 'SQL'],
+      ['java', 'Java'], ['csharp', 'C#'], ['php', 'PHP'], ['ruby', 'Ruby'],
+      ['go', 'Go'], ['rust', 'Rust'], ['cpp', 'C++'], ['c', 'C'],
+      ['kotlin', 'Kotlin'], ['swift', 'Swift'],
+    ];
+    LANGUAGES.forEach(([value, label]) => {
+      const opt = createElement('option', { value });
+      opt.textContent = label;
+      this._langSelect.appendChild(opt);
+    });
+    this._disposers.push(on(this._langSelect, 'change', () => this._onLangChange()));
+    el.appendChild(this._langSelect);
 
     el.appendChild(this._sep());
 
@@ -150,6 +177,7 @@ export class CodeTooltip {
     this._showTimer = setTimeout(() => {
       this._activePre = pre;
       this._syncWrapBtn();
+      this._syncLangSelect();
       this._show(pre);
     }, SHOW_DELAY);
   }
@@ -209,6 +237,14 @@ export class CodeTooltip {
     this._wrapBtn.title = wrapped ? 'Disable Word Wrap' : 'Enable Word Wrap';
   }
 
+  _syncLangSelect() {
+    if (!this._activePre || !this._langSelect) return;
+    const codeEl = this._activePre.querySelector('code');
+    const fromAttr = this._activePre.getAttribute('data-language') || '';
+    const fromClass = codeEl ? (codeEl.className.match(/language-(\S+)/) || [])[1] || '' : '';
+    this._langSelect.value = fromAttr || fromClass || '';
+  }
+
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
@@ -252,6 +288,115 @@ export class CodeTooltip {
     this._syncWrapBtn();
     this.context.invoke('editor.afterCommand');
     this._positionNear(pre);
+  }
+
+  _onLangChange() {
+    const pre = this._activePre;
+    if (!pre) return;
+    const lang = this._langSelect.value;
+
+    // Ensure a <code> child exists (Prism targets <pre><code class="language-xxx">)
+    let codeEl = pre.querySelector('code');
+    if (!codeEl) {
+      codeEl = document.createElement('code');
+      codeEl.innerHTML = pre.innerHTML;
+      pre.innerHTML = '';
+      pre.appendChild(codeEl);
+    }
+
+    codeEl.className = lang ? `language-${lang}` : '';
+    // Mirror language class on <pre> so Prism CSS theme targets it (pre[class*='language-'])
+    pre.className = lang ? `language-${lang}` : '';
+    if (lang) {
+      pre.setAttribute('data-language', lang);
+    } else {
+      pre.removeAttribute('data-language');
+    }
+
+    // Trigger Prism if available.
+    // contenteditable stores line breaks as <br> elements; Prism reads textContent
+    // which drops <br> entirely, collapsing all lines into one. Convert first.
+    const applyPrism = () => {
+      codeEl.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+      window.Prism.highlightElement(codeEl);
+      this.context.invoke('editor.afterCommand');
+    };
+
+    if (lang) {
+      if (typeof window.Prism !== 'undefined') {
+        // Grammar already loaded — highlight immediately
+        if (window.Prism.languages[lang]) {
+          applyPrism();
+          return;
+        }
+        // Grammar not in core bundle — load the component script first
+        this._loadPrismComponent(lang, applyPrism);
+        return;
+      } else if (this._prismScript) {
+        // Prism core is still loading — highlight once it arrives, then load grammar if needed
+        this._prismScript.addEventListener('load', () => {
+          if (window.Prism.languages[lang]) {
+            applyPrism();
+          } else {
+            this._loadPrismComponent(lang, applyPrism);
+          }
+        }, { once: true });
+        return;
+      }
+    }
+
+    this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Loads Prism.js + CSS from CDN when options.codeHighlight is true.
+   * Called once at initialize time. Fire-and-forget; errors are silent.
+   */
+  _ensurePrism() {
+    if (!this.context.options.codeHighlight || window.Prism) return;
+    const cdn = this.context.options.codeHighlightCDN
+      || 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `${cdn}/themes/prism-tomorrow.min.css`;
+    document.head.appendChild(link);
+
+    const script = document.createElement('script');
+    script.dataset.manual = ''; // prevent auto-highlight on load
+    script.src = `${cdn}/prism.min.js`;
+    this._prismScript = script;
+    script.addEventListener('load', () => { this._prismScript = null; }, { once: true });
+    document.head.appendChild(script);
+  }
+
+  /**
+   * Dynamically loads a Prism language component script if not already available.
+   * Prism core only bundles: markup, css, clike, javascript.
+   * All other grammars (bash, python, etc.) need a component file.
+   * @param {string} lang  – Prism language slug (e.g. 'bash', 'python')
+   * @param {Function} cb  – called once the grammar is ready
+   */
+  _loadPrismComponent(lang, cb) {
+    const cdn = this.context.options.codeHighlightCDN
+      || 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+    const src = `${cdn}/components/prism-${lang}.min.js`;
+    // Avoid loading the same component twice
+    if (document.querySelector(`script[src="${src}"]`)) {
+      // Already in DOM — might still be loading; poll briefly then call cb
+      const poll = setInterval(() => {
+        if (window.Prism && window.Prism.languages[lang]) {
+          clearInterval(poll);
+          cb();
+        }
+      }, 50);
+      setTimeout(() => clearInterval(poll), 3000); // give up after 3s
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = src;
+    s.addEventListener('load', cb, { once: true });
+    document.head.appendChild(s);
   }
 
   _toParagraph() {

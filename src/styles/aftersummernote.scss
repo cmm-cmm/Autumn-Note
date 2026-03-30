@@ -408,6 +408,20 @@
   }
   pre     { padding: 0.75em 1em; overflow-x: auto; }
   code    { padding: 0.1em 0.3em; }
+
+  // Prism-highlighted blocks — <pre> gets class="language-*" mirrored from <code>
+  // Set dark background here as fallback for before Prism CSS loads from CDN.
+  pre[class*='language-'] {
+    background: #2d2d2d;
+    color: #ccc;
+    border-radius: $asn-radius-sm;
+
+    > code[class*='language-'] {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+  }
   a       { color: $asn-primary; }
   hr      { border: none; border-top: 2px solid $asn-border; margin: 1em 0; }
   img.asn-image {
@@ -1246,6 +1260,333 @@ $asn-video-accent: #8b5cf6; // violet-500
 
   &:active {
     background: $asn-bg-btn-active;
+  }
+}
+
+// =============================================================================
+// Sticky toolbar
+// =============================================================================
+
+.asn-sticky-toolbar {
+  overflow: visible;
+
+  .asn-toolbar {
+    position: sticky;
+    top: var(--asn-sticky-top, 0px);
+    z-index: 100;
+    border-radius: $asn-radius $asn-radius 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  }
+}
+
+// =============================================================================
+// Image caption — figure / figcaption
+// =============================================================================
+
+.asn-editable {
+  figure.asn-figure {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0.75em 0;
+    text-align: center;
+
+    img { display: block; max-width: 100%; }
+  }
+
+  figcaption.asn-figcaption {
+    font-size: 0.85em;
+    font-style: italic;
+    color: $asn-muted;
+    padding: 4px 0 2px;
+    text-align: center;
+    line-height: 1.4;
+    min-width: 60px;
+    outline: none;
+
+    &:focus {
+      background: rgba($asn-primary, 0.06);
+      border-radius: 2px;
+    }
+  }
+}
+
+// =============================================================================
+// Keyboard shortcuts dialog
+// =============================================================================
+
+.asn-shortcuts-box {
+  width: min(480px, 95vw);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.asn-shortcuts-cat {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $asn-muted;
+  padding: 8px 0 4px;
+  border-bottom: 1px solid $asn-border;
+  margin-bottom: 2px;
+
+  & + .asn-shortcuts-table + & {
+    margin-top: 10px;
+  }
+}
+
+.asn-shortcuts-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.asn-shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 4px;
+  border-radius: $asn-radius-sm;
+
+  &:hover { background: $asn-bg-btn-hover; }
+}
+
+.asn-shortcuts-key {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+  color: $asn-text;
+  background: $asn-bg-toolbar;
+  border: 1px solid $asn-border;
+  border-bottom-width: 2px;
+  border-radius: $asn-radius-sm;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.asn-shortcuts-action {
+  font-size: 13px;
+  color: $asn-text;
+  flex: 1;
+  padding-left: 14px;
+}
+
+// =============================================================================
+// Code block language selector (inside CodeTooltip)
+// =============================================================================
+
+.asn-code-lang-select {
+  height: 22px;
+  padding: 0 20px 0 6px;
+  border: 1px solid $asn-border;
+  border-radius: $asn-radius-sm;
+  font-family: inherit;
+  font-size: 11px;
+  color: $asn-text;
+  background: $asn-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 5px center;
+  background-size: 6px 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &:focus { outline: none; border-color: $asn-primary; }
+  &:hover { border-color: $asn-primary; }
+}
+
+// =============================================================================
+// Dark theme — apply via options: { theme: 'dark' }
+// =============================================================================
+
+.asn-theme-dark {
+  border-color: #3f3f5f;
+  background: #1e1e2e;
+  color: #cdd6f4;
+
+  &.asn-focused {
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 3px rgba(#89b4fa, 0.2);
+  }
+
+  .asn-toolbar {
+    background: #181825;
+    border-color: #3f3f5f;
+  }
+
+  .asn-btn {
+    color: #cdd6f4;
+
+    &:hover {
+      background: #2a2a3e;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+
+      svg { stroke: #cdd6f4; }
+    }
+
+    &.active {
+      background: #1a3a5c;
+      border-color: #89b4fa;
+      color: #89b4fa;
+
+      svg { stroke: #89b4fa; }
+    }
+
+    &.asn-btn-primary {
+      background: #3b5bdb;
+      border-color: #3b5bdb;
+      color: #fff;
+    }
+  }
+
+  .asn-select {
+    background-color: #1e1e2e;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+
+    &:hover, &:focus { border-color: #89b4fa; }
+  }
+
+  .asn-editable {
+    background: #1e1e2e;
+    color: #cdd6f4;
+
+    a { color: #89b4fa; }
+
+    blockquote {
+      border-color: #3f3f5f;
+      color: #a6adc8;
+    }
+
+    pre:not([class*='language-']),
+    code:not([class*='language-']) {
+      background: #313244;
+      color: #cdd6f4;
+    }
+
+    hr { border-color: #3f3f5f; }
+
+    table, .asn-table {
+      td, th { border-color: #3f3f5f; }
+      th { background: #313244; }
+    }
+
+    &.asn-placeholder::before { color: #6c7086; }
+
+    figcaption.asn-figcaption { color: #6c7086; }
+  }
+
+  .asn-statusbar {
+    background: #181825;
+    border-color: #3f3f5f;
+    color: #6c7086;
+  }
+
+  .asn-link-tooltip,
+  .asn-contextmenu {
+    background: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .asn-link-tooltip-url { color: #89b4fa; }
+
+  .asn-link-tooltip-btn {
+    color: #a6adc8;
+
+    &:hover {
+      background: #2a2a3e;
+      color: #cdd6f4;
+    }
+  }
+
+  .asn-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
+
+  .asn-dialog-box {
+    background: #24273a;
+    color: #cdd6f4;
+    border: 1px solid #3f3f5f;
+  }
+
+  .asn-dialog-title { color: #cdd6f4; }
+
+  .asn-label { color: #cdd6f4; }
+
+  .asn-input {
+    background: #313244;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+
+    &:focus {
+      border-color: #89b4fa;
+      box-shadow: 0 0 0 3px rgba(#89b4fa, 0.15);
+    }
+  }
+
+  .asn-shortcuts-key {
+    background: #313244;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .asn-shortcuts-action { color: #cdd6f4; }
+  .asn-shortcuts-row:hover { background: #2a2a3e; }
+
+  .asn-shortcuts-cat {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+  }
+
+  .asn-code-lang-select {
+    background-color: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .asn-color-popup,
+  .asn-table-picker-popup,
+  .asn-size-popover {
+    background: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .asn-table-cell {
+    background: #24273a;
+    border-color: #3f3f5f;
+  }
+
+  .asn-context-item { color: #cdd6f4; }
+  .asn-context-sep { background: #3f3f5f; }
+
+  .asn-icon-cat {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+
+    &.active {
+      background: #3b5bdb;
+      border-color: #3b5bdb;
+      color: #fff;
+    }
+  }
+
+  .asn-icon-search {
+    border-color: #3f3f5f;
+    background: #313244;
+    color: #cdd6f4;
+  }
+
+  .asn-icon-cell {
+    color: #cdd6f4;
+
+    &:hover { background: #2a2a3e; }
+  }
+
+  .asn-icon-close {
+    color: #a6adc8;
+
+    &:hover {
+      background: #2a2a3e;
+      color: #cdd6f4;
+    }
   }
 }
 

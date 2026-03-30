@@ -30,6 +30,7 @@ import { CodeTooltip } from './module/CodeTooltip.js';
 import { EmojiDialog } from './module/EmojiDialog.js';
 import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
+import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 
 export class Context {
   /**
@@ -122,6 +123,7 @@ export class Context {
     register('codeTooltip', CodeTooltip);
     register('emojiDialog', EmojiDialog);
     register('iconDialog', IconDialog);
+    register('shortcutsDialog', ShortcutsDialog);
   }
 
   _bindEditorEvents(editable) {
