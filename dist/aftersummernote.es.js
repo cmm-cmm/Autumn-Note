@@ -34,12 +34,12 @@ function ne(s, e) {
   const t = {};
   for (const i of Object.keys(s))
     t[i] = Array.isArray(s[i]) ? [...s[i]] : s[i];
-  if (X(s) && X(e))
+  if (K(s) && K(e))
     for (const i of Object.keys(e))
-      X(e[i]) ? i in s ? t[i] = ne(s[i], e[i]) : t[i] = e[i] : Array.isArray(e[i]) ? t[i] = [...e[i]] : t[i] = e[i];
+      K(e[i]) ? i in s ? t[i] = ne(s[i], e[i]) : t[i] = e[i] : Array.isArray(e[i]) ? t[i] = [...e[i]] : t[i] = e[i];
   return t;
 }
-function X(s) {
+function K(s) {
   return s !== null && typeof s == "object" && !Array.isArray(s);
 }
 function wi(s) {
@@ -52,8 +52,8 @@ function wi(s) {
     right: Math.round(s.right)
   } : null;
 }
-const Ne = 1, He = 3, j = (s) => s && s.nodeType === Ne, le = (s) => s && s.nodeType === He, Pe = (s) => j(s) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(s.nodeName), De = (s) => j(s) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(s.nodeName), Oe = (s) => j(s) && /^(li)$/i.test(s.nodeName), xi = (s) => j(s) && /^(ul|ol)$/i.test(s.nodeName), ki = (s) => j(s) && s.nodeName.toUpperCase() === "TABLE", Ci = (s) => j(s) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(s.nodeName), $e = (s) => j(s) && s.isContentEditable, Ti = (s) => j(s) && s.nodeName.toUpperCase() === "A", Ei = (s) => j(s) && s.nodeName.toUpperCase() === "IMG";
-function J(s, e, t) {
+const Ne = 1, He = 3, S = (s) => s && s.nodeType === Ne, le = (s) => s && s.nodeType === He, Pe = (s) => S(s) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(s.nodeName), De = (s) => S(s) && /^(p|div|li|h[1-6]|blockquote|td|th|pre)$/i.test(s.nodeName), Oe = (s) => S(s) && /^(li)$/i.test(s.nodeName), xi = (s) => S(s) && /^(ul|ol)$/i.test(s.nodeName), ki = (s) => S(s) && s.nodeName.toUpperCase() === "TABLE", Ci = (s) => S(s) && /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(s.nodeName), $e = (s) => S(s) && s.isContentEditable, Ti = (s) => S(s) && s.nodeName.toUpperCase() === "A", Ii = (s) => S(s) && s.nodeName.toUpperCase() === "IMG";
+function Q(s, e, t) {
   let i = s;
   for (; i && i !== t; ) {
     if (e(i)) return i;
@@ -62,9 +62,9 @@ function J(s, e, t) {
   return null;
 }
 function te(s, e) {
-  return J(s, De, e);
+  return Q(s, De, e);
 }
-function Ii(s, e) {
+function Ei(s, e) {
   const t = [];
   let i = s.parentNode;
   for (; i && i !== e; )
@@ -74,19 +74,19 @@ function Ii(s, e) {
 function Bi(s) {
   return Array.from(s.childNodes);
 }
-function Si(s) {
+function Li(s) {
   let e = s.previousSibling;
-  for (; e && !j(e); )
+  for (; e && !S(e); )
     e = e.previousSibling;
   return e;
 }
-function Li(s) {
+function Ai(s) {
   let e = s.nextSibling;
-  for (; e && !j(e); )
+  for (; e && !S(e); )
     e = e.nextSibling;
   return e;
 }
-function a(s, e = {}, t = []) {
+function r(s, e = {}, t = []) {
   const i = document.createElement(s);
   for (const [o, n] of Object.entries(e))
     i.setAttribute(o, n);
@@ -94,10 +94,10 @@ function a(s, e = {}, t = []) {
     typeof o == "string" ? i.appendChild(document.createTextNode(o)) : i.appendChild(o);
   return i;
 }
-function ji(s) {
+function Si(s) {
   s && s.parentNode && s.parentNode.removeChild(s);
 }
-function Ai(s) {
+function ji(s) {
   const e = s.parentNode;
   if (e) {
     for (; s.firstChild; )
@@ -127,12 +127,12 @@ function Pi(s) {
   t && (t.removeAllRanges(), t.addRange(e));
 }
 function Di(s) {
-  return !!J(s, $e);
+  return !!Q(s, $e);
 }
 function h(s, e, t, i) {
   return s.addEventListener(e, t, i), () => s.removeEventListener(e, t, i);
 }
-class Q {
+class J {
   /**
    * @param {Node} sc - start container
    * @param {number} so - start offset
@@ -168,7 +168,7 @@ class Q {
    */
   commonAncestor() {
     const t = this.toNativeRange().commonAncestorContainer;
-    return j(t) ? t : t.parentElement;
+    return S(t) ? t : t.parentElement;
   }
   /**
    * Returns the nearest paragraph/block ancestor within the editable area.
@@ -176,7 +176,7 @@ class Q {
    * @returns {Element|null}
    */
   blockNode(e) {
-    return J(this.sc, (t) => j(t) && t !== e, e);
+    return Q(this.sc, (t) => S(t) && t !== e, e);
   }
   /**
    * Returns either the selected text string or empty string.
@@ -212,7 +212,7 @@ class Q {
   }
 }
 function ae(s) {
-  return new Q(
+  return new J(
     s.startContainer,
     s.startOffset,
     s.endContainer,
@@ -226,10 +226,10 @@ function ie(s) {
   return s && !s.contains(t.commonAncestorContainer) ? null : ae(t);
 }
 function Oi(s) {
-  return new Q(s, 0, s, s.childNodes.length);
+  return new J(s, 0, s, s.childNodes.length);
 }
 function $i(s, e = 0) {
-  return new Q(s, e, s, e);
+  return new J(s, e, s, e);
 }
 function Fi(s) {
   const e = window.getSelection();
@@ -267,8 +267,8 @@ function We(s, e) {
   for (let o = 0; o < s; o++) {
     const n = document.createElement("tr");
     for (let l = 0; l < e; l++) {
-      const r = document.createElement("td");
-      r.style.border = "1px solid #dee2e6", r.style.padding = "6px 12px", r.style.minWidth = "40px", r.innerHTML = "&#8203;", n.appendChild(r);
+      const a = document.createElement("td");
+      a.style.border = "1px solid #dee2e6", a.style.padding = "6px 12px", a.style.minWidth = "40px", a.innerHTML = "&#8203;", n.appendChild(a);
     }
     i.appendChild(n);
   }
@@ -291,10 +291,10 @@ function Ue(s) {
     return;
   }
   const n = /* @__PURE__ */ new Set(), l = document.createNodeIterator(t.commonAncestorContainer, NodeFilter.SHOW_TEXT, null);
-  let r;
-  for (; r = l.nextNode(); )
-    if (t.intersectsNode(r)) {
-      const c = o(r);
+  let a;
+  for (; a = l.nextNode(); )
+    if (t.intersectsNode(a)) {
+      const c = o(a);
       c && n.add(c);
     }
   if (n.size === 0) {
@@ -308,7 +308,7 @@ function Ue(s) {
 function C(s, e, t, i, o) {
   return { name: s, icon: e, tooltip: t, action: i, isActive: o };
 }
-const qe = C("bold", "bold", "Bold (Ctrl+B)", () => re(), () => document.queryCommandState("bold")), Ve = C("italic", "italic", "Italic (Ctrl+I)", () => ce(), () => document.queryCommandState("italic")), Ye = C("underline", "underline", "Underline (Ctrl+U)", () => he(), () => document.queryCommandState("underline")), Ke = C("strikethrough", "strikethrough", "Strikethrough", () => de(), () => document.queryCommandState("strikeThrough")), Xe = C("superscript", "superscript", "Superscript", () => pe(), () => document.queryCommandState("superscript")), Ge = C("subscript", "subscript", "Subscript", () => ue(), () => document.queryCommandState("subscript")), Je = C("alignLeft", "align-left", "Align Left", () => _e()), Qe = C("alignCenter", "align-center", "Align Center", () => be()), Ze = C("alignRight", "align-right", "Align Right", () => ve()), et = C("alignJustify", "align-justify", "Justify", () => we()), tt = C("ul", "list-ul", "Unordered List", () => Ce()), it = C("ol", "list-ol", "Ordered List", () => Te()), st = C("indent", "indent", "Indent", () => xe()), ot = C("outdent", "outdent", "Outdent", () => ke()), nt = C("undo", "undo", "Undo (Ctrl+Z)", (s) => s.invoke("editor.undo")), lt = C("redo", "redo", "Redo (Ctrl+Y)", (s) => s.invoke("editor.redo")), at = C("hr", "minus", "Horizontal Rule", () => w("insertHorizontalRule")), rt = C("link", "link", "Insert Link", (s) => s.invoke("linkDialog.show")), ct = C("image", "image", "Insert Image", (s) => s.invoke("imageDialog.show")), ht = C("video", "video", "Insert Video", (s) => s.invoke("videoDialog.show")), dt = C("emoji", "emoji", "Insert Emoji", (s) => s.invoke("emojiDialog.show")), pt = C("icon", "icon", "Insert FA Icon", (s) => s.invoke("iconDialog.show")), ut = {
+const qe = C("bold", "bold", "Bold (Ctrl+B)", () => re(), () => document.queryCommandState("bold")), Ve = C("italic", "italic", "Italic (Ctrl+I)", () => ce(), () => document.queryCommandState("italic")), Ye = C("underline", "underline", "Underline (Ctrl+U)", () => he(), () => document.queryCommandState("underline")), Xe = C("strikethrough", "strikethrough", "Strikethrough", () => de(), () => document.queryCommandState("strikeThrough")), Ke = C("superscript", "superscript", "Superscript", () => pe(), () => document.queryCommandState("superscript")), Ge = C("subscript", "subscript", "Subscript", () => ue(), () => document.queryCommandState("subscript")), Qe = C("alignLeft", "align-left", "Align Left", () => _e()), Je = C("alignCenter", "align-center", "Align Center", () => be()), Ze = C("alignRight", "align-right", "Align Right", () => ve()), et = C("alignJustify", "align-justify", "Justify", () => we()), tt = C("ul", "list-ul", "Unordered List", () => Ce()), it = C("ol", "list-ol", "Ordered List", () => Te()), st = C("indent", "indent", "Indent", () => xe()), ot = C("outdent", "outdent", "Outdent", () => ke()), nt = C("undo", "undo", "Undo (Ctrl+Z)", (s) => s.invoke("editor.undo")), lt = C("redo", "redo", "Redo (Ctrl+Y)", (s) => s.invoke("editor.redo")), at = C("hr", "minus", "Horizontal Rule", () => w("insertHorizontalRule")), rt = C("link", "link", "Insert Link", (s) => s.invoke("linkDialog.show")), ct = C("image", "image", "Insert Image", (s) => s.invoke("imageDialog.show")), ht = C("video", "video", "Insert Video", (s) => s.invoke("videoDialog.show")), dt = C("emoji", "emoji", "Insert Emoji", (s) => s.invoke("emojiDialog.show")), pt = C("icon", "icon", "Insert FA Icon", (s) => s.invoke("iconDialog.show")), ut = {
   name: "table",
   type: "grid",
   icon: "table",
@@ -391,14 +391,14 @@ const qe = C("bold", "bold", "Bold (Ctrl+B)", () => re(), () => document.queryCo
 }, wt = [
   [ft, mt, gt],
   [nt, lt],
-  [qe, Ve, Ye, Ke],
-  [Xe, Ge],
+  [qe, Ve, Ye, Xe],
+  [Ke, Ge],
   [bt, vt],
-  [Je, Qe, Ze, et],
+  [Qe, Je, Ze, et],
   [tt, it, st, ot],
   [at, rt, ct, ht, ut, dt, pt],
   [yt, _t]
-], Ee = {
+], Ie = {
   placeholder: "",
   height: 200,
   minHeight: 100,
@@ -467,7 +467,7 @@ function se(s, { allowData: e = !1 } = {}) {
   return /^(javascript|vbscript):/i.test(t) || !e && /^data:/i.test(t) ? null : s;
 }
 function Ct(s, e) {
-  const t = a("div", { class: "asn-container" }), i = a("div", {
+  const t = r("div", { class: "asn-container" }), i = r("div", {
     class: "asn-editable",
     contenteditable: "true",
     spellcheck: "true",
@@ -480,7 +480,7 @@ function Ct(s, e) {
   return o && (i.style.fontFamily = o), e.height && (i.style.minHeight = `${e.height}px`), e.minHeight && (i.style.minHeight = `${e.minHeight}px`), e.maxHeight && (i.style.maxHeight = `${e.maxHeight}px`), t.appendChild(i), s.style.display = "none", s.insertAdjacentElement("afterend", t), { container: t, editable: i };
 }
 const Tt = 100;
-class Et {
+class It {
   /**
    * @param {HTMLElement} editable - the contenteditable element
    */
@@ -531,9 +531,9 @@ class Et {
   _restoreSelection(e) {
     if (!e) return;
     let t = null, i = 0, o = null, n = 0, l = 0;
-    const r = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
+    const a = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
     let c;
-    for (; c = r.nextNode(); ) {
+    for (; c = a.nextNode(); ) {
       const d = c.length;
       if (!t && l + d >= e.start && (t = c, i = e.start - l), !o && l + d >= e.end) {
         o = c, n = e.end - l;
@@ -553,10 +553,40 @@ class Et {
     }
   }
   _savePoint() {
-    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1)), this.stack.push({ html: this._serialize(), sel: this._serializeSelection() }), this.stack.length > Tt ? this.stack.shift() : this.stackOffset++;
+    this.stackOffset < this.stack.length - 1 && (this.stack = this.stack.slice(0, this.stackOffset + 1));
+    const e = this._serialize(), { html: t, images: i } = this._tokenizeImages(e);
+    this.stack.push({ html: t, images: i, sel: this._serializeSelection() }), this.stack.length > Tt ? this.stack.shift() : this.stackOffset++;
   }
   _restore(e) {
-    e && (this.editable.innerHTML = e.html, this._restoreSelection(e.sel));
+    e && (this.editable.innerHTML = this._detokenizeImages(e), this._restoreSelection(e.sel));
+  }
+  // ---------------------------------------------------------------------------
+  // Base64 tokenisation — keeps snapshot strings small so that the
+  // per-keystroke `recordUndo` string comparison stays fast even when the
+  // editor contains large embedded images.
+  // ---------------------------------------------------------------------------
+  /**
+   * Replaces every `data:…;base64,…` occurrence in `html` with a compact
+   * token `__asn_img_0__`, `__asn_img_1__`, … and returns the tokenized
+   * string together with a map from token → original data URL.
+   * @param {string} html
+   * @returns {{ html: string, images: Object<string,string> }}
+   */
+  _tokenizeImages(e) {
+    const t = {};
+    let i = 0;
+    return { html: e.replace(/data:[^;]+;base64,[^"' >]*/g, (n) => {
+      const l = `__asn_img_${i}__`;
+      return t[l] = n, i++, l;
+    }), images: t };
+  }
+  /**
+   * Restores a snapshot by replacing tokens back with their data URLs.
+   * @param {{ html: string, images: Object<string,string> }} point
+   * @returns {string}
+   */
+  _detokenizeImages(e) {
+    return !e.images || Object.keys(e.images).length === 0 ? e.html : e.html.replace(/__asn_img_\d+__/g, (t) => e.images[t] || t);
   }
   // ---------------------------------------------------------------------------
   // Public API
@@ -565,8 +595,8 @@ class Et {
    * Records the current editor state as a history checkpoint.
    */
   recordUndo() {
-    const e = this._serialize(), t = this.stack[this.stackOffset];
-    t && t.html === e || this._savePoint();
+    const e = this._serialize(), { html: t } = this._tokenizeImages(e), i = this.stack[this.stackOffset];
+    i && i.html === t || this._savePoint();
   }
   /**
    * Undo to the previous state.
@@ -595,21 +625,21 @@ class Et {
     return this.stackOffset < this.stack.length - 1;
   }
 }
-function It(s, e) {
-  const t = a("table", { class: "asn-table" }), i = a("tbody");
+function Et(s, e) {
+  const t = r("table", { class: "asn-table" }), i = r("tbody");
   t.appendChild(i);
   for (let o = 0; o < e; o++) {
-    const n = a("tr");
+    const n = r("tr");
     for (let l = 0; l < s; l++) {
-      const r = a("td", {}, [" "]);
-      n.appendChild(r);
+      const a = r("td", {}, [" "]);
+      n.appendChild(a);
     }
     i.appendChild(n);
   }
   return t;
 }
 function Bt(s, e) {
-  const t = It(s, e);
+  const t = Et(s, e);
   w("insertHTML", t.outerHTML);
 }
 const G = {
@@ -659,7 +689,7 @@ function Y(s, e) {
 function D(s, e) {
   return (s.ctrlKey || s.metaKey) && Y(s, e);
 }
-function St(s, e, t = {}) {
+function Lt(s, e, t = {}) {
   if (Y(s, G.TAB)) {
     const i = ie(e);
     if (!i) return !1;
@@ -683,7 +713,7 @@ function St(s, e, t = {}) {
   }
   return !1;
 }
-class Lt {
+class At {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -695,7 +725,7 @@ class Lt {
   // ---------------------------------------------------------------------------
   initialize() {
     const e = this.context.layoutInfo.editable;
-    return this._history = new Et(e), this._bindEvents(e), this;
+    return this._history = new It(e), this._bindEvents(e), this;
   }
   destroy() {
     this._disposers.forEach((e) => e()), this._disposers = [], this._history = null;
@@ -745,7 +775,7 @@ class Lt {
   }
   _onKeydown(e) {
     const t = this.context.layoutInfo.editable;
-    if (!St(e, t, this.options)) {
+    if (!Lt(e, t, this.options)) {
       if (D(e, "z") && !e.shiftKey) {
         e.preventDefault(), this.undo();
         return;
@@ -923,12 +953,12 @@ class Lt {
     if (!n) return;
     if (o.toString().trim().length > 0) {
       if (w("createLink", n), i) {
-        const r = this._getClosestAnchor();
-        r && (r.setAttribute("target", "_blank"), r.setAttribute("rel", "noopener noreferrer"));
+        const a = this._getClosestAnchor();
+        a && (a.setAttribute("target", "_blank"), a.setAttribute("rel", "noopener noreferrer"));
       }
     } else {
-      const r = this._escapeAttr(t || n);
-      w("insertHTML", `<a href="${this._escapeAttr(n)}"${i ? ' target="_blank" rel="noopener noreferrer"' : ""}>${r}</a>`);
+      const a = this._escapeAttr(t || n);
+      w("insertHTML", `<a href="${this._escapeAttr(n)}"${i ? ' target="_blank" rel="noopener noreferrer"' : ""}>${a}</a>`);
     }
     this.afterCommand();
   }
@@ -986,7 +1016,7 @@ class Lt {
   }
   // --- delegated to shared sanitise.js ---
 }
-class jt {
+class St {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -997,7 +1027,7 @@ class jt {
   // Lifecycle
   // ---------------------------------------------------------------------------
   initialize() {
-    return this.el = a("div", { class: "asn-toolbar" }), this._faReady = this._detectFontAwesome(), this._buildButtons(), this;
+    return this.el = r("div", { class: "asn-toolbar" }), this._faReady = this._detectFontAwesome(), this._buildButtons(), this;
   }
   destroy() {
     this._disposers.forEach((e) => e()), this._disposers = [], this.el && this.el.parentNode && this.el.parentNode.removeChild(this.el), this.el = null;
@@ -1007,7 +1037,7 @@ class jt {
   // ---------------------------------------------------------------------------
   _buildButtons() {
     (this.options.toolbar || []).forEach((t) => {
-      const i = a("div", { class: "asn-btn-group" });
+      const i = r("div", { class: "asn-btn-group" });
       t.forEach((o) => {
         let n;
         o.type === "select" ? n = this._createSelect(o) : o.type === "grid" ? n = this._createGridPicker(o) : o.type === "colorpicker" ? n = this._createColorPicker(o) : n = this._createButton(o), i.appendChild(n);
@@ -1020,7 +1050,7 @@ class jt {
    * @returns {HTMLDivElement}
    */
   _createGridPicker(e) {
-    const o = a("div", { class: "asn-table-picker-wrap" }), l = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", r = a("button", {
+    const o = r("div", { class: "asn-table-picker-wrap" }), l = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", a = r("button", {
       type: "button",
       class: l,
       title: e.tooltip || "",
@@ -1031,52 +1061,52 @@ class jt {
     });
     if (this._faReady) {
       const m = this.options.fontAwesomeClass || "fas";
-      r.innerHTML = `<i class="${m} fa-table" aria-hidden="true"></i>`;
+      a.innerHTML = `<i class="${m} fa-table" aria-hidden="true"></i>`;
     } else {
       const m = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-      r.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${m} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+      a.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${m} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
     }
-    const c = a("div", {
+    const c = r("div", {
       class: "asn-table-picker-popup",
       role: "dialog",
       "aria-label": "Select table size"
-    }), d = a("div", { class: "asn-table-grid" }), p = a("div", { class: "asn-table-label" });
+    }), d = r("div", { class: "asn-table-grid" }), p = r("div", { class: "asn-table-label" });
     p.textContent = "Insert Table";
     const u = [];
     for (let m = 1; m <= 10; m++)
       for (let _ = 1; _ <= 10; _++) {
-        const E = a("div", {
+        const I = r("div", {
           class: "asn-table-cell",
           "data-row": String(m),
           "data-col": String(_)
         });
-        u.push(E), d.appendChild(E);
+        u.push(I), d.appendChild(I);
       }
     c.appendChild(d), c.appendChild(p);
     let f = !1;
     const g = (m, _) => {
-      u.forEach((E) => {
-        const R = +E.getAttribute("data-row"), N = +E.getAttribute("data-col");
-        E.classList.toggle("active", R <= m && N <= _);
+      u.forEach((I) => {
+        const R = +I.getAttribute("data-row"), N = +I.getAttribute("data-col");
+        I.classList.toggle("active", R <= m && N <= _);
       }), p.textContent = m && _ ? `${m} × ${_}` : "Insert Table";
     }, y = () => {
-      f = !0, c.style.display = "block", r.setAttribute("aria-expanded", "true");
+      f = !0, c.style.display = "block", a.setAttribute("aria-expanded", "true");
     }, v = () => {
-      f = !1, c.style.display = "none", r.setAttribute("aria-expanded", "false"), g(0, 0);
-    }, x = h(r, "click", (m) => {
+      f = !1, c.style.display = "none", a.setAttribute("aria-expanded", "false"), g(0, 0);
+    }, x = h(a, "click", (m) => {
       m.stopPropagation(), f ? v() : y();
     }), k = h(d, "mouseover", (m) => {
       const _ = m.target.closest(".asn-table-cell");
       _ && g(+_.getAttribute("data-row"), +_.getAttribute("data-col"));
-    }), A = h(d, "mouseleave", () => g(0, 0)), S = h(d, "click", (m) => {
+    }), j = h(d, "mouseleave", () => g(0, 0)), L = h(d, "click", (m) => {
       const _ = m.target.closest(".asn-table-cell");
       if (!_) return;
-      const E = +_.getAttribute("data-row"), R = +_.getAttribute("data-col");
-      v(), this.context.invoke("editor.focus"), e.action(this.context, E, R);
+      const I = +_.getAttribute("data-row"), R = +_.getAttribute("data-col");
+      v(), this.context.invoke("editor.focus"), e.action(this.context, I, R);
     }), b = h(document, "click", () => {
       f && v();
     });
-    return this._disposers.push(x, k, A, S, b), o.appendChild(r), o.appendChild(c), o;
+    return this._disposers.push(x, k, j, L, b), o.appendChild(a), o.appendChild(c), o;
   }
   /**
    * Creates a split color-picker widget:
@@ -1115,17 +1145,17 @@ class jt {
       "#ead1dc"
     ];
     let i = e.defaultColor || "#000000";
-    const o = a("div", { class: "asn-color-picker-wrap" }), l = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", r = a("button", {
+    const o = r("div", { class: "asn-color-picker-wrap" }), l = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", a = r("button", {
       type: "button",
       class: `${l} asn-color-btn`,
       title: e.tooltip || "",
       "data-btn": e.name,
       "aria-label": e.tooltip || e.name
     }), c = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"', d = e.name === "foreColor" ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${c} style="display:block"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${c} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
-    r.innerHTML = d;
-    const p = a("span", { class: "asn-color-strip" });
-    p.style.background = i, r.appendChild(p);
-    const u = a("button", {
+    a.innerHTML = d;
+    const p = r("span", { class: "asn-color-strip" });
+    p.style.background = i, a.appendChild(p);
+    const u = r("button", {
       type: "button",
       class: `${l} asn-color-arrow`,
       title: `Choose ${e.name === "foreColor" ? "text" : "highlight"} color`,
@@ -1133,35 +1163,35 @@ class jt {
       "aria-expanded": "false"
     });
     u.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>';
-    const f = a("div", { class: "asn-color-popup" });
+    const f = r("div", { class: "asn-color-popup" });
     f.style.display = "none";
-    const g = a("div", { class: "asn-color-swatches" });
+    const g = r("div", { class: "asn-color-swatches" });
     t.forEach((T) => {
-      const H = a("div", { class: "asn-color-swatch", title: T, "data-color": T });
+      const H = r("div", { class: "asn-color-swatch", title: T, "data-color": T });
       H.style.background = T, g.appendChild(H);
     });
-    const y = a("div", { class: "asn-color-custom" }), v = a("input", { type: "color", value: i, title: "Custom color" }), x = a("span", {}, ["Custom color"]);
+    const y = r("div", { class: "asn-color-custom" }), v = r("input", { type: "color", value: i, title: "Custom color" }), x = r("span", {}, ["Custom color"]);
     y.appendChild(v), y.appendChild(x), f.appendChild(g), f.appendChild(y);
     let k = !1;
-    const A = () => {
+    const j = () => {
       k = !0, f.style.display = "block", u.setAttribute("aria-expanded", "true");
-    }, S = () => {
+    }, L = () => {
       k = !1, f.style.display = "none", u.setAttribute("aria-expanded", "false");
     }, b = (T) => {
-      i = T, p.style.background = T, v.value = T, this.context.invoke("editor.focus"), e.action(this.context, T), this.context.invoke("editor.afterCommand"), S();
-    }, m = h(r, "click", (T) => {
+      i = T, p.style.background = T, v.value = T, this.context.invoke("editor.focus"), e.action(this.context, T), this.context.invoke("editor.afterCommand"), L();
+    }, m = h(a, "click", (T) => {
       T.preventDefault(), this.context.invoke("editor.focus"), e.action(this.context, i), this.context.invoke("editor.afterCommand");
     }), _ = h(u, "click", (T) => {
-      T.stopPropagation(), k ? S() : A();
-    }), E = h(g, "click", (T) => {
+      T.stopPropagation(), k ? L() : j();
+    }), I = h(g, "click", (T) => {
       const H = T.target.closest(".asn-color-swatch");
       H && b(H.dataset.color);
     }), R = h(v, "change", (T) => {
       b(T.target.value);
     }), N = h(document, "click", (T) => {
-      k && !o.contains(T.target) && S();
-    }), K = h(f, "click", (T) => T.stopPropagation());
-    return this._disposers.push(m, _, E, R, N, K), o.appendChild(r), o.appendChild(u), o.appendChild(f), o;
+      k && !o.contains(T.target) && L();
+    }), X = h(f, "click", (T) => T.stopPropagation());
+    return this._disposers.push(m, _, I, R, N, X), o.appendChild(a), o.appendChild(u), o.appendChild(f), o;
   }
   /**
    * Creates a <select> dropdown for font-family (or similar) options.
@@ -1169,34 +1199,34 @@ class jt {
    * @returns {HTMLSelectElement}
    */
   _createSelect(e) {
-    const t = e.name === "fontFamily" ? this.options.fontFamilies || [] : e.items || [], i = e.selectClass ? `asn-select ${e.selectClass}` : "asn-select", o = a("select", {
+    const t = e.name === "fontFamily" ? this.options.fontFamilies || [] : e.items || [], i = e.selectClass ? `asn-select ${e.selectClass}` : "asn-select", o = r("select", {
       class: i,
       title: e.tooltip || "",
       "data-btn": e.name,
       "aria-label": e.tooltip || e.name
-    }), n = e.placeholder || "Font", l = a("option", { value: "" }, [n]);
+    }), n = e.placeholder || "Font", l = r("option", { value: "" }, [n]);
     o.appendChild(l), t.forEach((c) => {
-      const d = typeof c == "object" ? c.value : c, p = typeof c == "object" ? c.label : c, u = a("option", { value: d }, [p]);
+      const d = typeof c == "object" ? c.value : c, p = typeof c == "object" ? c.label : c, u = r("option", { value: d }, [p]);
       e.name === "fontFamily" && (u.style.fontFamily = d), o.appendChild(u);
     });
-    const r = h(o, "change", (c) => {
+    const a = h(o, "change", (c) => {
       const d = c.target.value;
       d && (this.context.invoke("editor.focus"), e.action(this.context, d), this.context.invoke("editor.afterCommand"));
     });
-    return this._disposers.push(r), o;
+    return this._disposers.push(a), o;
   }
   /**
    * @param {import('./Buttons.js').ButtonDef} btnDef
    * @returns {HTMLButtonElement}
    */
   _createButton(e) {
-    const i = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", o = e.className ? ` ${e.className}` : "", n = `${i}${o}`, l = a("button", {
+    const i = !!this.options.useBootstrap ? this.options.toolbarButtonClass || "btn btn-sm btn-light" : "asn-btn", o = e.className ? ` ${e.className}` : "", n = `${i}${o}`, l = r("button", {
       type: "button",
       class: n,
       title: e.tooltip || "",
       "data-btn": e.name,
       "aria-label": e.tooltip || e.name
-    }), r = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"', c = (y) => `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${r} style="display:block">${y}</svg>`, d = /* @__PURE__ */ new Map([
+    }), a = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"', c = (y) => `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${a} style="display:block">${y}</svg>`, d = /* @__PURE__ */ new Map([
       // Format
       ["bold", c('<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>')],
       ["italic", c('<line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/>')],
@@ -1292,7 +1322,7 @@ class jt {
       let n = (o.getValue(this.context) || "").replace(/["']/g, "").trim();
       n || (n = this.options.defaultFontFamily || this.options.fontFamilies && this.options.fontFamilies[0] || "");
       const l = Array.from(i.options).find(
-        (r) => r.value && r.value.toLowerCase() === n.toLowerCase()
+        (a) => a.value && a.value.toLowerCase() === n.toLowerCase()
       );
       i.value = l ? l.value : "";
     });
@@ -1310,7 +1340,7 @@ class jt {
     this.el && (this.el.style.display = "none");
   }
 }
-class At {
+class jt {
   /**
    * @param {import('../Context.js').Context} context
    */
@@ -1321,16 +1351,16 @@ class At {
   // Lifecycle
   // ---------------------------------------------------------------------------
   initialize() {
-    if (this.el = a("div", { class: "asn-statusbar" }), this.options.resizeable !== !1) {
-      const t = a("div", {
+    if (this.el = r("div", { class: "asn-statusbar" }), this.options.resizeable !== !1) {
+      const t = r("div", {
         class: "asn-resize-handle",
         title: "Resize editor",
         "aria-hidden": "true"
       });
       this._bindResize(t), this.el.appendChild(t);
     }
-    this._wordCountEl = a("span", { class: "asn-word-count" }), this._charCountEl = a("span", { class: "asn-char-count" });
-    const e = a("div", { class: "asn-status-info" });
+    this._wordCountEl = r("span", { class: "asn-word-count" }), this._charCountEl = r("span", { class: "asn-char-count" });
+    const e = r("div", { class: "asn-status-info" });
     return e.appendChild(this._wordCountEl), e.appendChild(this._charCountEl), this.el.appendChild(e), this._bindContentEvents(), this.update(), this;
   }
   destroy() {
@@ -1375,8 +1405,12 @@ class Mt {
     this.context = e, this.options = e.options, this._disposers = [];
   }
   initialize() {
-    const e = this.context.layoutInfo.editable, t = h(e, "paste", (i) => this._onPaste(i));
-    return this._disposers.push(t), this;
+    const e = this.context.layoutInfo.editable;
+    return this._disposers.push(
+      h(e, "paste", (t) => this._onPaste(t)),
+      h(e, "dragover", (t) => this._onDragover(t)),
+      h(e, "drop", (t) => this._onDrop(t))
+    ), this;
   }
   destroy() {
     this._disposers.forEach((e) => e()), this._disposers = [];
@@ -1387,6 +1421,17 @@ class Mt {
   _onPaste(e) {
     const t = e.clipboardData || window.clipboardData;
     if (t) {
+      if (t.items) {
+        const i = Array.from(t.items).filter(
+          (o) => o.kind === "file" && o.type.startsWith("image/")
+        );
+        if (i.length > 0) {
+          e.preventDefault();
+          const o = i.map((n) => n.getAsFile()).filter(Boolean);
+          this._insertImageFiles(o);
+          return;
+        }
+      }
       if (this.options.pasteAsPlainText) {
         e.preventDefault();
         const o = t.getData("text/plain").split(/\r?\n/).map((n) => `<p>${this._escapeHTML(n) || "<br>"}</p>`).join("");
@@ -1400,6 +1445,94 @@ class Mt {
         return;
       }
     }
+  }
+  // ---------------------------------------------------------------------------
+  // Drag & drop handlers
+  // ---------------------------------------------------------------------------
+  _onDragover(e) {
+    if (!e.dataTransfer) return;
+    Array.from(e.dataTransfer.types || []).includes("Files") && (e.preventDefault(), e.dataTransfer.dropEffect = "copy");
+  }
+  _onDrop(e) {
+    const t = e.dataTransfer;
+    if (!t || !t.files || t.files.length === 0) return;
+    const i = Array.from(t.files).filter((o) => o.type.startsWith("image/"));
+    i.length !== 0 && (e.preventDefault(), e.stopPropagation(), this._placeCaretAtPoint(e.clientX, e.clientY), this._insertImageFiles(i));
+  }
+  // ---------------------------------------------------------------------------
+  // Image file processing — shared by paste and drop
+  // ---------------------------------------------------------------------------
+  /**
+   * Inserts one or more image Files into the editor.
+   * Delegates to `options.onImageUpload` when provided; otherwise compresses
+   * and embeds as base64.
+   * @param {File[]} files
+   */
+  _insertImageFiles(e) {
+    if (!e || e.length === 0) return;
+    if (typeof this.options.onImageUpload == "function") {
+      this.options.onImageUpload(e);
+      return;
+    }
+    const t = (this.options.maxImageSize || 5) * 1024 * 1024;
+    e.forEach((i) => {
+      if (!i || !i.type.startsWith("image/")) return;
+      if (i.size > t) {
+        alert(`Image "${i.name}" is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`);
+        return;
+      }
+      const o = i.name.replace(/\.[^.]+$/, "");
+      this._compressImage(i).then((n) => {
+        this.context.invoke("editor.insertImage", n, o);
+      });
+    });
+  }
+  /**
+   * Compresses an image File using a Canvas.
+   * - Resizes so the longest edge is at most MAX_DIM pixels.
+   * - Encodes as WebP (if supported) or JPEG at quality 0.85.
+   * Falls back to plain FileReader if canvas is unavailable.
+   * @param {File} file
+   * @returns {Promise<string>} data URL
+   */
+  _compressImage(e) {
+    return new Promise((o) => {
+      const n = URL.createObjectURL(e), l = new Image();
+      l.onload = () => {
+        URL.revokeObjectURL(n);
+        let { width: a, height: c } = l;
+        (a > 1920 || c > 1920) && (a >= c ? (c = Math.round(c * 1920 / a), a = 1920) : (a = Math.round(a * 1920 / c), c = 1920));
+        const d = document.createElement("canvas");
+        d.width = a, d.height = c, d.getContext("2d").drawImage(l, 0, 0, a, c);
+        const u = d.toDataURL("image/webp", 0.85);
+        o(u.startsWith("data:image/webp") ? u : d.toDataURL("image/jpeg", 0.85));
+      }, l.onerror = () => {
+        URL.revokeObjectURL(n);
+        const a = new FileReader();
+        a.onload = (c) => o(
+          /** @type {string} */
+          c.target.result
+        ), a.readAsDataURL(e);
+      }, l.src = n;
+    });
+  }
+  /**
+   * Positions the caret at the given viewport coordinates.
+   * Supports both Chrome (caretRangeFromPoint) and Firefox (caretPositionFromPoint).
+   * @param {number} x
+   * @param {number} y
+   */
+  _placeCaretAtPoint(e, t) {
+    let i;
+    if (document.caretRangeFromPoint)
+      i = document.caretRangeFromPoint(e, t);
+    else if (document.caretPositionFromPoint) {
+      const n = document.caretPositionFromPoint(e, t);
+      n && (i = document.createRange(), i.setStart(n.offsetNode, n.offset), i.collapse(!0));
+    }
+    if (!i) return;
+    const o = window.getSelection();
+    o && (o.removeAllRanges(), o.addRange(i));
   }
   // ---------------------------------------------------------------------------
   // Helpers
@@ -1459,7 +1592,7 @@ class zt {
   activate() {
     if (this._active) return;
     const { editable: e } = this.context.layoutInfo, t = e.innerHTML;
-    this._textarea = a("textarea", {
+    this._textarea = r("textarea", {
       class: "asn-codeview",
       spellcheck: "false",
       autocomplete: "off",
@@ -1577,11 +1710,11 @@ class Ht {
   // Build dialog
   // ---------------------------------------------------------------------------
   _buildDialog() {
-    const e = a("div", { class: "asn-dialog-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Insert link" }), t = a("div", { class: "asn-dialog-box" }), i = a("h3", { class: "asn-dialog-title" });
+    const e = r("div", { class: "asn-dialog-overlay", role: "dialog", "aria-modal": "true", "aria-label": "Insert link" }), t = r("div", { class: "asn-dialog-box" }), i = r("h3", { class: "asn-dialog-title" });
     i.textContent = "Insert Link";
-    const o = a("label", { class: "asn-label" });
+    const o = r("label", { class: "asn-label" });
     o.textContent = "URL";
-    const n = a("input", {
+    const n = r("input", {
       type: "url",
       class: "asn-input",
       placeholder: "https://",
@@ -1590,9 +1723,9 @@ class Ht {
       autocomplete: "off"
     });
     this._urlInput = n;
-    const l = a("label", { class: "asn-label" });
+    const l = r("label", { class: "asn-label" });
     l.textContent = "Display Text";
-    const r = a("input", {
+    const a = r("input", {
       type: "text",
       class: "asn-input",
       placeholder: "Link text",
@@ -1600,17 +1733,17 @@ class Ht {
       name: "linkText",
       autocomplete: "off"
     });
-    this._textInput = r;
-    const c = a("label", { class: "asn-label asn-label-inline" }), d = a("input", {
+    this._textInput = a;
+    const c = r("label", { class: "asn-label asn-label-inline" }), d = r("input", {
       type: "checkbox",
       id: "asn-link-newtab",
       name: "openInNewTab"
     });
     this._tabCheckbox = d, c.appendChild(d), c.appendChild(document.createTextNode(" Open in new tab"));
-    const p = a("div", { class: "asn-dialog-actions" }), u = a("button", { type: "button", class: "asn-btn asn-btn-primary" });
+    const p = r("div", { class: "asn-dialog-actions" }), u = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
     u.textContent = "Insert";
-    const f = a("button", { type: "button", class: "asn-btn" });
-    f.textContent = "Cancel", p.appendChild(u), p.appendChild(f), t.append(i, o, n, l, r, c, p), e.appendChild(t);
+    const f = r("button", { type: "button", class: "asn-btn" });
+    f.textContent = "Cancel", p.appendChild(u), p.appendChild(f), t.append(i, o, n, l, a, c, p), e.appendChild(t);
     const g = h(u, "click", () => this._onInsert()), y = h(f, "click", () => this._close()), v = h(e, "click", (x) => {
       x.target === e && this._close();
     });
@@ -1677,34 +1810,34 @@ class Pt {
   // Build dialog
   // ---------------------------------------------------------------------------
   _buildDialog() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-dialog-overlay",
       role: "dialog",
       "aria-modal": "true",
       "aria-label": "Insert image"
-    }), t = a("div", { class: "asn-dialog-box" }), i = a("h3", { class: "asn-dialog-title" });
+    }), t = r("div", { class: "asn-dialog-box" }), i = r("h3", { class: "asn-dialog-title" });
     i.textContent = "Insert Image";
-    const o = a("label", { class: "asn-label" });
+    const o = r("label", { class: "asn-label" });
     o.textContent = "Image URL";
-    const n = a("input", {
+    const n = r("input", {
       type: "url",
       class: "asn-input",
       placeholder: "https://example.com/image.png",
       autocomplete: "off"
     });
     this._urlInput = n;
-    const l = a("label", { class: "asn-label" });
+    const l = r("label", { class: "asn-label" });
     l.textContent = "Alt Text";
-    const r = a("input", {
+    const a = r("input", {
       type: "text",
       class: "asn-input",
       placeholder: "Describe the image",
       autocomplete: "off"
     });
-    if (this._altInput = r, this.options.allowImageUpload !== !1) {
-      const y = a("label", { class: "asn-label" });
+    if (this._altInput = a, this.options.allowImageUpload !== !1) {
+      const y = r("label", { class: "asn-label" });
       y.textContent = "Or upload a file";
-      const v = a("input", {
+      const v = r("input", {
         type: "file",
         class: "asn-input",
         accept: "image/*"
@@ -1713,10 +1846,10 @@ class Pt {
       const x = h(v, "change", () => this._onFileChange());
       this._disposers.push(x), t.append(y, v);
     }
-    const c = a("div", { class: "asn-dialog-actions" }), d = a("button", { type: "button", class: "asn-btn asn-btn-primary" });
+    const c = r("div", { class: "asn-dialog-actions" }), d = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
     d.textContent = "Insert";
-    const p = a("button", { type: "button", class: "asn-btn" });
-    p.textContent = "Cancel", c.appendChild(d), c.appendChild(p), t.append(i, o, n, l, r, c), e.appendChild(t);
+    const p = r("button", { type: "button", class: "asn-btn" });
+    p.textContent = "Cancel", c.appendChild(d), c.appendChild(p), t.append(i, o, n, l, a, c), e.appendChild(t);
     const u = h(d, "click", () => this._onInsert()), f = h(p, "click", () => this._close()), g = h(e, "click", (y) => {
       y.target === e && this._close();
     });
@@ -1779,27 +1912,27 @@ class Dt {
   // Build dialog
   // ---------------------------------------------------------------------------
   _buildDialog() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-dialog-overlay",
       role: "dialog",
       "aria-modal": "true",
       "aria-label": "Insert video"
-    }), t = a("div", { class: "asn-dialog-box" }), i = a("h3", { class: "asn-dialog-title" });
+    }), t = r("div", { class: "asn-dialog-box" }), i = r("h3", { class: "asn-dialog-title" });
     i.textContent = "Insert Video";
-    const o = a("label", { class: "asn-label" });
+    const o = r("label", { class: "asn-label" });
     o.textContent = "Video URL";
-    const n = a("input", {
+    const n = r("input", {
       type: "url",
       class: "asn-input",
       placeholder: "YouTube, Vimeo, or direct .mp4 URL",
       autocomplete: "off"
     });
     this._urlInput = n;
-    const l = a("p", { class: "asn-dialog-hint" });
+    const l = r("p", { class: "asn-dialog-hint" });
     this._hintEl = l;
-    const r = a("label", { class: "asn-label" });
-    r.textContent = "Width (px)";
-    const c = a("input", {
+    const a = r("label", { class: "asn-label" });
+    a.textContent = "Width (px)";
+    const c = r("input", {
       type: "number",
       class: "asn-input",
       placeholder: "560",
@@ -1808,10 +1941,10 @@ class Dt {
       value: "560"
     });
     this._widthInput = c;
-    const d = a("div", { class: "asn-dialog-actions" }), p = a("button", { type: "button", class: "asn-btn asn-btn-primary" });
+    const d = r("div", { class: "asn-dialog-actions" }), p = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
     p.textContent = "Insert";
-    const u = a("button", { type: "button", class: "asn-btn" });
-    u.textContent = "Cancel", d.appendChild(p), d.appendChild(u), t.append(i, o, n, l, r, c, d), e.appendChild(t);
+    const u = r("button", { type: "button", class: "asn-btn" });
+    u.textContent = "Cancel", d.appendChild(p), d.appendChild(u), t.append(i, o, n, l, a, c, d), e.appendChild(t);
     const f = h(n, "input", () => {
       const k = this._parseVideoUrl(n.value.trim());
       l.textContent = k ? `Detected: ${k.type}` : n.value ? "Unknown format — will try direct video embed" : "";
@@ -1976,10 +2109,10 @@ class $t {
   _startResize(e, t) {
     const i = this._activeImg;
     if (!i) return;
-    const o = e.clientX, n = e.clientY, l = i.offsetWidth || i.naturalWidth || 100, r = i.offsetHeight || i.naturalHeight || 100, c = l / r, d = t.length === 2, p = (f) => {
+    const o = e.clientX, n = e.clientY, l = i.offsetWidth || i.naturalWidth || 100, a = i.offsetHeight || i.naturalHeight || 100, c = l / a, d = t.length === 2, p = (f) => {
       const g = f.clientX - o, y = f.clientY - n;
-      let v = l, x = r;
-      t.includes("e") && (v = Math.max(20, l + g)), t.includes("w") && (v = Math.max(20, l - g)), t.includes("s") && (x = Math.max(20, r + y)), t.includes("n") && (x = Math.max(20, r - y)), d && (Math.abs(g) >= Math.abs(y) ? x = Math.max(20, Math.round(v / c)) : v = Math.max(20, Math.round(x * c))), i.style.width = `${v}px`, i.style.height = `${x}px`, this._updateOverlayPosition();
+      let v = l, x = a;
+      t.includes("e") && (v = Math.max(20, l + g)), t.includes("w") && (v = Math.max(20, l - g)), t.includes("s") && (x = Math.max(20, a + y)), t.includes("n") && (x = Math.max(20, a - y)), d && (Math.abs(g) >= Math.abs(y) ? x = Math.max(20, Math.round(v / c)) : v = Math.max(20, Math.round(x * c))), i.style.width = `${v}px`, i.style.height = `${x}px`, this._updateOverlayPosition();
     }, u = () => {
       document.removeEventListener("mousemove", p), document.removeEventListener("mouseup", u), this._dragDisposers = null, this.context.invoke("editor.afterCommand");
     };
@@ -2082,10 +2215,10 @@ class Wt {
   _startResize(e, t) {
     const i = this._activeWrapper;
     if (!i) return;
-    const o = i.querySelector("iframe, video"), n = e.clientX, l = e.clientY, r = i.offsetWidth || 560, c = i.offsetHeight || 315, d = r / c, p = t.length === 2, u = (g) => {
+    const o = i.querySelector("iframe, video"), n = e.clientX, l = e.clientY, a = i.offsetWidth || 560, c = i.offsetHeight || 315, d = a / c, p = t.length === 2, u = (g) => {
       const y = g.clientX - n, v = g.clientY - l;
-      let x = r, k = c;
-      t.includes("e") && (x = Math.max(80, r + y)), t.includes("w") && (x = Math.max(80, r - y)), t.includes("s") && (k = Math.max(45, c + v)), t.includes("n") && (k = Math.max(45, c - v)), p && (Math.abs(y) >= Math.abs(v) ? k = Math.max(45, Math.round(x / d)) : x = Math.max(80, Math.round(k * d))), i.style.width = `${x}px`, i.style.height = `${k}px`, o && (o.width = x, o.height = k, o.style.width = `${x}px`, o.style.height = `${k}px`), this._updateOverlayPosition();
+      let x = a, k = c;
+      t.includes("e") && (x = Math.max(80, a + y)), t.includes("w") && (x = Math.max(80, a - y)), t.includes("s") && (k = Math.max(45, c + v)), t.includes("n") && (k = Math.max(45, c - v)), p && (Math.abs(y) >= Math.abs(v) ? k = Math.max(45, Math.round(x / d)) : x = Math.max(80, Math.round(k * d))), i.style.width = `${x}px`, i.style.height = `${k}px`, o && (o.width = x, o.height = k, o.style.width = `${x}px`, o.style.height = `${k}px`), this._updateOverlayPosition();
     }, f = () => {
       document.removeEventListener("mousemove", u), document.removeEventListener("mouseup", f), this._dragDisposers = null, this.context.invoke("editor.afterCommand");
     };
@@ -2129,14 +2262,14 @@ class Vt {
   // Build
   // ---------------------------------------------------------------------------
   _buildTooltip() {
-    const e = a("div", { class: "asn-link-tooltip", role: "toolbar", "aria-label": "Link actions" });
-    return e.style.display = "none", this._urlLabel = a("span", { class: "asn-link-tooltip-url" }), e.appendChild(this._urlLabel), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._openBtn = this._makeBtn(q.open, "Open link", () => this._openLink()), this._copyBtn = this._makeBtn(q.copy, "Copy URL", () => this._copyLink()), this._editBtn = this._makeBtn(q.edit, "Edit link", () => this._editLink()), this._unlinkBtn = this._makeBtn(q.unlink, "Remove link", () => this._unlink()), e.appendChild(this._openBtn), e.appendChild(this._copyBtn), e.appendChild(this._editBtn), e.appendChild(this._unlinkBtn), this._disposers.push(
+    const e = r("div", { class: "asn-link-tooltip", role: "toolbar", "aria-label": "Link actions" });
+    return e.style.display = "none", this._urlLabel = r("span", { class: "asn-link-tooltip-url" }), e.appendChild(this._urlLabel), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._openBtn = this._makeBtn(q.open, "Open link", () => this._openLink()), this._copyBtn = this._makeBtn(q.copy, "Copy URL", () => this._copyLink()), this._editBtn = this._makeBtn(q.edit, "Edit link", () => this._editLink()), this._unlinkBtn = this._makeBtn(q.unlink, "Remove link", () => this._unlink()), e.appendChild(this._openBtn), e.appendChild(this._copyBtn), e.appendChild(this._editBtn), e.appendChild(this._unlinkBtn), this._disposers.push(
       h(e, "mouseenter", () => this._clearTimers()),
       h(e, "mouseleave", () => this._scheduleHide())
     ), e;
   }
   _makeBtn(e, t, i) {
-    const o = a("button", { type: "button", class: "asn-link-tooltip-btn", title: t });
+    const o = r("button", { type: "button", class: "asn-link-tooltip-btn", title: t });
     return o.innerHTML = e, this._disposers.push(h(o, "click", (n) => {
       n.preventDefault(), n.stopPropagation(), i();
     })), o;
@@ -2166,8 +2299,8 @@ class Vt {
   }
   _positionNear(e) {
     const t = e.getBoundingClientRect(), i = this._el.offsetWidth || 260, o = this._el.offsetHeight || 34, n = 6;
-    let l = t.bottom + n, r = t.left;
-    l + o > window.innerHeight - n && (l = t.top - o - n), r + i > window.innerWidth - n && (r = window.innerWidth - i - n), r < n && (r = n), this._el.style.top = `${l}px`, this._el.style.left = `${r}px`;
+    let l = t.bottom + n, a = t.left;
+    l + o > window.innerHeight - n && (l = t.top - o - n), a + i > window.innerWidth - n && (a = window.innerWidth - i - n), a < n && (a = n), this._el.style.top = `${l}px`, this._el.style.left = `${a}px`;
   }
   _truncateUrl(e) {
     try {
@@ -2213,8 +2346,8 @@ const O = {
   alignCenter: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>',
   originalSize: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
   deleteImg: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
-}, Yt = 100, Kt = 180;
-class Xt {
+}, Yt = 100, Xt = 180;
+class Kt {
   /** @param {import('../Context.js').Context} context */
   constructor(e) {
     this.context = e, this._el = null, this._activeImg = null, this._showTimer = null, this._hideTimer = null, this._disposers = [];
@@ -2244,12 +2377,12 @@ class Xt {
   // Build
   // ---------------------------------------------------------------------------
   _buildTooltip() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-link-tooltip asn-image-tooltip",
       role: "toolbar",
       "aria-label": "Image actions"
     });
-    return e.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Image", e.appendChild(this._label), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(O.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(O.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn(O.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn(O.floatRight, "Float Right", () => this._setFloat("right")), e.appendChild(this._floatLeftBtn), e.appendChild(this._floatNoneBtn), e.appendChild(this._alignCenterBtn), e.appendChild(this._floatRightBtn), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(O.originalSize, "Original Size", () => this._resetSize()), e.appendChild(this._originalBtn), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(O.deleteImg, "Delete Image", () => this._delete(), !0), e.appendChild(this._deleteBtn), this._disposers.push(
+    return e.style.display = "none", this._label = r("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Image", e.appendChild(this._label), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn(O.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn(O.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn(O.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn(O.floatRight, "Float Right", () => this._setFloat("right")), e.appendChild(this._floatLeftBtn), e.appendChild(this._floatNoneBtn), e.appendChild(this._alignCenterBtn), e.appendChild(this._floatRightBtn), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn(O.originalSize, "Original Size", () => this._resetSize()), e.appendChild(this._originalBtn), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn(O.deleteImg, "Delete Image", () => this._delete(), !0), e.appendChild(this._deleteBtn), this._disposers.push(
       h(e, "mouseenter", () => this._clearTimers()),
       h(e, "mouseleave", () => this._scheduleHide())
     ), e;
@@ -2261,7 +2394,7 @@ class Xt {
    * @param {boolean} [isDanger]
    */
   _makeBtn(e, t, i, o = !1) {
-    const n = a("button", {
+    const n = r("button", {
       type: "button",
       class: o ? "asn-link-tooltip-btn asn-link-tooltip-btn--danger" : "asn-link-tooltip-btn",
       title: t
@@ -2279,7 +2412,7 @@ class Xt {
     }, Yt));
   }
   _scheduleHide() {
-    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Kt));
+    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Xt));
   }
   _show(e) {
     this._el.style.display = "flex", this._positionNear(e);
@@ -2292,8 +2425,8 @@ class Xt {
   }
   _positionNear(e) {
     const t = e.getBoundingClientRect(), i = this._el.offsetWidth || 220, o = this._el.offsetHeight || 32, n = 6;
-    let l = t.bottom + n, r = t.left + (t.width - i) / 2;
-    l + o > window.innerHeight - n && (l = t.top - o - n), r + i > window.innerWidth - n && (r = window.innerWidth - i - n), r < n && (r = n), this._el.style.top = `${l}px`, this._el.style.left = `${r}px`;
+    let l = t.bottom + n, a = t.left + (t.width - i) / 2;
+    l + o > window.innerHeight - n && (l = t.top - o - n), a + i > window.innerWidth - n && (a = window.innerWidth - i - n), a < n && (a = n), this._el.style.top = `${l}px`, this._el.style.left = `${a}px`;
   }
   // ---------------------------------------------------------------------------
   // Actions
@@ -2322,8 +2455,8 @@ const $ = {
   alignCenter: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>',
   originalSize: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>',
   deleteVideo: '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
-}, Gt = 100, Jt = 180;
-class Qt {
+}, Gt = 100, Qt = 180;
+class Jt {
   /** @param {import('../Context.js').Context} context */
   constructor(e) {
     this.context = e, this._el = null, this._activeWrapper = null, this._showTimer = null, this._hideTimer = null, this._disposers = [];
@@ -2352,12 +2485,12 @@ class Qt {
   // Build
   // ---------------------------------------------------------------------------
   _buildTooltip() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-link-tooltip asn-video-tooltip",
       role: "toolbar",
       "aria-label": "Video actions"
     });
-    return e.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Video", e.appendChild(this._label), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn($.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn($.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn($.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn($.floatRight, "Float Right", () => this._setFloat("right")), e.appendChild(this._floatLeftBtn), e.appendChild(this._floatNoneBtn), e.appendChild(this._alignCenterBtn), e.appendChild(this._floatRightBtn), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn($.originalSize, "Original Size", () => this._resetSize()), e.appendChild(this._originalBtn), e.appendChild(a("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn($.deleteVideo, "Delete Video", () => this._delete(), !0), e.appendChild(this._deleteBtn), this._disposers.push(
+    return e.style.display = "none", this._label = r("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Video", e.appendChild(this._label), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._floatLeftBtn = this._makeBtn($.floatLeft, "Float Left", () => this._setFloat("left")), this._floatNoneBtn = this._makeBtn($.floatNone, "No Float", () => this._setFloat("")), this._alignCenterBtn = this._makeBtn($.alignCenter, "Align Center", () => this._setCenter()), this._floatRightBtn = this._makeBtn($.floatRight, "Float Right", () => this._setFloat("right")), e.appendChild(this._floatLeftBtn), e.appendChild(this._floatNoneBtn), e.appendChild(this._alignCenterBtn), e.appendChild(this._floatRightBtn), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._originalBtn = this._makeBtn($.originalSize, "Original Size", () => this._resetSize()), e.appendChild(this._originalBtn), e.appendChild(r("div", { class: "asn-link-tooltip-sep" })), this._deleteBtn = this._makeBtn($.deleteVideo, "Delete Video", () => this._delete(), !0), e.appendChild(this._deleteBtn), this._disposers.push(
       h(e, "mouseenter", () => this._clearTimers()),
       h(e, "mouseleave", () => this._scheduleHide())
     ), e;
@@ -2369,7 +2502,7 @@ class Qt {
    * @param {boolean} [isDanger]
    */
   _makeBtn(e, t, i, o = !1) {
-    const n = a("button", {
+    const n = r("button", {
       type: "button",
       class: o ? "asn-link-tooltip-btn asn-link-tooltip-btn--danger" : "asn-link-tooltip-btn",
       title: t
@@ -2387,7 +2520,7 @@ class Qt {
     }, Gt));
   }
   _scheduleHide() {
-    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Jt));
+    clearTimeout(this._showTimer), this._showTimer = null, !this._hideTimer && (this._hideTimer = setTimeout(() => this._hide(), Qt));
   }
   _show(e) {
     this._el.style.display = "flex", this._positionNear(e);
@@ -2400,8 +2533,8 @@ class Qt {
   }
   _positionNear(e) {
     const t = e.getBoundingClientRect(), i = this._el.offsetWidth || 220, o = this._el.offsetHeight || 32, n = 6;
-    let l = t.bottom + n, r = t.left + (t.width - i) / 2;
-    l + o > window.innerHeight - n && (l = t.top - o - n), r + i > window.innerWidth - n && (r = window.innerWidth - i - n), r < n && (r = n), this._el.style.top = `${l}px`, this._el.style.left = `${r}px`;
+    let l = t.bottom + n, a = t.left + (t.width - i) / 2;
+    l + o > window.innerHeight - n && (l = t.top - o - n), a + i > window.innerWidth - n && (a = window.innerWidth - i - n), a < n && (a = n), this._el.style.top = `${l}px`, this._el.style.left = `${a}px`;
   }
   // ---------------------------------------------------------------------------
   // Actions
@@ -2469,18 +2602,18 @@ class ti {
   // Build tooltip bar
   // ---------------------------------------------------------------------------
   _buildTooltip() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-link-tooltip asn-table-tooltip",
       role: "toolbar",
       "aria-label": "Table actions"
     });
-    return e.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Table", e.appendChild(this._label), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.rowAbove, "Add Row Above", () => this._addRow("above"))), e.appendChild(this._makeBtn(z.rowBelow, "Add Row Below", () => this._addRow("below"))), e.appendChild(this._makeBtn(z.deleteRow, "Delete Row", () => this._deleteRow())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.colLeft, "Add Column Left", () => this._addColumn("left"))), e.appendChild(this._makeBtn(z.colRight, "Add Column Right", () => this._addColumn("right"))), e.appendChild(this._makeBtn(z.deleteCol, "Delete Column", () => this._deleteColumn())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.mergeCells, "Merge Cells", () => this._mergeCells())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.colWidth, "Column Width", () => this._openSizePopover("col"))), e.appendChild(this._makeBtn(z.rowHeight, "Row Height", () => this._openSizePopover("row"))), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.deleteTable, "Delete Table", () => this._deleteTable(), !0)), this._disposers.push(
+    return e.style.display = "none", this._label = r("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Table", e.appendChild(this._label), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.rowAbove, "Add Row Above", () => this._addRow("above"))), e.appendChild(this._makeBtn(z.rowBelow, "Add Row Below", () => this._addRow("below"))), e.appendChild(this._makeBtn(z.deleteRow, "Delete Row", () => this._deleteRow())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.colLeft, "Add Column Left", () => this._addColumn("left"))), e.appendChild(this._makeBtn(z.colRight, "Add Column Right", () => this._addColumn("right"))), e.appendChild(this._makeBtn(z.deleteCol, "Delete Column", () => this._deleteColumn())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.mergeCells, "Merge Cells", () => this._mergeCells())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.colWidth, "Column Width", () => this._openSizePopover("col"))), e.appendChild(this._makeBtn(z.rowHeight, "Row Height", () => this._openSizePopover("row"))), e.appendChild(this._sep()), e.appendChild(this._makeBtn(z.deleteTable, "Delete Table", () => this._deleteTable(), !0)), this._disposers.push(
       h(e, "mouseenter", () => this._clearTimers()),
       h(e, "mouseleave", () => this._scheduleHide())
     ), e;
   }
   _sep() {
-    return a("div", { class: "asn-link-tooltip-sep" });
+    return r("div", { class: "asn-link-tooltip-sep" });
   }
   /**
    * @param {string} icon
@@ -2489,7 +2622,7 @@ class ti {
    * @param {boolean} [isDanger]
    */
   _makeBtn(e, t, i, o = !1) {
-    const n = a("button", {
+    const n = r("button", {
       type: "button",
       class: o ? "asn-link-tooltip-btn asn-link-tooltip-btn--danger" : "asn-link-tooltip-btn",
       title: t
@@ -2521,8 +2654,8 @@ class ti {
   _positionNear(e) {
     if (!e) return;
     const t = e.getBoundingClientRect(), i = this._el.offsetWidth || 400, o = this._el.offsetHeight || 30, n = 6;
-    let l = t.left + (t.width - i) / 2, r = t.top - o - n;
-    r < n && (r = t.bottom + n), l + i > window.innerWidth - n && (l = window.innerWidth - i - n), l < n && (l = n), this._el.style.left = `${l}px`, this._el.style.top = `${r}px`;
+    let l = t.left + (t.width - i) / 2, a = t.top - o - n;
+    a < n && (a = t.bottom + n), l + i > window.innerWidth - n && (l = window.innerWidth - i - n), l < n && (l = n), this._el.style.left = `${l}px`, this._el.style.top = `${a}px`;
   }
   // ---------------------------------------------------------------------------
   // Helper: get active cell (fallback to first td/th in table)
@@ -2538,10 +2671,10 @@ class ti {
     if (!t) return;
     const i = t.closest("tr");
     if (!i) return;
-    const o = Array.from(i.cells).reduce((l, r) => l + (r.colSpan || 1), 0), n = document.createElement("tr");
+    const o = Array.from(i.cells).reduce((l, a) => l + (a.colSpan || 1), 0), n = document.createElement("tr");
     for (let l = 0; l < o; l++) {
-      const r = document.createElement("td");
-      r.style.border = "1px solid #dee2e6", r.style.padding = "6px 12px", r.innerHTML = "&#8203;", n.appendChild(r);
+      const a = document.createElement("td");
+      a.style.border = "1px solid #dee2e6", a.style.padding = "6px 12px", a.innerHTML = "&#8203;", n.appendChild(a);
     }
     e === "above" ? i.parentElement.insertBefore(n, i) : i.insertAdjacentElement("afterend", n), this._positionNear(this._activeTable), this.context.invoke("editor.afterCommand");
   }
@@ -2552,9 +2685,9 @@ class ti {
     if (!i || !o) return;
     const n = Array.from(i.cells).indexOf(t);
     Array.from(o.querySelectorAll("tr")).forEach((l) => {
-      const r = Array.from(l.cells), c = document.createElement("td");
+      const a = Array.from(l.cells), c = document.createElement("td");
       c.style.border = "1px solid #dee2e6", c.style.padding = "6px 12px", c.innerHTML = "&#8203;";
-      const d = e === "left" ? r[n] : r[n + 1] || null;
+      const d = e === "left" ? a[n] : a[n + 1] || null;
       l.insertBefore(c, d);
     }), this._positionNear(this._activeTable), this.context.invoke("editor.afterCommand");
   }
@@ -2582,16 +2715,16 @@ class ti {
     if (!t) return;
     const i = window.getSelection();
     if (!i || i.rangeCount === 0) return;
-    const o = i.getRangeAt(0), n = Array.from(t.cells).filter((r) => {
+    const o = i.getRangeAt(0), n = Array.from(t.cells).filter((a) => {
       try {
-        return o.intersectsNode(r);
+        return o.intersectsNode(a);
       } catch {
         return !1;
       }
     });
     if (n.length < 2) return;
     const l = n[0];
-    l.colSpan = n.reduce((r, c) => r + (c.colSpan || 1), 0), l.innerHTML = n.map((r) => r.innerHTML).join(""), n.slice(1).forEach((r) => t.removeChild(r)), this.context.invoke("editor.afterCommand");
+    l.colSpan = n.reduce((a, c) => a + (c.colSpan || 1), 0), l.innerHTML = n.map((a) => a.innerHTML).join(""), n.slice(1).forEach((a) => t.removeChild(a)), this.context.invoke("editor.afterCommand");
   }
   _deleteTable() {
     const e = this._activeTable;
@@ -2601,24 +2734,24 @@ class ti {
   // Size popover (column width / row height)
   // ---------------------------------------------------------------------------
   _buildSizePopover() {
-    const e = a("div", { class: "asn-size-popover" });
+    const e = r("div", { class: "asn-size-popover" });
     e.style.display = "none";
-    const t = a("div", { class: "asn-size-popover-title" }), i = a("div", { class: "asn-size-popover-body" }), o = a("input", {
+    const t = r("div", { class: "asn-size-popover-title" }), i = r("div", { class: "asn-size-popover-body" }), o = r("input", {
       type: "number",
       class: "asn-size-input",
       min: "1",
       max: "2000",
       step: "1"
-    }), n = a("span", { class: "asn-size-unit" }, ["px"]);
+    }), n = r("span", { class: "asn-size-unit" }, ["px"]);
     i.appendChild(o), i.appendChild(n);
-    const l = a("div", { class: "asn-size-popover-actions" }), r = a("button", { type: "button", class: "asn-btn" });
-    r.textContent = "Cancel";
-    const c = a("button", { type: "button", class: "asn-btn asn-btn-primary" });
-    c.textContent = "Apply", l.appendChild(r), l.appendChild(c), e.appendChild(t), e.appendChild(i), e.appendChild(l), this._sizeTitleEl = t, this._sizeInputEl = o, this._sizeApply = null;
+    const l = r("div", { class: "asn-size-popover-actions" }), a = r("button", { type: "button", class: "asn-btn" });
+    a.textContent = "Cancel";
+    const c = r("button", { type: "button", class: "asn-btn asn-btn-primary" });
+    c.textContent = "Apply", l.appendChild(a), l.appendChild(c), e.appendChild(t), e.appendChild(i), e.appendChild(l), this._sizeTitleEl = t, this._sizeInputEl = o, this._sizeApply = null;
     const d = h(c, "click", () => {
       const g = parseInt(this._sizeInputEl.value, 10);
       g > 0 && typeof this._sizeApply == "function" && this._sizeApply(g), this._hideSizePopover();
-    }), p = h(r, "click", () => this._hideSizePopover()), u = h(o, "keydown", (g) => {
+    }), p = h(a, "click", () => this._hideSizePopover()), u = h(o, "keydown", (g) => {
       g.key === "Enter" && (g.preventDefault(), c.click()), g.key === "Escape" && this._hideSizePopover();
     }), f = h(document, "click", (g) => {
       this._sizePopover && this._sizePopover.style.display !== "none" && !this._sizePopover.contains(g.target) && !this._el.contains(g.target) && this._hideSizePopover();
@@ -2632,8 +2765,8 @@ class ti {
     this._sizeTitleEl.textContent = i ? "Column Width (px)" : "Row Height (px)", this._sizeInputEl.value = i ? t.offsetWidth || 120 : t.closest("tr") && t.closest("tr").offsetHeight || 40, this._sizeApply = (o) => {
       if (i) {
         const n = t.closest("table"), l = Array.from(t.closest("tr").cells).indexOf(t);
-        Array.from(n.querySelectorAll("tr")).forEach((r) => {
-          const c = r.cells[l];
+        Array.from(n.querySelectorAll("tr")).forEach((a) => {
+          const c = a.cells[l];
           c && (c.style.width = `${o}px`, c.style.minWidth = `${o}px`);
         });
       } else {
@@ -2646,8 +2779,8 @@ class ti {
     }, this._sizePopover.style.display = "block", requestAnimationFrame(() => {
       if (!this._sizePopover || !this._el) return;
       const o = this._el.getBoundingClientRect(), n = this._sizePopover.offsetWidth || 220, l = this._sizePopover.offsetHeight || 110;
-      let r = o.left, c = o.bottom + 6;
-      r + n > window.innerWidth - 8 && (r = window.innerWidth - n - 8), c + l > window.innerHeight - 8 && (c = o.top - l - 6), this._sizePopover.style.left = `${r}px`, this._sizePopover.style.top = `${c}px`, this._sizeInputEl && (this._sizeInputEl.focus(), this._sizeInputEl.select());
+      let a = o.left, c = o.bottom + 6;
+      a + n > window.innerWidth - 8 && (a = window.innerWidth - n - 8), c + l > window.innerHeight - 8 && (c = o.top - l - 6), this._sizePopover.style.left = `${a}px`, this._sizePopover.style.top = `${c}px`, this._sizeInputEl && (this._sizeInputEl.focus(), this._sizeInputEl.select());
     });
   }
   _hideSizePopover() {
@@ -2689,18 +2822,18 @@ class oi {
   // Build
   // ---------------------------------------------------------------------------
   _buildTooltip() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-link-tooltip asn-code-tooltip",
       role: "toolbar",
       "aria-label": "Code block actions"
     });
-    return e.style.display = "none", this._label = a("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Code", e.appendChild(this._label), e.appendChild(this._sep()), this._copyBtn = this._makeBtn(V.copy, "Copy Code", () => this._copyCode()), e.appendChild(this._copyBtn), e.appendChild(this._sep()), this._wrapBtn = this._makeBtn(V.wrapOn, "Toggle Word Wrap", () => this._toggleWrap()), e.appendChild(this._wrapBtn), e.appendChild(this._sep()), e.appendChild(this._makeBtn(V.toParagraph, "Convert to Paragraph", () => this._toParagraph())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(V.deleteCode, "Delete Code Block", () => this._delete(), !0)), this._disposers.push(
+    return e.style.display = "none", this._label = r("span", { class: "asn-link-tooltip-url" }), this._label.textContent = "Code", e.appendChild(this._label), e.appendChild(this._sep()), this._copyBtn = this._makeBtn(V.copy, "Copy Code", () => this._copyCode()), e.appendChild(this._copyBtn), e.appendChild(this._sep()), this._wrapBtn = this._makeBtn(V.wrapOn, "Toggle Word Wrap", () => this._toggleWrap()), e.appendChild(this._wrapBtn), e.appendChild(this._sep()), e.appendChild(this._makeBtn(V.toParagraph, "Convert to Paragraph", () => this._toParagraph())), e.appendChild(this._sep()), e.appendChild(this._makeBtn(V.deleteCode, "Delete Code Block", () => this._delete(), !0)), this._disposers.push(
       h(e, "mouseenter", () => this._clearTimers()),
       h(e, "mouseleave", () => this._scheduleHide())
     ), e;
   }
   _sep() {
-    return a("div", { class: "asn-link-tooltip-sep" });
+    return r("div", { class: "asn-link-tooltip-sep" });
   }
   /**
    * @param {string} icon
@@ -2709,7 +2842,7 @@ class oi {
    * @param {boolean} [isDanger]
    */
   _makeBtn(e, t, i, o = !1) {
-    const n = a("button", {
+    const n = r("button", {
       type: "button",
       class: o ? "asn-link-tooltip-btn asn-link-tooltip-btn--danger" : "asn-link-tooltip-btn",
       title: t
@@ -2740,8 +2873,8 @@ class oi {
   }
   _positionNear(e) {
     const t = e.getBoundingClientRect(), i = this._el.offsetWidth || 260, o = this._el.offsetHeight || 32, n = 6;
-    let l = t.top - o - n, r = t.left + (t.width - i) / 2;
-    l < n && (l = t.bottom + n), r + i > window.innerWidth - n && (r = window.innerWidth - i - n), r < n && (r = n), this._el.style.top = `${l + window.scrollY}px`, this._el.style.left = `${r + window.scrollX}px`;
+    let l = t.top - o - n, a = t.left + (t.width - i) / 2;
+    l < n && (l = t.bottom + n), a + i > window.innerWidth - n && (a = window.innerWidth - i - n), a < n && (a = n), this._el.style.top = `${l + window.scrollY}px`, this._el.style.left = `${a + window.scrollX}px`;
   }
   // ---------------------------------------------------------------------------
   // Sync wrap-button active state
@@ -3302,30 +3435,30 @@ class ai {
   // Build dialog
   // ---------------------------------------------------------------------------
   _buildDialog() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-dialog-overlay",
       role: "dialog",
       "aria-modal": "true",
       "aria-label": "Insert emoji"
-    }), t = a("div", { class: "asn-dialog-box asn-emoji-box" }), i = a("div", { class: "asn-icon-title-row" }), o = a("h3", { class: "asn-dialog-title" });
+    }), t = r("div", { class: "asn-dialog-box asn-emoji-box" }), i = r("div", { class: "asn-icon-title-row" }), o = r("h3", { class: "asn-dialog-title" });
     o.textContent = "Insert Emoji";
-    const n = a("button", { type: "button", class: "asn-icon-close", "aria-label": "Close" });
+    const n = r("button", { type: "button", class: "asn-icon-close", "aria-label": "Close" });
     n.innerHTML = "&times;", i.append(o, n);
-    const l = a("input", {
+    const l = r("input", {
       type: "search",
       class: "asn-input asn-icon-search",
       placeholder: "Search emojis…",
       autocomplete: "off"
     });
     this._searchInput = l;
-    const r = a("div", { class: "asn-icon-cats" }), c = a("button", { type: "button", class: "asn-icon-cat active", "data-cat": "all" });
-    c.textContent = "All", r.appendChild(c), ni.forEach(({ id: b, label: m }) => {
-      const _ = a("button", { type: "button", class: "asn-icon-cat", "data-cat": b });
-      _.textContent = m, r.appendChild(_);
-    }), this._catBar = r;
-    const d = a("div", { class: "asn-emoji-grid" });
+    const a = r("div", { class: "asn-icon-cats" }), c = r("button", { type: "button", class: "asn-icon-cat active", "data-cat": "all" });
+    c.textContent = "All", a.appendChild(c), ni.forEach(({ id: b, label: m }) => {
+      const _ = r("button", { type: "button", class: "asn-icon-cat", "data-cat": b });
+      _.textContent = m, a.appendChild(_);
+    }), this._catBar = a;
+    const d = r("div", { class: "asn-emoji-grid" });
     li.forEach(([b, m, _]) => {
-      const E = a("button", {
+      const I = r("button", {
         type: "button",
         class: "asn-emoji-cell",
         "data-char": b,
@@ -3333,24 +3466,24 @@ class ai {
         "data-cat": _,
         title: m.split(" ").slice(0, 2).join(" ")
       });
-      E.textContent = b, d.appendChild(E);
+      I.textContent = b, d.appendChild(I);
     }), this._grid = d;
-    const p = a("div", { class: "asn-dialog-actions" }), u = a("button", { type: "button", class: "asn-btn" });
-    u.textContent = "Cancel", p.appendChild(u), t.append(i, l, r, d, p), e.appendChild(t);
+    const p = r("div", { class: "asn-dialog-actions" }), u = r("button", { type: "button", class: "asn-btn" });
+    u.textContent = "Cancel", p.appendChild(u), t.append(i, l, a, d, p), e.appendChild(t);
     const f = h(n, "click", () => this._close()), g = h(u, "click", () => this._close()), y = h(e, "click", (b) => {
       b.target === e && this._close();
-    }), v = h(l, "input", () => this._filterEmojis(l.value, this._activeCat)), x = h(r, "click", (b) => {
+    }), v = h(l, "input", () => this._filterEmojis(l.value, this._activeCat)), x = h(a, "click", (b) => {
       const m = b.target.closest("[data-cat]");
       m && (this._activeCat = m.dataset.cat, this._updateCatTabs(), this._filterEmojis(this._searchInput.value, this._activeCat));
     }), k = h(d, "click", (b) => {
       const m = b.target.closest(".asn-emoji-cell");
       m && this._onEmojiClick(m.dataset.char);
-    }), A = (b) => {
+    }), j = (b) => {
       b.key === "Escape" && this._close();
     };
-    document.addEventListener("keydown", A);
-    const S = () => document.removeEventListener("keydown", A);
-    return this._disposers.push(f, g, y, v, x, k, S), e;
+    document.addEventListener("keydown", j);
+    const L = () => document.removeEventListener("keydown", j);
+    return this._disposers.push(f, g, y, v, x, k, L), e;
   }
   // ---------------------------------------------------------------------------
   // Filter
@@ -3364,11 +3497,11 @@ class ai {
     const i = (e || "").trim().toLowerCase();
     let o = 0;
     this._grid.querySelectorAll(".asn-emoji-cell").forEach((l) => {
-      const r = !t || t === "all" || l.dataset.cat === t, c = !i || l.dataset.keywords.includes(i) || l.dataset.char === i, d = r && c;
+      const a = !t || t === "all" || l.dataset.cat === t, c = !i || l.dataset.keywords.includes(i) || l.dataset.char === i, d = a && c;
       l.style.display = d ? "" : "none", d && o++;
     });
     let n = this._grid.querySelector(".asn-icon-empty");
-    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No emojis found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
+    n || (n = r("div", { class: "asn-icon-empty" }), n.textContent = "No emojis found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
   }
   // ---------------------------------------------------------------------------
   // Insert
@@ -3667,72 +3800,72 @@ class hi {
   // Build dialog
   // ---------------------------------------------------------------------------
   _buildDialog() {
-    const e = a("div", {
+    const e = r("div", {
       class: "asn-dialog-overlay",
       role: "dialog",
       "aria-modal": "true",
       "aria-label": "Insert FA icon"
-    }), t = a("div", { class: "asn-dialog-box asn-icon-box" }), i = a("div", { class: "asn-icon-title-row" }), o = a("h3", { class: "asn-dialog-title" });
+    }), t = r("div", { class: "asn-dialog-box asn-icon-box" }), i = r("div", { class: "asn-icon-title-row" }), o = r("h3", { class: "asn-dialog-title" });
     o.textContent = "Insert FA Icon";
-    const n = a("button", { type: "button", class: "asn-icon-close", "aria-label": "Close" });
+    const n = r("button", { type: "button", class: "asn-icon-close", "aria-label": "Close" });
     n.innerHTML = "&times;", i.append(o, n);
-    const l = a("input", {
+    const l = r("input", {
       type: "search",
       class: "asn-input asn-icon-search",
       placeholder: "Search icons…",
       autocomplete: "off"
     });
     this._searchInput = l;
-    const r = a("div", { class: "asn-icon-cats" }), c = a("button", { type: "button", class: "asn-icon-cat active", "data-cat": "all" });
-    c.textContent = "All", r.appendChild(c), ri.forEach(({ id: I, label: L }) => {
-      const M = a("button", { type: "button", class: "asn-icon-cat", "data-cat": I });
-      M.textContent = L, r.appendChild(M);
-    }), this._catBar = r;
-    const d = a("div", { class: "asn-icon-grid" });
-    ci.forEach(([I, L]) => {
-      const M = a("button", { type: "button", class: "asn-icon-cell", "data-name": I, "data-cat": L, title: I }), Re = a("i", { class: "fa-solid fa-" + I, "aria-hidden": "true" }), ee = a("span");
-      ee.textContent = I, M.append(Re, ee), d.appendChild(M);
+    const a = r("div", { class: "asn-icon-cats" }), c = r("button", { type: "button", class: "asn-icon-cat active", "data-cat": "all" });
+    c.textContent = "All", a.appendChild(c), ri.forEach(({ id: E, label: A }) => {
+      const M = r("button", { type: "button", class: "asn-icon-cat", "data-cat": E });
+      M.textContent = A, a.appendChild(M);
+    }), this._catBar = a;
+    const d = r("div", { class: "asn-icon-grid" });
+    ci.forEach(([E, A]) => {
+      const M = r("button", { type: "button", class: "asn-icon-cell", "data-name": E, "data-cat": A, title: E }), Re = r("i", { class: "fa-solid fa-" + E, "aria-hidden": "true" }), ee = r("span");
+      ee.textContent = E, M.append(Re, ee), d.appendChild(M);
     }), this._grid = d;
-    const p = a("div", { class: "asn-icon-options" }), u = a("label", { class: "asn-label" });
+    const p = r("div", { class: "asn-icon-options" }), u = r("label", { class: "asn-label" });
     u.textContent = "Style";
-    const f = a("select", { class: "asn-input asn-icon-option-select" });
-    [["fa-solid", "Solid"], ["fa-regular", "Regular"], ["fa-light", "Light (Pro)"]].forEach(([I, L]) => {
-      const M = a("option", { value: I });
-      M.textContent = L, f.appendChild(M);
+    const f = r("select", { class: "asn-input asn-icon-option-select" });
+    [["fa-solid", "Solid"], ["fa-regular", "Regular"], ["fa-light", "Light (Pro)"]].forEach(([E, A]) => {
+      const M = r("option", { value: E });
+      M.textContent = A, f.appendChild(M);
     }), f.value = "fa-solid", this._styleSelect = f;
-    const g = a("label", { class: "asn-label" });
+    const g = r("label", { class: "asn-label" });
     g.textContent = "Size";
-    const y = a("select", { class: "asn-input asn-icon-option-select" });
-    [["", "Inherit"], ["0.75em", "0.75em"], ["1em", "1em"], ["1.25em", "1.25em"], ["1.5em", "1.5em"], ["2em", "2em"], ["3em", "3em"]].forEach(([I, L]) => {
-      const M = a("option", { value: I });
-      I === "1em" && (M.selected = !0), M.textContent = L, y.appendChild(M);
+    const y = r("select", { class: "asn-input asn-icon-option-select" });
+    [["", "Inherit"], ["0.75em", "0.75em"], ["1em", "1em"], ["1.25em", "1.25em"], ["1.5em", "1.5em"], ["2em", "2em"], ["3em", "3em"]].forEach(([E, A]) => {
+      const M = r("option", { value: E });
+      E === "1em" && (M.selected = !0), M.textContent = A, y.appendChild(M);
     }), this._sizeSelect = y;
-    const v = a("label", { class: "asn-label" });
+    const v = r("label", { class: "asn-label" });
     v.textContent = "Color";
-    const x = a("input", { type: "color", class: "asn-icon-color", value: "#000000" });
+    const x = r("input", { type: "color", class: "asn-icon-color", value: "#000000" });
     this._colorInput = x;
-    const k = a("label", { class: "asn-label asn-label-inline asn-icon-use-color" }), A = a("input", { type: "checkbox", checked: "" });
-    this._useColorCb = A, k.append(A, document.createTextNode(" Use color")), p.append(u, f, g, y, v, x, k);
-    const S = a("div", { class: "asn-icon-preview" }), b = a("span", { class: "asn-icon-preview-hint" });
-    b.textContent = "Select an icon", S.appendChild(b), this._preview = S;
-    const m = a("div", { class: "asn-dialog-actions" }), _ = a("button", { type: "button", class: "asn-btn asn-btn-primary", disabled: "" });
+    const k = r("label", { class: "asn-label asn-label-inline asn-icon-use-color" }), j = r("input", { type: "checkbox", checked: "" });
+    this._useColorCb = j, k.append(j, document.createTextNode(" Use color")), p.append(u, f, g, y, v, x, k);
+    const L = r("div", { class: "asn-icon-preview" }), b = r("span", { class: "asn-icon-preview-hint" });
+    b.textContent = "Select an icon", L.appendChild(b), this._preview = L;
+    const m = r("div", { class: "asn-dialog-actions" }), _ = r("button", { type: "button", class: "asn-btn asn-btn-primary", disabled: "" });
     _.textContent = "Insert FA Icon";
-    const E = a("button", { type: "button", class: "asn-btn" });
-    E.textContent = "Cancel", m.append(_, E), this._insertBtn = _, t.append(i, l, r, d, p, S, m), e.appendChild(t);
-    const R = h(n, "click", () => this._close()), N = h(E, "click", () => this._close()), K = h(_, "click", () => this._onInsert()), T = h(e, "click", (I) => {
-      I.target === e && this._close();
-    }), H = h(l, "input", () => this._filterIcons(l.value, this._activeCat)), Ie = h(r, "click", (I) => {
-      const L = I.target.closest("[data-cat]");
-      L && (this._activeCat = L.dataset.cat, this._updateCatTabs(), this._filterIcons(this._searchInput.value, this._activeCat));
-    }), Be = h(d, "click", (I) => {
-      const L = I.target.closest(".asn-icon-cell");
-      L && this._selectIcon(L.dataset.name);
-    }), Se = h(f, "change", () => this._updatePreview(this._selectedIcon)), Le = h(y, "change", () => this._updatePreview(this._selectedIcon)), je = h(x, "input", () => this._updatePreview(this._selectedIcon)), Ae = h(A, "change", () => this._updatePreview(this._selectedIcon)), Z = (I) => {
-      I.key === "Escape" && this._close();
+    const I = r("button", { type: "button", class: "asn-btn" });
+    I.textContent = "Cancel", m.append(_, I), this._insertBtn = _, t.append(i, l, a, d, p, L, m), e.appendChild(t);
+    const R = h(n, "click", () => this._close()), N = h(I, "click", () => this._close()), X = h(_, "click", () => this._onInsert()), T = h(e, "click", (E) => {
+      E.target === e && this._close();
+    }), H = h(l, "input", () => this._filterIcons(l.value, this._activeCat)), Ee = h(a, "click", (E) => {
+      const A = E.target.closest("[data-cat]");
+      A && (this._activeCat = A.dataset.cat, this._updateCatTabs(), this._filterIcons(this._searchInput.value, this._activeCat));
+    }), Be = h(d, "click", (E) => {
+      const A = E.target.closest(".asn-icon-cell");
+      A && this._selectIcon(A.dataset.name);
+    }), Le = h(f, "change", () => this._updatePreview(this._selectedIcon)), Ae = h(y, "change", () => this._updatePreview(this._selectedIcon)), Se = h(x, "input", () => this._updatePreview(this._selectedIcon)), je = h(j, "change", () => this._updatePreview(this._selectedIcon)), Z = (E) => {
+      E.key === "Escape" && this._close();
     };
     document.addEventListener("keydown", Z);
     const Me = () => document.removeEventListener("keydown", Z);
-    return this._disposers.push(R, N, K, T, H, Ie, Be, Se, Le, je, Ae, Me), e;
+    return this._disposers.push(R, N, X, T, H, Ee, Be, Le, Ae, Se, je, Me), e;
   }
   // ---------------------------------------------------------------------------
   // Filter / select
@@ -3746,11 +3879,11 @@ class hi {
     const i = (e || "").trim().toLowerCase();
     let o = 0;
     this._grid.querySelectorAll(".asn-icon-cell").forEach((l) => {
-      const r = l.dataset.name, c = l.dataset.cat, d = !t || t === "all" || c === t, p = !i || r.includes(i), u = d && p;
+      const a = l.dataset.name, c = l.dataset.cat, d = !t || t === "all" || c === t, p = !i || a.includes(i), u = d && p;
       l.style.display = u ? "" : "none", u && o++;
     });
     let n = this._grid.querySelector(".asn-icon-empty");
-    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No icons found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
+    n || (n = r("div", { class: "asn-icon-empty" }), n.textContent = "No icons found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
   }
   _selectIcon(e) {
     this._selectedIcon = e, this._grid.querySelectorAll(".asn-icon-cell").forEach((t) => {
@@ -3779,8 +3912,8 @@ class hi {
       o ? `color:${o}` : ""
     ].filter(Boolean), l = document.createElement("i");
     l.className = `${e} fa-${this._selectedIcon}`, l.setAttribute("aria-hidden", "true"), n.length && l.setAttribute("style", n.join(";"));
-    const r = this._savedRange, c = this.context.layoutInfo.editable;
-    r && r.select();
+    const a = this._savedRange, c = this.context.layoutInfo.editable;
+    a && a.select();
     const d = window.getSelection();
     let p = d && d.rangeCount > 0 ? d.getRangeAt(0) : null;
     p || (p = document.createRange(), p.selectNodeContents(c), p.collapse(!1)), p.deleteContents(), p.insertNode(l);
@@ -3842,7 +3975,7 @@ class pi {
     this.context = e, this.options = e.options || {}, this._items = this.options.contextMenu && this.options.contextMenu.items || di, this.el = null, this._disposers = [], this._menuDisposers = [], this._lastX = 0, this._lastY = 0, this._copiedFormat = null, this._savedRange = null;
   }
   initialize() {
-    this.el = a("div", { class: "asn-contextmenu", role: "menu", "aria-hidden": "true" }), this.el.style.display = "none", document.body.appendChild(this.el), this._renderItems(this._items);
+    this.el = r("div", { class: "asn-contextmenu", role: "menu", "aria-hidden": "true" }), this.el.style.display = "none", document.body.appendChild(this.el), this._renderItems(this._items);
     const e = this.context.layoutInfo && this.context.layoutInfo.editable;
     return e && this._disposers.push(h(e, "contextmenu", (t) => this._onContextMenu(t))), this._disposers.push(h(document, "click", (t) => this._maybeHide(t))), this._disposers.push(h(document, "keydown", (t) => {
       t.key === "Escape" && this.hide();
@@ -3864,52 +3997,52 @@ class pi {
   _renderItems(e) {
     this._menuDisposers.forEach((t) => t()), this._menuDisposers = [], this.el && (this.el.innerHTML = "", e.forEach((t) => {
       if (t.separator || t.sep) {
-        this.el.appendChild(a("div", { class: "asn-context-sep" }));
+        this.el.appendChild(r("div", { class: "asn-context-sep" }));
         return;
       }
       if (t.back) {
-        const n = a("button", { type: "button", class: "asn-context-back" }), l = a("span", { class: "asn-context-icon", "aria-hidden": "true" });
-        l.innerHTML = B.back, n.appendChild(l), n.appendChild(a("span", { class: "asn-context-label" }, [t.label || "Back"]));
-        const r = h(n, "click", (c) => {
+        const n = r("button", { type: "button", class: "asn-context-back" }), l = r("span", { class: "asn-context-icon", "aria-hidden": "true" });
+        l.innerHTML = B.back, n.appendChild(l), n.appendChild(r("span", { class: "asn-context-label" }, [t.label || "Back"]));
+        const a = h(n, "click", (c) => {
           c.stopPropagation(), this._renderItems(t.navigate()), this._reposition();
         });
-        this._menuDisposers.push(r), this.el.appendChild(n);
+        this._menuDisposers.push(a), this.el.appendChild(n);
         return;
       }
       if (t.navigate) {
-        const n = a("button", { type: "button", class: "asn-context-item asn-context-submenu", "data-name": t.name || "" });
+        const n = r("button", { type: "button", class: "asn-context-item asn-context-submenu", "data-name": t.name || "" });
         if (t.icon) {
-          const c = a("span", { class: "asn-context-icon", "aria-hidden": "true" });
+          const c = r("span", { class: "asn-context-icon", "aria-hidden": "true" });
           c.innerHTML = t.icon, n.appendChild(c);
         }
-        n.appendChild(a("span", { class: "asn-context-label" }, [t.label || t.name]));
-        const l = a("span", { class: "asn-context-chevron", "aria-hidden": "true" });
+        n.appendChild(r("span", { class: "asn-context-label" }, [t.label || t.name]));
+        const l = r("span", { class: "asn-context-chevron", "aria-hidden": "true" });
         l.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', n.appendChild(l);
-        const r = h(n, "click", (c) => {
+        const a = h(n, "click", (c) => {
           c.stopPropagation(), this._renderItems(t.navigate()), this._reposition();
         });
-        this._menuDisposers.push(r), this.el.appendChild(n);
+        this._menuDisposers.push(a), this.el.appendChild(n);
         return;
       }
       if (t.tableGrid) {
-        const r = a("div", { class: "asn-context-table-wrap" }), c = a("button", { type: "button", class: "asn-context-item asn-context-submenu", "data-name": t.name || "table" });
+        const a = r("div", { class: "asn-context-table-wrap" }), c = r("button", { type: "button", class: "asn-context-item asn-context-submenu", "data-name": t.name || "table" });
         if (t.icon) {
-          const b = a("span", { class: "asn-context-icon", "aria-hidden": "true" });
+          const b = r("span", { class: "asn-context-icon", "aria-hidden": "true" });
           b.innerHTML = t.icon, c.appendChild(b);
         }
-        c.appendChild(a("span", { class: "asn-context-label" }, [t.label || "Insert Table"]));
-        const d = a("span", { class: "asn-context-chevron", "aria-hidden": "true" });
+        c.appendChild(r("span", { class: "asn-context-label" }, [t.label || "Insert Table"]));
+        const d = r("span", { class: "asn-context-chevron", "aria-hidden": "true" });
         d.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', c.appendChild(d);
-        const p = a("div", { class: "asn-context-table-grid-panel" });
+        const p = r("div", { class: "asn-context-table-grid-panel" });
         p.style.display = "none";
-        const u = a("div", { class: "asn-table-grid" });
+        const u = r("div", { class: "asn-table-grid" });
         u.style.gridTemplateColumns = "repeat(8, 16px)";
-        const f = a("div", { class: "asn-table-label" });
+        const f = r("div", { class: "asn-table-label" });
         f.textContent = "Insert Table";
         const g = [];
         for (let b = 1; b <= 8; b++)
           for (let m = 1; m <= 8; m++) {
-            const _ = a("div", { class: "asn-table-cell", "data-row": String(b), "data-col": String(m) });
+            const _ = r("div", { class: "asn-table-cell", "data-row": String(b), "data-col": String(m) });
             _.style.width = "16px", _.style.height = "16px", g.push(_), u.appendChild(_);
           }
         const y = (b, m) => {
@@ -3926,26 +4059,26 @@ class pi {
         const k = h(u, "mousemove", (b) => {
           const m = b.target.closest("[data-row]");
           m && y(+m.dataset.row, +m.dataset.col);
-        }), A = h(u, "mouseleave", () => y(0, 0)), S = h(u, "click", (b) => {
+        }), j = h(u, "mouseleave", () => y(0, 0)), L = h(u, "click", (b) => {
           const m = b.target.closest("[data-row]");
           if (!m) return;
-          const _ = +m.dataset.row, E = +m.dataset.col, R = this.context.layoutInfo && this.context.layoutInfo.editable;
+          const _ = +m.dataset.row, I = +m.dataset.col, R = this.context.layoutInfo && this.context.layoutInfo.editable;
           if (R && this._savedRange) {
             R.focus();
             const N = window.getSelection();
             N.removeAllRanges(), N.addRange(this._savedRange.cloneRange());
           }
-          this.hide(), this.context.invoke("editor.insertTable", E, _);
+          this.hide(), this.context.invoke("editor.insertTable", I, _);
         });
-        this._menuDisposers.push(k, A, S), r.appendChild(c), r.appendChild(p), this.el.appendChild(r);
+        this._menuDisposers.push(k, j, L), a.appendChild(c), a.appendChild(p), this.el.appendChild(a);
         return;
       }
-      const i = a("button", { type: "button", class: "asn-context-item", "data-name": t.name || "" });
+      const i = r("button", { type: "button", class: "asn-context-item", "data-name": t.name || "" });
       if ((typeof t.disabled == "function" ? t.disabled(this.context) : t.disabled) && (i.disabled = !0), t.icon) {
-        const n = a("span", { class: "asn-context-icon", "aria-hidden": "true" });
+        const n = r("span", { class: "asn-context-icon", "aria-hidden": "true" });
         n.innerHTML = t.icon, i.appendChild(n);
       }
-      i.appendChild(a("span", { class: "asn-context-label" }, [t.label || t.name]));
+      i.appendChild(r("span", { class: "asn-context-label" }, [t.label || t.name]));
       const o = h(i, "click", (n) => {
         n.stopPropagation(), this.hide();
         try {
@@ -3973,8 +4106,8 @@ class pi {
   _reposition(e, t) {
     if (!this.el) return;
     const i = e !== void 0 ? e : this._lastX, o = t !== void 0 ? t : this._lastY, n = this.el.getBoundingClientRect();
-    let l = i, r = o;
-    l + n.width > window.innerWidth && (l = window.innerWidth - n.width - 8), r + n.height > window.innerHeight && (r = window.innerHeight - n.height - 8), this.el.style.left = `${l}px`, this.el.style.top = `${r}px`;
+    let l = i, a = o;
+    l + n.width > window.innerWidth && (l = window.innerWidth - n.width - 8), a + n.height > window.innerHeight && (a = window.innerHeight - n.height - 8), this.el.style.left = `${l}px`, this.el.style.top = `${a}px`;
   }
   hide() {
     this.el && (this.el.style.display = "none", this.el.setAttribute("aria-hidden", "true"));
@@ -4033,8 +4166,8 @@ class pi {
     if (i.removeAllRanges(), i.addRange(this._savedRange.cloneRange()), document.execCommand("removeFormat"), e.bold && document.execCommand("bold"), e.italic && document.execCommand("italic"), e.underline && document.execCommand("underline"), e.strikethrough && document.execCommand("strikeThrough"), e.color && document.execCommand("foreColor", !1, e.color), ((n) => !n || n === "rgba(0, 0, 0, 0)" || n === "transparent")(e.backgroundColor) || document.execCommand("hiliteColor", !1, e.backgroundColor), e.fontSize) {
       const n = `fs-${Date.now()}`;
       document.execCommand("fontSize", !1, "7"), t.querySelectorAll('font[size="7"]').forEach((l) => l.setAttribute("data-asn-tmp", n)), t.querySelectorAll(`[data-asn-tmp="${n}"]`).forEach((l) => {
-        const r = document.createElement("span");
-        for (r.style.fontSize = e.fontSize, l.parentNode.insertBefore(r, l); l.firstChild; ) r.appendChild(l.firstChild);
+        const a = document.createElement("span");
+        for (a.style.fontSize = e.fontSize, l.parentNode.insertBefore(a, l); l.firstChild; ) a.appendChild(l.firstChild);
         l.parentNode.removeChild(l);
       });
     }
@@ -4048,11 +4181,11 @@ class pi {
     const t = window.getSelection();
     t.removeAllRanges(), t.addRange(this._savedRange.cloneRange()), e.focus(), document.execCommand("removeFormat");
     const i = t.getRangeAt(0), o = i.commonAncestorContainer, n = o.nodeType === Node.TEXT_NODE ? o.parentElement : o, l = document.createNodeIterator(n, NodeFilter.SHOW_ELEMENT);
-    let r;
-    for (; r = l.nextNode(); )
-      if (!(!e.contains(r) || r === e))
+    let a;
+    for (; a = l.nextNode(); )
+      if (!(!e.contains(a) || a === e))
         try {
-          i.intersectsNode(r) && r.removeAttribute("style");
+          i.intersectsNode(a) && a.removeAttribute("style");
         } catch {
         }
     this.context.invoke("editor.afterCommand");
@@ -4064,7 +4197,7 @@ class ui {
    * @param {import('./settings.js').AsnOptions} [userOptions]
    */
   constructor(e, t = {}) {
-    this.targetEl = e, this.options = ne(Ee, t), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
+    this.targetEl = e, this.options = ne(Ie, t), this.layoutInfo = {}, this._listeners = /* @__PURE__ */ new Map(), this._modules = /* @__PURE__ */ new Map(), this._disposers = [], this._alive = !1;
   }
   // ---------------------------------------------------------------------------
   // Initialisation
@@ -4082,7 +4215,7 @@ class ui {
       const o = new i(this);
       o.initialize(), this._modules.set(t, o);
     };
-    e("editor", Lt), e("toolbar", jt), e("statusbar", At), e("clipboard", Mt), e("contextMenu", pi), e("placeholder", Rt), e("codeview", zt), e("fullscreen", Nt), e("linkDialog", Ht), e("imageDialog", Pt), e("videoDialog", Dt), e("imageResizer", $t), e("videoResizer", Wt), e("linkTooltip", Vt), e("imageTooltip", Xt), e("videoTooltip", Qt), e("tableTooltip", ti), e("codeTooltip", oi), e("emojiDialog", ai), e("iconDialog", hi);
+    e("editor", At), e("toolbar", St), e("statusbar", jt), e("clipboard", Mt), e("contextMenu", pi), e("placeholder", Rt), e("codeview", zt), e("fullscreen", Nt), e("linkDialog", Ht), e("imageDialog", Pt), e("videoDialog", Dt), e("imageResizer", $t), e("videoResizer", Wt), e("linkTooltip", Vt), e("imageTooltip", Kt), e("videoTooltip", Jt), e("tableTooltip", ti), e("codeTooltip", oi), e("emojiDialog", ai), e("iconDialog", hi);
   }
   _bindEditorEvents(e) {
     const t = h(e, "focus", () => {
@@ -4103,14 +4236,14 @@ class ui {
    * @returns {*}
    */
   invoke(e, ...t) {
-    var l, r;
+    var l, a;
     const [i, o] = e.split("."), n = this._modules.get(i);
     if (!n) {
       (typeof process > "u" || ((l = process.env) == null ? void 0 : l.NODE_ENV) !== "production") && console.warn(`[AfterSummerNote] invoke: module "${i}" not found (path: "${e}")`);
       return;
     }
     if (typeof n[o] != "function") {
-      (typeof process > "u" || ((r = process.env) == null ? void 0 : r.NODE_ENV) !== "production") && console.warn(`[AfterSummerNote] invoke: method "${o}" not found on module "${i}" (path: "${e}")`);
+      (typeof process > "u" || ((a = process.env) == null ? void 0 : a.NODE_ENV) !== "production") && console.warn(`[AfterSummerNote] invoke: method "${o}" not found on module "${i}" (path: "${e}")`);
       return;
     }
     return n[o](...t);
@@ -4222,10 +4355,10 @@ function Vi(s, e = 1) {
 function Yi(s, e = 1) {
   return s.slice(e);
 }
-function Ki(s) {
+function Xi(s) {
   return s.reduce((e, t) => e.concat(t), []);
 }
-function Xi(s) {
+function Ki(s) {
   return [...new Set(s)];
 }
 function Gi(s, e) {
@@ -4234,13 +4367,13 @@ function Gi(s, e) {
     t.push(s.slice(i, i + e));
   return t;
 }
-function Ji(s, e) {
+function Qi(s, e) {
   return s.reduce((t, i) => {
     const o = e(i);
     return t[o] || (t[o] = []), t[o].push(i), t;
   }, {});
 }
-function Qi(s, e) {
+function Ji(s, e) {
   return s.every(e);
 }
 function Zi(s, e) {
@@ -4299,7 +4432,7 @@ const P = navigator.userAgent, es = {
     return e && F.get(e) || null;
   },
   /** Default options (can be mutated globally before calling create). */
-  defaults: Ee,
+  defaults: Ie,
   /** Library version */
   version: "1.0.0"
 };
@@ -4310,36 +4443,36 @@ export {
   ui as Context,
   Ne as ELEMENT_NODE,
   He as TEXT_NODE,
-  Q as WrappedRange,
-  Qi as all,
-  Ii as ancestors,
+  J as WrappedRange,
+  Ji as all,
+  Ei as ancestors,
   Zi as any,
   Bi as children,
   Gi as chunk,
   mi as clamp,
-  J as closest,
+  Q as closest,
   te as closestPara,
   $i as collapsedRange,
   gi as compose,
-  a as createElement,
+  r as createElement,
   ie as currentRange,
   ze as debounce,
   ts as default,
-  Ee as defaultOptions,
+  Ie as defaultOptions,
   es as env,
   qi as first,
-  Ki as flatten,
+  Xi as flatten,
   ae as fromNativeRange,
-  Ji as groupBy,
+  Qi as groupBy,
   yi as identity,
   Vi as initial,
   Ri as insertAfter,
   Ti as isAnchor,
   $e as isEditable,
-  j as isElement,
+  S as isElement,
   Ni as isEmpty,
   vi as isFunction,
-  Ei as isImage,
+  Ii as isImage,
   Ci as isInline,
   Di as isInsideEditable,
   Y as isKey,
@@ -4348,7 +4481,7 @@ export {
   D as isModifier,
   _i as isNil,
   De as isPara,
-  X as isPlainObject,
+  K as isPlainObject,
   Fi as isSelectionInside,
   bi as isString,
   ki as isTable,
@@ -4357,22 +4490,22 @@ export {
   G as key,
   Ui as last,
   ne as mergeDeep,
-  Li as nextElement,
+  Ai as nextElement,
   zi as nodeValue,
   h as on,
   Hi as outerHtml,
   Pi as placeCaret,
-  Si as prevElement,
+  Li as prevElement,
   Oi as rangeFromElement,
   wi as rect2bnd,
-  ji as remove,
+  Si as remove,
   W as sanitiseHTML,
   se as sanitiseUrl,
   Wi as splitText,
   Yi as tail,
   fi as throttle,
-  Xi as unique,
-  Ai as unwrap,
+  Ki as unique,
+  ji as unwrap,
   U as withSavedRange,
   Mi as wrap
 };
