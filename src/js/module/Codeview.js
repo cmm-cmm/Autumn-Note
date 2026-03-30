@@ -72,8 +72,8 @@ export class Codeview {
   deactivate() {
     if (!this._active || !this._textarea) return;
     const { editable } = this.context.layoutInfo;
-    // Sanitise the HTML typed in the textarea before applying
-    editable.innerHTML = sanitiseHTML(this._textarea.value);
+    // Sanitise the HTML typed in the textarea before applying (allow iframes for video embeds)
+    editable.innerHTML = sanitiseHTML(this._textarea.value, { allowIframes: true });
     this._textarea.parentNode.removeChild(this._textarea);
     this._textarea = null;
     editable.style.display = '';

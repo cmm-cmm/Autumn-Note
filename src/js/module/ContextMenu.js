@@ -446,10 +446,10 @@ export class ContextMenu {
     const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
     if (!editable) return;
 
+    editable.focus();
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
-    editable.focus();
 
     document.execCommand('removeFormat');
 

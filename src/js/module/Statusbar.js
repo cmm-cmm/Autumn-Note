@@ -81,7 +81,7 @@ export class Statusbar {
 
     const onMouseMove = (event) => {
       const delta = event.clientY - startY;
-      const minH = this.options.minHeight || 120;
+      const minH = this.options.minHeight || 100;
       const newHeight = Math.max(minH, startH + delta);
       containerEl.style.height = `${newHeight}px`;
     };
