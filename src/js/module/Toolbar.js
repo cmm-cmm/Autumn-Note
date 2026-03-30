@@ -24,6 +24,9 @@ export class Toolbar {
 
   initialize() {
     this.el = createElement('div', { class: 'asn-toolbar' });
+    // Detect FontAwesome once at toolbar build time to avoid re-querying the DOM
+    // for every button rendered.
+    this._faReady = this._detectFontAwesome();
     this._buildButtons();
     return this;
   }
@@ -83,12 +86,7 @@ export class Toolbar {
     });
 
     // Set icon — inline SVG (table) with optional FontAwesome fallback
-    const useFA = !!this.options.useFontAwesome;
-    const faReady = useFA && (
-      document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid') ||
-      /fontawesome|font-awesome/.test(Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href).join(' '))
-    );
-    if (faReady) {
+    if (this._faReady) {
       const faPrefix = this.options.fontAwesomeClass || 'fas';
       btn.innerHTML = `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`;
     } else {
@@ -373,15 +371,6 @@ export class Toolbar {
     });
 
     // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.
-    const useFA = !!this.options.useFontAwesome;
-
-    const hasFontAwesome = () => {
-      if (!useFA) return false;
-      // Fast heuristic: check for common FA classes in the document or stylesheet hrefs
-      if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) return true;
-      const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href || '').join(' ');
-      return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
-    };
 
     // Heroicons-style stroke SVGs — consistent with context menu icons
     const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -453,7 +442,7 @@ export class Toolbar {
       ['backColor', 'fa-highlighter'],
     ]);
 
-    const useFaNow = hasFontAwesome();
+    const useFaNow = this._faReady;
     if (useFaNow) {
       const faName = faMap.get(btnDef.icon) || faMap.get(btnDef.name) || null;
       if (faName) {
@@ -484,6 +473,17 @@ export class Toolbar {
 
     this._disposers.push(disposer);
     return btn;
+  }
+
+  // ---------------------------------------------------------------------------
+  // FontAwesome detection (run once at initialize time)
+  // ---------------------------------------------------------------------------
+
+  _detectFontAwesome() {
+    if (!this.options.useFontAwesome) return false;
+    if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) return true;
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href || '').join(' ');
+    return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
   }
 
   // ---------------------------------------------------------------------------

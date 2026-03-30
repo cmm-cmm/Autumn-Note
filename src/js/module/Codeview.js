@@ -4,6 +4,7 @@
  */
 
 import { createElement } from '../core/dom.js';
+import { sanitiseHTML } from '../core/sanitise.js';
 
 export class Codeview {
   /**
@@ -72,7 +73,7 @@ export class Codeview {
     if (!this._active || !this._textarea) return;
     const { editable } = this.context.layoutInfo;
     // Sanitise the HTML typed in the textarea before applying
-    editable.innerHTML = this._sanitise(this._textarea.value);
+    editable.innerHTML = sanitiseHTML(this._textarea.value);
     this._textarea.parentNode.removeChild(this._textarea);
     this._textarea = null;
     editable.style.display = '';

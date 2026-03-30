@@ -10,6 +10,7 @@ import { insertTable } from '../editing/Table.js';
 import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
+import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 
 export class Editor {
   /**
@@ -47,10 +48,13 @@ export class Editor {
   _bindEvents(editable) {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
-    // Only record undo / fire change when the key actually modifies content
+    // Record undo / fire change for key-driven mutations
     const onKeyup = (event) => {
       if (this._isContentKey(event)) this.afterCommand();
     };
+    // Catch mutations from IME composition, voice input, spellcheck corrections,
+    // drag-drop text, and any other path that bypasses keyup.
+    const onInput = () => this.afterCommand();
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
       const sel = window.getSelection();
@@ -62,6 +66,7 @@ export class Editor {
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'keyup', onKeyup),
+      on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
     );
   }
@@ -141,7 +146,7 @@ export class Editor {
    * @param {string} html - HTML string (will be sanitised)
    */
   setHTML(html) {
-    this.context.layoutInfo.editable.innerHTML = this._sanitise(html);
+    this.context.layoutInfo.editable.innerHTML = sanitiseHTML(html);
     if (this._history) this._history.reset();
     this.afterCommand();
   }
@@ -254,7 +259,7 @@ export class Editor {
   insertLink(url, text, openInNewTab = false) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
-    const safeUrl = this._sanitiseUrl(url);
+    const safeUrl = sanitiseUrl(url);
     if (!safeUrl) return;
 
     const hasText = sel.toString().trim().length > 0;
@@ -288,7 +293,7 @@ export class Editor {
    * @param {string} [alt]
    */
   insertImage(src, alt = '') {
-    const safeSrc = this._sanitiseUrl(src, { allowData: true });
+    const safeSrc = sanitiseUrl(src, { allowData: true });
     if (!safeSrc) return;
     Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="asn-image">`);
     this.afterCommand();
@@ -331,23 +336,6 @@ export class Editor {
   }
 
   /**
-   * Sanitises a URL, blocking javascript: and optionally data: protocols.
-   * @param {string} url
-   * @param {{ allowData?: boolean }} [opts]
-   * @returns {string|null}
-   */
-  _sanitiseUrl(url, { allowData = false } = {}) {
-    try {
-      const trimmed = (url || '').trim();
-      if (/^javascript:/i.test(trimmed)) return null;
-      if (!allowData && /^data:/i.test(trimmed)) return null;
-      return url;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /**
    * Escapes a string for safe use inside an HTML attribute value.
    * @param {string} str
    * @returns {string}
@@ -360,30 +348,5 @@ export class Editor {
       .replace(/>/g, '&gt;');
   }
 
-  /**
-   * HTML sanitiser to prevent XSS on setHTML / initial content load.
-   * @param {string} html
-   * @returns {string}
-   */
-  _sanitise(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(`<body>${html}</body>`, 'text/html');
-    ['script', 'style', 'iframe', 'object', 'embed', 'form'].forEach((tag) => {
-      doc.querySelectorAll(tag).forEach((el) => el.remove());
-    });
-    doc.querySelectorAll('*').forEach((el) => {
-      Array.from(el.attributes).forEach((attr) => {
-        if (attr.name.startsWith('on')) { el.removeAttribute(attr.name); return; }
-        if (['href', 'src', 'action', 'formaction'].includes(attr.name)) {
-          const val = attr.value.trim();
-          if (/^javascript:/i.test(val)) { el.removeAttribute(attr.name); return; }
-          // Allow data: only on img[src] (base64 uploads); block everywhere else
-          if (/^data:/i.test(val) && !(attr.name === 'src' && el.tagName === 'IMG')) {
-            el.removeAttribute(attr.name);
-          }
-        }
-      });
-    });
-    return doc.body.innerHTML;
-  }
+  // --- delegated to shared sanitise.js ---
 }

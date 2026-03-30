@@ -56,6 +56,10 @@ export class Statusbar {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
+    if (this._dragDisposers) {
+      this._dragDisposers.forEach((d) => d());
+      this._dragDisposers = null;
+    }
     if (this.el && this.el.parentNode) {
       this.el.parentNode.removeChild(this.el);
     }
@@ -84,6 +88,7 @@ export class Statusbar {
     const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      this._dragDisposers = null;
     };
 
     const onMouseDown = (event) => {
@@ -91,6 +96,11 @@ export class Statusbar {
       startH = containerEl.offsetHeight;
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
+      // Track drag-phase listeners so destroy() can remove them mid-drag
+      this._dragDisposers = [
+        () => document.removeEventListener('mousemove', onMouseMove),
+        () => document.removeEventListener('mouseup', onMouseUp),
+      ];
       event.preventDefault();
     };
 

@@ -47,6 +47,10 @@ export class VideoResizer {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
+    if (this._dragDisposers) {
+      this._dragDisposers.forEach((d) => d());
+      this._dragDisposers = null;
+    }
     this._deselect();
     if (this._overlay && this._overlay.parentNode) {
       this._overlay.parentNode.removeChild(this._overlay);
@@ -202,10 +206,16 @@ export class VideoResizer {
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      this._dragDisposers = null;
       this.context.invoke('editor.afterCommand');
     };
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+    // Track these so destroy() can clean them up if called during an active drag
+    this._dragDisposers = [
+      () => document.removeEventListener('mousemove', onMove),
+      () => document.removeEventListener('mouseup', onUp),
+    ];
   }
 }

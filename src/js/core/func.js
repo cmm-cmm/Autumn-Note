@@ -93,12 +93,20 @@ export function isFunction(val) {
 
 /**
  * Deep-merge two plain objects. Returns a new object.
+ * Arrays are cloned (shallow copy) rather than shared by reference so that
+ * mutations to the merged result do not bleed back into the source object
+ * (e.g. mutating `instance.options.fontFamilies` should not affect
+ * `AfterSummerNote.defaults.fontFamilies`).
  * @param {object} target
  * @param {object} source
  * @returns {object}
  */
 export function mergeDeep(target, source) {
-  const output = Object.assign({}, target);
+  // Start with a shallow copy of target; clone any arrays to avoid shared refs
+  const output = {};
+  for (const key of Object.keys(target)) {
+    output[key] = Array.isArray(target[key]) ? [...target[key]] : target[key];
+  }
   if (isPlainObject(target) && isPlainObject(source)) {
     for (const key of Object.keys(source)) {
       if (isPlainObject(source[key])) {
@@ -107,6 +115,8 @@ export function mergeDeep(target, source) {
         } else {
           output[key] = mergeDeep(target[key], source[key]);
         }
+      } else if (Array.isArray(source[key])) {
+        output[key] = [...source[key]];
       } else {
         output[key] = source[key];
       }

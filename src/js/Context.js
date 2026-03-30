@@ -156,8 +156,18 @@ export class Context {
   invoke(path, ...args) {
     const [moduleName, methodName] = path.split('.');
     const module = this._modules.get(moduleName);
-    if (!module) return undefined;
-    if (typeof module[methodName] !== 'function') return undefined;
+    if (!module) {
+      if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+        console.warn(`[AfterSummerNote] invoke: module "${moduleName}" not found (path: "${path}")`);
+      }
+      return undefined;
+    }
+    if (typeof module[methodName] !== 'function') {
+      if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+        console.warn(`[AfterSummerNote] invoke: method "${methodName}" not found on module "${moduleName}" (path: "${path}")`);
+      }
+      return undefined;
+    }
     return module[methodName](...args);
   }
 
