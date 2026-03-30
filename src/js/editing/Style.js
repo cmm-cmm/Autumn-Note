@@ -3,7 +3,7 @@
  * Rewritten from Summernote's approach using vanilla JS + execCommand fallback
  */
 
-import { closest, isElement, isPara, ancestors } from '../core/dom.js';
+import { closest, isElement, isPara } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -76,11 +76,12 @@ export const fontName = (name) => execCommand('fontName', name);
  * Sets the font size (in pt or with unit) for the selection.
  * Uses a span-based approach to set px sizes precisely.
  * @param {string} size - e.g. '14px'
+ * @param {HTMLElement} [editable] - scoping element to avoid touching nodes outside this editor
  */
-export function fontSize(size) {
+export function fontSize(size, editable = document) {
   execCommand('fontSize', '7'); // placeholder
-  // Replace font elements with spans
-  document.querySelectorAll('font[size="7"]').forEach((el) => {
+  // Replace font elements with spans, scoped to the active editable
+  editable.querySelectorAll('font[size="7"]').forEach((el) => {
     const span = document.createElement('span');
     span.style.fontSize = size;
     el.parentNode.insertBefore(span, el);
@@ -138,6 +139,80 @@ export const insertUnorderedList = () => execCommand('insertUnorderedList');
  * Inserts an ordered list or converts selection.
  */
 export const insertOrderedList = () => execCommand('insertOrderedList');
+
+/**
+ * Inserts a rows×cols HTML table at the current cursor position.
+ * @param {number} rows
+ * @param {number} cols
+ */
+export function insertTable(rows, cols) {
+  const table = document.createElement('table');
+  table.style.borderCollapse = 'collapse';
+  table.style.width = '100%';
+  const tbody = document.createElement('tbody');
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const td = document.createElement('td');
+      td.style.border = '1px solid #dee2e6';
+      td.style.padding = '6px 12px';
+      td.style.minWidth = '40px';
+      td.innerHTML = '&#8203;';
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  execCommand('insertHTML', table.outerHTML);
+}
+
+// ---------------------------------------------------------------------------
+// Line-height helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Applies a line-height value to every block-level element that intersects
+ * the current selection.
+ * @param {string} value - unitless multiplier, e.g. '1.5'
+ */
+export function lineHeight(value) {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return;
+
+  const range = sel.getRangeAt(0);
+  const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'PRE', 'TD', 'TH']);
+
+  const nearestBlock = (node) => {
+    let el = node instanceof Element ? node : node.parentElement;
+    while (el) {
+      if (BLOCK_TAGS.has(el.tagName)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  if (range.collapsed) {
+    const block = nearestBlock(range.startContainer);
+    if (block) block.style.lineHeight = value;
+    return;
+  }
+
+  // For a range selection, collect all unique block ancestors of text nodes
+  const blocks = new Set();
+  const iter = document.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, null);
+  let textNode;
+  while ((textNode = iter.nextNode())) {
+    if (range.intersectsNode(textNode)) {
+      const block = nearestBlock(textNode);
+      if (block) blocks.add(block);
+    }
+  }
+  if (blocks.size === 0) {
+    const block = nearestBlock(range.commonAncestorContainer);
+    if (block) blocks.add(block);
+  }
+  blocks.forEach((block) => { block.style.lineHeight = value; });
+}
 
 // ---------------------------------------------------------------------------
 // Style query helpers

@@ -23,7 +23,10 @@ export class Toolbar {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this.el = createElement('div', { class: 'asn-toolbar' });
+    this.el = createElement('div', { class: 'an-toolbar' });
+    // Detect FontAwesome once at toolbar build time to avoid re-querying the DOM
+    // for every button rendered.
+    this._faReady = this._detectFontAwesome();
     this._buildButtons();
     return this;
   }
@@ -44,13 +47,308 @@ export class Toolbar {
   _buildButtons() {
     const toolbar = this.options.toolbar || [];
     toolbar.forEach((group) => {
-      const groupEl = createElement('div', { class: 'asn-btn-group' });
+      const groupEl = createElement('div', { class: 'an-btn-group' });
       group.forEach((btnDef) => {
-        const btn = this._createButton(btnDef);
-        groupEl.appendChild(btn);
+        let el;
+        if (btnDef.type === 'select') el = this._createSelect(btnDef);
+        else if (btnDef.type === 'grid') el = this._createGridPicker(btnDef);
+        else if (btnDef.type === 'colorpicker') el = this._createColorPicker(btnDef);
+        else el = this._createButton(btnDef);
+        groupEl.appendChild(el);
       });
       this.el.appendChild(groupEl);
     });
+  }
+
+  /**
+   * Creates a table-grid picker button with a hoverable row/col selector popup.
+   * @param {import('./Buttons.js').ButtonDef} def
+   * @returns {HTMLDivElement}
+   */
+  _createGridPicker(def) {
+    const ROWS = 10;
+    const COLS = 10;
+
+    const wrap = createElement('div', { class: 'an-table-picker-wrap' });
+
+    const useBootstrap = !!this.options.useBootstrap;
+    const baseClass = useBootstrap
+      ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light')
+      : 'an-btn';
+    const btn = createElement('button', {
+      type: 'button',
+      class: baseClass,
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+      'aria-haspopup': 'true',
+      'aria-expanded': 'false',
+    });
+
+    // Set icon — inline SVG (table) with optional FontAwesome fallback
+    if (this._faReady) {
+      const faPrefix = this.options.fontAwesomeClass || 'fas';
+      btn.innerHTML = `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`;
+    } else {
+      const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+    }
+
+    // Popup
+    const popup = createElement('div', {
+      class: 'an-table-picker-popup',
+      role: 'dialog',
+      'aria-label': 'Select table size',
+    });
+    const grid = createElement('div', { class: 'an-table-grid' });
+    const label = createElement('div', { class: 'an-table-label' });
+    label.textContent = 'Insert Table';
+
+    const cells = [];
+    for (let r = 1; r <= ROWS; r++) {
+      for (let c = 1; c <= COLS; c++) {
+        const cell = createElement('div', {
+          class: 'an-table-cell',
+          'data-row': String(r),
+          'data-col': String(c),
+        });
+        cells.push(cell);
+        grid.appendChild(cell);
+      }
+    }
+
+    popup.appendChild(grid);
+    popup.appendChild(label);
+
+    let isOpen = false;
+
+    const setHighlight = (rows, cols) => {
+      cells.forEach((cell) => {
+        const r = +cell.getAttribute('data-row');
+        const c = +cell.getAttribute('data-col');
+        cell.classList.toggle('active', r <= rows && c <= cols);
+      });
+      label.textContent = (rows && cols) ? `${rows} × ${cols}` : 'Insert Table';
+    };
+
+    const openPopup = () => {
+      isOpen = true;
+      popup.style.display = 'block';
+      btn.setAttribute('aria-expanded', 'true');
+    };
+
+    const closePopup = () => {
+      isOpen = false;
+      popup.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
+      setHighlight(0, 0);
+    };
+
+    const d1 = on(btn, 'click', (e) => {
+      e.stopPropagation();
+      if (isOpen) closePopup(); else openPopup();
+    });
+
+    const d2 = on(grid, 'mouseover', (e) => {
+      const cell = e.target.closest('.an-table-cell');
+      if (!cell) return;
+      setHighlight(+cell.getAttribute('data-row'), +cell.getAttribute('data-col'));
+    });
+
+    const d3 = on(grid, 'mouseleave', () => setHighlight(0, 0));
+
+    const d4 = on(grid, 'click', (e) => {
+      const cell = e.target.closest('.an-table-cell');
+      if (!cell) return;
+      const rows = +cell.getAttribute('data-row');
+      const cols = +cell.getAttribute('data-col');
+      closePopup();
+      this.context.invoke('editor.focus');
+      def.action(this.context, rows, cols);
+    });
+
+    const d5 = on(document, 'click', () => { if (isOpen) closePopup(); });
+
+    this._disposers.push(d1, d2, d3, d4, d5);
+
+    wrap.appendChild(btn);
+    wrap.appendChild(popup);
+    return wrap;
+  }
+
+  /**
+   * Creates a split color-picker widget:
+   *   [icon + strip | ▾] — left applies current color, right opens swatch popup.
+   * @param {{ name: string, type: 'colorpicker', tooltip: string, defaultColor: string, action: Function }} def
+   * @returns {HTMLDivElement}
+   */
+  _createColorPicker(def) {
+    const PRESETS = [
+      // Grayscale
+      '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
+      // Saturated
+      '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
+      // Pastel
+      '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
+    ];
+
+    let currentColor = def.defaultColor || '#000000';
+
+    const wrap = createElement('div', { class: 'an-color-picker-wrap' });
+
+    const useBootstrap = !!this.options.useBootstrap;
+    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : 'an-btn';
+
+    // ---- Apply button (icon + color strip) ----
+    const applyBtn = createElement('button', {
+      type: 'button',
+      class: `${baseClass} an-color-btn`,
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+    });
+
+    const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    const iconSvg = def.name === 'foreColor'
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
+
+    applyBtn.innerHTML = iconSvg;
+    const strip = createElement('span', { class: 'an-color-strip' });
+    strip.style.background = currentColor;
+    applyBtn.appendChild(strip);
+
+    // ---- Arrow button (open popup) ----
+    const arrowBtn = createElement('button', {
+      type: 'button',
+      class: `${baseClass} an-color-arrow`,
+      title: `Choose ${def.name === 'foreColor' ? 'text' : 'highlight'} color`,
+      'aria-haspopup': 'true',
+      'aria-expanded': 'false',
+    });
+    arrowBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>`;
+
+    // ---- Popup ----
+    const popup = createElement('div', { class: 'an-color-popup' });
+    popup.style.display = 'none';
+
+    const swatches = createElement('div', { class: 'an-color-swatches' });
+    PRESETS.forEach((color) => {
+      const sw = createElement('div', { class: 'an-color-swatch', title: color, 'data-color': color });
+      sw.style.background = color;
+      swatches.appendChild(sw);
+    });
+
+    const customRow = createElement('div', { class: 'an-color-custom' });
+    const colorInput = createElement('input', { type: 'color', value: currentColor, title: 'Custom color' });
+    const customLabel = createElement('span', {}, ['Custom color']);
+    customRow.appendChild(colorInput);
+    customRow.appendChild(customLabel);
+
+    popup.appendChild(swatches);
+    popup.appendChild(customRow);
+
+    // ---- State ----
+    let isOpen = false;
+
+    const openPopup = () => {
+      isOpen = true;
+      popup.style.display = 'block';
+      arrowBtn.setAttribute('aria-expanded', 'true');
+    };
+
+    const closePopup = () => {
+      isOpen = false;
+      popup.style.display = 'none';
+      arrowBtn.setAttribute('aria-expanded', 'false');
+    };
+
+    const applyColor = (color) => {
+      currentColor = color;
+      strip.style.background = color;
+      colorInput.value = color;
+      this.context.invoke('editor.focus');
+      def.action(this.context, color);
+      this.context.invoke('editor.afterCommand');
+      closePopup();
+    };
+
+    const d1 = on(applyBtn, 'click', (e) => {
+      e.preventDefault();
+      this.context.invoke('editor.focus');
+      def.action(this.context, currentColor);
+      this.context.invoke('editor.afterCommand');
+    });
+
+    const d2 = on(arrowBtn, 'click', (e) => {
+      e.stopPropagation();
+      if (isOpen) closePopup(); else openPopup();
+    });
+
+    const d3 = on(swatches, 'click', (e) => {
+      const sw = e.target.closest('.an-color-swatch');
+      if (sw) applyColor(sw.dataset.color);
+    });
+
+    const d4 = on(colorInput, 'change', (e) => {
+      applyColor(e.target.value);
+    });
+
+    const d5 = on(document, 'click', (e) => {
+      if (isOpen && !wrap.contains(e.target)) closePopup();
+    });
+
+    const d6 = on(popup, 'click', (e) => e.stopPropagation());
+
+    this._disposers.push(d1, d2, d3, d4, d5, d6);
+
+    wrap.appendChild(applyBtn);
+    wrap.appendChild(arrowBtn);
+    wrap.appendChild(popup);
+    return wrap;
+  }
+
+  /**
+   * Creates a <select> dropdown for font-family (or similar) options.
+   * @param {import('./Buttons.js').DropdownDef} def
+   * @returns {HTMLSelectElement}
+   */
+  _createSelect(def) {
+    const items = (def.name === 'fontFamily')
+      ? (this.options.fontFamilies || [])
+      : (def.items || []);
+
+    const cls = def.selectClass ? `an-select ${def.selectClass}` : 'an-select';
+    const select = createElement('select', {
+      class: cls,
+      title: def.tooltip || '',
+      'data-btn': def.name,
+      'aria-label': def.tooltip || def.name,
+    });
+
+    // Blank "placeholder" option
+    const placeholderText = def.placeholder || 'Font';
+    const placeholder = createElement('option', { value: '' }, [placeholderText]);
+    select.appendChild(placeholder);
+
+    items.forEach((item) => {
+      const value = (typeof item === 'object') ? item.value : item;
+      const label = (typeof item === 'object') ? item.label : item;
+      const opt = createElement('option', { value }, [label]);
+      if (def.name === 'fontFamily') opt.style.fontFamily = value;
+      select.appendChild(opt);
+    });
+
+    const disposer = on(select, 'change', (e) => {
+      const value = e.target.value;
+      if (!value) return;
+      this.context.invoke('editor.focus');
+      def.action(this.context, value);
+      this.context.invoke('editor.afterCommand');
+    });
+
+    this._disposers.push(disposer);
+    return select;
   }
 
   /**
@@ -60,7 +358,7 @@ export class Toolbar {
   _createButton(btnDef) {
     // Determine classes based on whether the consumer wants Bootstrap styling
     const useBootstrap = !!this.options.useBootstrap;
-    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : `asn-btn`;
+    const baseClass = useBootstrap ? (this.options.toolbarButtonClass || 'btn btn-sm btn-light') : `an-btn`;
     const extra = btnDef.className ? ` ${btnDef.className}` : '';
     const classAttr = `${baseClass}${extra}`;
 
@@ -73,15 +371,6 @@ export class Toolbar {
     });
 
     // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.
-    const useFA = !!this.options.useFontAwesome;
-
-    const hasFontAwesome = () => {
-      if (!useFA) return false;
-      // Fast heuristic: check for common FA classes in the document or stylesheet hrefs
-      if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) return true;
-      const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href || '').join(' ');
-      return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
-    };
 
     // Heroicons-style stroke SVGs — consistent with context menu icons
     const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -112,9 +401,18 @@ export class Toolbar {
       ['minus',         svgWrap('<line x1="5" y1="12" x2="19" y2="12"/>')],
       ['link',          svgWrap('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>')],
       ['image',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>')],
+      ['video',         svgWrap('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>')],
+      ['table',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>')],
+      ['emoji',         svgWrap('<circle cx="12" cy="12" r="10"/><path d="M8.5 14.5s1.5 2.5 3.5 2.5 3.5-2.5 3.5-2.5"/><circle cx="9" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>')],
+      ['icon',          svgWrap('<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><rect x="5" y="13" width="6" height="6" rx="1"/><rect x="13" y="13" width="6" height="6" rx="1"/>')],
       // View
       ['code',          svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
       ['expand',        svgWrap('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')],
+      // Color pickers
+      ['foreColor',     svgWrap('<path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>')],
+      ['backColor',     svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
+      ['keyboard',      svgWrap('<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-width="2.5"/><line x1="14" y1="10" x2="14" y2="10" stroke-width="2.5"/><line x1="18" y1="10" x2="18" y2="10" stroke-width="2.5"/><line x1="8" y1="14" x2="16" y2="14" stroke-width="2"/>')],
+      ['caption',      svgWrap('<rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/>')],
     ]);
 
     const faPrefix = this.options.fontAwesomeClass || 'fas';
@@ -140,9 +438,14 @@ export class Toolbar {
       ['image', 'fa-image'],
       ['code', 'fa-code'],
       ['expand', 'fa-expand'],
+      ['emoji', 'fa-face-smile'],
+      ['icon', 'fa-icons'],
+      ['foreColor', 'fa-font'],
+      ['backColor', 'fa-highlighter'],
+      ['keyboard',  'fa-keyboard'],
     ]);
 
-    const useFaNow = hasFontAwesome();
+    const useFaNow = this._faReady;
     if (useFaNow) {
       const faName = faMap.get(btnDef.icon) || faMap.get(btnDef.name) || null;
       if (faName) {
@@ -176,22 +479,50 @@ export class Toolbar {
   }
 
   // ---------------------------------------------------------------------------
+  // FontAwesome detection (run once at initialize time)
+  // ---------------------------------------------------------------------------
+
+  _detectFontAwesome() {
+    if (!this.options.useFontAwesome) return false;
+    if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) return true;
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href || '').join(' ');
+    return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
+  }
+
+  // ---------------------------------------------------------------------------
   // State refresh (active / disabled states)
   // ---------------------------------------------------------------------------
 
   refresh() {
     if (!this.el) return;
-    const buttons = this.el.querySelectorAll('[data-btn]');
     const toolbar = this.options.toolbar || [];
     const btnMap = new Map(toolbar.flat().map((b) => [b.name, b]));
 
-    buttons.forEach((btn) => {
-      const name = btn.getAttribute('data-btn');
-      const def = btnMap.get(name);
+    // Sync button active states
+    this.el.querySelectorAll('button[data-btn]').forEach((btn) => {
+      const def = btnMap.get(btn.getAttribute('data-btn'));
       if (def && typeof def.isActive === 'function') {
-        const active = def.isActive(this.context);
-        btn.classList.toggle('active', !!active);
+        btn.classList.toggle('active', !!def.isActive(this.context));
       }
+    });
+
+    // Sync select dropdowns (e.g. font family) with current cursor position
+    this.el.querySelectorAll('select[data-btn]').forEach((select) => {
+      const def = btnMap.get(select.getAttribute('data-btn'));
+      if (!def || typeof def.getValue !== 'function') return;
+      // queryCommandValue returns the font name, possibly quoted — strip quotes
+      let raw = (def.getValue(this.context) || '').replace(/["']/g, '').trim();
+      // Fallback: when no selection/font set, use the configured default font
+      if (!raw) {
+        raw = this.options.defaultFontFamily
+          || (this.options.fontFamilies && this.options.fontFamilies[0])
+          || '';
+      }
+      // Try to match against available options (case-insensitive)
+      const matched = Array.from(select.options).find(
+        (opt) => opt.value && opt.value.toLowerCase() === raw.toLowerCase()
+      );
+      select.value = matched ? matched.value : '';
     });
   }
 

@@ -5,15 +5,15 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/js/index.js'),
-      name: 'AfterSummerNote',
+      name: 'AutumnNote',
       formats: ['es', 'umd'],
-      fileName: (format) => `aftersummernote.${format}.js`,
+      fileName: (format) => `autumnnote.${format}.js`,
     },
     rollupOptions: {
       output: {
         exports: 'named',
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return 'aftersummernote.css';
+          if (assetInfo.name === 'style.css') return 'autumnnote.css';
           return assetInfo.name;
         },
       },

@@ -39,6 +39,6 @@ export class Placeholder {
   _update() {
     const editable = this.context.layoutInfo.editable;
     const isEmpty = !editable.textContent.trim() && !editable.querySelector('img, table, hr');
-    editable.classList.toggle('asn-placeholder', isEmpty);
+    editable.classList.toggle('an-placeholder', isEmpty);
   }
 }

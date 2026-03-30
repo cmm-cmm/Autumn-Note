@@ -19,7 +19,18 @@ import { Codeview } from './module/Codeview.js';
 import { Fullscreen } from './module/Fullscreen.js';
 import { LinkDialog } from './module/LinkDialog.js';
 import { ImageDialog } from './module/ImageDialog.js';
+import { VideoDialog } from './module/VideoDialog.js';
+import { ImageResizer } from './module/ImageResizer.js';
+import { VideoResizer } from './module/VideoResizer.js';
+import { LinkTooltip } from './module/LinkTooltip.js';
+import { ImageTooltip } from './module/ImageTooltip.js';
+import { VideoTooltip } from './module/VideoTooltip.js';
+import { TableTooltip } from './module/TableTooltip.js';
+import { CodeTooltip } from './module/CodeTooltip.js';
+import { EmojiDialog } from './module/EmojiDialog.js';
+import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
+import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 
 export class Context {
   /**
@@ -78,6 +89,10 @@ export class Context {
     }
 
     this._alive = true;
+
+    // Initial toolbar sync so dropdowns show the correct font on load
+    this.invoke('toolbar.refresh');
+
     return this;
   }
 
@@ -98,17 +113,28 @@ export class Context {
     register('fullscreen', Fullscreen);
     register('linkDialog', LinkDialog);
     register('imageDialog', ImageDialog);
+    register('videoDialog', VideoDialog);
+    register('imageResizer', ImageResizer);
+    register('videoResizer', VideoResizer);
+    register('linkTooltip', LinkTooltip);
+    register('imageTooltip', ImageTooltip);
+    register('videoTooltip', VideoTooltip);
+    register('tableTooltip', TableTooltip);
+    register('codeTooltip', CodeTooltip);
+    register('emojiDialog', EmojiDialog);
+    register('iconDialog', IconDialog);
+    register('shortcutsDialog', ShortcutsDialog);
   }
 
   _bindEditorEvents(editable) {
     const d1 = on(editable, 'focus', () => {
-      this.layoutInfo.container.classList.add('asn-focused');
+      this.layoutInfo.container.classList.add('an-focused');
       if (typeof this.options.onFocus === 'function') {
         this.options.onFocus(this);
       }
     });
     const d2 = on(editable, 'blur', () => {
-      this.layoutInfo.container.classList.remove('asn-focused');
+      this.layoutInfo.container.classList.remove('an-focused');
       // Sync content back to original element
       this._syncToTarget();
       if (typeof this.options.onBlur === 'function') {
@@ -132,8 +158,18 @@ export class Context {
   invoke(path, ...args) {
     const [moduleName, methodName] = path.split('.');
     const module = this._modules.get(moduleName);
-    if (!module) return undefined;
-    if (typeof module[methodName] !== 'function') return undefined;
+    if (!module) {
+      if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+        console.warn(`[AutumnNote] invoke: module "${moduleName}" not found (path: "${path}")`);
+      }
+      return undefined;
+    }
+    if (typeof module[methodName] !== 'function') {
+      if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+        console.warn(`[AutumnNote] invoke: method "${methodName}" not found on module "${moduleName}" (path: "${path}")`);
+      }
+      return undefined;
+    }
     return module[methodName](...args);
   }
 
@@ -226,10 +262,10 @@ export class Context {
     const editable = this.layoutInfo.editable;
     if (disabled) {
       editable.setAttribute('contenteditable', 'false');
-      this.layoutInfo.container.classList.add('asn-disabled');
+      this.layoutInfo.container.classList.add('an-disabled');
     } else {
       editable.setAttribute('contenteditable', 'true');
-      this.layoutInfo.container.classList.remove('asn-disabled');
+      this.layoutInfo.container.classList.remove('an-disabled');
     }
   }
 

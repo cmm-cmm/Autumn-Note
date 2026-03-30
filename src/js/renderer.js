@@ -4,15 +4,16 @@
  */
 
 import { createElement } from './core/dom.js';
+import { sanitiseHTML } from './core/sanitise.js';
 
 /**
  * Renders the editor layout around the original element.
  *
  * Structure:
- *   <div class="asn-container">
- *     <div class="asn-toolbar">...</div>
- *     <div class="asn-editable" contenteditable="true">...</div>
- *     <div class="asn-statusbar">...</div>
+ *   <div class="an-container">
+ *     <div class="an-toolbar">...</div>
+ *     <div class="an-editable" contenteditable="true">...</div>
+ *     <div class="an-statusbar">...</div>
  *   </div>
  *
  * @param {HTMLElement} targetEl - the original element to replace/wrap
@@ -20,11 +21,11 @@ import { createElement } from './core/dom.js';
  * @returns {{ container: HTMLElement, editable: HTMLElement }}
  */
 export function renderLayout(targetEl, options) {
-  const container = createElement('div', { class: 'asn-container' });
+  const container = createElement('div', { class: 'an-container' });
 
   // Editable area
   const editable = createElement('div', {
-    class: 'asn-editable',
+    class: 'an-editable',
     contenteditable: 'true',
     spellcheck: 'true',
     'aria-multiline': 'true',
@@ -32,11 +33,17 @@ export function renderLayout(targetEl, options) {
     role: 'textbox',
   });
 
-  // Set initial content from original element
+  // Set initial content from original element (sanitised)
   if (targetEl.tagName === 'TEXTAREA') {
-    editable.innerHTML = (targetEl.value || '').trim();
+    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim());
   } else {
-    editable.innerHTML = (targetEl.innerHTML || '').trim();
+    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim());
+  }
+
+  // Apply default font family so the editable renders in the configured font
+  const defaultFont = options.defaultFontFamily || (options.fontFamilies && options.fontFamilies[0]);
+  if (defaultFont) {
+    editable.style.fontFamily = defaultFont;
   }
 
   // Apply height options
@@ -51,6 +58,19 @@ export function renderLayout(targetEl, options) {
   }
 
   container.appendChild(editable);
+
+  // Apply dark theme
+  if (options.theme === 'dark') {
+    container.classList.add('an-theme-dark');
+  }
+
+  // Configure sticky toolbar
+  if (options.stickyToolbar) {
+    container.classList.add('an-sticky-toolbar');
+    if (options.stickyToolbarOffset) {
+      container.style.setProperty('--an-sticky-top', `${options.stickyToolbarOffset}px`);
+    }
+  }
 
   // Hide the original element; keep it in DOM for form submission
   targetEl.style.display = 'none';

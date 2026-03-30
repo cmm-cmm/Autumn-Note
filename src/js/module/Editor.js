@@ -4,13 +4,13 @@
  * Inspired by Summernote's Editor module.
  */
 
-import { currentRange } from '../core/range.js';
 import { History } from '../editing/History.js';
 import * as Style from '../editing/Style.js';
 import { insertTable } from '../editing/Table.js';
-import { key, isModifier } from '../core/key.js';
+import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
+import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 
 export class Editor {
   /**
@@ -22,6 +22,8 @@ export class Editor {
     /** @type {History|null} */
     this._history = null;
     this._disposers = [];
+    /** @type {number|null} Timer handle for debounced undo snapshot */
+    this._snapshotTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -39,6 +41,8 @@ export class Editor {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     this._history = null;
+    clearTimeout(this._snapshotTimer);
+    this._snapshotTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -48,16 +52,38 @@ export class Editor {
   _bindEvents(editable) {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
-    // Record undo after keyup (throttled by history)
-    const onKeyup = () => this.afterCommand();
-    // Update toolbar button states on selection change
-    const onSelChange = () => this.context.invoke('toolbar.refresh');
+    // Catch ALL content mutations: typing, IME, spellcheck, voice, drag-drop text.
+    // We do NOT also listen to keyup for afterCommand — oninput covers every case
+    // and avoids calling afterCommand twice per keystroke.
+    const onInput = () => this.afterCommand();
+    // Refresh toolbar on selection change, scoped to this editor
+    const onSelChange = () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
+        this.context.invoke('toolbar.refresh');
+      }
+    };
 
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
-      on(editable, 'keyup', onKeyup),
+      on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
     );
+  }
+
+  /**
+   * Returns true for keys that modify editor content (excludes navigation,
+   * modifier-only, and function keys).
+   * @param {KeyboardEvent} event
+   * @returns {boolean}
+   */
+  _isContentKey(event) {
+    const { key } = event;
+    if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab',
+         'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+         'Home', 'End', 'PageUp', 'PageDown', 'Escape'].includes(key)) return false;
+    if (key.startsWith('F') && key.length <= 3 && /^F\d+$/.test(key)) return false;
+    return true;
   }
 
   _onKeydown(event) {
@@ -80,6 +106,12 @@ export class Editor {
     if (isModifier(event, 'b')) { event.preventDefault(); this.bold(); return; }
     if (isModifier(event, 'i')) { event.preventDefault(); this.italic(); return; }
     if (isModifier(event, 'u')) { event.preventDefault(); this.underline(); return; }
+
+    // Show keyboard shortcuts dialog: Shift+?
+    if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      this.context.invoke('shortcutsDialog.show');
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -87,10 +119,27 @@ export class Editor {
   // ---------------------------------------------------------------------------
 
   afterCommand() {
-    if (this._history) this._history.recordUndo();
-    this.context.triggerEvent('change', this.getHTML());
+    // Immediate: keep toolbar and statusbar in sync on every mutation.
     this.context.invoke('toolbar.refresh');
     this.context.invoke('statusbar.update');
+    // Debounced: recording an undo snapshot and firing the change event require
+    // a full innerHTML serialization. Batching rapid keystrokes prevents the
+    // browser from re-serializing large content (e.g. embedded images) on every
+    // single key press.
+    this._scheduleSnapshot();
+  }
+
+  /**
+   * Schedules a debounced undo snapshot + change event.
+   * Resets the timer on each call so rapid typing produces one snapshot.
+   */
+  _scheduleSnapshot() {
+    clearTimeout(this._snapshotTimer);
+    this._snapshotTimer = setTimeout(() => {
+      this._snapshotTimer = null;
+      if (this._history) this._history.recordUndo();
+      this.context.triggerEvent('change', this.getHTML());
+    }, 400);
   }
 
   // ---------------------------------------------------------------------------
@@ -111,7 +160,11 @@ export class Editor {
    * @returns {string}
    */
   getHTML() {
-    return this.context.layoutInfo.editable.innerHTML;
+    // Strip zero-width spaces inserted after icons to allow caret placement.
+    const raw = this.context.layoutInfo.editable.innerHTML.replace(/\u200B/g, '');
+    // Replace any blob: URLs (lightweight DOM references to pasted/dropped images)
+    // with their original data URLs so the returned HTML is fully self-contained.
+    return this.context.invoke('clipboard.resolveImages', raw) ?? raw;
   }
 
   /**
@@ -119,7 +172,7 @@ export class Editor {
    * @param {string} html - HTML string (will be sanitised)
    */
   setHTML(html) {
-    this.context.layoutInfo.editable.innerHTML = this._sanitise(html);
+    this.context.layoutInfo.editable.innerHTML = sanitiseHTML(html);
     if (this._history) this._history.reset();
     this.afterCommand();
   }
@@ -209,7 +262,7 @@ export class Editor {
   /**
    * @param {string} size - e.g. '14px'
    */
-  fontSize(size) { Style.fontSize(size); this.afterCommand(); }
+  fontSize(size) { Style.fontSize(size, this.context.layoutInfo.editable); this.afterCommand(); }
 
   // ---------------------------------------------------------------------------
   // Insert helpers
@@ -232,12 +285,13 @@ export class Editor {
   insertLink(url, text, openInNewTab = false) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
-    const safeUrl = this._sanitiseUrl(url);
+    const safeUrl = sanitiseUrl(url);
     if (!safeUrl) return;
 
     const hasText = sel.toString().trim().length > 0;
     if (!hasText) {
-      Style.execCommand('insertHTML', `<a href="${safeUrl}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${text || safeUrl}</a>`);
+      const displayText = this._escapeAttr(text || safeUrl);
+      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${displayText}</a>`);
     } else {
       Style.execCommand('createLink', safeUrl);
       if (openInNewTab) {
@@ -265,9 +319,20 @@ export class Editor {
    * @param {string} [alt]
    */
   insertImage(src, alt = '') {
-    const safeSrc = this._sanitiseUrl(src);
+    const safeSrc = sanitiseUrl(src, { allowData: true });
     if (!safeSrc) return;
-    Style.execCommand('insertHTML', `<img src="${safeSrc}" alt="${alt}" class="asn-image">`);
+    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="an-image">`);
+    this.afterCommand();
+  }
+
+  /**
+   * Inserts a video embed (iframe or <video> element).
+   * The html string is already validated/built by VideoDialog.
+   * @param {string} html
+   */
+  insertVideo(html) {
+    if (!html) return;
+    Style.execCommand('insertHTML', html);
     this.afterCommand();
   }
 
@@ -297,39 +362,17 @@ export class Editor {
   }
 
   /**
-   * Sanitises a URL, disallowing javascript: protocol.
-   * @param {string} url
-   * @returns {string|null}
-   */
-  _sanitiseUrl(url) {
-    try {
-      const parsed = new URL(url, window.location.href);
-      if (/^javascript:/i.test(parsed.protocol)) return null;
-      return url;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /**
-   * Basic HTML sanitiser to prevent XSS on setHTML.
-   * @param {string} html
+   * Escapes a string for safe use inside an HTML attribute value.
+   * @param {string} str
    * @returns {string}
    */
-  _sanitise(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(`<body>${html}</body>`, 'text/html');
-    ['script', 'style', 'iframe', 'object', 'embed', 'form'].forEach((tag) => {
-      doc.querySelectorAll(tag).forEach((el) => el.remove());
-    });
-    doc.querySelectorAll('*').forEach((el) => {
-      Array.from(el.attributes).forEach((attr) => {
-        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
-        if (['href', 'src'].includes(attr.name) && /^\s*javascript:/i.test(attr.value)) {
-          el.removeAttribute(attr.name);
-        }
-      });
-    });
-    return doc.body.innerHTML;
+  _escapeAttr(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
+
+  // --- delegated to shared sanitise.js ---
 }

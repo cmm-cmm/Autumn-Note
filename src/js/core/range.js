@@ -3,7 +3,7 @@
  * Inspired by Summernote's range.js — rewritten as vanilla JS
  */
 
-import { isText, isElement, isVoid, closest, isEditable } from './dom.js';
+import { isElement, closest } from './dom.js';
 
 // ---------------------------------------------------------------------------
 // WrappedRange — a convenience wrapper over the native Range API

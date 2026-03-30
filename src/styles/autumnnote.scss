@@ -1,0 +1,1592 @@
+/**
+ * autumnnote.scss — Main stylesheet for the AutumnNote editor
+ * Inspired by Summernote — rewritten with cleaner, modern CSS
+ */
+
+@use 'variables' as *;
+
+// =============================================================================
+// Container
+// =============================================================================
+
+.an-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  font-family: $an-font-family;
+  font-size: $an-font-size;
+  box-sizing: border-box;
+  background: $an-bg;
+  overflow: hidden;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  &.an-focused {
+    border-color: $an-primary;
+    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
+  }
+
+  &.an-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &.an-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    border-radius: 0;
+    border: none;
+
+    .an-editable {
+      flex: 1;
+      max-height: none !important;
+    }
+  }
+}
+
+// =============================================================================
+// Toolbar
+// =============================================================================
+
+.an-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $an-toolbar-gap;
+  padding: $an-toolbar-pad;
+  background: $an-bg-toolbar;
+  border-bottom: 1px solid $an-border;
+  user-select: none;
+}
+
+.an-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  // Separator between groups
+  & + .an-btn-group {
+    position: relative;
+    padding-left: $an-toolbar-gap + 4px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 15%;
+      height: 70%;
+      width: 1px;
+      background: $an-border;
+    }
+  }
+}
+
+// Font-family (and generic) select dropdown in toolbar
+.an-select {
+  height: $an-btn-height;
+  padding: 0 24px 0 8px;
+  background: $an-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 7px center;
+  background-size: 8px 5px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  font-family: inherit;
+  font-size: 12px;
+  color: $an-text;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 110px;
+  max-width: 160px;
+  transition: border-color $an-transition, box-shadow $an-transition;
+
+  &:hover {
+    border-color: $an-primary;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $an-primary;
+    box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
+  }
+
+  option {
+    font-size: 13px;
+  }
+}
+
+// Narrow variant — used for short-value selects such as Line Height
+.an-select-narrow {
+  min-width: 76px;
+  max-width: 90px;
+  padding-right: 20px;
+}
+
+// Paragraph-style variant — Normal/H1-H6/Quote/Code labels
+.an-select-style {
+  min-width: 80px;
+  max-width: 92px;
+  padding-right: 20px;
+}
+
+// Table grid picker
+.an-table-picker-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.an-table-picker-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 1100;
+  user-select: none;
+}
+
+.an-table-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 18px);
+  gap: 2px;
+}
+
+.an-table-cell {
+  width: 18px;
+  height: 18px;
+  border: 1px solid $an-border;
+  border-radius: 2px;
+  cursor: pointer;
+  background: $an-bg;
+  transition: background $an-transition, border-color $an-transition;
+
+  &.active {
+    background: rgba($an-primary, 0.15);
+    border-color: $an-primary;
+  }
+}
+
+.an-table-label {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: $an-muted;
+  min-height: 16px;
+}
+
+// Context menu — inline table grid panel
+.an-context-table-grid-panel {
+  padding: 6px 8px 8px;
+  border-top: 1px solid $an-border;
+}
+
+// =============================================================================
+// Color picker (text color / highlight color) toolbar widget
+// =============================================================================
+
+.an-color-picker-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+}
+
+// Left part: icon + color strip stacked vertically
+.an-color-btn {
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 4px 6px 3px !important;
+  height: auto !important;
+  min-height: $an-btn-height;
+
+  .an-color-strip {
+    display: block;
+    width: 100%;
+    min-width: 14px;
+    height: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+}
+
+// Right part: small chevron arrow to open popup
+.an-color-arrow {
+  padding: 0 3px !important;
+  min-width: unset !important;
+  border-left: 1px solid transparent;
+
+  &:hover {
+    border-left-color: $an-border;
+  }
+}
+
+// Swatch popup panel
+.an-color-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1100;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 184px;
+  user-select: none;
+}
+
+.an-color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 18px);
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.an-color-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.25);
+    z-index: 1;
+    outline: 2px solid $an-primary;
+    outline-offset: 1px;
+  }
+}
+
+.an-color-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid $an-border;
+
+  input[type='color'] {
+    width: 28px;
+    height: 22px;
+    padding: 1px 2px;
+    border: 1px solid $an-border;
+    border-radius: 3px;
+    cursor: pointer;
+    background: none;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &::-webkit-color-swatch-wrapper { padding: 0; }
+    &::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+    &:hover {
+      border-color: $an-primary;
+    }
+  }
+
+  span {
+    font-size: 11px;
+    color: $an-muted;
+    flex: 1;
+  }
+}
+
+.an-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: $an-btn-height;
+  min-width: $an-btn-height;
+  padding: $an-btn-padding;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $an-radius-sm;
+  color: $an-text;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background $an-transition, border-color $an-transition, color $an-transition;
+  white-space: nowrap;
+  text-decoration: none;
+
+  // Make sure inline SVGs render cleanly
+  svg {
+    display: block;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
+    color: $an-primary;
+
+    svg {
+      stroke: $an-primary;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $an-primary;
+    outline-offset: 1px;
+  }
+
+  &.active {
+    background: $an-bg-btn-active;
+    border-color: $an-primary;
+    color: $an-primary-hover;
+
+    svg {
+      stroke: $an-primary-hover;
+    }
+  }
+
+  &.an-btn-primary {
+    background: $an-primary;
+    border-color: $an-primary;
+    color: #fff;
+
+    svg { stroke: #fff; }
+
+    &:hover {
+      background: $an-primary-hover;
+      border-color: $an-primary-hover;
+    }
+  }
+}
+
+// =============================================================================
+// Editable area
+// =============================================================================
+
+.an-editable {
+  flex: 1;
+  padding: $an-editable-pad;
+  min-height: 200px;
+  outline: none;
+  line-height: $an-line-height;
+  color: $an-text;
+  overflow-y: auto;
+  word-break: break-word;
+
+  // Placeholder
+  &.an-placeholder::before {
+    content: attr(data-placeholder);
+    color: $an-muted;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  // Content styles
+  p       { margin: 0 0 0.75em; }
+  h1, h2, h3, h4, h5, h6 { margin: 0.5em 0; line-height: 1.3; }
+  ul, ol  { margin: 0 0 0.75em 1.5em; padding: 0; }
+  li      { margin-bottom: 0.25em; }
+  blockquote {
+    margin: 0.5em 0 0.5em 1em;
+    padding: 0.5em 1em;
+    border-left: 4px solid $an-border;
+    color: $an-muted;
+  }
+  pre, code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    background: $an-bg-toolbar;
+    border-radius: $an-radius-sm;
+  }
+  pre     { padding: 0.75em 1em; overflow-x: auto; }
+  code    { padding: 0.1em 0.3em; }
+
+  // Prism-highlighted blocks — <pre> gets class="language-*" mirrored from <code>
+  // Set dark background here as fallback for before Prism CSS loads from CDN.
+  pre[class*='language-'] {
+    background: #2d2d2d;
+    color: #ccc;
+    border-radius: $an-radius-sm;
+
+    > code[class*='language-'] {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+  }
+  a       { color: $an-primary; }
+  hr      { border: none; border-top: 2px solid $an-border; margin: 1em 0; }
+  img.an-image {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+  }
+
+  .an-video-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 4px 0;
+
+    iframe,
+    video {
+      display: block;
+      max-width: 100%;
+    }
+
+    // Transparent overlay that intercepts mouse events on <iframe> embeds.
+    // iframes swallow all pointer events and prevent them from bubbling to the
+    // editable area; the shield sits on top so clicks/contextmenu bubble normally.
+    .an-video-shield {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      cursor: default;
+    }
+  }
+
+  // Table styles — target both classed and unclassed tables
+  table, .an-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75em 0;
+
+    td, th {
+      border: 1px solid $an-border;
+      padding: 6px 10px;
+      min-width: 40px;
+      vertical-align: top;
+    }
+
+    th {
+      background: $an-bg-toolbar;
+      font-weight: 600;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Link tooltip
+// ---------------------------------------------------------------------------
+
+.an-link-tooltip {
+  position: fixed;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 30px;
+  padding: 0 6px;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+  pointer-events: all;
+
+  // URL preview label
+  .an-link-tooltip-url {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: $an-primary;
+    cursor: default;
+    padding: 0 4px;
+  }
+
+  // Vertical divider
+  .an-link-tooltip-sep {
+    width: 1px;
+    height: 18px;
+    background: $an-border;
+    flex-shrink: 0;
+    margin: 0 2px;
+  }
+}
+
+.an-link-tooltip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: $an-radius-sm;
+  background: transparent;
+  color: $an-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  svg { stroke: currentColor; display: block; }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+  }
+
+  &:active,
+  &.an-link-tooltip-btn--copied {
+    background: $an-bg-btn-active;
+    color: $an-primary;
+  }
+
+  // Danger variant — used for Delete actions in image/video tooltips
+  &.an-link-tooltip-btn--danger {
+    color: #ef4444;
+
+    svg { stroke: #ef4444; }
+
+    &:hover {
+      background: rgba(#ef4444, 0.08);
+      color: #dc2626;
+      svg { stroke: #dc2626; }
+    }
+  }
+}
+
+// Shared modifier classes for image and video tooltips
+// (re-use all .an-link-tooltip styles, only override the label colour)
+.an-image-tooltip .an-link-tooltip-url {
+  color: $an-text;
+  font-weight: 500;
+}
+
+.an-video-tooltip .an-link-tooltip-url {
+  color: #7c3aed; // violet to match video accent
+  font-weight: 500;
+}
+
+.an-table-tooltip .an-link-tooltip-url {
+  color: #0369a1; // sky blue for table
+  font-weight: 500;
+}
+
+.an-code-tooltip .an-link-tooltip-url {
+  color: #059669; // emerald green for code
+  font-weight: 500;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+// Size popover (column width / row height)
+.an-size-popover {
+  position: fixed;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1200;
+  min-width: 200px;
+
+  .an-size-popover-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: $an-text;
+    margin-bottom: 10px;
+  }
+
+  .an-size-popover-body {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .an-size-input {
+    width: 80px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
+    font-size: 13px;
+    font-family: inherit;
+    color: $an-text;
+    outline: none;
+
+    &:focus {
+      border-color: $an-primary;
+      box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
+    }
+  }
+
+  .an-size-unit {
+    font-size: 12px;
+    color: $an-muted;
+  }
+
+  .an-size-popover-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+}
+
+// =============================================================================
+// Codeview textarea
+// =============================================================================
+
+.an-codeview {
+  flex: 1;
+  width: 100%;
+  min-height: 200px;
+  padding: $an-editable-pad;
+  border: none;
+  outline: none;
+  resize: vertical;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: $an-text;
+  background: #1e1e2e;
+  color: #cdd6f4;
+}
+
+// =============================================================================
+// Statusbar
+// =============================================================================
+
+.an-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $an-statusbar-h;
+  padding: 0 8px;
+  background: $an-statusbar-bg;
+  border-top: 1px solid $an-border;
+  font-size: 11px;
+  color: $an-muted;
+  user-select: none;
+}
+
+.an-status-info {
+  display: flex;
+  gap: 12px;
+}
+
+.an-resize-handle {
+  width: 14px;
+  height: 14px;
+  cursor: ns-resize;
+  background: repeating-linear-gradient(
+    -45deg,
+    $an-border,
+    $an-border 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  border-radius: 2px;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// =============================================================================
+// Dialogs
+// =============================================================================
+
+.an-dialog-overlay {
+  display: none; // toggled via JS
+  position: fixed;
+  inset: 0;
+  z-index: $an-dialog-z;
+  background: $an-dialog-bg;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-dialog-box {
+  background: $an-bg;
+  border-radius: $an-dialog-radius;
+  padding: 24px;
+  width: min($an-dialog-width, 95vw);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.an-dialog-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: $an-text;
+}
+
+.an-dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.an-dialog-hint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: $an-muted;
+  min-height: 16px;
+}
+
+.an-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: $an-text;
+  margin-bottom: 2px;
+
+  &.an-label-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: normal;
+    cursor: pointer;
+  }
+}
+
+.an-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  font-family: inherit;
+  font-size: $an-font-size;
+  color: $an-text;
+  background: $an-bg;
+  outline: none;
+  transition: border-color $an-transition, box-shadow $an-transition;
+
+  &:focus {
+    border-color: $an-primary;
+    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Context menu
+// ---------------------------------------------------------------------------
+
+.an-contextmenu {
+  position: fixed;
+  z-index: 10050;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  min-width: 180px;
+  padding: 5px 4px;
+  display: none;
+  user-select: none;
+}
+
+.an-context-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  color: $an-text;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1.4;
+
+  &:hover {
+    background: $an-primary;
+    color: #fff;
+
+    .an-context-icon svg {
+      stroke: #fff;
+    }
+
+    .an-context-chevron svg {
+      stroke: #fff;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+// Submenu entry — chevron on the right
+.an-context-submenu {
+  .an-context-chevron {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    color: $an-muted;
+    flex-shrink: 0;
+
+    svg { display: block; }
+  }
+}
+
+// Back-navigation header button
+.an-context-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 6px 14px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $an-border;
+  border-radius: 5px 5px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: $an-muted;
+  cursor: pointer;
+  margin-bottom: 3px;
+  transition: background 0.12s, color 0.12s;
+
+  .an-context-icon svg { stroke: $an-muted; }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+    .an-context-icon svg { stroke: $an-text; }
+  }
+}
+
+.an-context-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  color: $an-muted;
+  transition: color 0.12s;
+
+  svg {
+    display: block;
+    stroke: currentColor;
+  }
+}
+
+.an-context-label {
+  flex: 1;
+}
+
+.an-context-sep {
+  height: 1px;
+  margin: 5px 10px;
+  background: $an-border;
+}
+
+// ---------------------------------------------------------------------------
+// Image resize overlay
+// ---------------------------------------------------------------------------
+
+.an-image-resizer {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  border: 2px solid $an-primary;
+  pointer-events: none;
+
+  .an-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: $an-primary;
+    border: 1px solid #fff;
+    border-radius: 1px;
+    box-sizing: border-box;
+    pointer-events: all;
+  }
+
+  // Corners
+  .an-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
+  .an-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
+  .an-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
+  .an-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
+
+  // Edge midpoints
+  .an-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
+  .an-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
+  .an-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
+  .an-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+}
+
+// ---------------------------------------------------------------------------
+// Video resize overlay
+// ---------------------------------------------------------------------------
+
+$an-video-accent: #8b5cf6; // violet-500
+
+.an-video-resizer {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  border: 2px solid $an-video-accent;
+  pointer-events: none;
+
+  .an-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: $an-video-accent;
+    border: 1px solid #fff;
+    border-radius: 1px;
+    box-sizing: border-box;
+    pointer-events: all;
+  }
+
+  // Corners
+  .an-resize-nw { top: -4px;             left: -4px;             cursor: nw-resize; }
+  .an-resize-ne { top: -4px;             right: -4px;            cursor: ne-resize; }
+  .an-resize-se { bottom: -4px;          right: -4px;            cursor: se-resize; }
+  .an-resize-sw { bottom: -4px;          left: -4px;             cursor: sw-resize; }
+
+  // Edge midpoints
+  .an-resize-n  { top: -4px;             left: calc(50% - 4px);  cursor: n-resize;  }
+  .an-resize-e  { top: calc(50% - 4px);  right: -4px;            cursor: e-resize;  }
+  .an-resize-s  { bottom: -4px;          left: calc(50% - 4px);  cursor: s-resize;  }
+  .an-resize-w  { top: calc(50% - 4px);  left: -4px;             cursor: w-resize;  }
+}
+
+// Selected video wrapper highlight (applied to .an-video-wrapper)
+.an-video-selected {
+  outline: 2px solid $an-video-accent;
+  outline-offset: 1px;
+}
+
+// ---------------------------------------------------------------------------
+// Icon dialog
+// ---------------------------------------------------------------------------
+
+// Wider box override
+.an-icon-box {
+  width: min(596px, 95vw);
+  gap: 0;
+  padding: 20px;
+}
+
+// Title row with close button
+.an-icon-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+
+  .an-dialog-title {
+    margin: 0;
+  }
+}
+
+.an-icon-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: none;
+  border-radius: $an-radius-sm;
+  cursor: pointer;
+  color: $an-muted;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+  }
+}
+
+// Search
+.an-icon-search {
+  width: 100%;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+// Category tabs
+.an-icon-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.an-icon-cat {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: $an-font-family;
+  background: none;
+  border: 1px solid $an-border;
+  border-radius: 13px;
+  cursor: pointer;
+  color: $an-muted;
+  white-space: nowrap;
+  transition: background $an-transition, color $an-transition, border-color $an-transition;
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+  }
+
+  &.active {
+    background: $an-primary;
+    border-color: $an-primary;
+    color: #fff;
+  }
+}
+
+// Icon grid
+.an-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 56px);
+  gap: 3px;
+  max-height: 256px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 4px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  background: $an-bg;
+  scrollbar-width: thin;
+  scrollbar-color: $an-border transparent;
+
+  &::-webkit-scrollbar       { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $an-border; border-radius: 3px; }
+}
+
+.an-icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 56px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: $an-radius-sm;
+  background: none;
+  cursor: pointer;
+  font-family: $an-font-family;
+  font-size: 10px;
+  color: $an-muted;
+  transition: background $an-transition, border-color $an-transition;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  i {
+    font-size: 17px;
+    color: $an-text;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 52px;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
+  }
+
+  &.active {
+    background: rgba($an-primary, 0.1);
+    border-color: $an-primary;
+    color: $an-primary;
+
+    i { color: $an-primary; }
+  }
+}
+
+// Empty state
+.an-icon-empty {
+  grid-column: 1 / -1;
+  padding: 24px 0;
+  text-align: center;
+  color: $an-muted;
+  font-size: 13px;
+}
+
+// Options row
+.an-icon-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 10px;
+
+  .an-label {
+    margin: 0;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.an-icon-option-select {
+  height: $an-btn-height;
+  padding: 0 6px;
+  font-size: 12px;
+  width: auto;
+}
+
+.an-icon-color {
+  width: 32px;
+  height: $an-btn-height;
+  padding: 2px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  cursor: pointer;
+  background: none;
+}
+
+.an-icon-use-color {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin: 0;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    cursor: pointer;
+  }
+}
+
+// Preview
+.an-icon-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  background: $an-bg-toolbar;
+
+  i {
+    line-height: 1;
+  }
+
+  .an-icon-preview-hint {
+    font-size: 12px;
+    color: $an-muted;
+  }
+}
+
+.an-icon-preview-name {
+  font-size: 12px;
+  color: $an-muted;
+  font-family: monospace;
+}
+
+// ---------------------------------------------------------------------------
+// Emoji dialog
+// ---------------------------------------------------------------------------
+
+.an-emoji-box {
+  width: min(520px, 95vw);
+  gap: 0;
+  padding: 20px;
+}
+
+.an-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 42px);
+  gap: 2px;
+  max-height: 288px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 4px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  scrollbar-width: thin;
+  scrollbar-color: $an-border transparent;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $an-border; border-radius: 3px; }
+}
+
+.an-emoji-cell {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: $an-radius-sm;
+  background: none;
+  cursor: pointer;
+  transition: background $an-transition, border-color $an-transition;
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    border-color: $an-border;
+  }
+
+  &:active {
+    background: $an-bg-btn-active;
+  }
+}
+
+// =============================================================================
+// Sticky toolbar
+// =============================================================================
+
+.an-sticky-toolbar {
+  overflow: visible;
+
+  .an-toolbar {
+    position: sticky;
+    top: var(--an-sticky-top, 0px);
+    z-index: 100;
+    border-radius: $an-radius $an-radius 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  }
+}
+
+// =============================================================================
+// Image caption — figure / figcaption
+// =============================================================================
+
+.an-editable {
+  figure.an-figure {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0.75em 0;
+    text-align: center;
+
+    img { display: block; max-width: 100%; }
+  }
+
+  figcaption.an-figcaption {
+    font-size: 0.85em;
+    font-style: italic;
+    color: $an-muted;
+    padding: 4px 0 2px;
+    text-align: center;
+    line-height: 1.4;
+    min-width: 60px;
+    outline: none;
+
+    &:focus {
+      background: rgba($an-primary, 0.06);
+      border-radius: 2px;
+    }
+  }
+}
+
+// =============================================================================
+// Keyboard shortcuts dialog
+// =============================================================================
+
+.an-shortcuts-box {
+  width: min(480px, 95vw);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.an-shortcuts-cat {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $an-muted;
+  padding: 8px 0 4px;
+  border-bottom: 1px solid $an-border;
+  margin-bottom: 2px;
+
+  & + .an-shortcuts-table + & {
+    margin-top: 10px;
+  }
+}
+
+.an-shortcuts-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.an-shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 4px;
+  border-radius: $an-radius-sm;
+
+  &:hover { background: $an-bg-btn-hover; }
+}
+
+.an-shortcuts-key {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+  color: $an-text;
+  background: $an-bg-toolbar;
+  border: 1px solid $an-border;
+  border-bottom-width: 2px;
+  border-radius: $an-radius-sm;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.an-shortcuts-action {
+  font-size: 13px;
+  color: $an-text;
+  flex: 1;
+  padding-left: 14px;
+}
+
+// =============================================================================
+// Code block language selector (inside CodeTooltip)
+// =============================================================================
+
+.an-code-lang-select {
+  height: 22px;
+  padding: 0 20px 0 6px;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  font-family: inherit;
+  font-size: 11px;
+  color: $an-text;
+  background: $an-bg url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 5px center;
+  background-size: 6px 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &:focus { outline: none; border-color: $an-primary; }
+  &:hover { border-color: $an-primary; }
+}
+
+// =============================================================================
+// Dark theme — apply via options: { theme: 'dark' }
+// =============================================================================
+
+.an-theme-dark {
+  border-color: #3f3f5f;
+  background: #1e1e2e;
+  color: #cdd6f4;
+
+  &.an-focused {
+    border-color: #89b4fa;
+    box-shadow: 0 0 0 3px rgba(#89b4fa, 0.2);
+  }
+
+  .an-toolbar {
+    background: #181825;
+    border-color: #3f3f5f;
+  }
+
+  .an-btn {
+    color: #cdd6f4;
+
+    &:hover {
+      background: #2a2a3e;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+
+      svg { stroke: #cdd6f4; }
+    }
+
+    &.active {
+      background: #1a3a5c;
+      border-color: #89b4fa;
+      color: #89b4fa;
+
+      svg { stroke: #89b4fa; }
+    }
+
+    &.an-btn-primary {
+      background: #3b5bdb;
+      border-color: #3b5bdb;
+      color: #fff;
+    }
+  }
+
+  .an-select {
+    background-color: #1e1e2e;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+
+    &:hover, &:focus { border-color: #89b4fa; }
+  }
+
+  .an-editable {
+    background: #1e1e2e;
+    color: #cdd6f4;
+
+    a { color: #89b4fa; }
+
+    blockquote {
+      border-color: #3f3f5f;
+      color: #a6adc8;
+    }
+
+    pre:not([class*='language-']),
+    code:not([class*='language-']) {
+      background: #313244;
+      color: #cdd6f4;
+    }
+
+    hr { border-color: #3f3f5f; }
+
+    table, .an-table {
+      td, th { border-color: #3f3f5f; }
+      th { background: #313244; }
+    }
+
+    &.an-placeholder::before { color: #6c7086; }
+
+    figcaption.an-figcaption { color: #6c7086; }
+  }
+
+  .an-statusbar {
+    background: #181825;
+    border-color: #3f3f5f;
+    color: #6c7086;
+  }
+
+  .an-link-tooltip,
+  .an-contextmenu {
+    background: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .an-link-tooltip-url { color: #89b4fa; }
+
+  .an-link-tooltip-btn {
+    color: #a6adc8;
+
+    &:hover {
+      background: #2a2a3e;
+      color: #cdd6f4;
+    }
+  }
+
+  .an-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
+
+  .an-dialog-box {
+    background: #24273a;
+    color: #cdd6f4;
+    border: 1px solid #3f3f5f;
+  }
+
+  .an-dialog-title { color: #cdd6f4; }
+
+  .an-label { color: #cdd6f4; }
+
+  .an-input {
+    background: #313244;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+
+    &:focus {
+      border-color: #89b4fa;
+      box-shadow: 0 0 0 3px rgba(#89b4fa, 0.15);
+    }
+  }
+
+  .an-shortcuts-key {
+    background: #313244;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .an-shortcuts-action { color: #cdd6f4; }
+  .an-shortcuts-row:hover { background: #2a2a3e; }
+
+  .an-shortcuts-cat {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+  }
+
+  .an-code-lang-select {
+    background-color: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .an-color-popup,
+  .an-table-picker-popup,
+  .an-size-popover {
+    background: #24273a;
+    border-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .an-table-cell {
+    background: #24273a;
+    border-color: #3f3f5f;
+  }
+
+  .an-context-item { color: #cdd6f4; }
+  .an-context-sep { background: #3f3f5f; }
+
+  .an-icon-cat {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+
+    &.active {
+      background: #3b5bdb;
+      border-color: #3b5bdb;
+      color: #fff;
+    }
+  }
+
+  .an-icon-search {
+    border-color: #3f3f5f;
+    background: #313244;
+    color: #cdd6f4;
+  }
+
+  .an-icon-cell {
+    color: #cdd6f4;
+
+    &:hover { background: #2a2a3e; }
+  }
+
+  .an-icon-close {
+    color: #a6adc8;
+
+    &:hover {
+      background: #2a2a3e;
+      color: #cdd6f4;
+    }
+  }
+}
+

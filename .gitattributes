@@ -1,0 +1,17 @@
+# Enforce LF line endings for all text files in this repository.
+# This overrides core.autocrlf on Windows and prevents LF→CRLF warnings.
+* text=auto eol=lf
+
+# Explicitly binary — never touch line endings
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+*.otf  binary
+*.map  binary

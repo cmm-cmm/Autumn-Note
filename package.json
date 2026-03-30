@@ -1,11 +1,11 @@
 {
-  "name": "aftersummernote",
+  "name": "autumnnote",
   "version": "1.0.0",
-  "description": "A modern, lightweight WYSIWYG editor inspired by Summernote — built with vanilla JavaScript, no jQuery required.",
-  "main": "dist/aftersummernote.umd.js",
-  "module": "dist/aftersummernote.es.js",
+  "description": "A modern, lightweight WYSIWYG editor — built with vanilla JavaScript, no jQuery required.",
+  "main": "dist/autumnnote.umd.js",
+  "module": "dist/autumnnote.es.js",
   "types": "dist/index.d.ts",
-  "style": "dist/aftersummernote.css",
+  "style": "dist/autumnnote.css",
   "files": [
     "dist",
     "src"
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@vitest/browser": "^1.0.0",
     "eslint": "^8.57.0",
+    "jsdom": "^29.0.1",
     "sass": "^1.77.0",
     "vite": "^5.2.0",
     "vitest": "^1.6.0"

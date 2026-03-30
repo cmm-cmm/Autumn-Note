@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AfterSummerNote — Dev</title>
+  <title>AutumnNote — Dev</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -31,12 +31,12 @@
   </style>
 </head>
 <body>
-  <h1>AfterSummerNote</h1>
+  <h1>AutumnNote</h1>
   <p>A modern WYSIWYG editor — no jQuery required.</p>
 
   <div id="editor-wrapper">
     <textarea id="editor">
-      <p>Hello, <strong>AfterSummerNote</strong>! ✨</p>
+      <p>Hello, <strong>AutumnNote</strong>! ✨</p>
       <p>Start typing to edit this content.</p>
     </textarea>
   </div>
@@ -47,11 +47,12 @@
   </div>
 
   <script type="module">
-    import AfterSummerNote from '/src/js/index.js';
+    import AutumnNote from '/src/js/index.js';
 
-    const editor = AfterSummerNote.create('#editor', {
+    const editor = AutumnNote.create('#editor', {
       placeholder: 'Start typing here…',
       height: 300,
+      codeHighlight: true,
       onChange(html) {
         document.getElementById('output').textContent = html;
       },

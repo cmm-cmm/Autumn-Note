@@ -54,11 +54,13 @@ export class Fullscreen {
   activate() {
     if (this._active) return;
     const container = this.context.layoutInfo.container;
-    const editable = this.context.layoutInfo.editable;
-    this._prevHeight = editable.style.height;
+    // Save the container's explicit height (set by the resize handle) so it
+    // can be restored when exiting fullscreen.
+    this._prevHeight = container.style.height;
 
-    container.classList.add('asn-fullscreen');
-    editable.style.height = '';
+    container.classList.add('an-fullscreen');
+    // Clear any resize-imposed height so the fullscreen CSS (inset:0) takes over.
+    container.style.height = '';
     document.body.style.overflow = 'hidden';
     this._active = true;
     this.context.invoke('toolbar.refresh');
@@ -67,10 +69,10 @@ export class Fullscreen {
   deactivate() {
     if (!this._active) return;
     const container = this.context.layoutInfo.container;
-    const editable = this.context.layoutInfo.editable;
 
-    container.classList.remove('asn-fullscreen');
-    editable.style.height = this._prevHeight;
+    container.classList.remove('an-fullscreen');
+    // Restore whatever explicit height the user had set via the resize handle.
+    container.style.height = this._prevHeight;
     document.body.style.overflow = '';
     this._active = false;
     this.context.invoke('toolbar.refresh');

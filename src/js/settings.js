@@ -23,6 +23,12 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {Function} [onFocus]           - Callback on focus
  * @property {Function} [onBlur]            - Callback on blur
  * @property {Function} [onImageUpload]     - Custom upload handler: (files) => void
+ * @property {boolean}  [stickyToolbar]     - Stick the toolbar to the viewport top when scrolling
+ * @property {number}   [stickyToolbarOffset] - Top offset in px for sticky toolbar (e.g. fixed nav height)
+ * @property {string}   [theme]             - 'light' (default) | 'dark'
+ * @property {boolean}  [codeHighlight]     - Auto-load Prism.js for syntax highlighting of code blocks
+ * @property {string}   [codeHighlightCDN]  - CDN base URL for Prism assets (defaults to cdnjs)
+ * @property {boolean}  [markdownPaste]     - Convert pasted Markdown text to HTML (default: true)
  */
 
 /** @type {AsnOptions} */
@@ -53,4 +59,25 @@ export const defaultOptions = {
   onFocus: null,
   onBlur: null,
   onImageUpload: null,
+  stickyToolbar: false,
+  stickyToolbarOffset: 0,
+  theme: 'light',
+  codeHighlight: false,
+  codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
+  markdownPaste: true,
+  // Default font family applied to the editor and shown in the dropdown when no explicit font is set
+  defaultFontFamily: 'Arial',
+  // Font families shown in the toolbar font-family dropdown
+  fontFamilies: [
+    'Arial',
+    'Arial Black',
+    'Comic Sans MS',
+    'Courier New',
+    'Georgia',
+    'Impact',
+    'Tahoma',
+    'Times New Roman',
+    'Trebuchet MS',
+    'Verdana',
+  ],
 };

@@ -1,38 +1,38 @@
-// AfterSummerNote — SCSS variables
+// AutumnNote — SCSS variables
 // Inspired by Summernote's variables
 
 // Colors
-$asn-primary:        #3b82f6 !default;   // blue-500
-$asn-primary-hover:  #2563eb !default;   // blue-600
-$asn-border:         #d1d5db !default;   // gray-300
-$asn-bg:             #ffffff !default;
-$asn-bg-toolbar:     #f9fafb !default;   // gray-50
-$asn-bg-btn-hover:   #f3f4f6 !default;   // gray-100
-$asn-bg-btn-active:  #dbeafe !default;   // blue-100
-$asn-text:           #111827 !default;   // gray-900
-$asn-muted:          #6b7280 !default;   // gray-500
-$asn-statusbar-bg:   #f9fafb !default;
+$an-primary:        #3b82f6 !default;   // blue-500
+$an-primary-hover:  #2563eb !default;   // blue-600
+$an-border:         #d1d5db !default;   // gray-300
+$an-bg:             #ffffff !default;
+$an-bg-toolbar:     #f9fafb !default;   // gray-50
+$an-bg-btn-hover:   #f3f4f6 !default;   // gray-100
+$an-bg-btn-active:  #dbeafe !default;   // blue-100
+$an-text:           #111827 !default;   // gray-900
+$an-muted:          #6b7280 !default;   // gray-500
+$an-statusbar-bg:   #f9fafb !default;
 
 // Fonts
-$asn-font-family:    system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !default;
-$asn-font-size:      14px !default;
-$asn-line-height:    1.6 !default;
+$an-font-family:    system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !default;
+$an-font-size:      14px !default;
+$an-line-height:    1.6 !default;
 
 // Sizing
-$asn-radius:         6px !default;
-$asn-radius-sm:      4px !default;
-$asn-btn-height:     30px !default;
-$asn-btn-padding:    0 8px !default;
-$asn-toolbar-gap:    4px !default;
-$asn-toolbar-pad:    6px 8px !default;
-$asn-editable-pad:   12px 14px !default;
-$asn-statusbar-h:    24px !default;
+$an-radius:         6px !default;
+$an-radius-sm:      4px !default;
+$an-btn-height:     30px !default;
+$an-btn-padding:    0 8px !default;
+$an-toolbar-gap:    4px !default;
+$an-toolbar-pad:    6px 8px !default;
+$an-editable-pad:   12px 14px !default;
+$an-statusbar-h:    24px !default;
 
 // Dialog
-$asn-dialog-z:       9999 !default;
-$asn-dialog-bg:      rgba(0, 0, 0, 0.45) !default;
-$asn-dialog-width:   420px !default;
-$asn-dialog-radius:  8px !default;
+$an-dialog-z:       9999 !default;
+$an-dialog-bg:      rgba(0, 0, 0, 0.45) !default;
+$an-dialog-width:   420px !default;
+$an-dialog-radius:  8px !default;
 
 // Transitions
-$asn-transition:     0.15s ease !default;
+$an-transition:     0.15s ease !default;
