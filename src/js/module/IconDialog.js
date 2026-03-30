@@ -488,7 +488,7 @@ export class IconDialog {
       const matchesCat = !cat || cat === 'all' || cellCat === cat;
       const matchesQuery = !q || name.includes(q);
       const visible = matchesCat && matchesQuery;
-      cell.hidden = !visible;
+      cell.style.display = visible ? '' : 'none';
       if (visible) visibleCount++;
     });
     // Show empty state if needed
@@ -498,7 +498,7 @@ export class IconDialog {
       empty.textContent = 'No icons found';
       this._grid.appendChild(empty);
     }
-    empty.hidden = visibleCount > 0;
+    empty.style.display = visibleCount > 0 ? 'none' : '';
   }
 
   _selectIcon(name) {

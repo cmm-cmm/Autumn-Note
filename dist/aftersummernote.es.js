@@ -3268,10 +3268,10 @@ class si {
     let o = 0;
     this._grid.querySelectorAll(".asn-emoji-cell").forEach((l) => {
       const r = !t || t === "all" || l.dataset.cat === t, h = !i || l.dataset.keywords.includes(i) || l.dataset.char === i, p = r && h;
-      l.hidden = !p, p && o++;
+      l.style.display = p ? "" : "none", p && o++;
     });
     let n = this._grid.querySelector(".asn-icon-empty");
-    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No emojis found", this._grid.appendChild(n)), n.hidden = o > 0;
+    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No emojis found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
   }
   // ---------------------------------------------------------------------------
   // Insert
@@ -3650,10 +3650,10 @@ class li {
     let o = 0;
     this._grid.querySelectorAll(".asn-icon-cell").forEach((l) => {
       const r = l.dataset.name, h = l.dataset.cat, p = !t || t === "all" || h === t, d = !i || r.includes(i), u = p && d;
-      l.hidden = !u, u && o++;
+      l.style.display = u ? "" : "none", u && o++;
     });
     let n = this._grid.querySelector(".asn-icon-empty");
-    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No icons found", this._grid.appendChild(n)), n.hidden = o > 0;
+    n || (n = a("div", { class: "asn-icon-empty" }), n.textContent = "No icons found", this._grid.appendChild(n)), n.style.display = o > 0 ? "none" : "";
   }
   _selectIcon(e) {
     this._selectedIcon = e, this._grid.querySelectorAll(".asn-icon-cell").forEach((t) => {

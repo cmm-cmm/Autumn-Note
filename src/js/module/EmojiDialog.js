@@ -656,7 +656,7 @@ export class EmojiDialog {
       const matchCat   = !cat || cat === 'all' || cell.dataset.cat === cat;
       const matchQuery = !q || cell.dataset.keywords.includes(q) || cell.dataset.char === q;
       const visible = matchCat && matchQuery;
-      cell.hidden = !visible;
+      cell.style.display = visible ? '' : 'none';
       if (visible) count++;
     });
     let empty = this._grid.querySelector('.asn-icon-empty');
@@ -665,7 +665,7 @@ export class EmojiDialog {
       empty.textContent = 'No emojis found';
       this._grid.appendChild(empty);
     }
-    empty.hidden = count > 0;
+    empty.style.display = count > 0 ? 'none' : '';
   }
 
   // ---------------------------------------------------------------------------
