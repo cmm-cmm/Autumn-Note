@@ -93,6 +93,10 @@ export class Context {
     // Initial toolbar sync so dropdowns show the correct font on load
     this.invoke('toolbar.refresh');
 
+    if (typeof this.options.onInit === 'function') {
+      this.options.onInit(this);
+    }
+
     return this;
   }
 

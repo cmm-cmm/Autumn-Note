@@ -30,8 +30,9 @@ import * as Style from '../editing/Style.js';
  * @property {string}   icon        - SVG or HTML icon markup / text
  * @property {string}   tooltip     - tooltip string
  * @property {Function} action      - called with (context) when clicked
- * @property {Function} [isActive]  - called with (context) to determine active state
- * @property {string}   [className] - extra CSS class(es)
+ * @property {Function} [isActive]   - called with (context) to determine active state
+ * @property {Function} [isDisabled] - called with (context) to determine disabled state
+ * @property {string}   [className]  - extra CSS class(es)
  */
 
 /**
@@ -41,12 +42,13 @@ import * as Style from '../editing/Style.js';
  * @param {string} tooltip
  * @param {Function} action
  * @param {Function} [isActive]
+ * @param {Function} [isDisabled]
  * @returns {ButtonDef}
  */
-function btn(name, icon, tooltip, action, isActive) {
+function btn(name, icon, tooltip, action, isActive, isDisabled) {
   // `icon` is an identifier (e.g. 'bold', 'italic'). Rendering to
   // visual markup (FontAwesome or fallback) is done in Toolbar._createButton
-  return { name, icon, tooltip, action, isActive };
+  return { name, icon, tooltip, action, isActive, isDisabled };
 }
 
 // ---------------------------------------------------------------------------
@@ -87,8 +89,8 @@ export const outdentBtn = btn('outdent', 'outdent', 'Outdent', () => Style.outde
 // Undo / redo buttons
 // ---------------------------------------------------------------------------
 
-export const undoBtn = btn('undo', 'undo', 'Undo (Ctrl+Z)', (_ctx) => _ctx.invoke('editor.undo'));
-export const redoBtn = btn('redo', 'redo', 'Redo (Ctrl+Y)', (_ctx) => _ctx.invoke('editor.redo'));
+export const undoBtn = btn('undo', 'undo', 'Undo (Ctrl+Z)', (_ctx) => _ctx.invoke('editor.undo'), undefined, (ctx) => !ctx.invoke('editor.canUndo'));
+export const redoBtn = btn('redo', 'redo', 'Redo (Ctrl+Y)', (_ctx) => _ctx.invoke('editor.redo'), undefined, (ctx) => !ctx.invoke('editor.canRedo'));
 
 // ---------------------------------------------------------------------------
 // Insert media — HR, Link, Image

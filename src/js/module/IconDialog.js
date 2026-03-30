@@ -267,8 +267,7 @@ export class IconDialog {
 
   initialize() {
     this._ensureFontAwesome();
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
+    // Dialog grid is built lazily on first show() to avoid rendering ~250 icon cells at load time.
     return this;
   }
 
@@ -309,6 +308,10 @@ export class IconDialog {
   // ---------------------------------------------------------------------------
 
   show() {
+    if (!this._dialog) {
+      this._dialog = this._buildDialog();
+      document.body.appendChild(this._dialog);
+    }
     withSavedRange((range) => {
       this._savedRange = range;
     });

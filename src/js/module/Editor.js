@@ -32,7 +32,7 @@ export class Editor {
 
   initialize() {
     const editable = this.context.layoutInfo.editable;
-    this._history = new History(editable);
+    this._history = new History(editable, this.options.historyLimit || 100);
     this._bindEvents(editable);
     return this;
   }
@@ -211,6 +211,14 @@ export class Editor {
       this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
+  }
+
+  canUndo() {
+    return this._history ? this._history.canUndo() : false;
+  }
+
+  canRedo() {
+    return this._history ? this._history.canRedo() : false;
   }
 
   // ---------------------------------------------------------------------------
