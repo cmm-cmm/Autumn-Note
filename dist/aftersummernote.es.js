@@ -1231,9 +1231,9 @@ class ue {
   // ---------------------------------------------------------------------------
   _bindResize(t) {
     let e = 0, i = 0;
-    const n = this.context.layoutInfo.editable, o = (u) => {
-      const d = Math.max(100, i + u.clientY - e);
-      n.style.height = `${d}px`;
+    const n = this.context.layoutInfo.container, o = (u) => {
+      const d = u.clientY - e, p = Math.max(120, i + d);
+      n.style.height = `${p}px`;
     }, l = () => {
       document.removeEventListener("mousemove", o), document.removeEventListener("mouseup", l);
     }, c = h(t, "mousedown", (u) => {
@@ -1441,13 +1441,13 @@ class ge {
   }
   activate() {
     if (this._active) return;
-    const t = this.context.layoutInfo.container, e = this.context.layoutInfo.editable;
-    this._prevHeight = e.style.height, t.classList.add("asn-fullscreen"), e.style.height = "", document.body.style.overflow = "hidden", this._active = !0, this.context.invoke("toolbar.refresh");
+    const t = this.context.layoutInfo.container;
+    this._prevHeight = t.style.height, t.classList.add("asn-fullscreen"), t.style.height = "", document.body.style.overflow = "hidden", this._active = !0, this.context.invoke("toolbar.refresh");
   }
   deactivate() {
     if (!this._active) return;
-    const t = this.context.layoutInfo.container, e = this.context.layoutInfo.editable;
-    t.classList.remove("asn-fullscreen"), e.style.height = this._prevHeight, document.body.style.overflow = "", this._active = !1, this.context.invoke("toolbar.refresh");
+    const t = this.context.layoutInfo.container;
+    t.classList.remove("asn-fullscreen"), t.style.height = this._prevHeight, document.body.style.overflow = "", this._active = !1, this.context.invoke("toolbar.refresh");
   }
 }
 class ye {

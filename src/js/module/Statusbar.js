@@ -69,11 +69,16 @@ export class Statusbar {
   _bindResize(handle) {
     let startY = 0;
     let startH = 0;
-    const editableEl = this.context.layoutInfo.editable;
+    // Resize the container (flex column parent) so that the editable — which
+    // has flex:1 / flex-basis:0 — automatically fills the remaining space.
+    // Setting height directly on a flex:1 item has no effect because the flex
+    // algorithm ignores the height property when flex-basis is non-auto.
+    const containerEl = this.context.layoutInfo.container;
 
     const onMouseMove = (event) => {
-      const newHeight = Math.max(100, startH + event.clientY - startY);
-      editableEl.style.height = `${newHeight}px`;
+      const delta = event.clientY - startY;
+      const newHeight = Math.max(120, startH + delta);
+      containerEl.style.height = `${newHeight}px`;
     };
 
     const onMouseUp = () => {
@@ -83,7 +88,7 @@ export class Statusbar {
 
     const onMouseDown = (event) => {
       startY = event.clientY;
-      startH = editableEl.offsetHeight;
+      startH = containerEl.offsetHeight;
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
       event.preventDefault();
