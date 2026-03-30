@@ -230,9 +230,10 @@ export class VideoDialog {
     }
 
     if (info && info.type === 'Direct video') {
+      const src = info.embedUrl.replace(/"/g, '%22');
       return (
         `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
-        `<video src="${info.embedUrl}" width="${width}" height="${height}" controls ` +
+        `<video src="${src}" width="${width}" height="${height}" controls ` +
         `style="display:block;max-width:100%"></video>` +
         `<div class="an-video-shield"></div>` +
         `</div>`
@@ -249,9 +250,10 @@ export class VideoDialog {
     })();
     if (!safeSrc) return null;
 
+    const escapedSrc = safeSrc.replace(/"/g, '%22');
     return (
       `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
-      `<video src="${safeSrc}" width="${width}" height="${height}" controls ` +
+      `<video src="${escapedSrc}" width="${width}" height="${height}" controls ` +
       `style="display:block;max-width:100%"></video>` +
       `<div class="an-video-shield"></div>` +
       `</div>`

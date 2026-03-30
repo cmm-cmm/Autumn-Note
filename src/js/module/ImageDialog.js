@@ -90,6 +90,8 @@ export class ImageDialog {
     });
     this._altInput = altInput;
 
+    box.append(title, urlLabel, urlInput, altLabel, altInput);
+
     // File upload (optional — embeds as base64)
     if (this.options.allowImageUpload !== false) {
       const fileLabel = createElement('label', { class: 'an-label' });
@@ -114,7 +116,7 @@ export class ImageDialog {
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
-    box.append(title, urlLabel, urlInput, altLabel, altInput, btnRow);
+    box.append(btnRow);
     overlay.appendChild(box);
 
     const d1 = on(insertBtn, 'click', () => this._onInsert());

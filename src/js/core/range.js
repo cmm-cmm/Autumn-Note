@@ -95,16 +95,6 @@ export class WrappedRange {
     native.insertNode(node);
   }
 
-  /**
-   * Replaces the range contents with the given HTML string.
-   * @param {string} html
-   */
-  pasteHTML(html) {
-    const native = this.toNativeRange();
-    native.deleteContents();
-    const frag = document.createRange().createContextualFragment(html);
-    native.insertNode(frag);
-  }
 }
 
 // ---------------------------------------------------------------------------
