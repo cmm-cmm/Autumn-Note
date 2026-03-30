@@ -37,7 +37,18 @@ const defaultItems = [
   { separator: true },
   { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: () => document.execCommand('cut') },
   { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => document.execCommand('copy') },
-  { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: () => document.execCommand('paste') },
+  { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
+    if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+      navigator.clipboard.readText().then((text) => {
+        const editable = ctx.layoutInfo && ctx.layoutInfo.editable;
+        if (editable) {
+          editable.focus();
+          document.execCommand('insertText', false, text);
+          ctx.invoke('editor.afterCommand');
+        }
+      }).catch(() => { /* permission denied — silently ignore */ });
+    }
+  } },
   { separator: true },
   { name: 'bold',      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
   { name: 'italic',    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },

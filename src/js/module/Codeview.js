@@ -110,25 +110,5 @@ export class Codeview {
       .join('\n');
   }
 
-  /**
-   * Basic HTML sanitiser — removes script/dangerous elements.
-   * @param {string} html
-   * @returns {string}
-   */
-  _sanitise(html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(`<body>${html}</body>`, 'text/html');
-    ['script', 'style', 'iframe', 'object', 'embed', 'form'].forEach((tag) => {
-      doc.querySelectorAll(tag).forEach((el) => el.remove());
-    });
-    doc.querySelectorAll('*').forEach((el) => {
-      Array.from(el.attributes).forEach((attr) => {
-        if (attr.name.startsWith('on')) el.removeAttribute(attr.name);
-        if (['href', 'src'].includes(attr.name) && /^\s*javascript:/i.test(attr.value)) {
-          el.removeAttribute(attr.name);
-        }
-      });
-    });
-    return doc.body.innerHTML;
-  }
 }
+

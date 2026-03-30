@@ -1,0 +1,116 @@
+import { describe, it, expect } from 'vitest';
+import { sanitiseHTML, sanitiseUrl } from '../../src/js/core/sanitise.js';
+
+// ---------------------------------------------------------------------------
+// sanitiseHTML
+// ---------------------------------------------------------------------------
+describe('sanitiseHTML', () => {
+  it('returns empty string for empty input', () => {
+    expect(sanitiseHTML('')).toBe('');
+    expect(sanitiseHTML(null)).toBe('');
+    expect(sanitiseHTML(undefined)).toBe('');
+  });
+
+  it('strips <script> tags and their content', () => {
+    const input = '<p>Hello</p><script>alert("xss")</script>';
+    expect(sanitiseHTML(input)).not.toContain('<script');
+    expect(sanitiseHTML(input)).not.toContain('alert');
+  });
+
+  it('strips <iframe> tags', () => {
+    const input = '<iframe src="https://evil.com"></iframe>';
+    expect(sanitiseHTML(input)).not.toContain('<iframe');
+  });
+
+  it('strips <object> and <embed> tags', () => {
+    expect(sanitiseHTML('<object data="x.swf"></object>')).not.toContain('<object');
+    expect(sanitiseHTML('<embed src="x.swf">')).not.toContain('<embed');
+  });
+
+  it('strips <form>, <input>, <button> tags', () => {
+    expect(sanitiseHTML('<form action="/hack"><input name="q"></form>')).not.toContain('<form');
+    expect(sanitiseHTML('<button onclick="evil()">Click</button>')).not.toContain('<button');
+  });
+
+  it('removes all on* event handler attributes', () => {
+    const input = '<p onclick="evil()" onmouseover="bad()">text</p>';
+    const result = sanitiseHTML(input);
+    expect(result).not.toContain('onclick');
+    expect(result).not.toContain('onmouseover');
+    expect(result).toContain('<p>');
+    expect(result).toContain('text');
+  });
+
+  it('removes javascript: hrefs', () => {
+    const input = '<a href="javascript:alert(1)">click</a>';
+    const result = sanitiseHTML(input);
+    expect(result).not.toContain('javascript:');
+  });
+
+  it('removes vbscript: hrefs', () => {
+    const input = '<a href="vbscript:msgbox()">click</a>';
+    const result = sanitiseHTML(input);
+    expect(result).not.toContain('vbscript:');
+  });
+
+  it('allows safe hrefs', () => {
+    const input = '<a href="https://example.com">link</a>';
+    expect(sanitiseHTML(input)).toContain('href="https://example.com"');
+  });
+
+  it('allows data: URI on img[src] (base64 uploads)', () => {
+    const input = '<img src="data:image/png;base64,abc123" alt="test">';
+    const result = sanitiseHTML(input);
+    expect(result).toContain('src="data:image/png;base64,abc123"');
+  });
+
+  it('removes data: URI from non-img elements (e.g. anchor href)', () => {
+    const input = '<a href="data:text/html,<script>alert(1)</script>">x</a>';
+    const result = sanitiseHTML(input);
+    expect(result).not.toContain('data:text/html');
+  });
+
+  it('preserves safe formatting tags', () => {
+    const input = '<p><strong>bold</strong> and <em>italic</em></p>';
+    expect(sanitiseHTML(input)).toBe('<p><strong>bold</strong> and <em>italic</em></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sanitiseUrl
+// ---------------------------------------------------------------------------
+describe('sanitiseUrl', () => {
+  it('returns the URL as-is for safe https:// URLs', () => {
+    expect(sanitiseUrl('https://example.com')).toBe('https://example.com');
+  });
+
+  it('returns the URL as-is for relative URLs', () => {
+    expect(sanitiseUrl('/images/photo.jpg')).toBe('/images/photo.jpg');
+  });
+
+  it('returns null for javascript: URLs', () => {
+    expect(sanitiseUrl('javascript:alert(1)')).toBeNull();
+  });
+
+  it('returns null for vbscript: URLs', () => {
+    expect(sanitiseUrl('vbscript:msgbox()')).toBeNull();
+  });
+
+  it('returns null for javascript: with leading whitespace', () => {
+    expect(sanitiseUrl('  javascript:alert(1)')).toBeNull();
+  });
+
+  it('returns null for data: URLs by default', () => {
+    expect(sanitiseUrl('data:image/png;base64,abc')).toBeNull();
+  });
+
+  it('returns data: URL when allowData is true', () => {
+    const url = 'data:image/png;base64,abc';
+    expect(sanitiseUrl(url, { allowData: true })).toBe(url);
+  });
+
+  it('returns null for null/empty input', () => {
+    expect(sanitiseUrl(null)).toBeNull();
+    expect(sanitiseUrl('')).toBe('');
+  });
+});

@@ -4,7 +4,6 @@
   "description": "A modern, lightweight WYSIWYG editor — built with vanilla JavaScript, no jQuery required.",
   "main": "dist/autumnnote.umd.js",
   "module": "dist/autumnnote.es.js",
-  "types": "dist/index.d.ts",
   "style": "dist/autumnnote.css",
   "files": [
     "dist",
