@@ -29,6 +29,9 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {boolean}  [codeHighlight]     - Auto-load Prism.js for syntax highlighting of code blocks
  * @property {string}   [codeHighlightCDN]  - CDN base URL for Prism assets (defaults to cdnjs)
  * @property {boolean}  [markdownPaste]     - Convert pasted Markdown text to HTML (default: true)
+ * @property {Function} [onImageError]      - Callback when an image exceeds the size limit: ({ file, message }) => void
+ * @property {Function} [onInit]            - Callback fired once the editor has fully initialised: (context) => void
+ * @property {number}   [historyLimit]      - Maximum undo/redo stack size (default: 100)
  */
 
 /** @type {AsnOptions} */
@@ -53,17 +56,20 @@ export const defaultOptions = {
   pasteCleanHTML: true,
   allowImageUpload: true,
   maxImageSize: 5,
-  tabSize: 0,
+  tabSize: 4,
   onChange: null,
   onFocus: null,
   onBlur: null,
+  onInit: null,
   onImageUpload: null,
+  onImageError: null,
   stickyToolbar: false,
   stickyToolbarOffset: 0,
   theme: 'light',
   codeHighlight: true,
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
   markdownPaste: true,
+  historyLimit: 100,
   // Default font family applied to the editor and shown in the dropdown when no explicit font is set
   defaultFontFamily: 'Arial',
   // Font families shown in the toolbar font-family dropdown

@@ -518,8 +518,7 @@ export class EmojiDialog {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
+    // Dialog grid is built lazily on first show() to avoid rendering ~500 DOM nodes at load time.
     return this;
   }
 
@@ -537,6 +536,10 @@ export class EmojiDialog {
   // ---------------------------------------------------------------------------
 
   show() {
+    if (!this._dialog) {
+      this._dialog = this._buildDialog();
+      document.body.appendChild(this._dialog);
+    }
     withSavedRange((range) => {
       this._savedRange = range;
     });

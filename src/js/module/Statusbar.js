@@ -79,12 +79,14 @@ export class Statusbar {
     // algorithm ignores the height property when flex-basis is non-auto.
     const containerEl = this.context.layoutInfo.container;
 
-    const onMouseMove = (event) => {
-      const delta = event.clientY - startY;
+    const applyDelta = (clientY) => {
+      const delta = clientY - startY;
       const minH = this.options.minHeight || 100;
-      const newHeight = Math.max(minH, startH + delta);
-      containerEl.style.height = `${newHeight}px`;
+      containerEl.style.height = `${Math.max(minH, startH + delta)}px`;
     };
+
+    // Mouse drag
+    const onMouseMove = (event) => applyDelta(event.clientY);
 
     const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -105,8 +107,34 @@ export class Statusbar {
       event.preventDefault();
     };
 
+    // Touch drag
+    const onTouchMove = (event) => {
+      const touch = event.touches[0];
+      if (touch) { event.preventDefault(); applyDelta(touch.clientY); }
+    };
+
+    const onTouchEnd = () => {
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      this._dragDisposers = null;
+    };
+
+    const onTouchStart = (event) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      startY = touch.clientY;
+      startH = containerEl.offsetHeight;
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd);
+      this._dragDisposers = [
+        () => document.removeEventListener('touchmove', onTouchMove),
+        () => document.removeEventListener('touchend', onTouchEnd),
+      ];
+    };
+
     const d1 = on(handle, 'mousedown', onMouseDown);
-    this._disposers.push(d1);
+    const d2 = on(handle, 'touchstart', onTouchStart);
+    this._disposers.push(d1, d2);
   }
 
   // ---------------------------------------------------------------------------

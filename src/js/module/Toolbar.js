@@ -505,6 +505,9 @@ export class Toolbar {
       if (def && typeof def.isActive === 'function') {
         btn.classList.toggle('active', !!def.isActive(this.context));
       }
+      if (def && typeof def.isDisabled === 'function') {
+        btn.disabled = !!def.isDisabled(this.context);
+      }
     });
 
     // Sync select dropdowns (e.g. font family) with current cursor position

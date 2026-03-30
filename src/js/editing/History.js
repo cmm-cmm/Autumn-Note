@@ -3,14 +3,14 @@
  * Inspired by Summernote's History module, rewritten without jQuery
  */
 
-const MAX_HISTORY = 100;
-
 export class History {
   /**
    * @param {HTMLElement} editable - the contenteditable element
+   * @param {number} [limit=100] - maximum number of undo/redo states
    */
-  constructor(editable) {
+  constructor(editable, limit = 100) {
     this.editable = editable;
+    this._limit = limit;
     /** @type {Array<{html: string, range: {sc: string, so: number, ec: string, eo: number}|null}>} */
     this.stack = [];
     this.stackOffset = -1;
@@ -103,7 +103,7 @@ export class History {
     const raw = this._serialize();
     const { html, images } = this._tokenizeImages(raw);
     this.stack.push({ html, images, sel: this._serializeSelection() });
-    if (this.stack.length > MAX_HISTORY) {
+    if (this.stack.length > this._limit) {
       this.stack.shift();
     } else {
       this.stackOffset++;
