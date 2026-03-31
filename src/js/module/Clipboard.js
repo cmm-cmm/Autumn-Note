@@ -116,6 +116,62 @@ export class Clipboard {
   }
 
   /**
+   * Detects and strips noise from social media sites (Facebook, X/Twitter, LinkedIn, etc.).
+   * These React-based pages produce HTML with utility class names like `x1n2onr6` / `r-bcqeeo`,
+   * `data-testid`, `data-lexical-*`, etc. We keep the semantic structure but remove all the noise.
+   * @param {string} html
+   * @returns {string}
+   */
+  _cleanSocialHtml(html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+    // Unwrap purely presentational wrapper spans/divs with no semantic meaning
+    const UNWRAP_TAGS = new Set(['span', 'div']);
+    let changed = true;
+    // Iteratively unwrap until stable (handles deeply nested span soup)
+    while (changed) {
+      changed = false;
+      doc.querySelectorAll('span, div').forEach((el) => {
+        if (!UNWRAP_TAGS.has(el.tagName.toLowerCase())) return;
+        // Keep if it has a meaningful role (link, heading, list item are handled by parent)
+        if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) return;
+        // Unwrap — replace el with its children
+        const parent = el.parentNode;
+        if (!parent) return;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        parent.removeChild(el);
+        changed = true;
+      });
+    }
+    // Strip class and all data-* attributes from every remaining element
+    doc.querySelectorAll('*').forEach((el) => {
+      el.removeAttribute('class');
+      el.removeAttribute('id');
+      Array.from(el.attributes)
+        .filter((a) => a.name.startsWith('data-') || a.name.startsWith('aria-'))
+        .forEach((a) => el.removeAttribute(a.name));
+    });
+    return doc.body.innerHTML;
+  }
+
+  /**
+   * Strips presentational attributes (class, style, data-*, id) from all elements,
+   * keeping only semantic structure and URL attributes.
+   * Used when `pasteStripAttributes` option is true.
+   * @param {string} html
+   * @returns {string}
+   */
+  _stripAttributes(html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+    const KEEP_ATTRS = new Set(['href', 'src', 'alt', 'target', 'rel', 'colspan', 'rowspan', 'type']);
+    doc.querySelectorAll('*').forEach((el) => {
+      Array.from(el.attributes)
+        .filter((a) => !KEEP_ATTRS.has(a.name))
+        .forEach((a) => el.removeAttribute(a.name));
+    });
+    return doc.body.innerHTML;
+  }
+
+  /**
    * Forces the next paste operation to strip all HTML formatting.
    * Called by Editor when Ctrl+Shift+V is pressed.
    * @param {boolean} val
@@ -182,11 +238,15 @@ export class Clipboard {
     if (this.options.pasteCleanHTML !== false && clipboardData.types.includes('text/html')) {
       event.preventDefault();
       const raw = clipboardData.getData('text/html');
-      // Detect Word / Office content and strip its proprietary markup first
+      // Detect source type and apply appropriate pre-cleaner
       const isWordContent = /<[a-z]+:[a-z]/i.test(raw) || /class="Mso/i.test(raw) || /\bmso-/i.test(raw);
-      const htmlToClean = isWordContent ? this._cleanWordHtml(raw) : raw;
-      const clean = sanitiseHTML(htmlToClean);
-      execCommand('insertHTML', clean);
+      const isSocialContent = /\bdata-testid\b/.test(raw) || /class="[^"]*\b(?:x[a-z0-9]{6,}|r-[a-z0-9]{3,})\b/.test(raw);
+      let html = raw;
+      if (isWordContent) html = this._cleanWordHtml(html);
+      else if (isSocialContent) html = this._cleanSocialHtml(html);
+      html = sanitiseHTML(html);
+      if (this.options.pasteStripAttributes) html = this._stripAttributes(html);
+      execCommand('insertHTML', html);
       this.context.invoke('editor.afterCommand');
       return;
     }

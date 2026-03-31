@@ -34,6 +34,8 @@ export interface AsnOptions {
   pasteAsPlainText?: boolean;
   /** Sanitise HTML on paste. */
   pasteCleanHTML?: boolean;
+  /** Strip class/style/data-* attributes from pasted HTML (default: false). */
+  pasteStripAttributes?: boolean;
   /** Allow file upload in the image dialog. */
   allowImageUpload?: boolean;
   /** Maximum image upload size in MB. */
@@ -44,10 +46,18 @@ export interface AsnOptions {
   onChange?: (context: Context) => void;
   /** Callback on editor focus. */
   onFocus?: (context: Context) => void;
-  /** Callback on editor blur. */
+  /** Callback fired on editor blur. */
   onBlur?: (context: Context) => void;
   /** Callback after the editor has initialised. */
   onInit?: (context: Context) => void;
+  /** Callback fired just before the editor instance is destroyed. */
+  onDestroy?: (context: Context) => void;
+  /** Callback fired whenever the selection changes inside the editor. */
+  onSelectionChange?: (context: Context) => void;
+  /** Callback fired when the character limit is reached. */
+  onCharLimitReached?: (context: Context) => void;
+  /** Callback fired when the word limit is reached. */
+  onWordLimitReached?: (context: Context) => void;
   /** Custom image upload handler. */
   onImageUpload?: (files: FileList) => void;
   /** Callback when an image upload error occurs. */
@@ -92,10 +102,6 @@ export interface AsnOptions {
   tableHeaderRow?: boolean;
   /** Callback fired after every paste event. */
   onPaste?: (data: { text: string; html: string }) => void;
-  /** Callback fired just before the editor instance is destroyed. */
-  onDestroy?: (context: Context) => void;
-  /** Callback fired whenever the selection changes inside the editor. */
-  onSelectionChange?: (context: Context) => void;
   /** Additional color swatches shown at the top of the color picker. */
   colorSwatches?: string[];
 }
@@ -176,8 +182,18 @@ export declare class Context {
   /** Returns the plain-text content of the editor. */
   getText(): string;
 
+  /** Sets the editor content from a plain-text string (HTML-escaped). */
+  setText(text: string): void;
+
   /** Clears the editor content. */
   clear(): void;
+
+  /**
+   * Resets the undo/redo history stack.
+   * Useful after programmatically loading content via setHTML() / setMarkdown()
+   * so that Ctrl+Z cannot undo back to the previous document.
+   */
+  clearHistory(): void;
 
   /** Returns true when the editor has no meaningful content. */
   isEmpty(): boolean;
@@ -199,6 +215,15 @@ export declare class Context {
 
   /** Returns the current character count (excluding newlines) of the editor content. */
   getCharCount(): number;
+
+  /** Downloads the editor content as an HTML file. */
+  downloadHTML(filename?: string): void;
+
+  /** Downloads the editor content as a plain-text file. */
+  downloadText(filename?: string): void;
+
+  /** Downloads the editor content as a Markdown file. */
+  downloadMarkdown(filename?: string): void;
 
   /** Enables or disables (read-only) mode on this instance. */
   setDisabled(disabled: boolean): void;
@@ -245,11 +270,15 @@ export declare const fullscreenBtn: ButtonDef;
 export declare const emojiBtn: ButtonDef;
 export declare const iconBtn: ButtonDef;
 export declare const shortcutsBtn: ButtonDef;
+export declare const findBtn: ButtonDef;
+export declare const findReplaceBtn: ButtonDef;
 export declare const removeFormatBtn: ButtonDef;
 export declare const directionBtn: ButtonDef;
 export declare const fontFamilyBtn: DropdownDef;
 export declare const fontSizeBtn: DropdownDef;
 export declare const headingBtn: DropdownDef;
+export declare const lineHeightBtn: DropdownDef;
+export declare const paragraphStyleBtn: DropdownDef;
 export declare const foreColorBtn: DropdownDef;
 export declare const backColorBtn: DropdownDef;
 export declare const defaultToolbar: Array<Array<ButtonDef | DropdownDef>>;

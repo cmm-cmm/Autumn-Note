@@ -249,6 +249,8 @@ export const lineHeightBtn = {
 export const codeviewBtn = btn('codeview', 'code', 'HTML Code View', (ctx) => ctx.invoke('codeview.toggle'), (ctx) => ctx.invoke('codeview.isActive'));
 export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => ctx.invoke('fullscreen.toggle'), (ctx) => ctx.invoke('fullscreen.isActive'));
 export const shortcutsBtn = btn('shortcuts', 'keyboard', 'Keyboard Shortcuts (Shift+?)', (ctx) => ctx.invoke('shortcutsDialog.show'));
+export const findBtn = btn('find', 'search', 'Find (Ctrl+F)', (ctx) => ctx.invoke('findReplace.show', 'find'));
+export const findReplaceBtn = btn('findReplace', 'find-replace', 'Find & Replace (Ctrl+H)', (ctx) => ctx.invoke('findReplace.show', 'replace'));
 
 // ---------------------------------------------------------------------------
 // Text / background colour pickers
@@ -291,5 +293,5 @@ export const defaultToolbar = [
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
-  [removeFormatBtn, codeviewBtn, fullscreenBtn, shortcutsBtn],
+  [removeFormatBtn, codeviewBtn, fullscreenBtn, findBtn, shortcutsBtn],
 ];

@@ -37,6 +37,13 @@ const SHORTCUTS = [
     ],
   },
   {
+    category: 'Find & Replace',
+    items: [
+      { keys: 'Ctrl + F', action: 'Find in document' },
+      { keys: 'Ctrl + H', action: 'Find & Replace' },
+    ],
+  },
+  {
     category: 'Editor',
     items: [
       { keys: 'Shift + ?', action: 'Show this keyboard shortcuts dialog' },

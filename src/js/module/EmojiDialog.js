@@ -3,7 +3,7 @@
  * Click an emoji to insert it directly at the caret — no extra "Insert" step.
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, trapFocus } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -634,11 +634,7 @@ export class EmojiDialog {
       const cell = e.target.closest('.an-emoji-cell');
       if (cell) this._onEmojiClick(cell.dataset.char);
     });
-    const onKeydown = (e) => { if (e.key === 'Escape' && this._dialog && this._dialog.style.display !== 'none') this._close(); };
-    document.addEventListener('keydown', onKeydown);
-    const d7 = () => document.removeEventListener('keydown', onKeydown);
-
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7);
+    this._disposers.push(d1, d2, d3, d4, d5, d6);
     return overlay;
   }
 
@@ -717,12 +713,14 @@ export class EmojiDialog {
   _open() {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
+      this._removeTrap = trapFocus(this._dialog, () => this._close());
       setTimeout(() => this._searchInput && this._searchInput.focus(), 50);
     }
   }
 
   _close() {
     if (this._dialog) this._dialog.style.display = 'none';
+    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
     this._savedRange = null;
   }
 }

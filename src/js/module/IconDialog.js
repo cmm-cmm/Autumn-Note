@@ -2,7 +2,7 @@
  * IconDialog.js - Browse and insert FontAwesome Free icons
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, trapFocus } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -461,13 +461,7 @@ export class IconDialog {
     const d10 = on(colorInput, 'input',  () => this._updatePreview(this._selectedIcon));
     const d11 = on(useColorCb, 'change', () => this._updatePreview(this._selectedIcon));
 
-    const onKeydown = (e) => {
-      if (e.key === 'Escape' && this._dialog && this._dialog.style.display !== 'none') this._close();
-    };
-    document.addEventListener('keydown', onKeydown);
-    const d12 = () => document.removeEventListener('keydown', onKeydown);
-
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11);
 
     return overlay;
   }
@@ -612,12 +606,14 @@ export class IconDialog {
   _open() {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
+      this._removeTrap = trapFocus(this._dialog, () => this._close());
       setTimeout(() => this._searchInput && this._searchInput.focus(), 50);
     }
   }
 
   _close() {
     if (this._dialog) this._dialog.style.display = 'none';
+    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
     this._savedRange = null;
     this._selectedIcon = null;
   }

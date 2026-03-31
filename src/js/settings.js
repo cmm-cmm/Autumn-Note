@@ -16,6 +16,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {Array}    [toolbar]           - Toolbar button group config
  * @property {boolean}  [pasteAsPlainText]  - Force plain-text paste
  * @property {boolean}  [pasteCleanHTML]    - Sanitise HTML on paste
+ * @property {boolean}  [pasteStripAttributes] - Strip class/style/data-* from pasted HTML (default: false)
  * @property {boolean}  [allowImageUpload]  - Allow file upload in image dialog
  * @property {number}   [maxImageSize]      - Max upload size in MB
  * @property {number}   [tabSize]           - Spaces per tab in non-list context
@@ -39,9 +40,11 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxWords]          - Maximum word count (0 = unlimited). Shows warning in statusbar.
  * @property {boolean}  [tableHeaderRow]    - Insert a header row (<thead><th>) when creating tables
  * @property {Function} [onPaste]           - Callback fired on every paste: ({ text, html }) => void
- * @property {Function} [onSelectionChange] - Callback fired on cursor/selection change: (context) => void
- * @property {string[]}  [colorSwatches]     - Custom brand colour swatches prepended to the colour-picker palette
- * @property {Function} [onDestroy]         - Callback fired when the editor is destroyed: (context) => void
+ * @property {Function} [onSelectionChange]   - Callback fired on cursor/selection change: (context) => void
+ * @property {string[]}  [colorSwatches]       - Custom brand colour swatches prepended to the colour-picker palette
+ * @property {Function} [onDestroy]            - Callback fired when the editor is destroyed: (context) => void
+ * @property {Function} [onCharLimitReached]   - Callback fired when the character limit is hit: (context) => void
+ * @property {Function} [onWordLimitReached]   - Callback fired when the word limit is hit: (context) => void
  */
 
 /** @type {AsnOptions} */
@@ -64,6 +67,7 @@ export const defaultOptions = {
   fontAwesomeClass: 'fas',
   pasteAsPlainText: false,
   pasteCleanHTML: true,
+  pasteStripAttributes: false,
   allowImageUpload: true,
   maxImageSize: 5,
   tabSize: 4,
@@ -123,4 +127,8 @@ export const defaultOptions = {
   onPaste: null,
   // Callback fired just before the editor instance is destroyed
   onDestroy: null,
+  // Callback fired when the character limit is reached: function(context)
+  onCharLimitReached: null,
+  // Callback fired when the word limit is reached: function(context)
+  onWordLimitReached: null,
 };
