@@ -12,6 +12,8 @@ A modern, lightweight WYSIWYG rich-text editor with vanilla JavaScript (ES2022+)
 
 🔗 **[Live Demo](https://cmm-cmm.github.io/Autumn-Note/)**
 
+![AutumnNote Screenshot](demo/Screenshot.png)
+
 ---
 
 ## Features
