@@ -3,7 +3,7 @@
  * Opened via the toolbar '?' button or Shift+? inside the editor.
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, trapFocus } from '../core/dom.js';
 
 const SHORTCUTS = [
   {
@@ -28,6 +28,12 @@ const SHORTCUTS = [
       { keys: 'Ctrl + A',    action: 'Select all content' },
       { keys: 'Tab',         action: 'Indent list item / insert spaces' },
       { keys: 'Shift + Tab', action: 'Outdent list item' },
+    ],
+  },
+  {
+    category: 'Clipboard',
+    items: [
+      { keys: 'Ctrl + Shift + V', action: 'Paste as plain text' },
     ],
   },
   {
@@ -65,12 +71,14 @@ export class ShortcutsDialog {
   show() {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
+      this._removeTrap = trapFocus(this._dialog, () => this._close());
       setTimeout(() => this._closeBtn && this._closeBtn.focus(), 50);
     }
   }
 
   _close() {
     if (this._dialog) this._dialog.style.display = 'none';
+    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
   }
 
   _buildDialog() {
@@ -119,12 +127,7 @@ export class ShortcutsDialog {
 
     const d1 = on(closeBtn, 'click', () => this._close());
     const d2 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    const d3 = on(document, 'keydown', (e) => {
-      if (e.key === 'Escape' && this._dialog && this._dialog.style.display !== 'none') {
-        this._close();
-      }
-    });
-    this._disposers.push(d1, d2, d3);
+    this._disposers.push(d1, d2);
 
     return overlay;
   }

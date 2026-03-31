@@ -267,3 +267,49 @@ export function on(target, type, handler, options) {
   target.addEventListener(type, handler, options);
   return () => target.removeEventListener(type, handler, options);
 }
+
+/**
+ * Installs a keyboard focus trap inside a dialog container.
+ * - Tab / Shift+Tab cycles focus within the container's focusable children.
+ * - Escape calls `onEscape` and removes the trap listener.
+ *
+ * Returns a disposer function that removes the listener (call on dialog close).
+ *
+ * @param {HTMLElement} container - the dialog element to trap focus inside
+ * @param {() => void} onEscape  - called when Escape is pressed
+ * @returns {() => void} disposer
+ */
+export function trapFocus(container, onEscape) {
+  const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  const getFocusable = () => Array.from(container.querySelectorAll(FOCUSABLE)).filter(
+    (el) => !el.closest('[style*="display: none"]') && !el.closest('[style*="display:none"]'),
+  );
+
+  const handler = (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onEscape && onEscape();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const els = getFocusable();
+    if (!els.length) return;
+    const first = els[0];
+    const last = els[els.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
+  document.addEventListener('keydown', handler);
+  return () => document.removeEventListener('keydown', handler);
+}

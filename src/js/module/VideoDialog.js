@@ -7,7 +7,7 @@
  *   • Direct video URLs   → <video> element (.mp4 / .webm / .ogg)
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, trapFocus } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class VideoDialog {
@@ -120,10 +120,7 @@ export class VideoDialog {
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    const onKeydown = (e) => { if (e.key === 'Escape') this._close(); };
-    document.addEventListener('keydown', onKeydown);
-    const d5 = () => document.removeEventListener('keydown', onKeydown);
-    this._disposers.push(d0, d1, d2, d3, d4, d5);
+    this._disposers.push(d0, d1, d2, d3, d4);
 
     return overlay;
   }
@@ -156,12 +153,14 @@ export class VideoDialog {
   _open() {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
+      this._removeTrap = trapFocus(this._dialog, () => this._close());
       setTimeout(() => this._urlInput && this._urlInput.focus(), 50);
     }
   }
 
   _close() {
     if (this._dialog) this._dialog.style.display = 'none';
+    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
     this._savedRange = null;
   }
 
