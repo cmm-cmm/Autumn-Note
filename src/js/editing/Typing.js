@@ -72,14 +72,25 @@ export function handleKeydown(event, editable, options = {}) {
     if (checkLi) {
       event.preventDefault();
       const ul = checkLi.closest('.an-checklist');
-      const text = Array.from(checkLi.childNodes)
+      const sel = window.getSelection();
+      const nativeRange = sel.getRangeAt(0);
+
+      // Extract content from cursor to end of li into a fragment
+      const afterRange = document.createRange();
+      afterRange.setStart(nativeRange.endContainer, nativeRange.endOffset);
+      afterRange.setEnd(checkLi, checkLi.childNodes.length);
+      const afterFrag = afterRange.extractContents();
+
+      // Check if text remaining before cursor (excl checkbox) is empty
+      const textBefore = Array.from(checkLi.childNodes)
         .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
         .map((n) => n.textContent).join('').replace(/\u00a0/g, ' ').trim();
-      const sel = window.getSelection();
-      if (!text) {
+
+      if (!textBefore) {
         // Empty item — exit checklist, insert <p> after list
         const p = document.createElement('p');
-        p.innerHTML = '\u00a0';
+        const afterText = afterFrag.textContent.replace(/\u00a0/g, ' ').trim();
+        p.textContent = afterText || '\u00a0';
         ul.parentNode.insertBefore(p, ul.nextSibling);
         checkLi.remove();
         if (ul.children.length === 0) ul.remove();
@@ -89,17 +100,23 @@ export function handleKeydown(event, editable, options = {}) {
         sel.removeAllRanges();
         sel.addRange(nr);
       } else {
-        // Create new empty checklist item after the current one
+        // Create new checklist item; move after-cursor content into it
         const newLi = document.createElement('li');
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.setAttribute('contenteditable', 'false');
         newLi.appendChild(cb);
-        const nbsp = document.createTextNode('\u00a0');
-        newLi.appendChild(nbsp);
+        let cursorNode;
+        if (afterFrag.textContent.length > 0) {
+          newLi.appendChild(afterFrag);
+          cursorNode = newLi.childNodes[1]; // first node after checkbox
+        } else {
+          cursorNode = document.createTextNode('\u00a0');
+          newLi.appendChild(cursorNode);
+        }
         checkLi.insertAdjacentElement('afterend', newLi);
         const nr = document.createRange();
-        nr.setStart(nbsp, 0);
+        nr.setStart(cursorNode, 0);
         nr.collapse(true);
         sel.removeAllRanges();
         sel.addRange(nr);
