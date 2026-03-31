@@ -50,6 +50,15 @@ export function handleKeydown(event, editable, options = {}) {
   }
 
   // -------------------------------------------------------------------------
+  // Shift+Enter — insert <br> instead of opening a new block element
+  // -------------------------------------------------------------------------
+  if (isKey(event, key.ENTER) && event.shiftKey) {
+    event.preventDefault();
+    execCommand('insertLineBreak');
+    return true;
+  }
+
+  // -------------------------------------------------------------------------
   // Enter key — keep consistent paragraph insertion
   // -------------------------------------------------------------------------
   if (isKey(event, key.ENTER) && !event.shiftKey) {

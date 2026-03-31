@@ -28,17 +28,54 @@ export class Clipboard {
       on(editable, 'dragover', (e) => this._onDragover(e)),
       on(editable, 'drop',     (e) => this._onDrop(e)),
     );
+
+    // Watch for removed images so their blob: URLs are revoked immediately,
+    // preventing memory leaks during long editing sessions.
+    this._mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.removedNodes) {
+          this._revokeRemovedBlobs(node);
+        }
+      }
+    });
+    this._mutationObserver.observe(editable, { childList: true, subtree: true });
+
     return this;
   }
 
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    // Release object URLs to free memory
+    if (this._mutationObserver) {
+      this._mutationObserver.disconnect();
+      this._mutationObserver = null;
+    }
+    // Release any remaining object URLs
     if (this._blobRegistry) {
       this._blobRegistry.forEach((_, blobUrl) => URL.revokeObjectURL(blobUrl));
       this._blobRegistry.clear();
     }
+  }
+
+  /**
+   * Revokes blob URLs for any <img> elements removed from the DOM.
+   * @param {Node} node
+   */
+  _revokeRemovedBlobs(node) {
+    if (!this._blobRegistry || !this._blobRegistry.size) return;
+    const imgs = [];
+    if (node.nodeName === 'IMG') {
+      imgs.push(node);
+    } else if (node.querySelectorAll) {
+      imgs.push(...node.querySelectorAll('img'));
+    }
+    imgs.forEach((img) => {
+      const src = img.getAttribute('src') || '';
+      if (src.startsWith('blob:') && this._blobRegistry.has(src)) {
+        URL.revokeObjectURL(src);
+        this._blobRegistry.delete(src);
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------

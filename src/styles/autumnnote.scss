@@ -19,6 +19,9 @@
   box-sizing: border-box;
   background: $an-bg;
   overflow: hidden;
+  // Prevent the container from participating in ancestor layout recalculations.
+  // This limits reflow thrashing when editing large documents.
+  contain: layout;
 
   *,
   *::before,
@@ -1589,3 +1592,38 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 }
 
+
+// =============================================================================
+// Print styles
+// =============================================================================
+
+@media print {
+  .an-container {
+    border: none;
+    box-shadow: none;
+    contain: none; // allow natural page flow when printing
+  }
+
+  .an-toolbar,
+  .an-statusbar {
+    display: none !important;
+  }
+
+  .an-editable {
+    overflow: visible;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0;
+    color: #000;
+    background: #fff;
+  }
+
+  .an-video-wrapper .an-video-shield {
+    display: none; // allow clicking embedded media when printing is unlikely
+  }
+
+  .an-image-resizer,
+  .an-video-resizer {
+    display: none !important;
+  }
+}

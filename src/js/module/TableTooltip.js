@@ -135,10 +135,15 @@ export class TableTooltip {
     // Delete table (danger)
     el.appendChild(this._makeBtn(ICONS.deleteTable, 'Delete Table', () => this._deleteTable(), true));
 
-    // Keep tooltip alive while hovering
+    // Keep tooltip alive while hovering.
+    // Don't schedule hide on mouseleave when the size popover is open —
+    // the user is moving the mouse toward it.
     this._disposers.push(
       on(el, 'mouseenter', () => this._clearTimers()),
-      on(el, 'mouseleave', () => this._scheduleHide()),
+      on(el, 'mouseleave', () => {
+        if (this._sizePopover && this._sizePopover.style.display !== 'none') return;
+        this._scheduleHide();
+      }),
     );
 
     return el;
@@ -387,7 +392,10 @@ export class TableTooltip {
         this._hideSizePopover();
       }
     });
-    this._disposers.push(d1, d2, d3, d4);
+    // Keep the tooltip/popover alive while the mouse is over the popover.
+    const d5 = on(popover, 'mouseenter', () => this._clearTimers());
+    const d6 = on(popover, 'mouseleave', () => this._scheduleHide());
+    this._disposers.push(d1, d2, d3, d4, d5, d6);
     return popover;
   }
 

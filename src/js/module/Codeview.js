@@ -88,10 +88,14 @@ export class Codeview {
 
   /**
    * Very simple HTML pretty-printer (indent nested tags).
+   * Inline elements (a, span, strong, em, etc.) are kept on one line to
+   * avoid injecting whitespace that would change rendered text.
    * @param {string} html
    * @returns {string}
    */
   _prettyPrint(html) {
+    // Tags whose content must NOT be split with newlines (breaks text rendering)
+    const INLINE_RE = /^<(a|abbr|b|bdo|br|button|cite|code|dfn|em|i|img|input|kbd|label|output|q|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)([\s>/])/i;
     let indent = 0;
     return html
       .replace(/>\s*</g, '>\n<')
@@ -101,7 +105,11 @@ export class Codeview {
         if (!stripped) return '';
         if (/^<\//.test(stripped)) indent = Math.max(0, indent - 1);
         const out = '  '.repeat(indent) + stripped;
-        if (/^<[^/][^>]*[^/]>/.test(stripped) && !/^<(br|hr|img|input|link|meta)/.test(stripped)) {
+        if (
+          /^<[^/!][^>]*[^/]>/.test(stripped) &&
+          !INLINE_RE.test(stripped) &&
+          !/^<(br|hr|img|input|link|meta)/.test(stripped)
+        ) {
           indent++;
         }
         return out;
