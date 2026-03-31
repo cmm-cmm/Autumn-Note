@@ -420,6 +420,9 @@ export class Toolbar {
       ['direction',     svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
       ['search',        svgWrap('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')],
       ['find-replace',  svgWrap('<circle cx="10" cy="10" r="6"/><line x1="18" y1="18" x2="14.35" y2="14.35"/><path d="M16 19h6"/><path d="M19 16v6"/>')],
+      ['inline-code',   svgWrap('<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5c0 1.1.9 2 2 2a2 2 0 0 1-2 2v5a2 2 0 0 1-2 2h-1"/>')],
+      ['checklist',     svgWrap('<rect x="3" y="4" width="5" height="5" rx="1"/><path d="m4 6.5 1 1 2-2"/><rect x="3" y="13" width="5" height="5" rx="1"/><line x1="10" y1="6.5" x2="21" y2="6.5"/><line x1="10" y1="15.5" x2="21" y2="15.5"/>')],
+      ['print',         svgWrap('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>')],
     ]);
 
     const faPrefix = this.options.fontAwesomeClass || 'fas';
@@ -454,6 +457,9 @@ export class Toolbar {
       ['direction',     'fa-arrow-right-arrow-left'],
       ['search',        'fa-magnifying-glass'],
       ['find-replace',  'fa-magnifying-glass-plus'],
+      ['inline-code',   'fa-code'],
+      ['checklist',     'fa-list-check'],
+      ['print',         'fa-print'],
     ]);
 
     const useFaNow = this._faReady;

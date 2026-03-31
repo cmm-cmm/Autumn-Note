@@ -36,6 +36,7 @@ export class FindReplace {
 
     this._disposers = [];
     this._removeTrap = null;
+    this._focusTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -49,6 +50,8 @@ export class FindReplace {
   }
 
   destroy() {
+    clearTimeout(this._focusTimer);
+    this._focusTimer = null;
     this._clearHighlights();
     this._disposers.forEach((d) => d());
     this._disposers = [];
@@ -71,7 +74,8 @@ export class FindReplace {
     this._updateMode();
     this._open();
     // Pre-select whatever was previously typed so the user can retype immediately
-    setTimeout(() => {
+    clearTimeout(this._focusTimer);
+    this._focusTimer = setTimeout(() => {
       if (this._findInput) {
         this._findInput.select();
         this._findInput.focus();
@@ -221,7 +225,13 @@ export class FindReplace {
         e.shiftKey ? this._prev() : this._next();
       }
     });
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9);
+    const d10 = on(replaceInput, 'keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this._replace();
+      }
+    });
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10);
 
     return overlay;
   }
@@ -274,6 +284,10 @@ export class FindReplace {
         this._matches.unshift({ mark: null });
       }
     }
+
+    // Drop entries where wrapping failed so the counter and navigation are accurate
+    this._matches = this._matches.filter((m) => m.mark);
+    if (this._matches.length === 0) return;
 
     // Highlight the first (current) match
     if (this._matches[0] && this._matches[0].mark) {
@@ -355,7 +369,13 @@ export class FindReplace {
     parent.removeChild(match.mark);
     parent.normalize();
     this.context.invoke('editor.afterCommand');
+    const savedIndex = this._currentIndex;
     this._onSearch();
+    if (this._matches.length > 0) {
+      this._currentIndex = Math.min(savedIndex, this._matches.length - 1);
+      this._scrollToMatch(this._currentIndex);
+      this._updateCounter();
+    }
   }
 
   _replaceAll() {

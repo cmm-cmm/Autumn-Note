@@ -408,6 +408,33 @@ export class Context {
   }
 
   /**
+   * Opens the editor content in a new window and triggers the browser print dialog.
+   * @param {string} [title='']
+   */
+  print(title = '') {
+    const content = this.getHTML();
+    const safeTitle = (title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const w = window.open('', '_blank');
+    if (!w) return; // popup blocked by browser
+    w.document.write(
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+      `<title>${safeTitle}</title>` +
+      '<style>' +
+      'body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.6;padding:20mm;color:#111827;}' +
+      'ul.an-checklist{list-style:none;padding-left:0;}' +
+      'ul.an-checklist li{padding-left:24px;position:relative;margin:2px 0;}' +
+      'ul.an-checklist li input[type="checkbox"]{position:absolute;left:0;top:3px;}' +
+      'code{background:#f3f4f6;border-radius:3px;padding:.1em .35em;font-family:monospace;}' +
+      'pre{background:#f3f4f6;padding:.75em 1em;border-radius:4px;overflow-x:auto;}' +
+      'table{border-collapse:collapse;}td,th{border:1px solid #d1d5db;padding:4px 8px;}' +
+      '</style>' +
+      `</head><body>${content}</body></html>`,
+    );
+    w.document.close();
+    w.onload = () => { w.print(); };
+  }
+
+  /**
    * Sets whether the editor is disabled (readonly).
    * @param {boolean} disabled
    */

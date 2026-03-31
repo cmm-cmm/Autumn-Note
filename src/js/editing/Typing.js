@@ -64,6 +64,49 @@ export function handleKeydown(event, editable, options = {}) {
   if (isKey(event, key.ENTER) && !event.shiftKey) {
     const range = currentRange(editable);
     if (!range) return false;
+
+    // Checklist — Enter creates new item; empty item exits the list
+    const sc = range.sc;
+    const el = sc.nodeType === 3 ? sc.parentElement : sc;
+    const checkLi = el && el.closest && el.closest('.an-checklist li');
+    if (checkLi) {
+      event.preventDefault();
+      const ul = checkLi.closest('.an-checklist');
+      const text = Array.from(checkLi.childNodes)
+        .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+        .map((n) => n.textContent).join('').replace(/\u00a0/g, ' ').trim();
+      const sel = window.getSelection();
+      if (!text) {
+        // Empty item — exit checklist, insert <p> after list
+        const p = document.createElement('p');
+        p.innerHTML = '\u00a0';
+        ul.parentNode.insertBefore(p, ul.nextSibling);
+        checkLi.remove();
+        if (ul.children.length === 0) ul.remove();
+        const nr = document.createRange();
+        nr.setStart(p, 0);
+        nr.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nr);
+      } else {
+        // Create new empty checklist item after the current one
+        const newLi = document.createElement('li');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.setAttribute('contenteditable', 'false');
+        newLi.appendChild(cb);
+        const nbsp = document.createTextNode('\u00a0');
+        newLi.appendChild(nbsp);
+        checkLi.insertAdjacentElement('afterend', newLi);
+        const nr = document.createRange();
+        nr.setStart(nbsp, 0);
+        nr.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nr);
+      }
+      return true;
+    }
+
     const para = closestPara(range.sc, editable);
 
     // Pressing Enter at the end of a blockquote should exit it
