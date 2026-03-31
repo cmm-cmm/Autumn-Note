@@ -743,6 +743,21 @@
   min-height: 16px;
 }
 
+.an-align-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  input[type='radio'] { accent-color: $an-primary; cursor: pointer; }
+
+  .an-align-label {
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
 .an-label {
   display: block;
   font-size: 13px;

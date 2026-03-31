@@ -11,6 +11,7 @@ import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
+import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 
 export class Editor {
   /**
@@ -53,19 +54,23 @@ export class Editor {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
     // Catch ALL content mutations: typing, IME, spellcheck, voice, drag-drop text.
-    // We do NOT also listen to keyup for afterCommand — oninput covers every case
-    // and avoids calling afterCommand twice per keystroke.
     const onInput = () => this.afterCommand();
+    // Hard-enforce maxChars / maxWords before content is mutated
+    const onBeforeInput = (event) => this._enforceLimit(event);
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
+        if (typeof this.options.onSelectionChange === 'function') {
+          this.options.onSelectionChange(this.context);
+        }
       }
     };
 
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
+      on(editable, 'beforeinput', onBeforeInput),
       on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
     );
@@ -93,10 +98,55 @@ export class Editor {
     if (isModifier(event, 'u')) { event.preventDefault(); this.underline(); return; }
     if (isModifier(event, 'k')) { event.preventDefault(); this.context.invoke('linkDialog.show'); return; }
 
+    // Ctrl+Shift+V — paste as plain text (signals Clipboard module)
+    if (isModifier(event, 'v') && event.shiftKey) {
+      this.context.invoke('clipboard.setForcePlain', true);
+      return; // let the native paste event fire
+    }
+
     // Show keyboard shortcuts dialog: Shift+?
     if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       this.context.invoke('shortcutsDialog.show');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Limit enforcement
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Called from beforeinput to block typing when char/word limits are reached.
+   * Deletions and non-typing input types are always allowed.
+   * @param {InputEvent} event
+   */
+  _enforceLimit(event) {
+    const maxChars = this.options.maxChars || 0;
+    const maxWords = this.options.maxWords || 0;
+    if (!maxChars && !maxWords) return;
+
+    const type = event.inputType || '';
+    // Allow deletions, undo, redo and non-insert operations
+    if (type.startsWith('delete') || type === 'historyUndo' || type === 'historyRedo') return;
+    // Allow paste/drop — handled after the fact by Clipboard
+    if (type === 'insertFromPaste' || type === 'insertFromDrop') return;
+    // Only enforce for keyboard/IME/composition insertions
+    if (!type.startsWith('insert')) return;
+
+    const text = this.context.layoutInfo.editable.innerText || '';
+    const chars = text.replace(/\n/g, '').length;
+
+    if (maxChars && chars >= maxChars) {
+      event.preventDefault();
+      return;
+    }
+
+    // Word limit: block space / newline insertion when already at the limit
+    if (maxWords && (event.data === ' ' || type === 'insertParagraph' || type === 'insertLineBreak')) {
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      if (words >= maxWords) {
+        event.preventDefault();
+      }
     }
   }
 
@@ -186,6 +236,54 @@ export class Editor {
    */
   clear() {
     this.setHTML('');
+  }
+
+  /**
+   * Returns true when the editor has no meaningful content.
+   * @returns {boolean}
+   */
+  isEmpty() {
+    const text = (this.context.layoutInfo.editable.innerText || '')
+      .trim()
+      .replace(/\u00a0/g, '');
+    const hasMedia = !!this.context.layoutInfo.editable.querySelector('img, video, iframe, table');
+    return !text && !hasMedia;
+  }
+
+  /**
+   * Inserts HTML at the current cursor position.
+   * @param {string} html
+   */
+  insertHTML(html) {
+    if (!html) return;
+    Style.execCommand('insertHTML', sanitiseHTML(html));
+    this.afterCommand();
+  }
+
+  /**
+   * Inserts plain text at the current cursor position.
+   * @param {string} text
+   */
+  insertText(text) {
+    if (!text) return;
+    Style.execCommand('insertText', text);
+    this.afterCommand();
+  }
+
+  /**
+   * Sets editor content from a Markdown string.
+   * @param {string} md
+   */
+  setMarkdown(md) {
+    this.setHTML(markdownToHTML(md || ''));
+  }
+
+  /**
+   * Returns the editor content as Markdown.
+   * @returns {string}
+   */
+  getMarkdown() {
+    return htmlToMarkdown(this.getHTML());
   }
 
   // ---------------------------------------------------------------------------
@@ -320,10 +418,17 @@ export class Editor {
    * @param {string} src - URL or data-URI
    * @param {string} [alt]
    */
-  insertImage(src, alt = '') {
+  insertImage(src, alt = '', align = '') {
     const safeSrc = sanitiseUrl(src, { allowData: true });
     if (!safeSrc) return;
-    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="an-image">`);
+    const styleMap = {
+      left:   'float:left;margin:0 1em 1em 0',
+      center: 'display:block;margin:0 auto',
+      right:  'float:right;margin:0 0 1em 1em',
+    };
+    const style = styleMap[align] || '';
+    const styleAttr = style ? ` style="${style}"` : '';
+    Style.execCommand('insertHTML', `<img src="${this._escapeAttr(safeSrc)}" alt="${this._escapeAttr(alt)}" class="an-image"${styleAttr}>`);
     this.afterCommand();
   }
 

@@ -217,4 +217,22 @@ export class Statusbar {
     _applyLimitClass(this._wordCountEl, words, maxWords);
     _applyLimitClass(this._charCountEl, chars, maxChars);
   }
+
+  /**
+   * Returns the current word count of the editor content.
+   * @returns {number}
+   */
+  getWordCount() {
+    const editable = this.context.layoutInfo.editable;
+    return _countWords(editable.innerText || '');
+  }
+
+  /**
+   * Returns the current character count (excluding newlines) of the editor content.
+   * @returns {number}
+   */
+  getCharCount() {
+    const editable = this.context.layoutInfo.editable;
+    return ((editable.innerText || '').replace(/\n/g, '')).length;
+  }
 }

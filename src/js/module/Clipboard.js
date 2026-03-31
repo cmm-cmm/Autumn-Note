@@ -22,6 +22,8 @@ export class Clipboard {
   initialize() {
     /** @type {Map<string, string>} Maps blob: URL (in DOM) → data: URL (serialisable) */
     this._blobRegistry = new Map();
+    /** @type {boolean} Set to true by Ctrl+Shift+V shortcut to force one-shot plain paste */
+    this._forcePlain = false;
     const editable = this.context.layoutInfo.editable;
     this._disposers.push(
       on(editable, 'paste',    (e) => this._onPaste(e)),
@@ -113,9 +115,22 @@ export class Clipboard {
       .replace(/<p[^>]*>\s*(&nbsp;)?\s*<\/p>/gi, '');
   }
 
+  /**
+   * Forces the next paste operation to strip all HTML formatting.
+   * Called by Editor when Ctrl+Shift+V is pressed.
+   * @param {boolean} val
+   */
+  setForcePlain(val) {
+    this._forcePlain = !!val;
+  }
+
   _onPaste(event) {
     const clipboardData = event.clipboardData || window.clipboardData;
     if (!clipboardData) return;
+
+    // Consume and reset the one-shot plain-paste flag
+    const forcePlain = this._forcePlain;
+    this._forcePlain = false;
 
     // 1. Image file in clipboard (screenshot, copy-image-from-browser, etc.)
     if (clipboardData.items) {
@@ -139,7 +154,7 @@ export class Clipboard {
     }
 
     // 2. Force plain-text only — strip all formatting
-    if (this.options.pasteAsPlainText) {
+    if (forcePlain || this.options.pasteAsPlainText) {
       event.preventDefault();
       const text = clipboardData.getData('text/plain');
       const html = text

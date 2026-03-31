@@ -234,7 +234,9 @@ export class Toolbar {
     popup.style.display = 'none';
 
     const swatches = createElement('div', { class: 'an-color-swatches' });
-    PRESETS.forEach((color) => {
+    const userSwatches = Array.isArray(this.options.colorSwatches) ? this.options.colorSwatches : [];
+    const allColors = [...new Set([...userSwatches, ...PRESETS])];
+    allColors.forEach((color) => {
       const sw = createElement('div', { class: 'an-color-swatch', title: color, 'data-color': color });
       sw.style.background = color;
       swatches.appendChild(sw);

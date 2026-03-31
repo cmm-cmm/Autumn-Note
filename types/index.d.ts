@@ -94,6 +94,10 @@ export interface AsnOptions {
   onPaste?: (data: { text: string; html: string }) => void;
   /** Callback fired just before the editor instance is destroyed. */
   onDestroy?: (context: Context) => void;
+  /** Callback fired whenever the selection changes inside the editor. */
+  onSelectionChange?: (context: Context) => void;
+  /** Additional color swatches shown at the top of the color picker. */
+  colorSwatches?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +178,27 @@ export declare class Context {
 
   /** Clears the editor content. */
   clear(): void;
+
+  /** Returns true when the editor has no meaningful content. */
+  isEmpty(): boolean;
+
+  /** Inserts HTML at the current cursor position. */
+  insertHTML(html: string): void;
+
+  /** Inserts plain text at the current cursor position. */
+  insertText(text: string): void;
+
+  /** Sets editor content from a Markdown string. */
+  setMarkdown(md: string): void;
+
+  /** Returns the editor content as a Markdown string. */
+  getMarkdown(): string;
+
+  /** Returns the current word count of the editor content. */
+  getWordCount(): number;
+
+  /** Returns the current character count (excluding newlines) of the editor content. */
+  getCharCount(): number;
 
   /** Enables or disables (read-only) mode on this instance. */
   setDisabled(disabled: boolean): void;

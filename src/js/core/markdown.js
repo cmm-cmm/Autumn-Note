@@ -9,6 +9,103 @@
  */
 
 /**
+ * Converts an HTML string to Markdown.
+ * Handles: headings, paragraphs, bold/italic/del/code, links, images,
+ * unordered/ordered lists, blockquote, pre/code blocks, tables, hr.
+ * @param {string} html
+ * @returns {string}
+ */
+export function htmlToMarkdown(html) {
+  const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
+  return _domToMd(doc.body).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function _domToMd(node) {
+  if (node.nodeType === 3) {
+    return node.textContent.replace(/\s+/g, ' ');
+  }
+  if (node.nodeType !== 1) return '';
+
+  const tag = node.nodeName.toLowerCase();
+  const inner = () => Array.from(node.childNodes).map(_domToMd).join('');
+
+  switch (tag) {
+    case 'p':
+    case 'div':      return `\n\n${inner()}\n\n`;
+    case 'br':       return '  \n';
+    case 'h1':       return `\n\n# ${inner()}\n\n`;
+    case 'h2':       return `\n\n## ${inner()}\n\n`;
+    case 'h3':       return `\n\n### ${inner()}\n\n`;
+    case 'h4':       return `\n\n#### ${inner()}\n\n`;
+    case 'h5':       return `\n\n##### ${inner()}\n\n`;
+    case 'h6':       return `\n\n###### ${inner()}\n\n`;
+    case 'strong':
+    case 'b':        return `**${inner()}**`;
+    case 'em':
+    case 'i':        return `*${inner()}*`;
+    case 'del':
+    case 's':
+    case 'strike':   return `~~${inner()}~~`;
+    case 'sup':      return `^${inner()}`;
+    case 'sub':      return `~${inner()}`;
+    case 'code': {
+      // Inside <pre> we emit raw text; outside we wrap in backticks
+      if (node.closest('pre')) return inner();
+      return `\`${inner()}\``;
+    }
+    case 'pre': {
+      const codeEl = node.querySelector('code');
+      const langMatch = ((codeEl && codeEl.className) || '').match(/language-(\S+)/);
+      const lang = langMatch ? langMatch[1] : '';
+      const content = (codeEl || node).textContent || '';
+      return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
+    }
+    case 'blockquote': {
+      const lines = inner().trim().split('\n');
+      return `\n\n${lines.map((l) => `> ${l}`).join('\n')}\n\n`;
+    }
+    case 'a': {
+      const href = node.getAttribute('href') || '';
+      return `[${inner()}](${href})`;
+    }
+    case 'img': {
+      const src = node.getAttribute('src') || '';
+      const alt = node.getAttribute('alt') || '';
+      return `![${alt}](${src})`;
+    }
+    case 'ul': {
+      const items = Array.from(node.querySelectorAll(':scope > li'));
+      if (!items.length) return inner();
+      return `\n\n${items.map((li) => `- ${_domToMd(li).trim()}`).join('\n')}\n\n`;
+    }
+    case 'ol': {
+      const items = Array.from(node.querySelectorAll(':scope > li'));
+      if (!items.length) return inner();
+      return `\n\n${items.map((li, i) => `${i + 1}. ${_domToMd(li).trim()}`).join('\n')}\n\n`;
+    }
+    case 'li':  return inner();
+    case 'hr':  return '\n\n---\n\n';
+    case 'table': {
+      const rows = Array.from(node.querySelectorAll('tr'));
+      if (!rows.length) return inner();
+      const cellTexts = rows.map((tr) =>
+        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replace(/\|/g, '\\|')),
+      );
+      const cols = Math.max(...cellTexts.map((r) => r.length));
+      const padRow = (row) => { const r = [...row]; while (r.length < cols) r.push(''); return r; };
+      let md = '\n\n';
+      md += `| ${padRow(cellTexts[0]).join(' | ')} |\n`;
+      md += `| ${Array(cols).fill('---').join(' | ')} |\n`;
+      for (let r = 1; r < cellTexts.length; r++) {
+        md += `| ${padRow(cellTexts[r]).join(' | ')} |\n`;
+      }
+      return md + '\n';
+    }
+    default: return inner();
+  }
+}
+
+/**
  * Returns true if the text contains recognisable Markdown patterns.
  * @param {string} text
  * @returns {boolean}

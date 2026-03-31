@@ -290,6 +290,62 @@ export class Context {
   }
 
   /**
+   * Returns true when the editor has no meaningful content.
+   * @returns {boolean}
+   */
+  isEmpty() {
+    return this.invoke('editor.isEmpty');
+  }
+
+  /**
+   * Inserts HTML at the current cursor position.
+   * @param {string} html
+   */
+  insertHTML(html) {
+    this.invoke('editor.insertHTML', html);
+  }
+
+  /**
+   * Inserts plain text at the current cursor position.
+   * @param {string} text
+   */
+  insertText(text) {
+    this.invoke('editor.insertText', text);
+  }
+
+  /**
+   * Sets editor content from a Markdown string.
+   * @param {string} md
+   */
+  setMarkdown(md) {
+    this.invoke('editor.setMarkdown', md);
+  }
+
+  /**
+   * Returns the editor content as Markdown.
+   * @returns {string}
+   */
+  getMarkdown() {
+    return this.invoke('editor.getMarkdown');
+  }
+
+  /**
+   * Returns the current word count of the editor content.
+   * @returns {number}
+   */
+  getWordCount() {
+    return this.invoke('statusbar.getWordCount') ?? 0;
+  }
+
+  /**
+   * Returns the current character count of the editor content.
+   * @returns {number}
+   */
+  getCharCount() {
+    return this.invoke('statusbar.getCharCount') ?? 0;
+  }
+
+  /**
    * Sets whether the editor is disabled (readonly).
    * @param {boolean} disabled
    */
