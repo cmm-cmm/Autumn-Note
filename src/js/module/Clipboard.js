@@ -318,6 +318,12 @@ export class Clipboard {
         const blobUrl = URL.createObjectURL(blob);
         this._blobRegistry.set(blobUrl, dataUrl);
         this.context.invoke('editor.insertImage', blobUrl, alt);
+      }).catch((err) => {
+        const message = `Image "${file.name}" could not be processed.`;
+        this.context.triggerEvent('imageError', { file, message, error: err });
+        if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+          console.warn('[AutumnNote]', message, err);
+        }
       });
     });
   }
@@ -381,6 +387,14 @@ export class Clipboard {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          // Canvas context unavailable (e.g. device memory limit) — fall back to
+          // embedding the original file without compression.
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(/** @type {string} */ (e.target.result));
+          reader.readAsDataURL(file);
+          return;
+        }
         ctx.drawImage(img, 0, 0, width, height);
 
         // Prefer WebP for better compression; fall back to JPEG

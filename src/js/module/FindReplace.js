@@ -85,7 +85,14 @@ export class FindReplace {
 
   _open() {
     if (!this._dialog) return;
+    // If already visible, just focus the search input — don't re-trap.
+    if (this._dialog.style.display === 'flex') {
+      if (this._findInput) this._findInput.focus();
+      return;
+    }
     this._dialog.style.display = 'flex';
+    // Release any previous trap before installing a new one.
+    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
     this._removeTrap = trapFocus(this._dialog, () => this._close());
   }
 
@@ -342,10 +349,11 @@ export class FindReplace {
     if (!match || !match.mark || !match.mark.parentNode) return;
 
     const replacement = this._replaceInput ? this._replaceInput.value : '';
+    const parent = match.mark.parentNode;
     const textNode = document.createTextNode(replacement);
-    match.mark.parentNode.insertBefore(textNode, match.mark);
-    match.mark.parentNode.removeChild(match.mark);
-    match.mark.parentNode && match.mark.parentNode.normalize();
+    parent.insertBefore(textNode, match.mark);
+    parent.removeChild(match.mark);
+    parent.normalize();
     this.context.invoke('editor.afterCommand');
     this._onSearch();
   }

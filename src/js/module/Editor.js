@@ -59,6 +59,7 @@ export class Editor {
     const onBeforeInput = (event) => this._enforceLimit(event);
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
+      if (!this.context._alive) return;
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
