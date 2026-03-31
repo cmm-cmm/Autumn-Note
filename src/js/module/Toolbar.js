@@ -418,6 +418,8 @@ export class Toolbar {
       ['caption',      svgWrap('<rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/>')],
       ['remove-format', svgWrap('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>')],
       ['direction',     svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
+      ['search',        svgWrap('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')],
+      ['find-replace',  svgWrap('<circle cx="10" cy="10" r="6"/><line x1="18" y1="18" x2="14.35" y2="14.35"/><path d="M16 19h6"/><path d="M19 16v6"/>')],
     ]);
 
     const faPrefix = this.options.fontAwesomeClass || 'fas';
@@ -450,6 +452,8 @@ export class Toolbar {
       ['keyboard',      'fa-keyboard'],
       ['remove-format', 'fa-remove-format'],
       ['direction',     'fa-arrow-right-arrow-left'],
+      ['search',        'fa-magnifying-glass'],
+      ['find-replace',  'fa-magnifying-glass-plus'],
     ]);
 
     const useFaNow = this._faReady;

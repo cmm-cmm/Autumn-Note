@@ -59,6 +59,7 @@ export class Editor {
     const onBeforeInput = (event) => this._enforceLimit(event);
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
+      if (!this.context._alive) return;
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
@@ -108,6 +109,18 @@ export class Editor {
     if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       this.context.invoke('shortcutsDialog.show');
+      return;
+    }
+    // Find: Ctrl+F
+    if (isModifier(event, 'f')) {
+      event.preventDefault();
+      this.context.invoke('findReplace.show', 'find');
+      return;
+    }
+    // Find & Replace: Ctrl+H
+    if (isModifier(event, 'h')) {
+      event.preventDefault();
+      this.context.invoke('findReplace.show', 'replace');
     }
   }
 
@@ -138,6 +151,9 @@ export class Editor {
 
     if (maxChars && chars >= maxChars) {
       event.preventDefault();
+      if (typeof this.options.onCharLimitReached === 'function') {
+        this.options.onCharLimitReached(this.context);
+      }
       return;
     }
 
@@ -146,6 +162,9 @@ export class Editor {
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       if (words >= maxWords) {
         event.preventDefault();
+        if (typeof this.options.onWordLimitReached === 'function') {
+          this.options.onWordLimitReached(this.context);
+        }
       }
     }
   }
@@ -236,6 +255,13 @@ export class Editor {
    */
   clear() {
     this.setHTML('');
+  }
+
+  /**
+   * Resets the undo/redo history stack.
+   */
+  clearHistory() {
+    if (this._history) this._history.reset();
   }
 
   /**

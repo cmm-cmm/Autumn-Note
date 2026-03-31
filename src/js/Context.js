@@ -31,6 +31,7 @@ import { EmojiDialog } from './module/EmojiDialog.js';
 import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 import { ShortcutsDialog } from './module/ShortcutsDialog.js';
+import { FindReplace } from './module/FindReplace.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
@@ -131,6 +132,7 @@ export class Context {
     register('emojiDialog', EmojiDialog);
     register('iconDialog', IconDialog);
     register('shortcutsDialog', ShortcutsDialog);
+    register('findReplace', FindReplace);
 
     // Custom modules registered via AutumnNote.registerModule()
     for (const [name, ModuleClass] of _customModules) {
@@ -283,10 +285,27 @@ export class Context {
   }
 
   /**
+   * Sets the editor content as plain text (HTML-escaped).
+   * @param {string} text
+   */
+  setText(text) {
+    this.invoke('editor.setText', text);
+  }
+
+  /**
    * Clears the editor content.
    */
   clear() {
     this.invoke('editor.clear');
+  }
+
+  /**
+   * Resets the undo/redo history stack.
+   * Useful after programmatically loading a new document via setHTML() / setMarkdown()
+   * so that Ctrl+Z cannot undo back to the previous document.
+   */
+  clearHistory() {
+    this.invoke('editor.clearHistory');
   }
 
   /**
@@ -343,6 +362,49 @@ export class Context {
    */
   getCharCount() {
     return this.invoke('statusbar.getCharCount') ?? 0;
+  }
+
+  /**
+   * Downloads the editor content as an HTML file.
+   * @param {string} [filename='document.html']
+   */
+  downloadHTML(filename = 'document.html') {
+    this._download(this.getHTML(), filename, 'text/html');
+  }
+
+  /**
+   * Downloads the editor content as a plain-text file.
+   * @param {string} [filename='document.txt']
+   */
+  downloadText(filename = 'document.txt') {
+    this._download(this.getText(), filename, 'text/plain');
+  }
+
+  /**
+   * Downloads the editor content as a Markdown file.
+   * @param {string} [filename='document.md']
+   */
+  downloadMarkdown(filename = 'document.md') {
+    this._download(this.getMarkdown(), filename, 'text/markdown');
+  }
+
+  /**
+   * Creates a temporary Blob URL and triggers a browser file download.
+   * @param {string} content
+   * @param {string} filename
+   * @param {string} mimeType
+   */
+  _download(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   /**

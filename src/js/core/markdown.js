@@ -198,12 +198,32 @@ export function markdownToHTML(text) {
       continue;
     }
 
+    // ---- GFM Table  | col | col | -------------------------------------------
+    // A table starts with a pipe-prefixed or pipe-containing line followed by
+    // a separator row (| --- | --- |). We detect and collect all rows.
+    if (/^\|.+\|/.test(line) && i + 1 < lines.length && /^\|[\s|:-]+\|/.test(lines[i + 1])) {
+      const headerCells = _parseTableRow(line);
+      i += 2; // skip header + separator
+      const bodyRows = [];
+      while (i < lines.length && /^\|.+\|/.test(lines[i])) {
+        bodyRows.push(_parseTableRow(lines[i]));
+        i++;
+      }
+      const thead = `<thead><tr>${headerCells.map((c) => `<th>${_inline(c)}</th>`).join('')}</tr></thead>`;
+      const tbody = bodyRows.length
+        ? `<tbody>${bodyRows.map((row) => `<tr>${row.map((c) => `<td>${_inline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`
+        : '';
+      out.push(`<table>${thead}${tbody}</table>`);
+      continue;
+    }
+
     // ---- Paragraph: collect consecutive non-block lines ---------------------
     const paraLines = [];
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{1,6} |> |[-*+] |\d+\. |```|---|\*\*\*|___)/.test(lines[i])
+      !/^(#{1,6} |> |[-*+] |\d+\. |```|---\s*$|\*{3}\s*$|_{3}\s*$)/.test(lines[i]) &&
+      !/^\|.+\|/.test(lines[i])
     ) {
       paraLines.push(lines[i]);
       i++;
@@ -219,6 +239,20 @@ export function markdownToHTML(text) {
 // ---------------------------------------------------------------------------
 // Inline formatting
 // ---------------------------------------------------------------------------
+
+/**
+ * Splits a GFM table row string into trimmed cell strings.
+ * '| a | b | c |' → ['a', 'b', 'c']
+ * @param {string} row
+ * @returns {string[]}
+ */
+function _parseTableRow(row) {
+  return row
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((c) => c.trim());
+}
 
 function _inline(text) {
   // Images before links (they share [] syntax)
