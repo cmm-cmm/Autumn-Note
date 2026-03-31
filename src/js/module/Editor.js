@@ -69,11 +69,20 @@ export class Editor {
       }
     };
 
+    // Checklist checkboxes are contenteditable=false so native clicks work;
+    // hook afterCommand so the checked state is preserved in undo history.
+    const onCheckboxClick = (e) => {
+      if (e.target.type === 'checkbox' && e.target.closest('.an-checklist')) {
+        this.afterCommand();
+      }
+    };
+
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'beforeinput', onBeforeInput),
       on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
+      on(editable, 'click', onCheckboxClick),
     );
   }
 
@@ -117,10 +126,15 @@ export class Editor {
       this.context.invoke('findReplace.show', 'find');
       return;
     }
-    // Find & Replace: Ctrl+H
+    // Ctrl+H — Find & Replace
     if (isModifier(event, 'h')) {
       event.preventDefault();
       this.context.invoke('findReplace.show', 'replace');
+    }
+    // Ctrl+` — Inline Code
+    if (isModifier(event, '`')) {
+      event.preventDefault();
+      this.inlineCode();
     }
   }
 
@@ -364,6 +378,9 @@ export class Editor {
   outdent()       { Style.outdent();          this.afterCommand(); }
   insertUL()      { Style.insertUnorderedList(); this.afterCommand(); }
   insertOL()      { Style.insertOrderedList();   this.afterCommand(); }
+  inlineCode()    { Style.toggleInlineCode(this.context.layoutInfo.editable); this.afterCommand(); }
+  toggleChecklist() { Style.toggleChecklist(); this.afterCommand(); }
+  print()           { this.context.print(); }
 
   /**
    * @param {string} tagName - e.g. 'h1', 'p', 'blockquote'

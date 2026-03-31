@@ -226,3 +226,104 @@ export function currentStyle(editable) {
     formatBlock: (closest(el, isPara, editable) || { nodeName: 'p' }).nodeName.toLowerCase(),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Inline code toggle
+// ---------------------------------------------------------------------------
+
+/**
+ * Wraps the selection in an inline <code> element, or unwraps it if the
+ * cursor is already inside a <code> that is not inside a <pre>.
+ * @param {HTMLElement} [editable]
+ */
+export function toggleInlineCode(editable) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let container = range.commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  const codeEl = container && container.closest ? container.closest('code') : null;
+  if (codeEl && !codeEl.closest('pre')) {
+    // Unwrap
+    const parent = codeEl.parentNode;
+    while (codeEl.firstChild) parent.insertBefore(codeEl.firstChild, codeEl);
+    parent.removeChild(codeEl);
+    if (editable) editable.normalize();
+  } else {
+    if (range.collapsed) return;
+    try {
+      const code = document.createElement('code');
+      range.surroundContents(code);
+    } catch {
+      // surroundContents fails across element boundaries — extract and rewrap
+      const frag = range.extractContents();
+      const code = document.createElement('code');
+      code.appendChild(frag);
+      range.insertNode(code);
+    }
+  }
+}
+
+/**
+ * Returns true when the cursor / selection is inside an inline <code>
+ * (not nested in a <pre>).
+ * @returns {boolean}
+ */
+export function isInlineCode() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return false;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  const code = container && container.closest ? container.closest('code') : null;
+  return !!(code && !code.closest('pre'));
+}
+
+// ---------------------------------------------------------------------------
+// Checklist (task list)
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggles a task-list at the cursor.
+ * If inside a checklist <li>, converts it back to a <p>.
+ * Otherwise inserts a new <ul class="an-checklist"> with one item.
+ */
+export function toggleChecklist() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let container = range.commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  const li = container && container.closest ? container.closest('.an-checklist li') : null;
+  if (li) {
+    // Exit checklist — convert item to a <p>
+    const ul = li.closest('.an-checklist');
+    const text = Array.from(li.childNodes)
+      .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+      .map((n) => n.textContent).join('').replace(/\u00a0/g, ' ').trim();
+    const p = document.createElement('p');
+    p.textContent = text || '\u00a0';
+    ul.parentNode.insertBefore(p, ul.nextSibling);
+    ul.removeChild(li);
+    if (ul.children.length === 0) ul.remove();
+    const nr = document.createRange();
+    nr.setStart(p, 0);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+  } else {
+    const cb = '<input type="checkbox" contenteditable="false">';
+    execCommand('insertHTML', `<ul class="an-checklist"><li>${cb}\u00a0</li></ul>`);
+  }
+}
+
+/**
+ * Returns true when the cursor is inside a checklist item.
+ * @returns {boolean}
+ */
+export function isInChecklist() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return false;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  return !!(container && container.closest && container.closest('.an-checklist li'));
+}

@@ -73,7 +73,79 @@ export class TableTooltip {
       }),
     );
 
+    this._initColResize();
     return this;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Column drag-resize
+  // ---------------------------------------------------------------------------
+
+  _initColResize() {
+    const editable = this.context.layoutInfo.editable;
+    let _nearCell  = null;
+    let _resizing  = false;
+    let _startX    = 0;
+    let _startW    = 0;
+    let _colIdx    = -1;
+    let _table     = null;
+
+    const onEditorMove = (e) => {
+      if (_resizing) return;
+      const cell = e.target.closest('td, th');
+      if (!cell || !editable.contains(cell)) {
+        if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
+        return;
+      }
+      const rect = cell.getBoundingClientRect();
+      if (Math.abs(e.clientX - rect.right) < 6) {
+        cell.style.cursor = 'col-resize';
+        _nearCell = cell;
+      } else {
+        if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
+      }
+    };
+
+    const onEditorDown = (e) => {
+      if (!_nearCell) return;
+      _resizing  = true;
+      _startX    = e.clientX;
+      _startW    = _nearCell.offsetWidth;
+      _table     = _nearCell.closest('table');
+      _colIdx    = Array.from(_nearCell.closest('tr').cells).indexOf(_nearCell);
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor     = 'col-resize';
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const onDocMove = (e) => {
+      if (!_resizing) return;
+      const newW = Math.max(30, _startW + (e.clientX - _startX));
+      if (_table && _colIdx >= 0) {
+        Array.from(_table.querySelectorAll('tr')).forEach((r) => {
+          const c = r.cells[_colIdx];
+          if (c) { c.style.width = `${newW}px`; c.style.minWidth = `${newW}px`; }
+        });
+      }
+    };
+
+    const onDocUp = () => {
+      if (!_resizing) return;
+      _resizing = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor     = '';
+      _table  = null;
+      _colIdx = -1;
+      this.context.invoke('editor.afterCommand');
+    };
+
+    this._disposers.push(
+      on(editable,  'mousemove', onEditorMove),
+      on(editable,  'mousedown', onEditorDown),
+      on(document,  'mousemove', onDocMove),
+      on(document,  'mouseup',   onDocUp),
+    );
   }
 
   destroy() {

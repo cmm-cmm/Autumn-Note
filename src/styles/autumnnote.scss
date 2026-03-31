@@ -1661,6 +1661,47 @@ $an-video-accent: #8b5cf6; // violet-500
 }
 
 // =============================================================================
+// Checklist (task list)
+// =============================================================================
+
+.an-editable {
+  ul.an-checklist {
+    list-style: none;
+    padding-left: 0.5em;
+    margin: 0.5em 0;
+
+    li {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 2px 0;
+      line-height: inherit;
+
+      input[type='checkbox'] {
+        flex-shrink: 0;
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        cursor: pointer;
+        accent-color: $an-primary;
+        position: relative;
+        top: 2px;
+      }
+
+      // Checked item: dim + strike-through the text node
+      &:has(input[type='checkbox']:checked) {
+        color: $an-muted;
+        text-decoration: line-through;
+      }
+    }
+  }
+}
+
+.an-theme-dark .an-editable ul.an-checklist li:has(input[type='checkbox']:checked) {
+  color: $an-dark-muted;
+}
+
+// =============================================================================
 // Print styles
 // =============================================================================
 

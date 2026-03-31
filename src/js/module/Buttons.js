@@ -251,6 +251,9 @@ export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => 
 export const shortcutsBtn = btn('shortcuts', 'keyboard', 'Keyboard Shortcuts (Shift+?)', (ctx) => ctx.invoke('shortcutsDialog.show'));
 export const findBtn = btn('find', 'search', 'Find (Ctrl+F)', (ctx) => ctx.invoke('findReplace.show', 'find'));
 export const findReplaceBtn = btn('findReplace', 'find-replace', 'Find & Replace (Ctrl+H)', (ctx) => ctx.invoke('findReplace.show', 'replace'));
+export const inlineCodeBtn = btn('inlineCode', 'inline-code', 'Inline Code (Ctrl+`)', (ctx) => ctx.invoke('editor.inlineCode'), () => Style.isInlineCode());
+export const checklistBtn  = btn('checklist',  'checklist',   'Checklist', (ctx) => ctx.invoke('editor.toggleChecklist'), () => Style.isInChecklist());
+export const printBtn      = btn('print',      'print',       'Print', (ctx) => ctx.invoke('editor.print'));
 
 // ---------------------------------------------------------------------------
 // Text / background colour pickers
@@ -287,11 +290,11 @@ export const backColorBtn = {
 export const defaultToolbar = [
   [paragraphStyleBtn, fontFamilyBtn, fontSizeBtn, lineHeightBtn],
   [undoBtn, redoBtn],
-  [boldBtn, italicBtn, underlineBtn, strikeBtn],
+  [boldBtn, italicBtn, underlineBtn, strikeBtn, inlineCodeBtn],
   [superscriptBtn, subscriptBtn],
   [foreColorBtn, backColorBtn],
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
-  [ulBtn, olBtn, indentBtn, outdentBtn],
+  [ulBtn, olBtn, checklistBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
-  [removeFormatBtn, codeviewBtn, fullscreenBtn, findBtn, shortcutsBtn],
+  [removeFormatBtn, codeviewBtn, fullscreenBtn, findBtn, printBtn, shortcutsBtn],
 ];
