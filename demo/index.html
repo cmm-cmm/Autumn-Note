@@ -3,73 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote — Live Demo</title>
+  <title>AutumnNote — Dev</title>
   <link rel="stylesheet" href="./dist/autumnnote.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 40px 24px;
-      font-family: system-ui, -apple-system, sans-serif;
+      padding: 24px;
+      font-family: system-ui, sans-serif;
       background: #f3f4f6;
       color: #111827;
     }
-    .container { max-width: 860px; margin: 0 auto; }
-    header { margin-bottom: 32px; }
-    header h1 { margin: 0 0 6px; font-size: 28px; }
-    header p  { margin: 0; color: #6b7280; font-size: 15px; }
-    header a  { color: #2563eb; text-decoration: none; }
-    header a:hover { text-decoration: underline; }
-    section { margin-bottom: 32px; }
-    section h2 { margin: 0 0 12px; font-size: 16px; color: #374151; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    p  { margin: 0 0 20px; color: #6b7280; }
+    #editor-wrapper { max-width: 860px; }
     #output {
-      padding: 14px 16px;
+      max-width: 860px;
+      margin-top: 20px;
+      padding: 14px;
       background: #fff;
       border: 1px solid #d1d5db;
       border-radius: 6px;
       font-size: 13px;
-      font-family: ui-monospace, monospace;
       color: #374151;
       white-space: pre-wrap;
       word-break: break-all;
-      min-height: 48px;
-    }
-    .badge {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 2px 8px;
-      font-size: 11px;
-      background: #e0f2fe;
-      color: #0369a1;
-      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>AutumnNote ✍️</h1>
-      <p>A modern, lightweight WYSIWYG editor — built with vanilla JavaScript, no jQuery required.</p>
-      <p style="margin-top:8px;">
-        <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank">GitHub ↗</a>
-        &nbsp;·&nbsp;
-        <a href="https://www.npmjs.com/package/autumnnote" target="_blank">npm ↗</a>
-      </p>
-    </header>
+  <h1>AutumnNote</h1>
+  <p>A modern WYSIWYG editor — no jQuery required.</p>
 
-    <section>
-      <h2>Editor</h2>
-      <div id="editor">
-        <p>Hello, <strong>AutumnNote</strong>! ✨</p>
-        <p>Try the toolbar above — bold, italic, lists, headings, links, and more.</p>
-      </div>
-    </section>
+  <div id="editor-wrapper">
+    <textarea id="editor">
+      <p>Hello, <strong>AutumnNote</strong>! ✨</p>
+      <p>Start typing to edit this content.</p>
+    </textarea>
+  </div>
 
-    <section>
-      <h2>HTML Output</h2>
-      <div id="output"></div>
-      <span class="badge">Live preview — updates as you type</span>
-    </section>
+  <div>
+    <strong>HTML Output:</strong>
+    <div id="output"></div>
   </div>
 
   <script src="./dist/autumnnote.umd.js"></script>
@@ -82,6 +57,8 @@
         document.getElementById('output').textContent = html;
       },
     });
+
+    window.editor = editor;
     document.getElementById('output').textContent = editor.getHTML();
   </script>
 </body>
