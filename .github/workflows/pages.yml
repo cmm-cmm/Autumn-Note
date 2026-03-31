@@ -34,12 +34,8 @@ jobs:
       - name: Build library
         run: npm run build
 
-      - name: Assemble demo site
-        run: |
-          mkdir -p _site/dist
-          cp demo/index.html _site/index.html
-          cp dist/autumnnote.umd.js _site/dist/
-          cp dist/autumnnote.css    _site/dist/
+      - name: Build demo site
+        run: npm run build:demo
 
       - uses: actions/upload-pages-artifact@v3
         with:
