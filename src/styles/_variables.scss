@@ -13,6 +13,16 @@ $an-text:           #111827 !default;   // gray-900
 $an-muted:          #6b7280 !default;   // gray-500
 $an-statusbar-bg:   #f9fafb !default;
 
+// Dark theme color overrides  (applied via .an-theme-dark on .an-container)
+$an-dark-bg:             #1e1e2e !default;
+$an-dark-bg-toolbar:     #181825 !default;
+$an-dark-bg-btn-hover:   #313244 !default;
+$an-dark-bg-btn-active:  #1e3a5f !default;
+$an-dark-border:         #45475a !default;
+$an-dark-text:           #cdd6f4 !default;
+$an-dark-muted:          #6c7086 !default;
+$an-dark-statusbar-bg:   #181825 !default;
+
 // Fonts
 $an-font-family:    system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !default;
 $an-font-size:      14px !default;

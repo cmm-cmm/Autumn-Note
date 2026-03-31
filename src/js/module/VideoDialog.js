@@ -218,9 +218,11 @@ export class VideoDialog {
     const height = Math.round(width * 9 / 16); // 16:9
 
     if (info && (info.type === 'YouTube' || info.type === 'YouTube Shorts' || info.type === 'Vimeo')) {
+      const iframeTitle = `${info.type} video player`;
       return (
         `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
         `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` +
+        `title="${iframeTitle}" ` +
         `frameborder="0" allowfullscreen ` +
         `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +
         `style="display:block;max-width:100%"></iframe>` +

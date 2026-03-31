@@ -167,9 +167,11 @@ export class ImageResizer {
     const aspectRatio = startW / (startH || 1);
     const isCorner = pos.length === 2; // 'nw','ne','se','sw'
 
+    const editable = this.context.layoutInfo.editable;
     const onMove = (me) => {
       const dx = me.clientX - startX;
       const dy = me.clientY - startY;
+      const maxW = editable.clientWidth || Infinity;
       let newW = startW;
       let newH = startH;
 
@@ -178,12 +180,16 @@ export class ImageResizer {
       if (pos.includes('s')) newH = Math.max(20, startH + dy);
       if (pos.includes('n')) newH = Math.max(20, startH - dy);
 
+      // Clamp to container width
+      newW = Math.min(newW, maxW);
+
       if (isCorner) {
         // Lock aspect ratio: use larger absolute delta to drive both dimensions
         if (Math.abs(dx) >= Math.abs(dy)) {
           newH = Math.max(20, Math.round(newW / aspectRatio));
         } else {
-          newW = Math.max(20, Math.round(newH * aspectRatio));
+          newW = Math.min(Math.max(20, Math.round(newH * aspectRatio)), maxW);
+          newH = Math.max(20, Math.round(newW / aspectRatio));
         }
       }
 

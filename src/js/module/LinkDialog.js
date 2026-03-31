@@ -153,11 +153,29 @@ export class LinkDialog {
   }
 
   _onInsert() {
-    const url = this._urlInput.value.trim();
+    let url = this._urlInput.value.trim();
     const text = this._textInput.value.trim();
     const newTab = this._tabCheckbox.checked;
 
     if (!url) {
+      this._urlInput.focus();
+      return;
+    }
+
+    // Auto-prefix with https:// if no protocol is present
+    if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url)) {
+      url = 'https://' + url;
+    }
+
+    // Block unsafe protocols
+    try {
+      const parsed = new URL(url);
+      if (/^javascript:/i.test(parsed.protocol) || /^vbscript:/i.test(parsed.protocol)) {
+        this._urlInput.focus();
+        return;
+      }
+    } catch {
+      // URL constructor failed — not a valid URL
       this._urlInput.focus();
       return;
     }
