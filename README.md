@@ -10,6 +10,8 @@
 
 A modern, lightweight WYSIWYG rich-text editor with vanilla JavaScript (ES2022+), no jQuery dependency.
 
+> ✍️ *Write rich text. No dependencies. No drama.*
+
 🔗 **[Live Demo](https://cmm-cmm.github.io/Autumn-Note/)**
 
 ![AutumnNote Screenshot](demo/Screenshot.png)
@@ -144,6 +146,59 @@ const editor = AutumnNote.create('#my-editor', {
   useFontAwesome: true,
   fontAwesomeClass: 'fa-solid',  // FA 6 prefix
 });
+```
+
+---
+
+## Usage
+
+### Read content on demand
+
+The most common pattern — attach a button that reads back the current HTML:
+
+```html
+<link rel="stylesheet" href="dist/autumnnote.css" />
+
+<div id="editor"><p>Hello, <strong>AutumnNote</strong>!</p></div>
+
+<button onclick="getHTML()">Get HTML</button>
+<pre id="output"></pre>
+
+<script src="dist/autumnnote.umd.js"></script>
+<script>
+  const editor = AutumnNote.create('#editor', { height: 300 });
+
+  function getHTML() {
+    document.getElementById('output').innerText = editor.getHTML();
+  }
+</script>
+```
+
+### React to every change
+
+Use `onChange` (or `editor.on('change', fn)`) to update a live preview automatically:
+
+```html
+<div id="editor"><p>Start typing…</p></div>
+<pre id="preview"></pre>
+
+<script src="dist/autumnnote.umd.js"></script>
+<script>
+  const editor = AutumnNote.create('#editor', {
+    height: 300,
+    onChange(html) {
+      document.getElementById('preview').innerText = html;
+    },
+  });
+</script>
+```
+
+### Set and clear content programmatically
+
+```js
+editor.setHTML('<p>New <em>content</em></p>'); // set
+editor.clear();                                 // clear to empty <p>
+console.log(editor.getText());                  // plain text, no markup
 ```
 
 ---
