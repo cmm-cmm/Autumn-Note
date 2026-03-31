@@ -1,6 +1,6 @@
 {
   "name": "autumnnote",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A modern, lightweight WYSIWYG editor — built with vanilla JavaScript, no jQuery required.",
   "main": "dist/autumnnote.umd.js",
   "module": "dist/autumnnote.es.js",
@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.umd.config.js",
     "build:demo": "vite build --config vite.demo.config.js",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
