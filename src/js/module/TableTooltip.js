@@ -371,8 +371,13 @@ export class TableTooltip {
     if (!row) return;
     const colCount = Array.from(row.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
     const newRow = document.createElement('tr');
+    const refCells = Array.from(row.cells);
     for (let i = 0; i < colCount; i++) {
-      newRow.appendChild(createElement('td', {}, ['\u00a0']));
+      const td = createElement('td', {}, ['\u00a0']);
+      const ref = refCells[i];
+      if (ref && ref.style.width)    td.style.width    = ref.style.width;
+      if (ref && ref.style.minWidth) td.style.minWidth = ref.style.minWidth;
+      newRow.appendChild(td);
     }
     if (position === 'above') row.parentElement?.insertBefore(newRow, row);
     else row.insertAdjacentElement('afterend', newRow);
@@ -389,9 +394,10 @@ export class TableTooltip {
     const colIndex = Array.from(row.cells).indexOf(cell);
     Array.from(table.querySelectorAll('tr')).forEach((r) => {
       const cells = Array.from(r.cells);
-      const td = createElement('td', {}, ['\u00a0']);
+      const isHeader = r.closest('thead') !== null;
+      const newCell = createElement(isHeader ? 'th' : 'td', {}, ['\u00a0']);
       const ref = position === 'left' ? cells[colIndex] : (cells[colIndex + 1] || null);
-      r.insertBefore(td, ref);
+      r.insertBefore(newCell, ref);
     });
     this._positionNear(this._activeTable);
     this.context.invoke('editor.afterCommand');
@@ -403,7 +409,10 @@ export class TableTooltip {
     const row   = cell.closest('tr');
     const table = cell.closest('table');
     if (!row || !table) return;
-    if (table.querySelectorAll('tr').length <= 1) return;
+    // Guard: do not delete the last body row (thead rows are not counted)
+    const tbody = table.querySelector('tbody');
+    const bodyRows = tbody ? tbody.querySelectorAll('tr').length : table.querySelectorAll('tr').length;
+    if (bodyRows <= 1 && row.closest('tbody')) return;
     this._activeCell = null;
     row.parentElement?.removeChild(row);
     this._positionNear(this._activeTable);
@@ -531,7 +540,7 @@ export class TableTooltip {
         });
       } else {
         const row = cell.closest('tr');
-        if (row) Array.from(row.cells).forEach((c) => { c.style.height = `${val}px`; });
+        if (row) Array.from(row.cells).forEach((c) => { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; });
       }
       this.context.invoke('editor.afterCommand');
     };

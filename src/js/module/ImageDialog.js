@@ -141,7 +141,9 @@ export class ImageDialog {
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    this._disposers.push(d1, d2, d3);
+    const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d5 = on(altInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    this._disposers.push(d1, d2, d3, d4, d5);
 
     return overlay;
   }
