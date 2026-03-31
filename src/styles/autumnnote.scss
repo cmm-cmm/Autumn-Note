@@ -459,6 +459,7 @@
   // Table styles — target both classed and unclassed tables
   table, .an-table {
     border-collapse: collapse;
+    table-layout: fixed;
     width: 100%;
     margin: 0.75em 0;
 
@@ -467,6 +468,8 @@
       padding: 6px 10px;
       min-width: 40px;
       vertical-align: top;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     th {
