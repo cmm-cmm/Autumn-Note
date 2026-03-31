@@ -8,7 +8,7 @@
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![FontAwesome](https://img.shields.io/badge/FontAwesome-6.5.2-528DD7?logo=fontawesome&logoColor=white)](https://fontawesome.com/)
 
-A modern, lightweight WYSIWYG rich-text editor inspired by [Summernote](https://github.com/summernote/summernote) — rewritten from scratch with vanilla JavaScript (ES2022+), no jQuery dependency.
+A modern, lightweight WYSIWYG rich-text editor with vanilla JavaScript (ES2022+), no jQuery dependency.
 
 ---
 
