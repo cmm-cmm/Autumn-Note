@@ -82,6 +82,37 @@ export class Clipboard {
   // Paste handler
   // ---------------------------------------------------------------------------
 
+  /**
+   * Strips Microsoft Word / Office HTML artefacts from a pasted HTML string.
+   * Removes conditional comments, Office namespace elements, MsoXxx classes,
+   * mso-* inline style rules, and empty paragraphs left behind by Word.
+   * @param {string} html
+   * @returns {string}
+   */
+  _cleanWordHtml(html) {
+    return html
+      // Conditional comments <!--[if ...]>...<![endif]-->
+      .replace(/<!--\[if[\s\S]*?\[endif\]-->/gi, '')
+      // XML data blobs <xml>...</xml>
+      .replace(/<xml[\s\S]*?<\/xml>/gi, '')
+      // XML processing instructions <?xml ... ?>
+      .replace(/<\?xml[\s\S]*?\?>/gi, '')
+      // Office namespace elements: <o:p>, <w:sDt>, <m:oMath>, <v:shape> …
+      .replace(/<\/?(o|w|m|v|st1):[a-z][^>]*>/gi, '')
+      // MsoNormal, MsoBodyText, etc. class attributes
+      .replace(/\s+class="Mso[^"]*"/gi, '')
+      // mso-* properties inside inline style attributes
+      .replace(/\s+style="([^"]*)"/gi, (_m, style) => {
+        const cleaned = style.split(';')
+          .map((s) => s.trim())
+          .filter((s) => s && !/^mso-/i.test(s) && !/^(tab-stops|margin-[a-z]+-alt)/i.test(s))
+          .join('; ');
+        return cleaned ? ` style="${cleaned}"` : '';
+      })
+      // Empty paragraphs Word sprinkles everywhere
+      .replace(/<p[^>]*>\s*(&nbsp;)?\s*<\/p>/gi, '');
+  }
+
   _onPaste(event) {
     const clipboardData = event.clipboardData || window.clipboardData;
     if (!clipboardData) return;
@@ -97,6 +128,14 @@ export class Clipboard {
         this._insertImageFiles(files);
         return;
       }
+    }
+
+    // Fire onPaste hook so consumers can observe / intercept
+    if (typeof this.options.onPaste === 'function') {
+      this.options.onPaste({
+        text: clipboardData.getData('text/plain') || '',
+        html: clipboardData.types.includes('text/html') ? clipboardData.getData('text/html') : null,
+      });
     }
 
     // 2. Force plain-text only — strip all formatting
@@ -128,7 +167,10 @@ export class Clipboard {
     if (this.options.pasteCleanHTML !== false && clipboardData.types.includes('text/html')) {
       event.preventDefault();
       const raw = clipboardData.getData('text/html');
-      const clean = sanitiseHTML(raw);
+      // Detect Word / Office content and strip its proprietary markup first
+      const isWordContent = /<[a-z]+:[a-z]/i.test(raw) || /class="Mso/i.test(raw) || /\bmso-/i.test(raw);
+      const htmlToClean = isWordContent ? this._cleanWordHtml(raw) : raw;
+      const clean = sanitiseHTML(htmlToClean);
       execCommand('insertHTML', clean);
       this.context.invoke('editor.afterCommand');
       return;

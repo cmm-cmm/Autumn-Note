@@ -29,9 +29,17 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {boolean}  [codeHighlight]     - Auto-load Prism.js for syntax highlighting of code blocks
  * @property {string}   [codeHighlightCDN]  - CDN base URL for Prism assets (defaults to cdnjs)
  * @property {boolean}  [markdownPaste]     - Convert pasted Markdown text to HTML (default: true)
- * @property {Function} [onImageError]      - Callback when an image exceeds the size limit: ({ file, message }) => void
- * @property {Function} [onInit]            - Callback fired once the editor has fully initialised: (context) => void
- * @property {number}   [historyLimit]      - Maximum undo/redo stack size (default: 100)
+ * @property {boolean}  [readOnly]          - Start editor in read-only / non-editable mode
+ * @property {boolean}  [spellcheck]        - Enable browser spellcheck in the editable area (default: true)
+ * @property {string}   [direction]         - Text direction: 'ltr' (default) | 'rtl'
+ * @property {string}   [toolbarOverflow]   - Toolbar overflow strategy: 'wrap' (default) | 'scroll'
+ * @property {boolean}  [autoSave]          - Auto-save content to localStorage on change
+ * @property {string}   [autoSaveKey]       - localStorage key used for auto-save (default: 'autumnnote-autosave')
+ * @property {number}   [maxChars]          - Maximum character count (0 = unlimited). Shows warning in statusbar.
+ * @property {number}   [maxWords]          - Maximum word count (0 = unlimited). Shows warning in statusbar.
+ * @property {boolean}  [tableHeaderRow]    - Insert a header row (<thead><th>) when creating tables
+ * @property {Function} [onPaste]           - Callback fired on every paste: ({ text, html }) => void
+ * @property {Function} [onDestroy]         - Callback fired when the editor is destroyed: (context) => void
  */
 
 /** @type {AsnOptions} */
@@ -72,6 +80,8 @@ export const defaultOptions = {
   historyLimit: 100,
   // Default font family applied to the editor and shown in the dropdown when no explicit font is set
   defaultFontFamily: 'Arial',
+  // Default font size applied to the editor and shown in the size dropdown when no explicit size is set
+  defaultFontSize: '14px',
   // Font families shown in the toolbar font-family dropdown
   fontFamilies: [
     'Arial',
@@ -85,4 +95,26 @@ export const defaultOptions = {
     'Trebuchet MS',
     'Verdana',
   ],
+  // Read-only mode — disables all editing when true
+  readOnly: false,
+  // Enable/disable browser spell-check on the editable area
+  spellcheck: true,
+  // Text direction: 'ltr' (default) or 'rtl'
+  direction: 'ltr',
+  // How the toolbar handles overflow: 'wrap' (default, wraps to next line) or 'scroll' (single scrollable row)
+  toolbarOverflow: 'wrap',
+  // Auto-save content to localStorage on every change
+  autoSave: false,
+  // localStorage key used when autoSave is enabled
+  autoSaveKey: 'autumnnote-autosave',
+  // Maximum character count (0 = unlimited)
+  maxChars: 0,
+  // Maximum word count (0 = unlimited)
+  maxWords: 0,
+  // Insert a header row (<thead>) when creating new tables
+  tableHeaderRow: false,
+  // Callback fired after a paste event: function({ text, html })
+  onPaste: null,
+  // Callback fired just before the editor instance is destroyed
+  onDestroy: null,
 };

@@ -10,8 +10,11 @@
  */
 
 import '../styles/autumnnote.scss';
-import { Context } from './Context.js';
+import { Context, _customModules } from './Context.js';
 import { defaultOptions } from './settings.js';
+
+// Snapshot of factory defaults taken at module-load time (before any setDefaults() calls)
+const _originalDefaults = { ...defaultOptions };
 
 // Re-export for tree-shaking / module consumers
 export { Context } from './Context.js';
@@ -80,6 +83,19 @@ const AutumnNote = {
 
   /** Merges properties into the global defaults, applied to all future instances. */
   setDefaults(overrides) { Object.assign(defaultOptions, overrides); },
+
+  /** Restores global defaults to their original factory values. */
+  resetDefaults() {
+    Object.keys(defaultOptions).forEach((k) => delete defaultOptions[k]);
+    Object.assign(defaultOptions, _originalDefaults);
+  },
+
+  /**
+   * Registers a custom module to be included in every new editor instance.
+   * @param {string} name - unique module key used for ctx.invoke() calls
+   * @param {Function} ModuleClass - class with initialize() and optional destroy()
+   */
+  registerModule(name, ModuleClass) { _customModules.set(name, ModuleClass); },
 
   /** Library version */
   version: '1.0.0',

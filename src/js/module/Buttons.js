@@ -116,6 +116,61 @@ export const tableBtn = {
 };
 
 // ---------------------------------------------------------------------------
+// Font size dropdown
+// ---------------------------------------------------------------------------
+
+/** @type {DropdownDef} */
+export const fontSizeBtn = {
+  name: 'fontSize',
+  type: 'select',
+  tooltip: 'Font Size',
+  placeholder: 'Size',
+  selectClass: 'an-select-narrow',
+  items: ['8px', '10px', '11px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '72px'],
+  action: (ctx, value) => Style.fontSize(value, ctx.layoutInfo.editable),
+  getValue: (ctx) => {
+    try {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        let el = sel.getRangeAt(0).startContainer;
+        if (el.nodeType === 3) el = el.parentElement;
+        while (el && !el.style) el = el.parentElement;
+        const size = el ? (el.style.fontSize || '') : '';
+        if (size) return size;
+      }
+      // Fallback: read the base font size from the editable element itself
+      const editable = ctx && ctx.layoutInfo && ctx.layoutInfo.editable;
+      if (editable) return editable.style.fontSize || '';
+      return '';
+    } catch { return ''; }
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Remove format button
+// ---------------------------------------------------------------------------
+
+export const removeFormatBtn = btn('removeFormat', 'remove-format', 'Remove Format', () => Style.execCommand('removeFormat'));
+
+// ---------------------------------------------------------------------------
+// Direction (LTR / RTL) toggle button
+// ---------------------------------------------------------------------------
+
+export const directionBtn = btn(
+  'direction',
+  'direction',
+  'Toggle Text Direction (LTR / RTL)',
+  (ctx) => {
+    const editable = ctx.layoutInfo.editable;
+    const current = editable.getAttribute('dir') || 'ltr';
+    const next = current === 'ltr' ? 'rtl' : 'ltr';
+    editable.setAttribute('dir', next);
+    editable.style.textAlign = next === 'rtl' ? 'right' : 'left';
+    ctx.invoke('editor.afterCommand');
+  },
+);
+
+// ---------------------------------------------------------------------------
 // Font family dropdown
 // ---------------------------------------------------------------------------
 
@@ -228,7 +283,7 @@ export const backColorBtn = {
  * Each sub-array is a button group (separated by a divider).
  */
 export const defaultToolbar = [
-  [paragraphStyleBtn, fontFamilyBtn, lineHeightBtn],
+  [paragraphStyleBtn, fontFamilyBtn, fontSizeBtn, lineHeightBtn],
   [undoBtn, redoBtn],
   [boldBtn, italicBtn, underlineBtn, strikeBtn],
   [superscriptBtn, subscriptBtn],
@@ -236,5 +291,5 @@ export const defaultToolbar = [
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
   [ulBtn, olBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
-  [codeviewBtn, fullscreenBtn, shortcutsBtn],
+  [removeFormatBtn, codeviewBtn, fullscreenBtn, shortcutsBtn],
 ];

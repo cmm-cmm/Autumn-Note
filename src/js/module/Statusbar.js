@@ -6,6 +6,12 @@
 import { createElement, on } from '../core/dom.js';
 import { debounce } from '../core/func.js';
 
+// Cache the segmenter instance at module level to avoid per-call allocation
+const _segmenter =
+  typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function'
+    ? new Intl.Segmenter(undefined, { granularity: 'word' })
+    : null;
+
 /**
  * Count words in a string, CJK-aware.
  * Uses Intl.Segmenter (Chromium 87+, Firefox 125+, Safari 17+) when available,
@@ -16,16 +22,37 @@ import { debounce } from '../core/func.js';
 function _countWords(text) {
   const trimmed = text.trim();
   if (!trimmed) return 0;
-  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
+  if (_segmenter) {
     let count = 0;
-    for (const seg of segmenter.segment(trimmed)) {
+    for (const seg of _segmenter.segment(trimmed)) {
       if (seg.isWordLike) count++;
     }
     return count;
   }
   // Fallback: split on whitespace
   return trimmed.split(/\s+/).length;
+}
+
+/**
+ * Toggles warning/exceeded CSS classes on a count element.
+ * @param {HTMLElement} el
+ * @param {number} current
+ * @param {number} limit  0 = no limit
+ */
+function _applyLimitClass(el, current, limit) {
+  if (!limit) {
+    el.classList.remove('an-count-warn', 'an-count-exceeded');
+    return;
+  }
+  if (current > limit) {
+    el.classList.add('an-count-exceeded');
+    el.classList.remove('an-count-warn');
+  } else if (current >= limit * 0.9) {
+    el.classList.add('an-count-warn');
+    el.classList.remove('an-count-exceeded');
+  } else {
+    el.classList.remove('an-count-warn', 'an-count-exceeded');
+  }
 }
 
 export class Statusbar {
@@ -176,7 +203,18 @@ export class Statusbar {
     const text = editable.innerText || '';
     const words = _countWords(text);
     const chars = text.replace(/\n/g, '').length;
-    this._wordCountEl.textContent = `Words: ${words}`;
-    this._charCountEl.textContent = `Chars: ${chars}`;
+    const maxWords = this.options.maxWords || 0;
+    const maxChars = this.options.maxChars || 0;
+
+    this._wordCountEl.textContent = maxWords
+      ? `Words: ${words}/${maxWords}`
+      : `Words: ${words}`;
+    this._charCountEl.textContent = maxChars
+      ? `Chars: ${chars}/${maxChars}`
+      : `Chars: ${chars}`;
+
+    // Apply warning / exceeded styles
+    _applyLimitClass(this._wordCountEl, words, maxWords);
+    _applyLimitClass(this._charCountEl, chars, maxChars);
   }
 }
