@@ -1594,6 +1594,58 @@ $an-video-accent: #8b5cf6; // violet-500
 
 
 // =============================================================================
+// Toolbar overflow modes
+// =============================================================================
+
+// Default: flex-wrap:wrap (already set on .an-toolbar).
+// When toolbarOverflow:'scroll', the consumer adds .an-toolbar-overflow-scroll
+// to the container; toolbar becomes a single horizontally scrollable row.
+.an-toolbar-overflow-scroll {
+  .an-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+
+    // WebKit scrollbar - kept minimal
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $an-border;
+      border-radius: 2px;
+    }
+  }
+}
+
+// =============================================================================
+// RTL support
+// =============================================================================
+
+.an-dir-rtl {
+  .an-toolbar {
+    direction: rtl;
+  }
+}
+
+.an-editable[dir='rtl'] {
+  text-align: right;
+}
+
+// =============================================================================
+// Status-bar count warnings
+// =============================================================================
+
+.an-count-warn {
+  color: #f59e0b; // amber-400 — approaching limit
+  font-weight: 600;
+}
+
+.an-count-exceeded {
+  color: #ef4444; // red-500 — over limit
+  font-weight: 700;
+}
+
+// =============================================================================
 // Print styles
 // =============================================================================
 

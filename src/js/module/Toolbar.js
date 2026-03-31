@@ -414,6 +414,8 @@ export class Toolbar {
       ['backColor',     svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
       ['keyboard',      svgWrap('<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-width="2.5"/><line x1="14" y1="10" x2="14" y2="10" stroke-width="2.5"/><line x1="18" y1="10" x2="18" y2="10" stroke-width="2.5"/><line x1="8" y1="14" x2="16" y2="14" stroke-width="2"/>')],
       ['caption',      svgWrap('<rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/>')],
+      ['remove-format', svgWrap('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>')],
+      ['direction',     svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
     ]);
 
     const faPrefix = this.options.fontAwesomeClass || 'fas';
@@ -443,7 +445,9 @@ export class Toolbar {
       ['icon', 'fa-icons'],
       ['foreColor', 'fa-font'],
       ['backColor', 'fa-highlighter'],
-      ['keyboard',  'fa-keyboard'],
+      ['keyboard',      'fa-keyboard'],
+      ['remove-format', 'fa-remove-format'],
+      ['direction',     'fa-arrow-right-arrow-left'],
     ]);
 
     const useFaNow = this._faReady;

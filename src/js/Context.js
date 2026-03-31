@@ -32,6 +32,9 @@ import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 
+/** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
+export const _customModules = new Map();
+
 export class Context {
   /**
    * @param {HTMLElement} targetEl - The element to replace with the editor
@@ -128,6 +131,25 @@ export class Context {
     register('emojiDialog', EmojiDialog);
     register('iconDialog', IconDialog);
     register('shortcutsDialog', ShortcutsDialog);
+
+    // Custom modules registered via AutumnNote.registerModule()
+    for (const [name, ModuleClass] of _customModules) {
+      register(name, ModuleClass);
+    }
+  }
+
+  /**
+   * Registers and initialises a custom module on this instance.
+   * @param {string} name
+   * @param {Function} ModuleClass
+   * @returns {this}
+   */
+  registerModule(name, ModuleClass) {
+    if (this._modules.has(name)) return this;
+    const instance = new ModuleClass(this);
+    instance.initialize();
+    this._modules.set(name, instance);
+    return this;
   }
 
   _bindEditorEvents(editable) {
@@ -147,6 +169,14 @@ export class Context {
     // Sync textarea/input value on every change so form.submit() always gets fresh content
     const d3 = this.on('change', () => this._syncToTarget());
     this._disposers.push(d1, d2, d3);
+
+    // Auto-save to localStorage on every change
+    if (this.options.autoSave && this.options.autoSaveKey) {
+      const d4 = this.on('change', () => {
+        try { localStorage.setItem(this.options.autoSaveKey, this.getHTML()); } catch (_) {}
+      });
+      this._disposers.push(d4);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -297,6 +327,10 @@ export class Context {
       // Restore original element
       this.targetEl.style.display = '';
       container.parentNode.removeChild(container);
+    }
+
+    if (typeof this.options.onDestroy === 'function') {
+      this.options.onDestroy(this);
     }
 
     this._alive = false;

@@ -12,6 +12,7 @@ const SHORTCUTS = [
       { keys: 'Ctrl + B',         action: 'Bold' },
       { keys: 'Ctrl + I',         action: 'Italic' },
       { keys: 'Ctrl + U',         action: 'Underline' },
+      { keys: 'Ctrl + K',         action: 'Insert / edit link' },
     ],
   },
   {

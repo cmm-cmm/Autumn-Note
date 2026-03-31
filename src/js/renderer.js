@@ -26,24 +26,34 @@ export function renderLayout(targetEl, options) {
   // Editable area
   const editable = createElement('div', {
     class: 'an-editable',
-    contenteditable: 'true',
-    spellcheck: 'true',
+    contenteditable: options.readOnly ? 'false' : 'true',
+    spellcheck: String(options.spellcheck !== false),
     'aria-multiline': 'true',
     'aria-label': 'Rich text editor',
     role: 'textbox',
   });
 
-  // Set initial content from original element (sanitised)
-  if (targetEl.tagName === 'TEXTAREA') {
-    editable.innerHTML = sanitiseHTML((targetEl.value || '').trim(), { allowIframes: true });
-  } else {
-    editable.innerHTML = sanitiseHTML((targetEl.innerHTML || '').trim(), { allowIframes: true });
+  // Restore auto-saved content when available; fall back to element content
+  let initialContent = '';
+  if (options.autoSave && options.autoSaveKey) {
+    try { initialContent = localStorage.getItem(options.autoSaveKey) || ''; } catch (_) {}
   }
+  if (!initialContent) {
+    initialContent = targetEl.tagName === 'TEXTAREA'
+      ? (targetEl.value || '').trim()
+      : (targetEl.innerHTML || '').trim();
+  }
+  editable.innerHTML = sanitiseHTML(initialContent, { allowIframes: true });
 
   // Apply default font family so the editable renders in the configured font
   const defaultFont = options.defaultFontFamily || (options.fontFamilies && options.fontFamilies[0]);
   if (defaultFont) {
     editable.style.fontFamily = defaultFont;
+  }
+
+  // Apply default font size so the size dropdown shows the correct value on startup
+  if (options.defaultFontSize) {
+    editable.style.fontSize = options.defaultFontSize;
   }
 
   // Apply height options.
@@ -63,6 +73,22 @@ export function renderLayout(targetEl, options) {
   // Apply dark theme
   if (options.theme === 'dark') {
     container.classList.add('an-theme-dark');
+  }
+
+  // Read-only mode
+  if (options.readOnly) {
+    container.classList.add('an-disabled');
+  }
+
+  // Text direction
+  if (options.direction === 'rtl') {
+    editable.setAttribute('dir', 'rtl');
+    container.classList.add('an-dir-rtl');
+  }
+
+  // Toolbar overflow
+  if (options.toolbarOverflow === 'scroll') {
+    container.classList.add('an-toolbar-overflow-scroll');
   }
 
   // Configure sticky toolbar

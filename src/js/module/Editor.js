@@ -91,6 +91,7 @@ export class Editor {
     if (isModifier(event, 'b')) { event.preventDefault(); this.bold(); return; }
     if (isModifier(event, 'i')) { event.preventDefault(); this.italic(); return; }
     if (isModifier(event, 'u')) { event.preventDefault(); this.underline(); return; }
+    if (isModifier(event, 'k')) { event.preventDefault(); this.context.invoke('linkDialog.show'); return; }
 
     // Show keyboard shortcuts dialog: Shift+?
     if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
@@ -343,7 +344,7 @@ export class Editor {
    * @param {number} rows
    */
   insertTable(cols, rows) {
-    insertTable(cols, rows);
+    insertTable(cols, rows, { headerRow: this.context.options.tableHeaderRow });
     this.afterCommand();
   }
 
