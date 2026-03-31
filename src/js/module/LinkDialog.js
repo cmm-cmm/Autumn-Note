@@ -167,7 +167,7 @@ export class LinkDialog {
     // Block unsafe protocols
     try {
       const parsed = new URL(url);
-      if (/^javascript:/i.test(parsed.protocol) || /^vbscript:/i.test(parsed.protocol)) {
+      if (/^javascript:/i.test(parsed.protocol) || /^vbscript:/i.test(parsed.protocol) || /^data:/i.test(parsed.protocol)) {
         this._urlInput.focus();
         return;
       }

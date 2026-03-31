@@ -261,7 +261,7 @@ export class TableTooltip {
     for (let i = 0; i < colCount; i++) {
       newRow.appendChild(createElement('td', {}, ['\u00a0']));
     }
-    if (position === 'above') row.parentElement.insertBefore(newRow, row);
+    if (position === 'above') row.parentElement?.insertBefore(newRow, row);
     else row.insertAdjacentElement('afterend', newRow);
     this._positionNear(this._activeTable);
     this.context.invoke('editor.afterCommand');
@@ -292,7 +292,7 @@ export class TableTooltip {
     if (!row || !table) return;
     if (table.querySelectorAll('tr').length <= 1) return;
     this._activeCell = null;
-    row.parentElement.removeChild(row);
+    row.parentElement?.removeChild(row);
     this._positionNear(this._activeTable);
     this.context.invoke('editor.afterCommand');
   }

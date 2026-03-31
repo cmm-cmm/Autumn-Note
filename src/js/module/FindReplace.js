@@ -36,6 +36,7 @@ export class FindReplace {
 
     this._disposers = [];
     this._removeTrap = null;
+    this._focusTimer = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -49,6 +50,8 @@ export class FindReplace {
   }
 
   destroy() {
+    clearTimeout(this._focusTimer);
+    this._focusTimer = null;
     this._clearHighlights();
     this._disposers.forEach((d) => d());
     this._disposers = [];
@@ -71,7 +74,8 @@ export class FindReplace {
     this._updateMode();
     this._open();
     // Pre-select whatever was previously typed so the user can retype immediately
-    setTimeout(() => {
+    clearTimeout(this._focusTimer);
+    this._focusTimer = setTimeout(() => {
       if (this._findInput) {
         this._findInput.select();
         this._findInput.focus();

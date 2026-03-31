@@ -179,7 +179,7 @@ export class VideoDialog {
     // Validate — block javascript: and other dangerous protocols
     try {
       const parsed = new URL(url);
-      if (/^javascript:/i.test(parsed.protocol)) return null;
+      if (/^javascript:/i.test(parsed.protocol) || /^vbscript:/i.test(parsed.protocol)) return null;
     } catch { return null; }
 
     // YouTube watch: https://www.youtube.com/watch?v=ID
@@ -245,7 +245,7 @@ export class VideoDialog {
     const safeSrc = (() => {
       try {
         const p = new URL(url);
-        if (/^javascript:/i.test(p.protocol)) return null;
+        if (/^javascript:/i.test(p.protocol) || /^vbscript:/i.test(p.protocol)) return null;
         return url;
       } catch { return null; }
     })();
