@@ -73,60 +73,99 @@ export class TableTooltip {
       }),
     );
 
-    this._initColResize();
+    this._initResize();
     return this;
   }
 
   // ---------------------------------------------------------------------------
-  // Column drag-resize
+  // Column & row drag-resize
   // ---------------------------------------------------------------------------
 
-  _initColResize() {
+  _initResize() {
     const editable = this.context.layoutInfo.editable;
-    let _nearCell  = null;
-    let _resizing  = false;
-    let _startX    = 0;
-    let _startW    = 0;
-    let _colIdx    = -1;
-    let _table     = null;
+    const HIT = 6; // px proximity threshold
+
+    // Shared hover state
+    let _nearCell = null;
+    let _nearEdge = null; // 'col' | 'row' | null
+
+    // Active drag state
+    let _resizing = false;
+    let _edge     = null; // 'col' | 'row'
+    let _startX   = 0;
+    let _startY   = 0;
+    let _startW   = 0;
+    let _startH   = 0;
+    let _colIdx   = -1;
+    let _row      = null;
+    let _table    = null;
+
+    const clearHover = () => {
+      if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
+      _nearEdge = null;
+    };
 
     const onEditorMove = (e) => {
       if (_resizing) return;
       const cell = e.target.closest('td, th');
-      if (!cell || !editable.contains(cell)) {
-        if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
-        return;
-      }
-      const rect = cell.getBoundingClientRect();
-      if (Math.abs(e.clientX - rect.right) < 6) {
+      if (!cell || !editable.contains(cell)) { clearHover(); return; }
+      const rect    = cell.getBoundingClientRect();
+      const onRight  = Math.abs(e.clientX - rect.right)  < HIT;
+      const onBottom = Math.abs(e.clientY - rect.bottom) < HIT;
+      if (onRight && onBottom) {
+        // Corner — prefer col-resize
         cell.style.cursor = 'col-resize';
-        _nearCell = cell;
+        _nearCell = cell; _nearEdge = 'col';
+      } else if (onRight) {
+        cell.style.cursor = 'col-resize';
+        _nearCell = cell; _nearEdge = 'col';
+      } else if (onBottom) {
+        cell.style.cursor = 'row-resize';
+        _nearCell = cell; _nearEdge = 'row';
       } else {
-        if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
+        clearHover();
       }
     };
 
     const onEditorDown = (e) => {
-      if (!_nearCell) return;
-      _resizing  = true;
-      _startX    = e.clientX;
-      _startW    = _nearCell.offsetWidth;
-      _table     = _nearCell.closest('table');
-      _colIdx    = Array.from(_nearCell.closest('tr').cells).indexOf(_nearCell);
+      if (!_nearCell || !_nearEdge) return;
+      _resizing = true;
+      _edge     = _nearEdge;
+      _startX   = e.clientX;
+      _startY   = e.clientY;
+      _table    = _nearCell.closest('table');
+      if (_edge === 'col') {
+        _startW = _nearCell.offsetWidth;
+        _colIdx = Array.from(_nearCell.closest('tr').cells).indexOf(_nearCell);
+        document.body.style.cursor = 'col-resize';
+      } else {
+        _row    = _nearCell.closest('tr');
+        _startH = _row ? _row.offsetHeight : 40;
+        document.body.style.cursor = 'row-resize';
+      }
       document.body.style.userSelect = 'none';
-      document.body.style.cursor     = 'col-resize';
       e.preventDefault();
       e.stopPropagation();
     };
 
     const onDocMove = (e) => {
       if (!_resizing) return;
-      const newW = Math.max(30, _startW + (e.clientX - _startX));
-      if (_table && _colIdx >= 0) {
-        Array.from(_table.querySelectorAll('tr')).forEach((r) => {
-          const c = r.cells[_colIdx];
-          if (c) { c.style.width = `${newW}px`; c.style.minWidth = `${newW}px`; }
-        });
+      if (_edge === 'col') {
+        const newW = Math.max(30, _startW + (e.clientX - _startX));
+        if (_table && _colIdx >= 0) {
+          Array.from(_table.querySelectorAll('tr')).forEach((r) => {
+            const c = r.cells[_colIdx];
+            if (c) { c.style.width = `${newW}px`; c.style.minWidth = `${newW}px`; }
+          });
+        }
+      } else {
+        const newH = Math.max(20, _startH + (e.clientY - _startY));
+        if (_row) {
+          Array.from(_row.cells).forEach((c) => {
+            c.style.height    = `${newH}px`;
+            c.style.minHeight = `${newH}px`;
+          });
+        }
       }
     };
 
@@ -135,16 +174,18 @@ export class TableTooltip {
       _resizing = false;
       document.body.style.userSelect = '';
       document.body.style.cursor     = '';
+      _edge   = null;
       _table  = null;
+      _row    = null;
       _colIdx = -1;
       this.context.invoke('editor.afterCommand');
     };
 
     this._disposers.push(
-      on(editable,  'mousemove', onEditorMove),
-      on(editable,  'mousedown', onEditorDown),
-      on(document,  'mousemove', onDocMove),
-      on(document,  'mouseup',   onDocUp),
+      on(editable, 'mousemove', onEditorMove),
+      on(editable, 'mousedown', onEditorDown),
+      on(document, 'mousemove', onDocMove),
+      on(document, 'mouseup',   onDocUp),
     );
   }
 
