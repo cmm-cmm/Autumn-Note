@@ -25,9 +25,17 @@
     "wysiwyg",
     "editor",
     "rich-text",
+    "rich-text-editor",
     "vanilla-js",
+    "vanilla-javascript",
+    "contenteditable",
     "summernote",
-    "contenteditable"
+    "text-editor",
+    "html-editor",
+    "no-jquery",
+    "lightweight",
+    "toolbar",
+    "javascript-editor"
   ],
   "author": "Minh Pham",
   "license": "MIT",
