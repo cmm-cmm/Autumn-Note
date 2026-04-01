@@ -1,5 +1,7 @@
 # AutumnNote
 
+<p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
+
 [![Version](https://img.shields.io/badge/version-1.0.1-blue)](#)
 [![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -15,7 +17,7 @@ A modern, lightweight WYSIWYG rich-text editor with vanilla JavaScript (ES2022+)
 
 🔗 **[Live Demo](https://cmm-cmm.github.io/Autumn-Note/)**
 
-![AutumnNote Screenshot](demo/Screenshot.png)
+<p align="center"><img src="demo/Screenshot.png" alt="AutumnNote Screenshot"/></p>
 
 ---
 
