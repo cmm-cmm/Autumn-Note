@@ -11,6 +11,16 @@ const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form',
 /** Attributes whose values must be sanitised as URLs. */
 const URL_ATTRS = ['href', 'src', 'action', 'formaction'];
 
+/** Trusted hosts for iframe embeds when allowIframes is enabled. */
+const TRUSTED_IFRAME_HOSTS = new Set([
+  'www.youtube.com',
+  'youtube.com',
+  'm.youtube.com',
+  'www.youtube-nocookie.com',
+  'youtube-nocookie.com',
+  'player.vimeo.com',
+]);
+
 /**
  * Sanitises an HTML string by removing dangerous elements and attributes.
  * Uses DOMParser so the sanitisation follows normal browser parsing rules —
@@ -54,10 +64,43 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
           el.removeAttribute(attr.name);
         }
       }
+
+      // Strip iframe HTML-injection vectors and limit iframe src to trusted hosts.
+      if (el.tagName === 'IFRAME') {
+        if (attr.name === 'srcdoc') {
+          el.removeAttribute(attr.name);
+          return;
+        }
+        if (attr.name === 'src') {
+          if (!isTrustedIframeSrc(attr.value)) {
+            el.removeAttribute(attr.name);
+          }
+          return;
+        }
+      }
     });
   });
 
   return doc.body.innerHTML;
+}
+
+/**
+ * Returns true if iframe src points to an approved video host.
+ * Relative, protocol-relative and invalid URLs are rejected.
+ * @param {string} src
+ * @returns {boolean}
+ */
+function isTrustedIframeSrc(src) {
+  const trimmed = (src || '').trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith('//') || trimmed.startsWith('/')) return false;
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== 'https:') return false;
+    return TRUSTED_IFRAME_HOSTS.has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
 }
 
 /**

@@ -197,12 +197,13 @@ export function handleKeydown(event, editable, options = {}) {
       }
 
       // Always ensure a text node exists so the cursor has a text-level
-      // anchor. Element-level cursors (setStartAfter) render before the
-      // visually-absolute checkbox because the checkbox occupies no flow
-      // space; a text node starts at the padding-left edge (after checkbox).
+      // anchor. Use \u200B (zero-width space) instead of an empty string:
+      // Chrome does not reliably honour a Selection in an empty text node and
+      // may normalise it to element-level, placing the caret before the
+      // absolutely-positioned checkbox.  \u200B is stripped by getHTML().
       let cursorNode = newLi.childNodes[1]; // first child after checkbox
       if (!cursorNode || cursorNode.nodeType !== Node.TEXT_NODE) {
-        cursorNode = document.createTextNode('');
+        cursorNode = document.createTextNode('\u200B');
         newLi.appendChild(cursorNode);
       }
       checkLi.insertAdjacentElement('afterend', newLi);

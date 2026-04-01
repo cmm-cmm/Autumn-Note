@@ -343,33 +343,35 @@ export function toggleChecklist() {
     sel.removeAllRanges();
     sel.addRange(nr);
   } else {
-    const cb = '<input type="checkbox" contenteditable="false">';
-    // Insert without any placeholder character so there is no leading space.
-    execCommand('insertHTML', `<ul class="an-checklist"><li>${cb}</li></ul>`);
-    // After insertHTML the cursor is at the <li> element-node (offset after INPUT).
-    // Find the newly inserted li and ensure there is a text node for the cursor
-    // so browsers that require a text anchor can reliably place the caret there.
-    const postSel = window.getSelection();
-    if (postSel && postSel.rangeCount) {
-      let sc = postSel.getRangeAt(0).startContainer;
-      if (sc.nodeType === Node.TEXT_NODE) sc = sc.parentElement;
-      const newLi = sc && sc.closest ? sc.closest('.an-checklist li') : null;
-      if (newLi) {
-        const cbEl = newLi.querySelector('input[type="checkbox"]');
-        if (cbEl) {
-          // Anchor the cursor in a text node (not element-level) so it
-          // renders at the padding-left start, visually after the checkbox.
-          let textNode = cbEl.nextSibling;
-          if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
-            textNode = document.createTextNode('');
-            newLi.appendChild(textNode);
-          }
-          const nr = document.createRange();
-          nr.setStart(textNode, 0);
-          nr.collapse(true);
-          postSel.removeAllRanges();
-          postSel.addRange(nr);
+    // Use a temporary marker attribute so the new <li> can be found reliably
+    // even when execCommand('insertHTML') places the cursor outside the list.
+    // Chrome often moves the caret to a generated <p> after the <ul> rather
+    // than staying inside the <li>, making a selection-based lookup fail.
+    const MARKER = 'data-an-new-cli';
+    execCommand('insertHTML',
+      `<ul class="an-checklist"><li ${MARKER}><input type="checkbox" contenteditable="false"></li></ul>`);
+    const newLi = document.querySelector(`[${MARKER}]`);
+    if (newLi) {
+      newLi.removeAttribute(MARKER);
+      const cbEl = newLi.querySelector('input[type="checkbox"]');
+      if (cbEl) {
+        // Use \u200B (zero-width space) instead of an empty string.
+        // Chrome does not reliably honour a Selection pointing into an empty
+        // text node and may silently normalise it to an element-level offset,
+        // rendering the caret before the absolutely-positioned checkbox.
+        // \u200B is invisible/zero-width and is stripped by getHTML().
+        let textNode = cbEl.nextSibling;
+        if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+          textNode = document.createTextNode('\u200B');
+          newLi.appendChild(textNode);
+        } else if (!textNode.textContent) {
+          textNode.textContent = '\u200B';
         }
+        const nr = document.createRange();
+        nr.setStart(textNode, 0);
+        nr.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nr);
       }
     }
   }

@@ -220,7 +220,7 @@ export class VideoDialog {
       const iframeTitle = `${info.type} video player`;
       return (
         `<div class="an-video-wrapper" style="position:relative;display:block;max-width:100%">` +
-        `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` + +
+        `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` +
         `title="${iframeTitle}" ` +
         `frameborder="0" allowfullscreen ` +
         `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +

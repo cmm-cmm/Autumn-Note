@@ -418,11 +418,23 @@ export class ContextMenu {
       document.execCommand('hiliteColor', false, fmt.backgroundColor);
     }
 
+    // Font family — apply BEFORE font-size DOM manipulation so the selection is still intact.
+    if (fmt.fontFamily) {
+      document.execCommand('fontName', false, fmt.fontFamily);
+    }
+
     // Font size — use a unique data-marker to avoid touching pre-existing font[size="7"] nodes.
     if (fmt.fontSize) {
       const marker = `fs-${Date.now()}`;
+      // Snapshot pre-existing font[size="7"] BEFORE execCommand so we don't accidentally
+      // replace nodes that were already in the document (the comment below was aspirational
+      // but the original code never actually excluded them — this Set approach is the fix).
+      const preExisting = new Set(editable.querySelectorAll('font[size="7"]'));
       document.execCommand('fontSize', false, '7');
-      editable.querySelectorAll('font[size="7"]').forEach((el) => el.setAttribute('data-an-tmp', marker));
+      // Mark only the NEWLY created font[size="7"] elements.
+      editable.querySelectorAll('font[size="7"]').forEach((el) => {
+        if (!preExisting.has(el)) el.setAttribute('data-an-tmp', marker);
+      });
       editable.querySelectorAll(`[data-an-tmp="${marker}"]`).forEach((el) => {
         const span = document.createElement('span');
         span.style.fontSize = fmt.fontSize;
@@ -430,11 +442,6 @@ export class ContextMenu {
         while (el.firstChild) span.appendChild(el.firstChild);
         el.parentNode.removeChild(el);
       });
-    }
-
-    // Font family — only apply if it was explicitly set (not just inherited default).
-    if (fmt.fontFamily) {
-      document.execCommand('fontName', false, fmt.fontFamily);
     }
 
     this.context.invoke('editor.afterCommand');
