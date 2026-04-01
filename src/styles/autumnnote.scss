@@ -12,13 +12,13 @@
 .an-container {
   display: flex;
   flex-direction: column;
+  position: relative;
   border: 1px solid $an-border;
   border-radius: $an-radius;
   font-family: $an-font-family;
   font-size: $an-font-size;
   box-sizing: border-box;
   background: $an-bg;
-  overflow: hidden;
   // Prevent the container from participating in ancestor layout recalculations.
   // This limits reflow thrashing when editing large documents.
   contain: layout;
@@ -384,8 +384,8 @@
   overflow-y: auto;
   word-break: break-word;
 
-  // Placeholder
-  &.an-placeholder::before {
+  // Placeholder — only shown when not focused
+  &.an-placeholder:not(:focus)::before {
     content: attr(data-placeholder);
     color: $an-muted;
     pointer-events: none;
@@ -435,7 +435,7 @@
 
   .an-video-wrapper {
     position: relative;
-    display: inline-block;
+    display: block;
     max-width: 100%;
     margin: 4px 0;
 
@@ -667,6 +667,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
   height: $an-statusbar-h;
   padding: 0 8px;
   background: $an-statusbar-bg;
@@ -919,7 +920,7 @@
 // ---------------------------------------------------------------------------
 
 .an-image-resizer {
-  position: fixed;
+  position: absolute;
   z-index: 10000;
   box-sizing: border-box;
   border: 2px solid $an-primary;
@@ -956,7 +957,7 @@
 $an-video-accent: #8b5cf6; // violet-500
 
 .an-video-resizer {
-  position: fixed;
+  position: absolute;
   z-index: 10000;
   box-sizing: border-box;
   border: 2px solid $an-video-accent;
@@ -1572,6 +1573,11 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-table-cell {
     background: #24273a;
     border-color: #3f3f5f;
+
+    &.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: #6366f1;
+    }
   }
 
   .an-context-item { color: #cdd6f4; }

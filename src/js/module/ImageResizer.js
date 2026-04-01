@@ -31,7 +31,9 @@ export class ImageResizer {
 
   initialize() {
     this._overlay = this._buildOverlay();
-    document.body.appendChild(this._overlay);
+    const container = this.context.layoutInfo.editable.closest('.an-container') || document.body;
+    container.appendChild(this._overlay);
+    this._container = container;
 
     const editable = this.context.layoutInfo.editable;
 
@@ -149,9 +151,10 @@ export class ImageResizer {
 
   _updateOverlayPosition() {
     if (!this._activeImg || !this._overlay) return;
+    const containerRect = this._container.getBoundingClientRect();
     const rect = this._activeImg.getBoundingClientRect();
-    this._overlay.style.left   = `${rect.left}px`;
-    this._overlay.style.top    = `${rect.top}px`;
+    this._overlay.style.left   = `${rect.left - containerRect.left}px`;
+    this._overlay.style.top    = `${rect.top  - containerRect.top}px`;
     this._overlay.style.width  = `${rect.width}px`;
     this._overlay.style.height = `${rect.height}px`;
   }

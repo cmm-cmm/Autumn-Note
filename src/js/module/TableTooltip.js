@@ -6,6 +6,64 @@ import { createElement, on } from '../core/dom.js';
 const SHOW_DELAY = 120;
 const HIDE_DELAY = 200;
 
+// ---------------------------------------------------------------------------
+// Table helpers — visual column index (accounts for colspan)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the visual (logical) column index of a cell, taking colspan into
+ * account for all preceding cells in the same row.
+ * @param {HTMLTableCellElement} cell
+ * @returns {number} 0-based visual column index, or -1 on failure
+ */
+function getVisualColIndex(cell) {
+  const row = cell.closest('tr');
+  if (!row) return -1;
+  let visualIdx = 0;
+  for (const c of row.cells) {
+    if (c === cell) return visualIdx;
+    visualIdx += c.colSpan || 1;
+  }
+  return -1;
+}
+
+/**
+ * Finds the first cell in a row whose visual start column equals visualIdx.
+ * Returns null if no exact match (e.g. the column is spanned by a merged cell).
+ * @param {HTMLTableRowElement} row
+ * @param {number} visualIdx
+ * @returns {HTMLTableCellElement|null}
+ */
+function getCellAtVisualCol(row, visualIdx) {
+  let vIdx = 0;
+  for (const c of row.cells) {
+    if (vIdx === visualIdx) return c;
+    if (vIdx > visualIdx) break;
+    vIdx += c.colSpan || 1;
+  }
+  return null;
+}
+
+/**
+ * Finds the first cell whose visual range ends after visualIdx
+ * (used for inserting a new column to the right of visualIdx).
+ * @param {HTMLTableRowElement} row
+ * @param {number} visualIdx
+ * @returns {HTMLTableCellElement|null} reference cell for insertBefore, or null = append
+ */
+function getCellAfterVisualCol(row, visualIdx) {
+  let vIdx = 0;
+  for (const c of row.cells) {
+    vIdx += c.colSpan || 1;
+    if (vIdx > visualIdx) {
+      // next cell after the one that starts at / spans visualIdx
+      const next = c.nextElementSibling;
+      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? next : null;
+    }
+  }
+  return null;
+}
+
 const ICONS = {
   rowAbove:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3v7"/><path d="M9 7l3-4 3 4"/></svg>`,
   rowBelow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 12v7"/><path d="M9 17l3 4 3-4"/></svg>`,
@@ -136,7 +194,7 @@ export class TableTooltip {
       _table    = _nearCell.closest('table');
       if (_edge === 'col') {
         _startW = _nearCell.offsetWidth;
-        _colIdx = Array.from(_nearCell.closest('tr').cells).indexOf(_nearCell);
+        _colIdx = getVisualColIndex(_nearCell);
         document.body.style.cursor = 'col-resize';
       } else {
         _row    = _nearCell.closest('tr');
@@ -154,7 +212,7 @@ export class TableTooltip {
         const newW = Math.max(30, _startW + (e.clientX - _startX));
         if (_table && _colIdx >= 0) {
           Array.from(_table.querySelectorAll('tr')).forEach((r) => {
-            const c = r.cells[_colIdx];
+            const c = getCellAtVisualCol(r, _colIdx);
             if (c) { c.style.width = `${newW}px`; c.style.minWidth = `${newW}px`; }
           });
         }
@@ -356,6 +414,16 @@ export class TableTooltip {
   // ---------------------------------------------------------------------------
 
   _getCell() {
+    // Prefer the cell under the current text cursor (most intuitive for operations)
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      let container = sel.getRangeAt(0).commonAncestorContainer;
+      if (container.nodeType === 3) container = container.parentElement;
+      const cellFromSel = container && container.closest && container.closest('td, th');
+      if (cellFromSel && this._activeTable && this._activeTable.contains(cellFromSel)) {
+        return cellFromSel;
+      }
+    }
     return this._activeCell
       || (this._activeTable && this._activeTable.querySelector('td, th'));
   }
@@ -388,16 +456,19 @@ export class TableTooltip {
   _addColumn(position) {
     const cell = this._getCell();
     if (!cell) return;
-    const row   = cell.closest('tr');
     const table = cell.closest('table');
-    if (!row || !table) return;
-    const colIndex = Array.from(row.cells).indexOf(cell);
+    if (!table) return;
+    const visualColIdx = getVisualColIndex(cell);
     Array.from(table.querySelectorAll('tr')).forEach((r) => {
-      const cells = Array.from(r.cells);
       const isHeader = r.closest('thead') !== null;
       const newCell = createElement(isHeader ? 'th' : 'td', {}, ['\u00a0']);
-      const ref = position === 'left' ? cells[colIndex] : (cells[colIndex + 1] || null);
-      r.insertBefore(newCell, ref);
+      if (position === 'left') {
+        const ref = getCellAtVisualCol(r, visualColIdx);
+        r.insertBefore(newCell, ref);
+      } else {
+        const ref = getCellAfterVisualCol(r, visualColIdx);
+        r.insertBefore(newCell, ref);
+      }
     });
     this._positionNear(this._activeTable);
     this.context.invoke('editor.afterCommand');
@@ -422,14 +493,14 @@ export class TableTooltip {
   _deleteColumn() {
     const cell = this._getCell();
     if (!cell) return;
-    const row   = cell.closest('tr');
     const table = cell.closest('table');
-    if (!row || !table) return;
-    if (row.cells.length <= 1) return;
-    const colIndex = Array.from(row.cells).indexOf(cell);
+    if (!table) return;
+    const row = cell.closest('tr');
+    if (row && row.cells.length <= 1) return;
+    const visualColIdx = getVisualColIndex(cell);
     this._activeCell = null;
     Array.from(table.querySelectorAll('tr')).forEach((r) => {
-      const c = r.cells[colIndex];
+      const c = getCellAtVisualCol(r, visualColIdx);
       if (c) r.removeChild(c);
     });
     this._positionNear(this._activeTable);
@@ -439,19 +510,41 @@ export class TableTooltip {
   _mergeCells() {
     const cell = this._getCell();
     if (!cell) return;
-    const row = cell.closest('tr');
-    if (!row) return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
-    const selected = Array.from(row.cells).filter((c) => {
+    const table = cell.closest('table');
+    if (!table) return;
+
+    // Collect all cells (in any row) that intersect the selection
+    const allCells = Array.from(table.querySelectorAll('td, th'));
+    const selected = allCells.filter((c) => {
       try { return range.intersectsNode(c); } catch { return false; }
     });
     if (selected.length < 2) return;
-    const first = selected[0];
-    first.colSpan = selected.reduce((sum, c) => sum + (c.colSpan || 1), 0);
-    first.innerHTML = selected.map((c) => c.innerHTML).join('');
-    selected.slice(1).forEach((c) => row.removeChild(c));
+
+    // Determine if all selected cells are in the same row (horizontal merge)
+    const rows = [...new Set(selected.map((c) => c.closest('tr')))];
+    if (rows.length === 1) {
+      // Horizontal merge within a single row
+      const row = rows[0];
+      const rowSelected = Array.from(row.cells).filter((c) => selected.includes(c));
+      if (rowSelected.length < 2) return;
+      const first = rowSelected[0];
+      first.colSpan = rowSelected.reduce((sum, c) => sum + (c.colSpan || 1), 0);
+      first.innerHTML = rowSelected.map((c) => c.innerHTML).join('');
+      rowSelected.slice(1).forEach((c) => row.removeChild(c));
+    } else {
+      // Vertical merge across rows — merge into first selected cell (rowspan)
+      const visualCols = [...new Set(selected.map((c) => getVisualColIndex(c)))];
+      if (visualCols.length !== 1) return; // only support single-column vertical merge
+      const first = selected[0];
+      first.rowSpan = selected.reduce((sum, c) => sum + (c.rowSpan || 1), 0);
+      first.innerHTML = selected.map((c) => c.innerHTML).join('');
+      selected.slice(1).forEach((c) => {
+        if (c.closest('tr')) c.closest('tr').removeChild(c);
+      });
+    }
     this.context.invoke('editor.afterCommand');
   }
 
@@ -532,10 +625,10 @@ export class TableTooltip {
 
     this._sizeApply = (val) => {
       if (isCol) {
-        const table    = cell.closest('table');
-        const colIndex = Array.from(cell.closest('tr').cells).indexOf(cell);
+        const table       = cell.closest('table');
+        const visualColIdx = getVisualColIndex(cell);
         Array.from(table.querySelectorAll('tr')).forEach((r) => {
-          const c = r.cells[colIndex];
+          const c = getCellAtVisualCol(r, visualColIdx);
           if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
         });
       } else {

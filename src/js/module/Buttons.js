@@ -57,7 +57,16 @@ function btn(name, icon, tooltip, action, isActive, isDisabled) {
 
 export const boldBtn = btn('bold', 'bold', 'Bold (Ctrl+B)', () => Style.bold(), () => document.queryCommandState('bold'));
 export const italicBtn = btn('italic', 'italic', 'Italic (Ctrl+I)', () => Style.italic(), () => document.queryCommandState('italic'));
-export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', () => Style.underline(), () => document.queryCommandState('underline'));
+export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', () => Style.underline(), () => {
+  // queryCommandState('underline') is unreliable inside <code> elements;
+  // also check for a <u> ancestor in the DOM.
+  if (document.queryCommandState('underline')) return true;
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return false;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  return !!(container && container.closest && container.closest('u'));
+});
 export const strikeBtn = btn('strikethrough', 'strikethrough', 'Strikethrough', () => Style.strikethrough(), () => document.queryCommandState('strikeThrough'));
 export const superscriptBtn = btn('superscript', 'superscript', 'Superscript', () => Style.superscript(), () => document.queryCommandState('superscript'));
 export const subscriptBtn = btn('subscript', 'subscript', 'Subscript', () => Style.subscript(), () => document.queryCommandState('subscript'));
@@ -134,8 +143,8 @@ export const fontSizeBtn = {
       if (sel && sel.rangeCount) {
         let el = sel.getRangeAt(0).startContainer;
         if (el.nodeType === 3) el = el.parentElement;
-        while (el && !el.style) el = el.parentElement;
-        const size = el ? (el.style.fontSize || '') : '';
+        while (el && el.nodeType === 1 && !el.style.fontSize) el = el.parentElement;
+        const size = (el && el.style && el.style.fontSize) ? el.style.fontSize : '';
         if (size) return size;
       }
       // Fallback: read the base font size from the editable element itself
@@ -237,7 +246,8 @@ export const lineHeightBtn = {
       let el = sel.getRangeAt(0).startContainer;
       if (el.nodeType === 3) el = el.parentElement;
       while (el && !BLOCKS.has(el.tagName)) el = el.parentElement;
-      return el ? (el.style.lineHeight || '') : '';
+      if (!el) return '';
+      return el.style.lineHeight || getComputedStyle(el).lineHeight || '';
     } catch { return ''; }
   },
 };
@@ -248,7 +258,7 @@ export const lineHeightBtn = {
 
 export const codeviewBtn = btn('codeview', 'code', 'HTML Code View', (ctx) => ctx.invoke('codeview.toggle'), (ctx) => ctx.invoke('codeview.isActive'));
 export const fullscreenBtn = btn('fullscreen', 'expand', 'Fullscreen', (ctx) => ctx.invoke('fullscreen.toggle'), (ctx) => ctx.invoke('fullscreen.isActive'));
-export const shortcutsBtn = btn('shortcuts', 'keyboard', 'Keyboard Shortcuts (Shift+?)', (ctx) => ctx.invoke('shortcutsDialog.show'));
+export const shortcutsBtn = btn('shortcuts', 'keyboard', 'Keyboard Shortcuts (Ctrl+Shift+/)', (ctx) => ctx.invoke('shortcutsDialog.show'));
 export const findBtn = btn('find', 'search', 'Find (Ctrl+F)', (ctx) => ctx.invoke('findReplace.show', 'find'));
 export const findReplaceBtn = btn('findReplace', 'find-replace', 'Find & Replace (Ctrl+H)', (ctx) => ctx.invoke('findReplace.show', 'replace'));
 export const inlineCodeBtn = btn('inlineCode', 'inline-code', 'Inline Code (Ctrl+`)', (ctx) => ctx.invoke('editor.inlineCode'), () => Style.isInlineCode());

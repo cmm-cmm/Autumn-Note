@@ -114,8 +114,8 @@ export class Editor {
       return; // let the native paste event fire
     }
 
-    // Show keyboard shortcuts dialog: Shift+?
-    if (event.key === '?' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
+    // Show keyboard shortcuts dialog: Ctrl+Shift+/
+    if (event.key === '/' && event.shiftKey && event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       this.context.invoke('shortcutsDialog.show');
       return;

@@ -574,17 +574,9 @@ export class IconDialog {
     range.deleteContents();
     range.insertNode(iconEl);
 
-    // 4. Insert a zero-width space text node immediately after the icon.
-    //    This is essential when the icon lands at the END of a paragraph:
-    //    browsers cannot place the caret after an inline element that is the
-    //    last child of a block — there is no text node to anchor into.
-    //    The ZWS gives the caret a real text node to sit in, so typing after
-    //    the icon works correctly. It is invisible to the reader.
-    const zwsNode = document.createTextNode('\u200B');
-    iconEl.parentNode.insertBefore(zwsNode, iconEl.nextSibling);
-
-    // 5. Place caret inside the ZWS text node (offset 1 = after the ZWS char).
-    range.setStart(zwsNode, 1);
+    // 4. Place caret immediately after the icon.
+    //    Using setStartAfter so a single Backspace/Delete removes the icon.
+    range.setStartAfter(iconEl);
     range.collapse(true);
     if (sel) {
       sel.removeAllRanges();

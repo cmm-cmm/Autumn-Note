@@ -56,7 +56,7 @@ export class History {
       if (cur === node) return count + offset;
       count += cur.length;
     }
-    return count;
+    return 0;
   }
 
   /**
@@ -83,7 +83,15 @@ export class History {
       }
       count += len;
     }
-    if (!startNode) return;
+    if (!startNode) {
+      // Offset exceeds content (e.g. undo to a shorter state): place at end
+      const lastWalker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
+      let lastNode = null;
+      while ((lastNode = lastWalker.nextNode())) { startNode = lastNode; }
+      startOff = startNode ? startNode.length : 0;
+      endNode = startNode;
+      endOff = startOff;
+    }
     if (!endNode) { endNode = startNode; endOff = startOff; }
     try {
       const range = document.createRange();

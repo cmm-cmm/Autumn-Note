@@ -36,8 +36,27 @@ export const italic = () => execCommand('italic');
 
 /**
  * Underlines / un-underlines the selection.
+ * Falls back to manual DOM manipulation when inside <code> where
+ * execCommand's state detection is unreliable.
  */
-export const underline = () => execCommand('underline');
+export function underline() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
+  const uEl = container && container.closest && container.closest('u');
+  const nativeState = document.queryCommandState('underline');
+  if (uEl && !nativeState) {
+    // Browser doesn't recognise the underline state (e.g. inside <code>).
+    // Manually unwrap the <u> element.
+    const parent = uEl.parentNode;
+    while (uEl.firstChild) parent.insertBefore(uEl.firstChild, uEl);
+    parent.removeChild(uEl);
+    return;
+  }
+  execCommand('underline');
+}
 
 /**
  * Strikethrough / removes strikethrough.
@@ -254,12 +273,22 @@ export function toggleInlineCode(editable) {
     try {
       const code = document.createElement('code');
       range.surroundContents(code);
+      // Re-select wrapped content so subsequent format toggles work
+      const newRange = document.createRange();
+      newRange.selectNodeContents(code);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
     } catch {
       // surroundContents fails across element boundaries — extract and rewrap
       const frag = range.extractContents();
       const code = document.createElement('code');
       code.appendChild(frag);
       range.insertNode(code);
+      // Re-select wrapped content
+      const newRange = document.createRange();
+      newRange.selectNodeContents(code);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
     }
   }
 }

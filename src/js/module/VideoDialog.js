@@ -219,8 +219,8 @@ export class VideoDialog {
     if (info && (info.type === 'YouTube' || info.type === 'YouTube Shorts' || info.type === 'Vimeo')) {
       const iframeTitle = `${info.type} video player`;
       return (
-        `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
-        `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` +
+        `<div class="an-video-wrapper" style="position:relative;display:block;max-width:100%">` +
+        `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` + +
         `title="${iframeTitle}" ` +
         `frameborder="0" allowfullscreen ` +
         `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +
@@ -233,7 +233,7 @@ export class VideoDialog {
     if (info && info.type === 'Direct video') {
       const src = info.embedUrl.replace(/"/g, '%22');
       return (
-        `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
+        `<div class="an-video-wrapper" style="position:relative;display:block;max-width:100%">` +
         `<video src="${src}" width="${width}" height="${height}" controls ` +
         `style="display:block;max-width:100%"></video>` +
         `<div class="an-video-shield"></div>` +
@@ -253,7 +253,7 @@ export class VideoDialog {
 
     const escapedSrc = safeSrc.replace(/"/g, '%22');
     return (
-      `<div class="an-video-wrapper" style="position:relative;display:inline-block;max-width:100%">` +
+      `<div class="an-video-wrapper" style="position:relative;display:block;max-width:100%">` +
       `<video src="${escapedSrc}" width="${width}" height="${height}" controls ` +
       `style="display:block;max-width:100%"></video>` +
       `<div class="an-video-shield"></div>` +

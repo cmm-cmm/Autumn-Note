@@ -16,6 +16,8 @@ export class Toolbar {
     this.el = null;
     /** @type {Array<() => void>} disposers */
     this._disposers = [];
+    /** @type {Array<() => void>} closers for all open color picker popups */
+    this._colorPickerClosers = [];
   }
 
   // ---------------------------------------------------------------------------
@@ -253,8 +255,27 @@ export class Toolbar {
 
     // ---- State ----
     let isOpen = false;
+    /** @type {Range|null} saved selection range before popup opens */
+    let savedRange = null;
+
+    const saveSelection = () => {
+      const sel = window.getSelection();
+      savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+    };
+
+    const restoreSelection = () => {
+      if (!savedRange) return;
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      }
+    };
 
     const openPopup = () => {
+      // Close any other open color picker before opening this one
+      this._colorPickerClosers.forEach((fn) => { if (fn !== closePopup) fn(); });
+      saveSelection();
       isOpen = true;
       popup.style.display = 'block';
       arrowBtn.setAttribute('aria-expanded', 'true');
@@ -270,7 +291,7 @@ export class Toolbar {
       currentColor = color;
       strip.style.background = color;
       colorInput.value = color;
-      this.context.invoke('editor.focus');
+      restoreSelection();
       def.action(this.context, color);
       this.context.invoke('editor.afterCommand');
       closePopup();
@@ -278,17 +299,27 @@ export class Toolbar {
 
     const d1 = on(applyBtn, 'click', (e) => {
       e.preventDefault();
-      this.context.invoke('editor.focus');
+      restoreSelection();
       def.action(this.context, currentColor);
       this.context.invoke('editor.afterCommand');
     });
 
-    const d2 = on(arrowBtn, 'click', (e) => {
+    const d2 = on(arrowBtn, 'mousedown', (e) => {
+      // Prevent editor blur so selection is preserved when the popup opens
+      e.preventDefault();
+    });
+
+    const d2b = on(arrowBtn, 'click', (e) => {
       e.stopPropagation();
       if (isOpen) closePopup(); else openPopup();
     });
 
-    const d3 = on(swatches, 'click', (e) => {
+    const d3 = on(swatches, 'mousedown', (e) => {
+      // Prevent blur before the click handler fires
+      e.preventDefault();
+    });
+
+    const d3b = on(swatches, 'click', (e) => {
       const sw = e.target.closest('.an-color-swatch');
       if (sw) applyColor(sw.dataset.color);
     });
@@ -303,7 +334,14 @@ export class Toolbar {
 
     const d6 = on(popup, 'click', (e) => e.stopPropagation());
 
-    this._disposers.push(d1, d2, d3, d4, d5, d6);
+    this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6);
+
+    // Register this popup's closer so other color pickers can close it
+    this._colorPickerClosers.push(closePopup);
+    this._disposers.push(() => {
+      const idx = this._colorPickerClosers.indexOf(closePopup);
+      if (idx !== -1) this._colorPickerClosers.splice(idx, 1);
+    });
 
     wrap.appendChild(applyBtn);
     wrap.appendChild(arrowBtn);
@@ -329,9 +367,9 @@ export class Toolbar {
       'aria-label': def.tooltip || def.name,
     });
 
-    // Blank "placeholder" option
+    // Blank "placeholder" option (non-selectable header)
     const placeholderText = def.placeholder || 'Font';
-    const placeholder = createElement('option', { value: '' }, [placeholderText]);
+    const placeholder = createElement('option', { value: '', disabled: '', hidden: '' }, [placeholderText]);
     select.appendChild(placeholder);
 
     items.forEach((item) => {

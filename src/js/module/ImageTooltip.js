@@ -36,7 +36,8 @@ export class ImageTooltip {
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
         const img = e.target.closest('img');
-        if (img && editable.contains(img)) {
+        // Skip when the image is inside a link — LinkTooltip takes priority there
+        if (img && editable.contains(img) && !img.closest('a[href]')) {
           this._scheduleShow(img);
         }
       }),
@@ -205,10 +206,11 @@ export class ImageTooltip {
   _setFloat(value) {
     const img = this._activeImg;
     if (!img) return;
-    img.style.float = value;
-    img.style.display = '';
-    img.style.marginLeft  = value === 'right' ? '12px' : '';
-    img.style.marginRight = value === 'left'  ? '12px' : '';
+    const target = img.closest('figure.an-figure') || img;
+    target.style.float = value;
+    target.style.display = '';
+    target.style.marginLeft  = value === 'right' ? '12px' : '';
+    target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
     this._positionNear(img);
@@ -217,10 +219,11 @@ export class ImageTooltip {
   _setCenter() {
     const img = this._activeImg;
     if (!img) return;
-    img.style.float        = '';
-    img.style.display      = 'block';
-    img.style.marginLeft   = 'auto';
-    img.style.marginRight  = 'auto';
+    const target = img.closest('figure.an-figure') || img;
+    target.style.float        = '';
+    target.style.display      = 'block';
+    target.style.marginLeft   = 'auto';
+    target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
     this._positionNear(img);
@@ -266,6 +269,23 @@ export class ImageTooltip {
     // Wrap image in <figure><figcaption>
     const figure = document.createElement('figure');
     figure.className = 'an-figure';
+
+    // Transfer existing alignment from <img> to <figure> (C4 fix)
+    if (img.style.float) {
+      figure.style.float       = img.style.float;
+      figure.style.marginLeft  = img.style.marginLeft;
+      figure.style.marginRight = img.style.marginRight;
+      img.style.float       = '';
+      img.style.marginLeft  = '';
+      img.style.marginRight = '';
+    } else if (img.style.display === 'block' && img.style.marginLeft === 'auto') {
+      figure.style.display      = 'block';
+      figure.style.marginLeft   = 'auto';
+      figure.style.marginRight  = 'auto';
+      img.style.display     = '';
+      img.style.marginLeft  = '';
+      img.style.marginRight = '';
+    }
     const figcaption = document.createElement('figcaption');
     figcaption.className = 'an-figcaption';
     figcaption.textContent = 'Caption';

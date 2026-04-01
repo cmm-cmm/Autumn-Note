@@ -36,6 +36,7 @@ export function handleKeydown(event, editable, options = {}) {
 
     // In a pre/code block, insert spaces
     if (para && para.nodeName.toUpperCase() === 'PRE') {
+      if (event.shiftKey) return false;
       event.preventDefault();
       execCommand('insertText', '    ');
       return true;
@@ -43,6 +44,7 @@ export function handleKeydown(event, editable, options = {}) {
 
     // Default: insert &nbsp; * tabSize
     if (options.tabSize) {
+      if (event.shiftKey) return false;
       event.preventDefault();
       execCommand('insertText', ' '.repeat(options.tabSize));
       return true;
@@ -65,9 +67,26 @@ export function handleKeydown(event, editable, options = {}) {
     const range = currentRange(editable);
     if (!range) return false;
 
-    // Checklist — Enter creates new item; empty item exits the list
+    // Video wrapper — Enter should create a new paragraph after the wrapper,
+    // not split the wrapper's container and produce an empty video clone.
     const sc = range.sc;
     const el = sc.nodeType === 3 ? sc.parentElement : sc;
+    const videoWrapper = el && el.closest && el.closest('.an-video-wrapper');
+    if (videoWrapper) {
+      event.preventDefault();
+      const p = document.createElement('p');
+      p.innerHTML = '\u00a0';
+      videoWrapper.parentNode.insertBefore(p, videoWrapper.nextSibling);
+      const nr = document.createRange();
+      nr.setStart(p, 0);
+      nr.collapse(true);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(nr);
+      return true;
+    }
+
+    // Checklist — Enter creates new item; empty item exits the list
     const checkLi = el && el.closest && el.closest('.an-checklist li');
     if (checkLi) {
       event.preventDefault();
