@@ -17,6 +17,25 @@ import { currentRange } from '../core/range.js';
  */
 export function handleKeydown(event, editable, options = {}) {
   // -------------------------------------------------------------------------
+  // Backspace key — one-press deletion of a preceding FA icon (<i> element)
+  // -------------------------------------------------------------------------
+  if (isKey(event, key.BACKSPACE)) {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE && r.startOffset === 0) {
+        const prev = r.startContainer.previousSibling;
+        if (prev && prev.nodeName === 'I' && /\bfa-/.test(prev.className)) {
+          event.preventDefault();
+          prev.parentNode.removeChild(prev);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // -------------------------------------------------------------------------
   // Tab key — indent / outdent list items, or insert soft tab in code blocks
   // -------------------------------------------------------------------------
   if (isKey(event, key.TAB)) {

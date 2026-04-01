@@ -318,6 +318,9 @@ export class IconDialog {
     this._selectedIcon = null;
     this._activeCat = 'all';
     this._searchInput.value = '';
+    // Clear previously selected icon highlight and disable Insert button
+    this._grid.querySelectorAll('.an-icon-cell.active').forEach((c) => c.classList.remove('active'));
+    this._insertBtn.setAttribute('disabled', '');
     this._updateCatTabs();
     this._filterIcons('', 'all');
     this._updatePreview(null);
@@ -574,9 +577,17 @@ export class IconDialog {
     range.deleteContents();
     range.insertNode(iconEl);
 
-    // 4. Place caret immediately after the icon.
-    //    Using setStartAfter so a single Backspace/Delete removes the icon.
-    range.setStartAfter(iconEl);
+    // 4. Anchor cursor reliably after the icon, including at end-of-paragraph.
+    //    Insert a zero-width space text node and place the caret at offset 0
+    //    (before the ZWS char). This means:
+    //    - One Backspace deletes the icon (cursor is at start of text node,
+    //      browser removes the preceding element).
+    //    - The ZWS is invisible to the reader.
+    //    - The cursor has a real text node to sit in even when the icon is
+    //      the last child of a block element.
+    const zwsNode = document.createTextNode('\u200B');
+    iconEl.parentNode.insertBefore(zwsNode, iconEl.nextSibling);
+    range.setStart(zwsNode, 0);
     range.collapse(true);
     if (sel) {
       sel.removeAllRanges();
