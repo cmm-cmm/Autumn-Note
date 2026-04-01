@@ -77,12 +77,80 @@ export class Editor {
       }
     };
 
+    // Guard: when cursor lands at the <li> element node of a checklist item
+    // (before the checkbox), nudge it to the correct text position.
+    //
+    // mouseup: use caretRangeFromPoint / caretPositionFromPoint so the cursor
+    //          lands WHERE the user actually clicked (middle, end of text…).
+    // keyup  : arrow-key navigation may land at <li>[0]; move to start-of-text.
+    const fixChecklistCursor = (event) => {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      const r = sel.getRangeAt(0);
+      if (!r.collapsed) return;
+      const sc = r.startContainer;
+
+      // Only act when cursor is at the <li> element node itself (not inside
+      // a text node — the browser already placed it correctly in that case).
+      if (sc.nodeType !== Node.ELEMENT_NODE) return;
+      const li = sc.matches && sc.matches('.an-checklist li') ? sc : null;
+      if (!li) return;
+      const cb = li.querySelector('input[type="checkbox"]');
+      if (!cb) return;
+
+      // For mouse events: ask the browser where the pointer landed so the
+      // cursor respects the actual click position inside the text.
+      if (event && event.type === 'mouseup') {
+        let caret = null;
+        if (document.caretRangeFromPoint) {
+          caret = document.caretRangeFromPoint(event.clientX, event.clientY);
+        } else if (document.caretPositionFromPoint) {
+          const cp = document.caretPositionFromPoint(event.clientX, event.clientY);
+          if (cp) {
+            caret = document.createRange();
+            caret.setStart(cp.offsetNode, cp.offset);
+          }
+        }
+        // If the caret from point landed inside a text node of this li, use it
+        if (caret && editable.contains(caret.startContainer) &&
+            caret.startContainer !== li) {
+          caret.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(caret);
+          return;
+        }
+      }
+
+      // Fallback (keyboard nav, or caretRangeFromPoint not available / landed
+      // at li again): prefer the first text node after the checkbox so the
+      // cursor renders at the padding-left edge (after the visual checkbox)
+      // rather than at element-level where the browser may place it at x=0.
+      const nr = document.createRange();
+      let anchorNode = null;
+      for (const child of li.childNodes) {
+        if (child !== cb && child.nodeType === Node.TEXT_NODE) {
+          anchorNode = child;
+          break;
+        }
+      }
+      if (anchorNode) {
+        nr.setStart(anchorNode, 0);
+      } else {
+        nr.setStartAfter(cb);
+      }
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
+    };
+
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'beforeinput', onBeforeInput),
       on(editable, 'input', onInput),
       on(document, 'selectionchange', onSelChange),
       on(editable, 'click', onCheckboxClick),
+      on(editable, 'mouseup', fixChecklistCursor),
+      on(editable, 'keyup',   fixChecklistCursor),
     );
   }
 

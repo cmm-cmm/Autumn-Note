@@ -335,13 +335,43 @@ export function toggleChecklist() {
     ul.removeChild(li);
     if (ul.children.length === 0) ul.remove();
     const nr = document.createRange();
-    nr.setStart(p, 0);
+    // Point into the text node (or first child) rather than the element node
+    // so the cursor is at a well-defined text position, not element-offset 0.
+    const startNode = p.firstChild || p;
+    nr.setStart(startNode, 0);
     nr.collapse(true);
     sel.removeAllRanges();
     sel.addRange(nr);
   } else {
     const cb = '<input type="checkbox" contenteditable="false">';
-    execCommand('insertHTML', `<ul class="an-checklist"><li>${cb}\u00a0</li></ul>`);
+    // Insert without any placeholder character so there is no leading space.
+    execCommand('insertHTML', `<ul class="an-checklist"><li>${cb}</li></ul>`);
+    // After insertHTML the cursor is at the <li> element-node (offset after INPUT).
+    // Find the newly inserted li and ensure there is a text node for the cursor
+    // so browsers that require a text anchor can reliably place the caret there.
+    const postSel = window.getSelection();
+    if (postSel && postSel.rangeCount) {
+      let sc = postSel.getRangeAt(0).startContainer;
+      if (sc.nodeType === Node.TEXT_NODE) sc = sc.parentElement;
+      const newLi = sc && sc.closest ? sc.closest('.an-checklist li') : null;
+      if (newLi) {
+        const cbEl = newLi.querySelector('input[type="checkbox"]');
+        if (cbEl) {
+          // Anchor the cursor in a text node (not element-level) so it
+          // renders at the padding-left start, visually after the checkbox.
+          let textNode = cbEl.nextSibling;
+          if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+            textNode = document.createTextNode('');
+            newLi.appendChild(textNode);
+          }
+          const nr = document.createRange();
+          nr.setStart(textNode, 0);
+          nr.collapse(true);
+          postSel.removeAllRanges();
+          postSel.addRange(nr);
+        }
+      }
+    }
   }
 }
 

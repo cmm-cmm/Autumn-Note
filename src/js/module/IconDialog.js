@@ -587,7 +587,11 @@ export class IconDialog {
     //      the last child of a block element.
     const zwsNode = document.createTextNode('\u200B');
     iconEl.parentNode.insertBefore(zwsNode, iconEl.nextSibling);
-    range.setStart(zwsNode, 0);
+    // Place cursor AFTER the ZWS (offset 1), not before (offset 0).
+    // With offset 0 the browser can descend into the preceding <i> on ← press,
+    // causing Enter to split the block and leave an orphan icon in the new paragraph.
+    // At offset 1 the cursor is unambiguously inside the text node, so ← stays safe.
+    range.setStart(zwsNode, 1);
     range.collapse(true);
     if (sel) {
       sel.removeAllRanges();

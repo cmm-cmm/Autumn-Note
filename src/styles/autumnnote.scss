@@ -234,9 +234,9 @@
 
 // Swatch popup panel
 .an-color-popup {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed;
+  // top / left are set dynamically by JS (getBoundingClientRect) so the popup
+  // escapes overflow:hidden / overflow:auto ancestors (toolbar scroll mode, etc.)
   z-index: 1100;
   background: $an-bg;
   border: 1px solid $an-border;
@@ -1083,7 +1083,7 @@ $an-video-accent: #8b5cf6; // violet-500
   display: grid;
   grid-template-columns: repeat(auto-fill, 56px);
   gap: 3px;
-  max-height: 256px;
+  height: 256px;
   overflow-y: auto;
   margin-bottom: 10px;
   padding: 4px;
@@ -1245,7 +1245,7 @@ $an-video-accent: #8b5cf6; // violet-500
   display: grid;
   grid-template-columns: repeat(auto-fill, 42px);
   gap: 2px;
-  max-height: 288px;
+  height: 288px;
   overflow-y: auto;
   margin-bottom: 10px;
   padding: 4px;
@@ -1676,25 +1676,31 @@ $an-video-accent: #8b5cf6; // violet-500
 .an-editable {
   ul.an-checklist {
     list-style: none;
-    padding-left: 0.5em;
+    padding-left: 0;
     margin: 0.5em 0;
 
     li {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      padding: 2px 0;
+      // Use padding-left + absolute checkbox so text is a normal inline flow
+      // (not an anonymous flex item). This ensures font-size, line-height and
+      // all inline formats are identical to regular paragraph text.
+      position: relative;
+      padding-left: 22px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      min-height: 1.4em;
       line-height: inherit;
+      font-size: inherit;
+      font-family: inherit;
 
       input[type='checkbox'] {
-        flex-shrink: 0;
+        position: absolute;
+        left: 0;
+        top: 0.25em;
         width: 14px;
         height: 14px;
         margin: 0;
         cursor: pointer;
         accent-color: $an-primary;
-        position: relative;
-        top: 2px;
       }
 
       // Checked item: dim + strike-through the text node

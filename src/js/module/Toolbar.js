@@ -277,6 +277,14 @@ export class Toolbar {
       this._colorPickerClosers.forEach((fn) => { if (fn !== closePopup) fn(); });
       saveSelection();
       isOpen = true;
+      // Use fixed positioning so the popup escapes any overflow-clipping ancestor
+      // (notably toolbar scroll mode, where overflow-x:auto coerces overflow-y)
+      const rect = arrowBtn.getBoundingClientRect();
+      const popupMinW = 184;
+      let left = rect.left;
+      if (left + popupMinW > window.innerWidth) left = rect.right - popupMinW;
+      popup.style.top  = `${rect.bottom + 4}px`;
+      popup.style.left = `${Math.max(4, left)}px`;
       popup.style.display = 'block';
       arrowBtn.setAttribute('aria-expanded', 'true');
     };
@@ -284,6 +292,8 @@ export class Toolbar {
     const closePopup = () => {
       isOpen = false;
       popup.style.display = 'none';
+      popup.style.top  = '';
+      popup.style.left = '';
       arrowBtn.setAttribute('aria-expanded', 'false');
     };
 
@@ -329,12 +339,24 @@ export class Toolbar {
     });
 
     const d5 = on(document, 'click', (e) => {
-      if (isOpen && !wrap.contains(e.target)) closePopup();
+      // popup is in document.body, not inside wrap — check both
+      if (isOpen && !wrap.contains(e.target) && !popup.contains(e.target)) closePopup();
     });
 
     const d6 = on(popup, 'click', (e) => e.stopPropagation());
 
-    this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6);
+    // Close the popup when the viewport scrolls or resizes so the fixed-position
+    // popup doesn't drift away from the button it belongs to.
+    const onScrollResize = () => { if (isOpen) closePopup(); };
+    document.addEventListener('scroll', onScrollResize, { passive: true, capture: true });
+    window.addEventListener('resize',   onScrollResize, { passive: true });
+
+    this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6,
+      () => document.removeEventListener('scroll', onScrollResize, { capture: true }),
+      () => window.removeEventListener('resize',   onScrollResize),
+      // Remove popup from body on editor destroy
+      () => { if (popup.parentNode) popup.parentNode.removeChild(popup); },
+    );
 
     // Register this popup's closer so other color pickers can close it
     this._colorPickerClosers.push(closePopup);
@@ -343,9 +365,12 @@ export class Toolbar {
       if (idx !== -1) this._colorPickerClosers.splice(idx, 1);
     });
 
+    // Append popup to document.body so it escapes all overflow-clipping and
+    // contain:layout ancestors (contain:layout makes the container a fixed-pos
+    // containing block per the CSS Contain spec, breaking viewport coordinates).
     wrap.appendChild(applyBtn);
     wrap.appendChild(arrowBtn);
-    wrap.appendChild(popup);
+    document.body.appendChild(popup);
     return wrap;
   }
 
@@ -373,16 +398,21 @@ export class Toolbar {
     select.appendChild(placeholder);
 
     items.forEach((item) => {
-      const value = (typeof item === 'object') ? item.value : item;
-      const label = (typeof item === 'object') ? item.label : item;
-      const opt = createElement('option', { value }, [label]);
-      if (def.name === 'fontFamily') opt.style.fontFamily = value;
+      const value    = (typeof item === 'object') ? item.value    : item;
+      const label    = (typeof item === 'object') ? item.label    : item;
+      const isHeader = (typeof item === 'object') && !!item.disabled;
+      const attrs    = { value };
+      if (isHeader) attrs.disabled = '';
+      const opt = createElement('option', attrs, [label]);
+      // Only apply fontFamily face preview on real (non-header) entries
+      if (def.name === 'fontFamily' && !isHeader) opt.style.fontFamily = value;
       select.appendChild(opt);
     });
 
     const disposer = on(select, 'change', (e) => {
       const value = e.target.value;
-      if (!value) return;
+      const selectedOpt = e.target.options[e.target.selectedIndex];
+      if (!value || selectedOpt.disabled) return;
       this.context.invoke('editor.focus');
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');

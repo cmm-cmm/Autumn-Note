@@ -23,11 +23,25 @@ export function handleKeydown(event, editable, options = {}) {
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
-      if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE && r.startOffset === 0) {
-        const prev = r.startContainer.previousSibling;
-        if (prev && prev.nodeName === 'I' && /\bfa-/.test(prev.className)) {
+      if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE) {
+        const textNode = r.startContainer;
+        const isFAIcon = (n) => n && n.nodeName === 'I' && /\bfa-/.test(n.className);
+
+        // Case A: cursor at offset 0, preceding sibling is an FA icon
+        if (r.startOffset === 0 && isFAIcon(textNode.previousSibling)) {
           event.preventDefault();
-          prev.parentNode.removeChild(prev);
+          textNode.previousSibling.remove();
+          return true;
+        }
+
+        // Case B: cursor at offset 1 of a ZWS-only text node whose preceding
+        // sibling is an FA icon. The ZWS is the invisible caret anchor inserted
+        // by IconDialog; treat the whole Backspace as "delete icon + its anchor".
+        if (r.startOffset === 1 && textNode.textContent === '\u200B' &&
+            isFAIcon(textNode.previousSibling)) {
+          event.preventDefault();
+          textNode.previousSibling.remove();
+          textNode.remove();
           return true;
         }
       }
@@ -86,10 +100,26 @@ export function handleKeydown(event, editable, options = {}) {
     const range = currentRange(editable);
     if (!range) return false;
 
-    // Video wrapper — Enter should create a new paragraph after the wrapper,
-    // not split the wrapper's container and produce an empty video clone.
+    // Hoist sc/el once so all guards below can reuse them.
     const sc = range.sc;
     const el = sc.nodeType === 3 ? sc.parentElement : sc;
+
+    // Guard: if the cursor is inside a <i> FA icon element (zero text children,
+    // rendered entirely by CSS ::before), pressing Enter would split the block
+    // and leave an orphan <i> in the new paragraph — visually an "auto-created
+    // icon". Push the cursor to just after the <i> first, then fall through so
+    // the browser fires its default Enter at a safe text boundary.
+    if (el && el.nodeName === 'I' && /\bfa-/.test(el.className || '')) {
+      const nr = document.createRange();
+      nr.setStartAfter(el);
+      nr.collapse(true);
+      const selI = window.getSelection();
+      if (selI) { selI.removeAllRanges(); selI.addRange(nr); }
+      return false; // cursor is now outside <i> — let browser default handle Enter
+    }
+
+    // Video wrapper — Enter should create a new paragraph after the wrapper,
+    // not split the wrapper's container and produce an empty video clone.
     const videoWrapper = el && el.closest && el.closest('.an-video-wrapper');
     if (videoWrapper) {
       event.preventDefault();
@@ -111,54 +141,77 @@ export function handleKeydown(event, editable, options = {}) {
       event.preventDefault();
       const ul = checkLi.closest('.an-checklist');
       const sel = window.getSelection();
-      const nativeRange = sel.getRangeAt(0);
+      let nativeRange = sel.getRangeAt(0);
 
-      // Extract content from cursor to end of li into a fragment
-      const afterRange = document.createRange();
-      afterRange.setStart(nativeRange.endContainer, nativeRange.endOffset);
-      afterRange.setEnd(checkLi, checkLi.childNodes.length);
-      const afterFrag = afterRange.extractContents();
+      // Helper: get trimmed text content of a li, excluding the checkbox INPUT.
+      // Strip both \u00a0 (placeholder nbsp) and \u200B (ZWS cursor anchors).
+      const liText = (li) =>
+        Array.from(li.childNodes)
+          .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+          .map((n) => n.textContent).join('').replace(/[\u00a0\u200B]/g, ' ').trim();
 
-      // Check if text remaining before cursor (excl checkbox) is empty
-      const textBefore = Array.from(checkLi.childNodes)
-        .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
-        .map((n) => n.textContent).join('').replace(/\u00a0/g, ' ').trim();
-
-      if (!textBefore) {
+      // 1. Check if the ENTIRE item is empty BEFORE any DOM mutation.
+      //    (Do NOT check only the "before-cursor" part — that check incorrectly
+      //    exits the list when cursor is at the start of a non-empty item.)
+      if (!liText(checkLi)) {
         // Empty item — exit checklist, insert <p> after list
         const p = document.createElement('p');
-        const afterText = afterFrag.textContent.replace(/\u00a0/g, ' ').trim();
-        p.textContent = afterText || '\u00a0';
+        p.innerHTML = '\u00a0';
         ul.parentNode.insertBefore(p, ul.nextSibling);
         checkLi.remove();
         if (ul.children.length === 0) ul.remove();
         const nr = document.createRange();
-        nr.setStart(p, 0);
+        nr.setStart(p.firstChild, 0);
         nr.collapse(true);
         sel.removeAllRanges();
         sel.addRange(nr);
-      } else {
-        // Create new checklist item; move after-cursor content into it
-        const newLi = document.createElement('li');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.setAttribute('contenteditable', 'false');
-        newLi.appendChild(cb);
-        let cursorNode;
-        if (afterFrag.textContent.length > 0) {
-          newLi.appendChild(afterFrag);
-          cursorNode = newLi.childNodes[1]; // first node after checkbox
-        } else {
-          cursorNode = document.createTextNode('\u00a0');
-          newLi.appendChild(cursorNode);
-        }
-        checkLi.insertAdjacentElement('afterend', newLi);
-        const nr = document.createRange();
-        nr.setStart(cursorNode, 0);
-        nr.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(nr);
+        return true;
       }
+
+      // 2. If selection is not collapsed, delete the selected content first —
+      //    mirrors browser-default Enter behaviour (delete selection, then split).
+      if (!nativeRange.collapsed) {
+        nativeRange.deleteContents();
+        // nativeRange is now collapsed at the deletion point; re-read it
+        nativeRange = sel.getRangeAt(0);
+      }
+
+      // 3. Extract everything from cursor to end of li into afterFrag.
+      //    Use startContainer/startOffset (cursor position after potential delete),
+      //    NOT endContainer/endOffset which is wrong for non-collapsed ranges.
+      const afterRange = document.createRange();
+      afterRange.setStart(nativeRange.startContainer, nativeRange.startOffset);
+      afterRange.setEnd(checkLi, checkLi.childNodes.length);
+      const afterFrag = afterRange.extractContents();
+
+      // 4. Build the new checklist item with the extracted "after" content.
+      const newLi = document.createElement('li');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.setAttribute('contenteditable', 'false');
+      newLi.appendChild(cb);
+
+      // Append extracted "after" content (if any) then insert the new item.
+      if (afterFrag.textContent.replace(/[\u00a0\u200B]/g, '').length > 0) {
+        newLi.appendChild(afterFrag);
+      }
+
+      // Always ensure a text node exists so the cursor has a text-level
+      // anchor. Element-level cursors (setStartAfter) render before the
+      // visually-absolute checkbox because the checkbox occupies no flow
+      // space; a text node starts at the padding-left edge (after checkbox).
+      let cursorNode = newLi.childNodes[1]; // first child after checkbox
+      if (!cursorNode || cursorNode.nodeType !== Node.TEXT_NODE) {
+        cursorNode = document.createTextNode('');
+        newLi.appendChild(cursorNode);
+      }
+      checkLi.insertAdjacentElement('afterend', newLi);
+
+      const nr = document.createRange();
+      nr.setStart(cursorNode, 0);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
       return true;
     }
 
