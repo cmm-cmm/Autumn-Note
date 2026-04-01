@@ -164,6 +164,8 @@ export class VideoTooltip {
   }
 
   _scheduleHide() {
+    // Keep tooltip alive while preview mode is active
+    if (this._previewMode) return;
     clearTimeout(this._showTimer);
     this._showTimer = null;
     if (this._hideTimer) return;
@@ -288,14 +290,17 @@ export class VideoTooltip {
     this._previewBtn.classList.add('an-link-tooltip-btn--copied');
     this._previewBtn.title = 'Exit Preview';
 
-    // Exit preview on any click outside the wrapper (the tooltip stays open)
+    // Exit preview on mousedown outside the wrapper.
+    // Using 'mousedown' (not 'click') so clicks inside an iframe
+    // — which never bubble to the outer document — don't accidentally
+    // leave preview mode stuck. For <video> elements, mousedown on the
+    // video is inside the wrapper so contains() returns true → no exit.
     this._previewClickOff = (e) => {
       if (!wrapper.contains(e.target) && !this._el.contains(e.target)) {
         this._exitPreview();
       }
     };
-    // Use capture so the listener fires before anything else
-    document.addEventListener('click', this._previewClickOff, true);
+    document.addEventListener('mousedown', this._previewClickOff, true);
   }
 
   _exitPreview() {
@@ -313,7 +318,7 @@ export class VideoTooltip {
     this._previewBtn.title = 'Preview Video';
 
     if (this._previewClickOff) {
-      document.removeEventListener('click', this._previewClickOff, true);
+      document.removeEventListener('mousedown', this._previewClickOff, true);
       this._previewClickOff = null;
     }
   }
