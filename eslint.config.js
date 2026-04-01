@@ -34,6 +34,7 @@ module.exports = [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
         process: 'readonly',
       },
     },

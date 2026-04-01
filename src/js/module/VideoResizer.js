@@ -21,6 +21,7 @@ export class VideoResizer {
     this._activeWrapper = null;
     this._overlay = null;
     this._disposers = [];
+    this._positionRaf = null;
   }
 
   initialize() {
@@ -52,6 +53,10 @@ export class VideoResizer {
     if (this._dragDisposers) {
       this._dragDisposers.forEach((d) => d());
       this._dragDisposers = null;
+    }
+    if (this._positionRaf) {
+      cancelAnimationFrame(this._positionRaf);
+      this._positionRaf = null;
     }
     this._deselect();
     if (this._overlay && this._overlay.parentNode) {
@@ -154,11 +159,22 @@ export class VideoResizer {
   }
 
   _updateOverlayPosition() {
+    if (this._positionRaf) cancelAnimationFrame(this._positionRaf);
+    this._positionRaf = requestAnimationFrame(() => {
+      this._positionRaf = null;
+      this._updateOverlayPositionNow();
+    });
+  }
+
+  _updateOverlayPositionNow() {
     if (!this._activeWrapper || !this._overlay) return;
-    const containerRect = this._container.getBoundingClientRect();
+    const offsetParent = this._overlay.offsetParent || this._container;
+    const containerRect = offsetParent.getBoundingClientRect();
     const rect = this._activeWrapper.getBoundingClientRect();
-    this._overlay.style.left   = `${rect.left - containerRect.left}px`;
-    this._overlay.style.top    = `${rect.top  - containerRect.top}px`;
+    const left = rect.left - containerRect.left + offsetParent.scrollLeft;
+    const top = rect.top - containerRect.top + offsetParent.scrollTop;
+    this._overlay.style.left   = `${left}px`;
+    this._overlay.style.top    = `${top}px`;
     this._overlay.style.width  = `${rect.width}px`;
     this._overlay.style.height = `${rect.height}px`;
   }
