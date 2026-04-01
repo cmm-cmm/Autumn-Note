@@ -167,6 +167,9 @@ export class TableTooltip {
       if (_resizing) return;
       const cell = e.target.closest('td, th');
       if (!cell || !editable.contains(cell)) { clearHover(); return; }
+      if (_nearCell && _nearCell !== cell) {
+        _nearCell.style.cursor = '';
+      }
       const rect    = cell.getBoundingClientRect();
       const onRight  = Math.abs(e.clientX - rect.right)  < HIT;
       const onBottom = Math.abs(e.clientY - rect.bottom) < HIT;

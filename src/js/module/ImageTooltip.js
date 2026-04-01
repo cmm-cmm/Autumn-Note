@@ -244,7 +244,12 @@ export class ImageTooltip {
     if (!img) return;
     this._hide();
     this.context.invoke('imageResizer.deselect');
-    if (img.parentNode) img.parentNode.removeChild(img);
+    const figure = img.closest('figure.an-figure');
+    if (figure && figure.parentNode) {
+      figure.parentNode.removeChild(figure);
+    } else if (img.parentNode) {
+      img.parentNode.removeChild(img);
+    }
     this.context.invoke('editor.afterCommand');
   }
 
