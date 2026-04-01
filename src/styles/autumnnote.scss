@@ -377,7 +377,7 @@
 .an-editable {
   flex: 1;
   padding: $an-editable-pad;
-  min-height: 200px;
+  min-height: 0;
   outline: none;
   line-height: $an-line-height;
   color: $an-text;
