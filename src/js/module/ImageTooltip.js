@@ -306,6 +306,8 @@ export class ImageTooltip {
     if (sel) { sel.removeAllRanges(); sel.addRange(range); }
 
     this.context.invoke('editor.afterCommand');
+    // Re-sync the resize overlay: wrapping img in <figure> changes its layout position.
+    this.context.invoke('imageResizer.updateOverlay');
     this._hide();
   }
 }
