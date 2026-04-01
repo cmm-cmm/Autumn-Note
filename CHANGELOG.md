@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-04-01
+
+### Added
+- Preview functionality in VideoTooltip with visual styling for video selection
+- `requestAnimationFrame`-based overlay position updates in ImageResizer and VideoResizer for smoother resizing
+
+### Changed
+- Enhanced preview mode handling in VideoTooltip to prevent accidental exit
+- Updated video wrapper width for better responsive layout of `<iframe>` and `<video>` elements in VideoDialog
+- Improved tooltip positioning logic and image deletion handling in editor
+- Enhanced checklist functionality and cursor positioning
+- Improved statusbar resizing logic and editable area minimum height
+- Enhanced icon handling and backspace behaviour in editor
+- Strengthened sanitisation of iframe sources
+
+### Fixed
+- ESLint config export changed from `export default` to `module.exports` for proper CJS compatibility
+
+---
+
 ## [1.0.0] - 2026-03-31
 
 ### Added
