@@ -16,6 +16,8 @@ export class Toolbar {
     this.el = null;
     /** @type {Array<() => void>} disposers */
     this._disposers = [];
+    /** @type {Array<() => void>} closers for all open color picker popups */
+    this._colorPickerClosers = [];
   }
 
   // ---------------------------------------------------------------------------
@@ -253,9 +255,36 @@ export class Toolbar {
 
     // ---- State ----
     let isOpen = false;
+    /** @type {Range|null} saved selection range before popup opens */
+    let savedRange = null;
+
+    const saveSelection = () => {
+      const sel = window.getSelection();
+      savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+    };
+
+    const restoreSelection = () => {
+      if (!savedRange) return;
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      }
+    };
 
     const openPopup = () => {
+      // Close any other open color picker before opening this one
+      this._colorPickerClosers.forEach((fn) => { if (fn !== closePopup) fn(); });
+      saveSelection();
       isOpen = true;
+      // Use fixed positioning so the popup escapes any overflow-clipping ancestor
+      // (notably toolbar scroll mode, where overflow-x:auto coerces overflow-y)
+      const rect = arrowBtn.getBoundingClientRect();
+      const popupMinW = 184;
+      let left = rect.left;
+      if (left + popupMinW > window.innerWidth) left = rect.right - popupMinW;
+      popup.style.top  = `${rect.bottom + 4}px`;
+      popup.style.left = `${Math.max(4, left)}px`;
       popup.style.display = 'block';
       arrowBtn.setAttribute('aria-expanded', 'true');
     };
@@ -263,6 +292,8 @@ export class Toolbar {
     const closePopup = () => {
       isOpen = false;
       popup.style.display = 'none';
+      popup.style.top  = '';
+      popup.style.left = '';
       arrowBtn.setAttribute('aria-expanded', 'false');
     };
 
@@ -270,7 +301,7 @@ export class Toolbar {
       currentColor = color;
       strip.style.background = color;
       colorInput.value = color;
-      this.context.invoke('editor.focus');
+      restoreSelection();
       def.action(this.context, color);
       this.context.invoke('editor.afterCommand');
       closePopup();
@@ -278,17 +309,27 @@ export class Toolbar {
 
     const d1 = on(applyBtn, 'click', (e) => {
       e.preventDefault();
-      this.context.invoke('editor.focus');
+      restoreSelection();
       def.action(this.context, currentColor);
       this.context.invoke('editor.afterCommand');
     });
 
-    const d2 = on(arrowBtn, 'click', (e) => {
+    const d2 = on(arrowBtn, 'mousedown', (e) => {
+      // Prevent editor blur so selection is preserved when the popup opens
+      e.preventDefault();
+    });
+
+    const d2b = on(arrowBtn, 'click', (e) => {
       e.stopPropagation();
       if (isOpen) closePopup(); else openPopup();
     });
 
-    const d3 = on(swatches, 'click', (e) => {
+    const d3 = on(swatches, 'mousedown', (e) => {
+      // Prevent blur before the click handler fires
+      e.preventDefault();
+    });
+
+    const d3b = on(swatches, 'click', (e) => {
       const sw = e.target.closest('.an-color-swatch');
       if (sw) applyColor(sw.dataset.color);
     });
@@ -298,16 +339,38 @@ export class Toolbar {
     });
 
     const d5 = on(document, 'click', (e) => {
-      if (isOpen && !wrap.contains(e.target)) closePopup();
+      // popup is in document.body, not inside wrap — check both
+      if (isOpen && !wrap.contains(e.target) && !popup.contains(e.target)) closePopup();
     });
 
     const d6 = on(popup, 'click', (e) => e.stopPropagation());
 
-    this._disposers.push(d1, d2, d3, d4, d5, d6);
+    // Close the popup when the viewport scrolls or resizes so the fixed-position
+    // popup doesn't drift away from the button it belongs to.
+    const onScrollResize = () => { if (isOpen) closePopup(); };
+    document.addEventListener('scroll', onScrollResize, { passive: true, capture: true });
+    window.addEventListener('resize',   onScrollResize, { passive: true });
 
+    this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6,
+      () => document.removeEventListener('scroll', onScrollResize, { capture: true }),
+      () => window.removeEventListener('resize',   onScrollResize),
+      // Remove popup from body on editor destroy
+      () => { if (popup.parentNode) popup.parentNode.removeChild(popup); },
+    );
+
+    // Register this popup's closer so other color pickers can close it
+    this._colorPickerClosers.push(closePopup);
+    this._disposers.push(() => {
+      const idx = this._colorPickerClosers.indexOf(closePopup);
+      if (idx !== -1) this._colorPickerClosers.splice(idx, 1);
+    });
+
+    // Append popup to document.body so it escapes all overflow-clipping and
+    // contain:layout ancestors (contain:layout makes the container a fixed-pos
+    // containing block per the CSS Contain spec, breaking viewport coordinates).
     wrap.appendChild(applyBtn);
     wrap.appendChild(arrowBtn);
-    wrap.appendChild(popup);
+    document.body.appendChild(popup);
     return wrap;
   }
 
@@ -329,22 +392,27 @@ export class Toolbar {
       'aria-label': def.tooltip || def.name,
     });
 
-    // Blank "placeholder" option
+    // Blank "placeholder" option (non-selectable header)
     const placeholderText = def.placeholder || 'Font';
-    const placeholder = createElement('option', { value: '' }, [placeholderText]);
+    const placeholder = createElement('option', { value: '', disabled: '', hidden: '' }, [placeholderText]);
     select.appendChild(placeholder);
 
     items.forEach((item) => {
-      const value = (typeof item === 'object') ? item.value : item;
-      const label = (typeof item === 'object') ? item.label : item;
-      const opt = createElement('option', { value }, [label]);
-      if (def.name === 'fontFamily') opt.style.fontFamily = value;
+      const value    = (typeof item === 'object') ? item.value    : item;
+      const label    = (typeof item === 'object') ? item.label    : item;
+      const isHeader = (typeof item === 'object') && !!item.disabled;
+      const attrs    = { value };
+      if (isHeader) attrs.disabled = '';
+      const opt = createElement('option', attrs, [label]);
+      // Only apply fontFamily face preview on real (non-header) entries
+      if (def.name === 'fontFamily' && !isHeader) opt.style.fontFamily = value;
       select.appendChild(opt);
     });
 
     const disposer = on(select, 'change', (e) => {
       const value = e.target.value;
-      if (!value) return;
+      const selectedOpt = e.target.options[e.target.selectedIndex];
+      if (!value || selectedOpt.disabled) return;
       this.context.invoke('editor.focus');
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');

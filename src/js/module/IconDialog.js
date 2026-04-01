@@ -318,6 +318,9 @@ export class IconDialog {
     this._selectedIcon = null;
     this._activeCat = 'all';
     this._searchInput.value = '';
+    // Clear previously selected icon highlight and disable Insert button
+    this._grid.querySelectorAll('.an-icon-cell.active').forEach((c) => c.classList.remove('active'));
+    this._insertBtn.setAttribute('disabled', '');
     this._updateCatTabs();
     this._filterIcons('', 'all');
     this._updatePreview(null);
@@ -574,16 +577,20 @@ export class IconDialog {
     range.deleteContents();
     range.insertNode(iconEl);
 
-    // 4. Insert a zero-width space text node immediately after the icon.
-    //    This is essential when the icon lands at the END of a paragraph:
-    //    browsers cannot place the caret after an inline element that is the
-    //    last child of a block — there is no text node to anchor into.
-    //    The ZWS gives the caret a real text node to sit in, so typing after
-    //    the icon works correctly. It is invisible to the reader.
+    // 4. Anchor cursor reliably after the icon, including at end-of-paragraph.
+    //    Insert a zero-width space text node and place the caret at offset 0
+    //    (before the ZWS char). This means:
+    //    - One Backspace deletes the icon (cursor is at start of text node,
+    //      browser removes the preceding element).
+    //    - The ZWS is invisible to the reader.
+    //    - The cursor has a real text node to sit in even when the icon is
+    //      the last child of a block element.
     const zwsNode = document.createTextNode('\u200B');
     iconEl.parentNode.insertBefore(zwsNode, iconEl.nextSibling);
-
-    // 5. Place caret inside the ZWS text node (offset 1 = after the ZWS char).
+    // Place cursor AFTER the ZWS (offset 1), not before (offset 0).
+    // With offset 0 the browser can descend into the preceding <i> on ← press,
+    // causing Enter to split the block and leave an orphan icon in the new paragraph.
+    // At offset 1 the cursor is unambiguously inside the text node, so ← stays safe.
     range.setStart(zwsNode, 1);
     range.collapse(true);
     if (sel) {

@@ -86,6 +86,29 @@ describe('sanitiseHTML', () => {
     const input = '<p><strong>bold</strong> and <em>italic</em></p>';
     expect(sanitiseHTML(input)).toBe('<p><strong>bold</strong> and <em>italic</em></p>');
   });
+
+  it('keeps trusted video iframe src when allowIframes is true', () => {
+    const input = '<iframe src="https://www.youtube.com/embed/abcdefghijk"></iframe>';
+    const result = sanitiseHTML(input, { allowIframes: true });
+    expect(result).toContain('<iframe');
+    expect(result).toContain('src="https://www.youtube.com/embed/abcdefghijk"');
+  });
+
+  it('removes untrusted iframe src when allowIframes is true', () => {
+    const input = '<iframe src="https://evil.example/embed/1"></iframe>';
+    const result = sanitiseHTML(input, { allowIframes: true });
+    expect(result).toContain('<iframe');
+    expect(result).not.toContain('src="https://evil.example/embed/1"');
+  });
+
+  it('strips iframe srcdoc payloads when allowIframes is true', () => {
+    const input = '<iframe src="https://www.youtube.com/embed/abcdefghijk" srcdoc="<script>alert(1)</script>"></iframe>';
+    const result = sanitiseHTML(input, { allowIframes: true });
+    expect(result).toContain('<iframe');
+    expect(result).toContain('src="https://www.youtube.com/embed/abcdefghijk"');
+    expect(result).not.toContain('srcdoc=');
+    expect(result).not.toContain('alert(1)');
+  });
 });
 
 // ---------------------------------------------------------------------------

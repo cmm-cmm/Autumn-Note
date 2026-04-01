@@ -10,6 +10,7 @@ const ICONS = {
   alignCenter: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/></svg>`,
   originalSize:`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
   deleteVideo: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  preview:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
 };
 
 const SHOW_DELAY = 100;
@@ -24,6 +25,8 @@ export class VideoTooltip {
     this._showTimer = null;
     this._hideTimer = null;
     this._disposers = [];
+    this._previewMode = false;
+    this._previewClickOff = null;
   }
 
   initialize() {
@@ -61,6 +64,7 @@ export class VideoTooltip {
   }
 
   destroy() {
+    if (this._previewMode) this._exitPreview();
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
@@ -102,6 +106,11 @@ export class VideoTooltip {
     this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
 
     el.appendChild(this._originalBtn);
+
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
+
+    this._previewBtn = this._makeBtn(ICONS.preview, 'Preview Video', () => this._togglePreview());
+    el.appendChild(this._previewBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
@@ -155,6 +164,8 @@ export class VideoTooltip {
   }
 
   _scheduleHide() {
+    // Keep tooltip alive while preview mode is active
+    if (this._previewMode) return;
     clearTimeout(this._showTimer);
     this._showTimer = null;
     if (this._hideTimer) return;
@@ -167,6 +178,7 @@ export class VideoTooltip {
   }
 
   _hide() {
+    if (this._previewMode) this._exitPreview();
     this._el.style.display = 'none';
     this._activeWrapper = null;
     this._clearTimers();
@@ -248,5 +260,66 @@ export class VideoTooltip {
     this.context.invoke('videoResizer.deselect');
     if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     this.context.invoke('editor.afterCommand');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Preview mode — temporarily disables the shield so the video is interactive
+  // ---------------------------------------------------------------------------
+
+  _togglePreview() {
+    if (this._previewMode) {
+      this._exitPreview();
+    } else {
+      this._enterPreview();
+    }
+  }
+
+  _enterPreview() {
+    const wrapper = this._activeWrapper;
+    if (!wrapper) return;
+    this._previewMode = true;
+
+    // Hide the shield so the iframe / video receives pointer events directly
+    const shield = wrapper.querySelector('.an-video-shield');
+    if (shield) shield.style.display = 'none';
+
+    // Hide the resize overlay — it would block interaction with the embed
+    this.context.invoke('videoResizer.deselect');
+
+    // Visual feedback: button turns primary-coloured
+    this._previewBtn.classList.add('an-link-tooltip-btn--copied');
+    this._previewBtn.title = 'Exit Preview';
+
+    // Exit preview on mousedown outside the wrapper.
+    // Using 'mousedown' (not 'click') so clicks inside an iframe
+    // — which never bubble to the outer document — don't accidentally
+    // leave preview mode stuck. For <video> elements, mousedown on the
+    // video is inside the wrapper so contains() returns true → no exit.
+    this._previewClickOff = (e) => {
+      if (!wrapper.contains(e.target) && !this._el.contains(e.target)) {
+        this._exitPreview();
+      }
+    };
+    document.addEventListener('mousedown', this._previewClickOff, true);
+  }
+
+  _exitPreview() {
+    this._previewMode = false;
+
+    const wrapper = this._activeWrapper;
+    if (wrapper) {
+      // Restore the shield
+      const shield = wrapper.querySelector('.an-video-shield');
+      if (shield) shield.style.display = '';
+    }
+
+    // Reset button appearance
+    this._previewBtn.classList.remove('an-link-tooltip-btn--copied');
+    this._previewBtn.title = 'Preview Video';
+
+    if (this._previewClickOff) {
+      document.removeEventListener('mousedown', this._previewClickOff, true);
+      this._previewClickOff = null;
+    }
   }
 }

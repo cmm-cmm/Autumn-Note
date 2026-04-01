@@ -36,8 +36,27 @@ export const italic = () => execCommand('italic');
 
 /**
  * Underlines / un-underlines the selection.
+ * Falls back to manual DOM manipulation when inside <code> where
+ * execCommand's state detection is unreliable.
  */
-export const underline = () => execCommand('underline');
+export function underline() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
+  const uEl = container && container.closest && container.closest('u');
+  const nativeState = document.queryCommandState('underline');
+  if (uEl && !nativeState) {
+    // Browser doesn't recognise the underline state (e.g. inside <code>).
+    // Manually unwrap the <u> element.
+    const parent = uEl.parentNode;
+    while (uEl.firstChild) parent.insertBefore(uEl.firstChild, uEl);
+    parent.removeChild(uEl);
+    return;
+  }
+  execCommand('underline');
+}
 
 /**
  * Strikethrough / removes strikethrough.
@@ -254,12 +273,22 @@ export function toggleInlineCode(editable) {
     try {
       const code = document.createElement('code');
       range.surroundContents(code);
+      // Re-select wrapped content so subsequent format toggles work
+      const newRange = document.createRange();
+      newRange.selectNodeContents(code);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
     } catch {
       // surroundContents fails across element boundaries — extract and rewrap
       const frag = range.extractContents();
       const code = document.createElement('code');
       code.appendChild(frag);
       range.insertNode(code);
+      // Re-select wrapped content
+      const newRange = document.createRange();
+      newRange.selectNodeContents(code);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
     }
   }
 }
@@ -306,13 +335,45 @@ export function toggleChecklist() {
     ul.removeChild(li);
     if (ul.children.length === 0) ul.remove();
     const nr = document.createRange();
-    nr.setStart(p, 0);
+    // Point into the text node (or first child) rather than the element node
+    // so the cursor is at a well-defined text position, not element-offset 0.
+    const startNode = p.firstChild || p;
+    nr.setStart(startNode, 0);
     nr.collapse(true);
     sel.removeAllRanges();
     sel.addRange(nr);
   } else {
-    const cb = '<input type="checkbox" contenteditable="false">';
-    execCommand('insertHTML', `<ul class="an-checklist"><li>${cb}\u00a0</li></ul>`);
+    // Use a temporary marker attribute so the new <li> can be found reliably
+    // even when execCommand('insertHTML') places the cursor outside the list.
+    // Chrome often moves the caret to a generated <p> after the <ul> rather
+    // than staying inside the <li>, making a selection-based lookup fail.
+    const MARKER = 'data-an-new-cli';
+    execCommand('insertHTML',
+      `<ul class="an-checklist"><li ${MARKER}><input type="checkbox" contenteditable="false"></li></ul>`);
+    const newLi = document.querySelector(`[${MARKER}]`);
+    if (newLi) {
+      newLi.removeAttribute(MARKER);
+      const cbEl = newLi.querySelector('input[type="checkbox"]');
+      if (cbEl) {
+        // Use \u200B (zero-width space) instead of an empty string.
+        // Chrome does not reliably honour a Selection pointing into an empty
+        // text node and may silently normalise it to an element-level offset,
+        // rendering the caret before the absolutely-positioned checkbox.
+        // \u200B is invisible/zero-width and is stripped by getHTML().
+        let textNode = cbEl.nextSibling;
+        if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+          textNode = document.createTextNode('\u200B');
+          newLi.appendChild(textNode);
+        } else if (!textNode.textContent) {
+          textNode.textContent = '\u200B';
+        }
+        const nr = document.createRange();
+        nr.setStart(textNode, 0);
+        nr.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nr);
+      }
+    }
   }
 }
 

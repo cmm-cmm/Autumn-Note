@@ -98,7 +98,12 @@ export class Codeview {
     const INLINE_RE = /^<(a|abbr|b|bdo|br|button|cite|code|dfn|em|i|img|input|kbd|label|output|q|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)([\s>/])/i;
     let indent = 0;
     return html
-      .replace(/>\s*</g, '>\n<')
+      .replace(/>\s*</g, (match, offset, str) => {
+        // Check what comes after the '>' — if it starts an inline tag, keep on same line
+        const remaining = str.slice(offset + 1);
+        if (INLINE_RE.test(remaining.trimStart())) return '><';
+        return '>\n<';
+      })
       .split('\n')
       .map((line) => {
         const stripped = line.trim();

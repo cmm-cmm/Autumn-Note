@@ -43,7 +43,7 @@ export interface AsnOptions {
   /** Number of spaces inserted when Tab is pressed (outside a list). */
   tabSize?: number;
   /** Callback on content change. */
-  onChange?: (context: Context) => void;
+  onChange?: (html: string) => void;
   /** Callback on editor focus. */
   onFocus?: (context: Context) => void;
   /** Callback fired on editor blur. */
@@ -59,9 +59,9 @@ export interface AsnOptions {
   /** Callback fired when the word limit is reached. */
   onWordLimitReached?: (context: Context) => void;
   /** Custom image upload handler. */
-  onImageUpload?: (files: FileList) => void;
+  onImageUpload?: (files: File[]) => void;
   /** Callback when an image upload error occurs. */
-  onImageError?: (error: Error) => void;
+  onImageError?: (error: { file?: File; message: string; error?: unknown }) => void;
   /** Stick the toolbar to the viewport top when scrolling. */
   stickyToolbar?: boolean;
   /** Top offset in px for sticky toolbar (e.g. height of a fixed nav bar). */
@@ -101,7 +101,7 @@ export interface AsnOptions {
   /** Insert a header row (<thead>) when creating new tables. */
   tableHeaderRow?: boolean;
   /** Callback fired after every paste event. */
-  onPaste?: (data: { text: string; html: string }) => void;
+  onPaste?: (data: { text: string; html: string | null }) => void;
   /** Additional color swatches shown at the top of the color picker. */
   colorSwatches?: string[];
 }

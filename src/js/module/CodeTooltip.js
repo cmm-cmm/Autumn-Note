@@ -221,8 +221,9 @@ export class CodeTooltip {
     if (left + tipW > window.innerWidth  - margin) left = window.innerWidth  - tipW - margin;
     if (left < margin) left = margin;
 
-    this._el.style.top  = `${top  + window.scrollY}px`;
-    this._el.style.left = `${left + window.scrollX}px`;
+    // Tooltip uses position:fixed, so viewport coordinates are used directly.
+    this._el.style.top  = `${top}px`;
+    this._el.style.left = `${left}px`;
   }
 
   // ---------------------------------------------------------------------------
@@ -356,15 +357,25 @@ export class CodeTooltip {
     if (!this.context.options.codeHighlight || window.Prism) return;
     const cdn = this.context.options.codeHighlightCDN
       || 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+    const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
+    const scriptSrc = `${cdn}/prism.min.js`;
 
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = `${cdn}/themes/prism-tomorrow.min.css`;
-    document.head.appendChild(link);
+    if (!document.querySelector(`link[href="${themeHref}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = themeHref;
+      document.head.appendChild(link);
+    }
+
+    const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+    if (existingScript) {
+      this._prismScript = window.Prism ? null : existingScript;
+      return;
+    }
 
     const script = document.createElement('script');
     script.dataset.manual = ''; // prevent auto-highlight on load
-    script.src = `${cdn}/prism.min.js`;
+    script.src = scriptSrc;
     this._prismScript = script;
     script.addEventListener('load', () => { this._prismScript = null; }, { once: true });
     document.head.appendChild(script);

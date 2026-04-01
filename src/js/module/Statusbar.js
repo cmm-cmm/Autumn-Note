@@ -130,8 +130,15 @@ export class Statusbar {
 
     const applyDelta = (clientY) => {
       const delta = clientY - startY;
-      const minH = this.options.minHeight || 100;
-      containerEl.style.height = `${Math.max(minH, startH + delta)}px`;
+      // Compute the true minimum: fixed elements (toolbar + statusbar) must fit
+      // inside the container. Sum the offsetHeight of every child that is NOT
+      // the editable area, then add a small floor so the editable stays visible.
+      const MIN_EDITABLE = 40;
+      const fixedH = Array.from(containerEl.children)
+        .filter(child => !child.classList.contains('an-editable'))
+        .reduce((sum, child) => sum + child.offsetHeight, 0);
+      const trueMin = Math.max(this.options.minHeight || 100, fixedH + MIN_EDITABLE);
+      containerEl.style.height = `${Math.max(trueMin, startH + delta)}px`;
     };
 
     // Mouse drag
@@ -146,6 +153,11 @@ export class Statusbar {
     const onMouseDown = (event) => {
       startY = event.clientY;
       startH = containerEl.offsetHeight;
+      // Clear the editable's inline min-height so the flex layout can compress
+      // it freely once the container has a fixed height. Without this, the
+      // editable's min-height (set from options.height) overflows the container
+      // when the user drags the handle to a size smaller than that value.
+      this.context.layoutInfo.editable.style.minHeight = '';
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('mouseup', onMouseUp);
       // Track drag-phase listeners so destroy() can remove them mid-drag
@@ -173,6 +185,8 @@ export class Statusbar {
       if (!touch) return;
       startY = touch.clientY;
       startH = containerEl.offsetHeight;
+      // Same as onMouseDown: clear editable min-height so flex can compress it
+      this.context.layoutInfo.editable.style.minHeight = '';
       document.addEventListener('touchmove', onTouchMove, { passive: false });
       document.addEventListener('touchend', onTouchEnd);
       this._dragDisposers = [
