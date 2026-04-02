@@ -35,9 +35,20 @@
   }
 
   &.an-disabled {
-    opacity: 0.6;
-    pointer-events: none;
-    user-select: none;
+    // Hide toolbar only — read-only view has no editing controls.
+    .an-toolbar {
+      display: none;
+    }
+
+    // Allow the user to select and copy text but block actual editing.
+    // Do NOT set pointer-events:none or user-select:none on the container —
+    // that would prevent text selection inside the editable area.
+    .an-editable {
+      cursor: text;
+      user-select: text;
+      // Subtle visual cue that the area is read-only.
+      background: #fafafa;
+    }
   }
 
   &.an-fullscreen {

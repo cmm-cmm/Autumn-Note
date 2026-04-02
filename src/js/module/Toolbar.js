@@ -5,6 +5,12 @@
 
 import { createElement, on } from '../core/dom.js';
 
+// Module-level cache for FontAwesome detection.
+// Evaluated once per page load so all Toolbar instances on the same page agree
+// on whether the HOST PAGE included FA — regardless of whether IconDialog later
+// auto-injects its own FA <link> for the icon-picker glyph rendering.
+let _faPageLevelReady = null;
+
 export class Toolbar {
   /**
    * @param {import('../Context.js').Context} context
@@ -570,9 +576,21 @@ export class Toolbar {
 
   _detectFontAwesome() {
     if (!this.options.useFontAwesome) return false;
-    if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) return true;
-    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map((l) => l.href || '').join(' ');
-    return /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
+    // Return cached result when available. This ensures that a later-initialised
+    // toolbar sees the same detection state as the first one — even if IconDialog
+    // has since injected its own FA <link> into <head> for the icon-picker UI.
+    if (_faPageLevelReady !== null) return _faPageLevelReady;
+    if (document.querySelector('.fa, .fas, .far, .fal, .fab, .fa-solid')) {
+      _faPageLevelReady = true;
+      return true;
+    }
+    // Exclude the editor-self-injected link (id='an-fontawesome-css') so it doesn't
+    // count as "the host page loaded FA" for toolbar icon rendering purposes.
+    const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .filter((l) => l.id !== 'an-fontawesome-css')
+      .map((l) => l.href || '').join(' ');
+    _faPageLevelReady = /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
+    return _faPageLevelReady;
   }
 
   // ---------------------------------------------------------------------------
