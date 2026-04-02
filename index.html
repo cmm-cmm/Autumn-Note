@@ -102,6 +102,7 @@
     const editor = AutumnNote.create('#editor', {
       ...sharedOptions,
       placeholder: 'Start typing here…',
+      focusColor: '#e8751a',  // warm autumn orange
       onChange(html) {
         document.getElementById('output').textContent = html;
         // Keep read-only instance in sync

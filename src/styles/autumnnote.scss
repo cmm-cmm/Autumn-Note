@@ -30,8 +30,10 @@
   }
 
   &.an-focused {
-    border-color: $an-primary;
-    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
+    border-color: var(--an-focus-color, #{$an-primary});
+    // color-mix() blends the focus colour with transparent for the glow ring.
+    // Falls back gracefully to the default blue glow in older browsers.
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--an-focus-color, #{$an-primary}) 18%, transparent);
   }
 
   &.an-disabled {
