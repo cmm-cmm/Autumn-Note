@@ -38,6 +38,14 @@ export class ImageResizer {
 
     const editable = this.context.layoutInfo.editable;
 
+    // Debounce window resize — _updateOverlayPosition already has rAF gating but
+    // every call cancels + re-schedules it; a debounce reduces that churn.
+    let _resizeDebounce = null;
+    const onWindowResize = () => {
+      clearTimeout(_resizeDebounce);
+      _resizeDebounce = setTimeout(() => this._updateOverlayPosition(), 100);
+    };
+
     this._disposers.push(
       on(editable, 'click', (e) => this._onEditorClick(e)),
       // Also select on right-click so the highlight shows before the context menu
@@ -47,7 +55,7 @@ export class ImageResizer {
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
       on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', () => this._updateOverlayPosition()),
+      on(window, 'resize', onWindowResize),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
     );
 
@@ -187,37 +195,44 @@ export class ImageResizer {
     const isCorner = pos.length === 2; // 'nw','ne','se','sw'
 
     const editable = this.context.layoutInfo.editable;
+    let _raf = null; // rAF handle — ensures at most one write per paint frame
+
     const onMove = (me) => {
-      const dx = me.clientX - startX;
-      const dy = me.clientY - startY;
-      const maxW = editable.clientWidth || Infinity;
-      let newW = startW;
-      let newH = startH;
+      if (_raf !== null) return; // frame already pending, discard this event
+      const clientX = me.clientX;
+      const clientY = me.clientY;
+      _raf = requestAnimationFrame(() => {
+        _raf = null;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        const maxW = editable.clientWidth || Infinity;
+        let newW = startW;
+        let newH = startH;
 
-      if (pos.includes('e')) newW = Math.max(20, startW + dx);
-      if (pos.includes('w')) newW = Math.max(20, startW - dx);
-      if (pos.includes('s')) newH = Math.max(20, startH + dy);
-      if (pos.includes('n')) newH = Math.max(20, startH - dy);
+        if (pos.includes('e')) newW = Math.max(20, startW + dx);
+        if (pos.includes('w')) newW = Math.max(20, startW - dx);
+        if (pos.includes('s')) newH = Math.max(20, startH + dy);
+        if (pos.includes('n')) newH = Math.max(20, startH - dy);
 
-      // Clamp to container width
-      newW = Math.min(newW, maxW);
+        newW = Math.min(newW, maxW);
 
-      if (isCorner) {
-        // Lock aspect ratio: use larger absolute delta to drive both dimensions
-        if (Math.abs(dx) >= Math.abs(dy)) {
-          newH = Math.max(20, Math.round(newW / aspectRatio));
-        } else {
-          newW = Math.min(Math.max(20, Math.round(newH * aspectRatio)), maxW);
-          newH = Math.max(20, Math.round(newW / aspectRatio));
+        if (isCorner) {
+          if (Math.abs(dx) >= Math.abs(dy)) {
+            newH = Math.max(20, Math.round(newW / aspectRatio));
+          } else {
+            newW = Math.min(Math.max(20, Math.round(newH * aspectRatio)), maxW);
+            newH = Math.max(20, Math.round(newW / aspectRatio));
+          }
         }
-      }
 
-      img.style.width  = `${newW}px`;
-      img.style.height = `${newH}px`;
-      this._updateOverlayPosition();
+        img.style.width  = `${newW}px`;
+        img.style.height = `${newH}px`;
+        this._updateOverlayPosition();
+      });
     };
 
     const onUp = () => {
+      if (_raf !== null) { cancelAnimationFrame(_raf); _raf = null; }
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       this._dragDisposers = null;
