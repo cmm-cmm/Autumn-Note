@@ -110,7 +110,7 @@ export class TableTooltip {
           if (cell) this._activeCell = cell;
           this._scheduleShow(table);
         }
-      }),
+      }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         const to = e.relatedTarget;
         if (!to || (
@@ -120,7 +120,7 @@ export class TableTooltip {
         )) {
           this._scheduleHide();
         }
-      }),
+      }, { passive: true }),
       on(document, 'click', (e) => {
         if (this._activeTable &&
           !this._activeTable.contains(e.target) &&
@@ -394,7 +394,10 @@ export class TableTooltip {
   _show() {
     if (!this._activeTable) return;
     this._el.style.display = 'flex';
-    this._positionNear(this._activeTable);
+    // Defer: offsetWidth on a newly-visible element forces layout synchronously
+    requestAnimationFrame(() => {
+      if (this._activeTable) this._positionNear(this._activeTable);
+    });
   }
 
   _hide() {

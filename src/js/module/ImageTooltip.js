@@ -42,13 +42,13 @@ export class ImageTooltip {
         if (img && editable.contains(img) && !img.closest('a[href]')) {
           this._scheduleShow(img);
         }
-      }),
+      }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         const to = e.relatedTarget;
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }
-      }),
+      }, { passive: true }),
       // Hide when image is deselected by clicking elsewhere
       on(document, 'click', (e) => {
         if (this._activeImg && !this._activeImg.contains(e.target) && !this._el.contains(e.target)) {
@@ -173,7 +173,10 @@ export class ImageTooltip {
 
   _show(img) {
     this._el.style.display = 'flex';
-    this._positionNear(img);
+    // Defer positioning: offsetWidth on a newly-visible element forces layout
+    requestAnimationFrame(() => {
+      if (this._activeImg) this._positionNear(this._activeImg);
+    });
   }
 
   _hide() {
@@ -220,7 +223,7 @@ export class ImageTooltip {
     target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _setCenter() {
@@ -233,7 +236,7 @@ export class ImageTooltip {
     target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _resetSize() {
@@ -243,7 +246,7 @@ export class ImageTooltip {
     img.style.height = '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   /**
@@ -267,7 +270,7 @@ export class ImageTooltip {
       : next === 0 ? '' : `rotate(${next}deg)`;
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _delete() {
