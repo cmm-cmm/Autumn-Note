@@ -155,8 +155,11 @@ export class TableTooltip {
     let _startW   = 0;
     let _startH   = 0;
     let _colIdx   = -1;
+    let _colCells = null; // cells cached at drag-start — avoids querySelectorAll every frame
     let _row      = null;
     let _table    = null;
+    let _rafDocMove    = null; // pending rAF handle for resize drag
+    let _rafEditorMove = null; // pending rAF handle for cursor detection
 
     const clearHover = () => {
       if (_nearCell) { _nearCell.style.cursor = ''; _nearCell = null; }
@@ -165,27 +168,29 @@ export class TableTooltip {
 
     const onEditorMove = (e) => {
       if (_resizing) return;
-      const cell = e.target.closest('td, th');
-      if (!cell || !editable.contains(cell)) { clearHover(); return; }
-      if (_nearCell && _nearCell !== cell) {
-        _nearCell.style.cursor = '';
-      }
-      const rect    = cell.getBoundingClientRect();
-      const onRight  = Math.abs(e.clientX - rect.right)  < HIT;
-      const onBottom = Math.abs(e.clientY - rect.bottom) < HIT;
-      if (onRight && onBottom) {
-        // Corner — prefer col-resize
-        cell.style.cursor = 'col-resize';
-        _nearCell = cell; _nearEdge = 'col';
-      } else if (onRight) {
-        cell.style.cursor = 'col-resize';
-        _nearCell = cell; _nearEdge = 'col';
-      } else if (onBottom) {
-        cell.style.cursor = 'row-resize';
-        _nearCell = cell; _nearEdge = 'row';
-      } else {
-        clearHover();
-      }
+      // Throttle to one check per animation frame — getBoundingClientRect forces reflow
+      if (_rafEditorMove !== null) return;
+      const target  = e.target;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      _rafEditorMove = requestAnimationFrame(() => {
+        _rafEditorMove = null;
+        const cell = target.closest('td, th');
+        if (!cell || !editable.contains(cell)) { clearHover(); return; }
+        if (_nearCell && _nearCell !== cell) _nearCell.style.cursor = '';
+        const rect     = cell.getBoundingClientRect();
+        const onRight  = Math.abs(clientX - rect.right)  < HIT;
+        const onBottom = Math.abs(clientY - rect.bottom) < HIT;
+        if (onRight) {
+          cell.style.cursor = 'col-resize';
+          _nearCell = cell; _nearEdge = 'col';
+        } else if (onBottom) {
+          cell.style.cursor = 'row-resize';
+          _nearCell = cell; _nearEdge = 'row';
+        } else {
+          clearHover();
+        }
+      });
     };
 
     const onEditorDown = (e) => {
@@ -196,8 +201,14 @@ export class TableTooltip {
       _startY   = e.clientY;
       _table    = _nearCell.closest('table');
       if (_edge === 'col') {
-        _startW = _nearCell.offsetWidth;
-        _colIdx = getVisualColIndex(_nearCell);
+        _startW   = _nearCell.offsetWidth;
+        _colIdx   = getVisualColIndex(_nearCell);
+        // Cache column cells once so onDocMove never runs querySelectorAll per frame
+        _colCells = _colIdx >= 0
+          ? Array.from(_table.querySelectorAll('tr'))
+              .map(r => getCellAtVisualCol(r, _colIdx))
+              .filter(Boolean)
+          : [];
         document.body.style.cursor = 'col-resize';
       } else {
         _row    = _nearCell.closest('tr');
@@ -211,34 +222,42 @@ export class TableTooltip {
 
     const onDocMove = (e) => {
       if (!_resizing) return;
-      if (_edge === 'col') {
-        const newW = Math.max(30, _startW + (e.clientX - _startX));
-        if (_table && _colIdx >= 0) {
-          Array.from(_table.querySelectorAll('tr')).forEach((r) => {
-            const c = getCellAtVisualCol(r, _colIdx);
-            if (c) { c.style.width = `${newW}px`; c.style.minWidth = `${newW}px`; }
-          });
+      // Skip if a frame is already scheduled — avoids per-pixel style thrashing
+      if (_rafDocMove !== null) return;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      _rafDocMove = requestAnimationFrame(() => {
+        _rafDocMove = null;
+        if (_edge === 'col') {
+          const newW = Math.max(30, _startW + (clientX - _startX));
+          for (const c of _colCells) {
+            c.style.width    = `${newW}px`;
+            c.style.minWidth = `${newW}px`;
+          }
+        } else {
+          const newH = Math.max(20, _startH + (clientY - _startY));
+          if (_row) {
+            for (const c of _row.cells) {
+              c.style.height    = `${newH}px`;
+              c.style.minHeight = `${newH}px`;
+            }
+          }
         }
-      } else {
-        const newH = Math.max(20, _startH + (e.clientY - _startY));
-        if (_row) {
-          Array.from(_row.cells).forEach((c) => {
-            c.style.height    = `${newH}px`;
-            c.style.minHeight = `${newH}px`;
-          });
-        }
-      }
+      });
     };
 
     const onDocUp = () => {
       if (!_resizing) return;
+      // Cancel any in-flight rAF so stale writes don't land after mouseup
+      if (_rafDocMove !== null) { cancelAnimationFrame(_rafDocMove); _rafDocMove = null; }
       _resizing = false;
       document.body.style.userSelect = '';
       document.body.style.cursor     = '';
-      _edge   = null;
-      _table  = null;
-      _row    = null;
-      _colIdx = -1;
+      _edge     = null;
+      _table    = null;
+      _row      = null;
+      _colIdx   = -1;
+      _colCells = null;
       this.context.invoke('editor.afterCommand');
     };
 
@@ -452,7 +471,8 @@ export class TableTooltip {
     }
     if (position === 'above') row.parentElement?.insertBefore(newRow, row);
     else row.insertAdjacentElement('afterend', newRow);
-    this._positionNear(this._activeTable);
+    // Defer positioning until the browser has painted the new layout
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
@@ -462,18 +482,16 @@ export class TableTooltip {
     const table = cell.closest('table');
     if (!table) return;
     const visualColIdx = getVisualColIndex(cell);
-    Array.from(table.querySelectorAll('tr')).forEach((r) => {
-      const isHeader = r.closest('thead') !== null;
-      const newCell = createElement(isHeader ? 'th' : 'td', {}, ['\u00a0']);
-      if (position === 'left') {
-        const ref = getCellAtVisualCol(r, visualColIdx);
-        r.insertBefore(newCell, ref);
-      } else {
-        const ref = getCellAfterVisualCol(r, visualColIdx);
-        r.insertBefore(newCell, ref);
-      }
+    const rows = Array.from(table.querySelectorAll('tr'));
+    // Batch reads first, then writes — prevents layout thrashing inside the loop
+    const refs      = rows.map(r => position === 'left'
+      ? getCellAtVisualCol(r, visualColIdx)
+      : getCellAfterVisualCol(r, visualColIdx));
+    const isHeaders = rows.map(r => r.closest('thead') !== null);
+    rows.forEach((r, i) => {
+      r.insertBefore(createElement(isHeaders[i] ? 'th' : 'td', {}, ['\u00a0']), refs[i]);
     });
-    this._positionNear(this._activeTable);
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
@@ -489,7 +507,7 @@ export class TableTooltip {
     if (bodyRows <= 1 && row.closest('tbody')) return;
     this._activeCell = null;
     row.parentElement?.removeChild(row);
-    this._positionNear(this._activeTable);
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
@@ -502,11 +520,11 @@ export class TableTooltip {
     if (row && row.cells.length <= 1) return;
     const visualColIdx = getVisualColIndex(cell);
     this._activeCell = null;
-    Array.from(table.querySelectorAll('tr')).forEach((r) => {
-      const c = getCellAtVisualCol(r, visualColIdx);
-      if (c) r.removeChild(c);
-    });
-    this._positionNear(this._activeTable);
+    const rows  = Array.from(table.querySelectorAll('tr'));
+    // Batch reads before writes to avoid forced reflows inside the loop
+    const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
+    cells.forEach((c, i) => { if (c) rows[i].removeChild(c); });
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
@@ -628,15 +646,19 @@ export class TableTooltip {
 
     this._sizeApply = (val) => {
       if (isCol) {
-        const table       = cell.closest('table');
+        const table        = cell.closest('table');
         const visualColIdx = getVisualColIndex(cell);
-        Array.from(table.querySelectorAll('tr')).forEach((r) => {
-          const c = getCellAtVisualCol(r, visualColIdx);
+        const rows  = Array.from(table.querySelectorAll('tr'));
+        // Batch reads, then writes
+        const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
+        cells.forEach(c => {
           if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
         });
       } else {
         const row = cell.closest('tr');
-        if (row) Array.from(row.cells).forEach((c) => { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; });
+        if (row) {
+          for (const c of row.cells) { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; }
+        }
       }
       this.context.invoke('editor.afterCommand');
     };

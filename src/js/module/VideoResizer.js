@@ -32,6 +32,12 @@ export class VideoResizer {
 
     const editable = this.context.layoutInfo.editable;
 
+    let _resizeDebounce = null;
+    const onWindowResize = () => {
+      clearTimeout(_resizeDebounce);
+      _resizeDebounce = setTimeout(() => this._updateOverlayPosition(), 100);
+    };
+
     this._disposers.push(
       on(editable, 'click', (e) => this._onEditorClick(e)),
       on(editable, 'contextmenu', (e) => {
@@ -40,7 +46,7 @@ export class VideoResizer {
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
       on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', () => this._updateOverlayPosition()),
+      on(window, 'resize', onWindowResize),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
     );
 
@@ -192,43 +198,49 @@ export class VideoResizer {
     const isCorner = pos.length === 2;
 
     const editable = this.context.layoutInfo.editable;
+    let _raf = null; // rAF handle — at most one write per paint frame
+
     const onMove = (me) => {
-      const dx = me.clientX - startX;
-      const dy = me.clientY - startY;
-      const maxW = editable.clientWidth || Infinity;
-      let newW = startW;
-      let newH = startH;
+      if (_raf !== null) return;
+      const clientX = me.clientX;
+      const clientY = me.clientY;
+      _raf = requestAnimationFrame(() => {
+        _raf = null;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        const maxW = editable.clientWidth || Infinity;
+        let newW = startW;
+        let newH = startH;
 
-      if (pos.includes('e')) newW = Math.max(80, startW + dx);
-      if (pos.includes('w')) newW = Math.max(80, startW - dx);
-      if (pos.includes('s')) newH = Math.max(45, startH + dy);
-      if (pos.includes('n')) newH = Math.max(45, startH - dy);
+        if (pos.includes('e')) newW = Math.max(80, startW + dx);
+        if (pos.includes('w')) newW = Math.max(80, startW - dx);
+        if (pos.includes('s')) newH = Math.max(45, startH + dy);
+        if (pos.includes('n')) newH = Math.max(45, startH - dy);
 
-      // Clamp to container width
-      newW = Math.min(newW, maxW);
+        newW = Math.min(newW, maxW);
 
-      if (isCorner) {
-        if (Math.abs(dx) >= Math.abs(dy)) {
-          newH = Math.max(45, Math.round(newW / aspectRatio));
-        } else {
-          newW = Math.min(Math.max(80, Math.round(newH * aspectRatio)), maxW);
-          newH = Math.max(45, Math.round(newW / aspectRatio));
+        if (isCorner) {
+          if (Math.abs(dx) >= Math.abs(dy)) {
+            newH = Math.max(45, Math.round(newW / aspectRatio));
+          } else {
+            newW = Math.min(Math.max(80, Math.round(newH * aspectRatio)), maxW);
+            newH = Math.max(45, Math.round(newW / aspectRatio));
+          }
         }
-      }
 
-      // Resize both the wrapper and the inner embed element
-      wrapper.style.width  = `${newW}px`;
-      wrapper.style.height = `${newH}px`;
-      if (embed) {
-        embed.width  = newW;
-        embed.height = newH;
-        embed.style.width  = `${newW}px`;
-        embed.style.height = `${newH}px`;
-      }
-      this._updateOverlayPosition();
+        // Resize wrapper and inner embed via CSS only — attribute writes are redundant
+        wrapper.style.width  = `${newW}px`;
+        wrapper.style.height = `${newH}px`;
+        if (embed) {
+          embed.style.width  = `${newW}px`;
+          embed.style.height = `${newH}px`;
+        }
+        this._updateOverlayPosition();
+      });
     };
 
     const onUp = () => {
+      if (_raf !== null) { cancelAnimationFrame(_raf); _raf = null; }
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       this._dragDisposers = null;
