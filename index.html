@@ -42,30 +42,12 @@
       color: #92400e;
       border: 1px solid #fcd34d;
     }
-    #readonly-badge.editable {
-      background: #d1fae5;
-      color: #065f46;
-      border-color: #6ee7b7;
-    }
-    #btn-toggle-readonly {
-      padding: 5px 14px;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      background: #3b82f6;
-      color: #fff;
-      font-weight: 500;
-    }
-    #btn-toggle-readonly:hover { background: #2563eb; }
+
     #readonly-editor-wrapper {
       border: 2px solid #fcd34d;
       border-radius: 8px;
       overflow: hidden;
       background: #fff;
-    }
-    #readonly-editor-wrapper.editable {
-      border-color: #6ee7b7;
     }
     #output {
       width: 100%;
@@ -103,7 +85,6 @@
         <strong>Read Only Preview:</strong>
         <span id="readonly-badge">🔒 Read Only</span>
       </div>
-      <button id="btn-toggle-readonly">Switch to Editable</button>
     </div>
     <div id="readonly-editor-wrapper">
       <textarea id="editor-readonly"></textarea>
@@ -114,13 +95,13 @@
     import AutumnNote from '/src/js/index.js';
 
     const sharedOptions = {
-      placeholder: 'Start typing here…',
       height: 300,
       codeHighlight: true,
     };
 
     const editor = AutumnNote.create('#editor', {
       ...sharedOptions,
+      placeholder: 'Start typing here…',
       onChange(html) {
         document.getElementById('output').textContent = html;
         // Keep read-only instance in sync
@@ -134,27 +115,6 @@
       readOnly: true,
     });
     editorRO.setHTML(editor.getHTML());
-
-    // Toggle button
-    let isReadOnly = true;
-    const btn = document.getElementById('btn-toggle-readonly');
-    const badge = document.getElementById('readonly-badge');
-    const wrapper = document.getElementById('readonly-editor-wrapper');
-    btn.addEventListener('click', () => {
-      isReadOnly = !isReadOnly;
-      editorRO.setDisabled(isReadOnly);
-      if (isReadOnly) {
-        badge.textContent = '🔒 Read Only';
-        badge.classList.remove('editable');
-        wrapper.classList.remove('editable');
-        btn.textContent = 'Switch to Editable';
-      } else {
-        badge.textContent = '✏️ Editable';
-        badge.classList.add('editable');
-        wrapper.classList.add('editable');
-        btn.textContent = 'Switch to Read Only';
-      }
-    });
 
     // Expose to console for dev testing
     window.editor = editor;

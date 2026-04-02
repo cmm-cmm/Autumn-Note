@@ -395,12 +395,18 @@
   overflow-y: auto;
   word-break: break-word;
 
-  // Placeholder — only shown when not focused
+  // Placeholder — only shown when not focused.
+  // float:left is the standard contenteditable placeholder technique (used by
+  // Quill.js): the pseudo-element is out of normal flow so it never shifts the
+  // cursor, yet it renders visually at the start of the empty editing area.
+  // Avoid position:absolute here — without position:relative on the parent it
+  // would be positioned relative to .an-container (contain:layout) and overlap
+  // the toolbar.
   &.an-placeholder:not(:focus)::before {
     content: attr(data-placeholder);
     color: $an-muted;
     pointer-events: none;
-    position: absolute;
+    float: left;
   }
 
   // Content styles
