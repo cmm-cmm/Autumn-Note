@@ -99,6 +99,11 @@ export function renderLayout(targetEl, options) {
     }
   }
 
+  // Custom focus ring colour
+  if (options.focusColor) {
+    container.style.setProperty('--an-focus-color', options.focusColor);
+  }
+
   // Hide the original element; keep it in DOM for form submission
   targetEl.style.display = 'none';
   targetEl.insertAdjacentElement('afterend', container);

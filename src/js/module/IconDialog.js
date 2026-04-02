@@ -554,6 +554,7 @@ export class IconDialog {
     const iconEl = document.createElement('i');
     iconEl.className = `${cls} fa-${this._selectedIcon}`;
     iconEl.setAttribute('aria-hidden', 'true');
+    iconEl.setAttribute('contenteditable', 'false');
     if (styleParts.length) iconEl.setAttribute('style', styleParts.join(';'));
 
     const savedRange = this._savedRange;
@@ -577,25 +578,26 @@ export class IconDialog {
     range.deleteContents();
     range.insertNode(iconEl);
 
-    // 4. Anchor cursor reliably after the icon, including at end-of-paragraph.
-    //    Insert a zero-width space text node and place the caret at offset 0
-    //    (before the ZWS char). This means:
-    //    - One Backspace deletes the icon (cursor is at start of text node,
-    //      browser removes the preceding element).
-    //    - The ZWS is invisible to the reader.
-    //    - The cursor has a real text node to sit in even when the icon is
-    //      the last child of a block element.
-    const zwsNode = document.createTextNode('\u200B');
-    iconEl.parentNode.insertBefore(zwsNode, iconEl.nextSibling);
-    // Place cursor AFTER the ZWS (offset 1), not before (offset 0).
-    // With offset 0 the browser can descend into the preceding <i> on ← press,
-    // causing Enter to split the block and leave an orphan icon in the new paragraph.
-    // At offset 1 the cursor is unambiguously inside the text node, so ← stays safe.
-    range.setStart(zwsNode, 1);
-    range.collapse(true);
+    // 4. Place cursor after the icon.
+    //    Keep a text anchor (\u200B) after the icon so ArrowLeft/ArrowRight and
+    //    caret placement at end-of-line stay stable across browsers.
+    let caretTextNode = iconEl.nextSibling;
+    if (!caretTextNode || caretTextNode.nodeType !== Node.TEXT_NODE) {
+      caretTextNode = document.createTextNode('\u200B');
+      iconEl.parentNode.insertBefore(caretTextNode, iconEl.nextSibling);
+    } else if (!caretTextNode.textContent) {
+      // Split text-node insertions can leave an empty text node after icon.
+      // Fill it with ZWS so caret-after-icon remains stable at end-of-line.
+      caretTextNode.textContent = '\u200B';
+    }
+
+    const caretOffset = ((caretTextNode.textContent || '').startsWith('\u200B')) ? 1 : 0;
+    const caretRange = document.createRange();
+    caretRange.setStart(caretTextNode, Math.min(caretOffset, caretTextNode.textContent.length));
+    caretRange.collapse(true);
     if (sel) {
       sel.removeAllRanges();
-      sel.addRange(range);
+      sel.addRange(caretRange);
     }
 
     // 5. Close dialog last — same as ImageDialog
@@ -603,6 +605,11 @@ export class IconDialog {
 
     // 6. Restore editor focus (needed for toolbar refresh via afterCommand)
     editable.focus();
+    if (sel) {
+      // Some browsers reset selection when refocusing editable after closing dialog.
+      sel.removeAllRanges();
+      sel.addRange(caretRange);
+    }
     this.context.invoke('editor.afterCommand');
   }
 

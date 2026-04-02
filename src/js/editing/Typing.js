@@ -16,6 +16,19 @@ import { currentRange } from '../core/range.js';
  * @returns {boolean} true if the event was consumed
  */
 export function handleKeydown(event, editable, options = {}) {
+  const isFAIcon = (n) => !!(n && n.nodeName === 'I' && /\bfa-/.test(n.className || ''));
+  const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
+  const moveCaret = (setFn) => {
+    const sel = window.getSelection();
+    if (!sel) return false;
+    const nr = document.createRange();
+    setFn(nr);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+    return true;
+  };
+
   // -------------------------------------------------------------------------
   // Backspace key — one-press deletion of a preceding FA icon (<i> element)
   // -------------------------------------------------------------------------
@@ -25,8 +38,6 @@ export function handleKeydown(event, editable, options = {}) {
       const r = sel.getRangeAt(0);
       if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE) {
         const textNode = r.startContainer;
-        const isFAIcon = (n) => n && n.nodeName === 'I' && /\bfa-/.test(n.className);
-
         // Case A: cursor at offset 0, preceding sibling is an FA icon
         if (r.startOffset === 0 && isFAIcon(textNode.previousSibling)) {
           event.preventDefault();
@@ -47,6 +58,109 @@ export function handleKeydown(event, editable, options = {}) {
       }
     }
     return false;
+  }
+
+  // -------------------------------------------------------------------------
+  // ArrowLeft / ArrowRight — one-press navigation across FA icon nodes
+  // -------------------------------------------------------------------------
+  if (isKey(event, key.LEFT) || isKey(event, key.RIGHT)) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+
+    const r = sel.getRangeAt(0);
+    if (!r.collapsed) return false;
+
+    const sc = r.startContainer;
+    const movingLeft = isKey(event, key.LEFT);
+
+    if (sc.nodeType === Node.TEXT_NODE) {
+      const textNode = sc;
+
+      if (movingLeft &&
+          r.startOffset === 1 &&
+          textNode.textContent === '\u200B' &&
+          isFAIcon(textNode.previousSibling)) {
+        event.preventDefault();
+        return moveCaret((nr) => nr.setStartBefore(textNode.previousSibling));
+      }
+
+      if (movingLeft && r.startOffset === 0 && isFAIcon(textNode.previousSibling)) {
+        event.preventDefault();
+        return moveCaret((nr) => nr.setStartBefore(textNode.previousSibling));
+      }
+
+      if (movingLeft &&
+          r.startOffset === 0 &&
+          isZwsAnchor(textNode.previousSibling) &&
+          isFAIcon(textNode.previousSibling.previousSibling)) {
+        event.preventDefault();
+        return moveCaret((nr) => nr.setStartBefore(textNode.previousSibling.previousSibling));
+      }
+
+      if (!movingLeft &&
+          r.startOffset === textNode.textContent.length &&
+          isFAIcon(textNode.nextSibling)) {
+        const icon = textNode.nextSibling;
+        const after = icon.nextSibling;
+        event.preventDefault();
+        if (after && after.nodeType === Node.TEXT_NODE) {
+          const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
+          return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
+        }
+        return moveCaret((nr) => nr.setStartAfter(icon));
+      }
+
+      if (!movingLeft &&
+          r.startOffset === textNode.textContent.length &&
+          isZwsAnchor(textNode.nextSibling) &&
+          isFAIcon(textNode.nextSibling.nextSibling)) {
+        const icon = textNode.nextSibling.nextSibling;
+        const after = icon.nextSibling;
+        event.preventDefault();
+        if (after && after.nodeType === Node.TEXT_NODE) {
+          const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
+          return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
+        }
+        return moveCaret((nr) => nr.setStartAfter(icon));
+      }
+    }
+
+    if (sc.nodeType === Node.ELEMENT_NODE) {
+      const el = sc;
+      if (movingLeft && r.startOffset > 0) {
+        const prev = el.childNodes[r.startOffset - 1];
+        if (isFAIcon(prev)) {
+          event.preventDefault();
+          return moveCaret((nr) => nr.setStartBefore(prev));
+        }
+        if (isZwsAnchor(prev) && isFAIcon(prev.previousSibling)) {
+          event.preventDefault();
+          return moveCaret((nr) => nr.setStartBefore(prev.previousSibling));
+        }
+      }
+      if (!movingLeft && r.startOffset < el.childNodes.length) {
+        const next = el.childNodes[r.startOffset];
+        if (isFAIcon(next)) {
+          const after = next.nextSibling;
+          event.preventDefault();
+          if (after && after.nodeType === Node.TEXT_NODE) {
+            const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
+            return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
+          }
+          return moveCaret((nr) => nr.setStartAfter(next));
+        }
+        if (isZwsAnchor(next) && isFAIcon(next.nextSibling)) {
+          const icon = next.nextSibling;
+          const after = icon.nextSibling;
+          event.preventDefault();
+          if (after && after.nodeType === Node.TEXT_NODE) {
+            const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
+            return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
+          }
+          return moveCaret((nr) => nr.setStartAfter(icon));
+        }
+      }
+    }
   }
 
   // -------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote — Dev</title>
+  <title>AutumnNote — Demo</title>
   <link rel="stylesheet" href="./dist/autumnnote.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -19,7 +19,36 @@
     }
     h1 { margin: 0 0 4px; font-size: 24px; }
     p  { margin: 0 0 20px; color: #6b7280; }
-    #editor-wrapper, #output-wrapper { width: 100%; }
+    #editor-wrapper, #output-wrapper { width: 50%; }
+    #readonly-wrapper {
+      width: 50%;
+      margin-top: 20px;
+    }
+    #readonly-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    #readonly-bar strong { font-size: 14px; }
+    #readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    #readonly-editor-wrapper {
+      border: 2px solid #fcd34d;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
     #output {
       width: 100%;
       margin-top: 20px;
@@ -50,18 +79,46 @@
     <div id="output"></div>
   </div>
 
+  <div id="readonly-wrapper">
+    <div id="readonly-bar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <strong>Read Only Preview:</strong>
+        <span id="readonly-badge">🔒 Read Only</span>
+      </div>
+    </div>
+    <div id="readonly-editor-wrapper">
+      <textarea id="editor-readonly"></textarea>
+    </div>
+  </div>
+
   <script src="./dist/autumnnote.umd.js"></script>
   <script>
-    const editor = AutumnNote.create('#editor', {
-      placeholder: 'Start typing here…',
+    const sharedOptions = {
       height: 300,
       codeHighlight: true,
+    };
+
+    const editor = AutumnNote.create('#editor', {
+      ...sharedOptions,
+      placeholder: 'Start typing here…',
+      focusColor: '#e8751a',  // warm autumn orange
       onChange(html) {
         document.getElementById('output').textContent = html;
+        // Keep read-only instance in sync
+        if (window.editorRO) window.editorRO.setHTML(html);
       },
     });
 
+    // Read-only instance — same options as main editor, starts disabled
+    const editorRO = AutumnNote.create('#editor-readonly', {
+      ...sharedOptions,
+      readOnly: true,
+    });
+    editorRO.setHTML(editor.getHTML());
+
+    // Expose to console for testing
     window.editor = editor;
+    window.editorRO = editorRO;
     document.getElementById('output').textContent = editor.getHTML();
   </script>
 </body>

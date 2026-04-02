@@ -30,14 +30,27 @@
   }
 
   &.an-focused {
-    border-color: $an-primary;
-    box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
+    border-color: var(--an-focus-color, #{$an-primary});
+    // color-mix() blends the focus colour with transparent for the glow ring.
+    // Falls back gracefully to the default blue glow in older browsers.
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--an-focus-color, #{$an-primary}) 18%, transparent);
   }
 
   &.an-disabled {
-    opacity: 0.6;
-    pointer-events: none;
-    user-select: none;
+    // Hide toolbar only — read-only view has no editing controls.
+    .an-toolbar {
+      display: none;
+    }
+
+    // Allow the user to select and copy text but block actual editing.
+    // Do NOT set pointer-events:none or user-select:none on the container —
+    // that would prevent text selection inside the editable area.
+    .an-editable {
+      cursor: text;
+      user-select: text;
+      // Subtle visual cue that the area is read-only.
+      background: #fafafa;
+    }
   }
 
   &.an-fullscreen {
@@ -384,12 +397,18 @@
   overflow-y: auto;
   word-break: break-word;
 
-  // Placeholder — only shown when not focused
+  // Placeholder — only shown when not focused.
+  // float:left is the standard contenteditable placeholder technique (used by
+  // Quill.js): the pseudo-element is out of normal flow so it never shifts the
+  // cursor, yet it renders visually at the start of the empty editing area.
+  // Avoid position:absolute here — without position:relative on the parent it
+  // would be positioned relative to .an-container (contain:layout) and overlap
+  // the toolbar.
   &.an-placeholder:not(:focus)::before {
     content: attr(data-placeholder);
     color: $an-muted;
     pointer-events: none;
-    position: absolute;
+    float: left;
   }
 
   // Content styles

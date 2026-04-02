@@ -45,6 +45,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {Function} [onDestroy]            - Callback fired when the editor is destroyed: (context) => void
  * @property {Function} [onCharLimitReached]   - Callback fired when the character limit is hit: (context) => void
  * @property {Function} [onWordLimitReached]   - Callback fired when the word limit is hit: (context) => void
+ * @property {string}   [focusColor]            - Custom focus ring colour, e.g. '#f97316'. Overrides the default blue.
  */
 
 /** @type {AsnOptions} */
@@ -131,4 +132,7 @@ export const defaultOptions = {
   onCharLimitReached: null,
   // Callback fired when the word limit is reached: function(context)
   onWordLimitReached: null,
+  // Custom focus ring colour — overrides the default blue when set.
+  // Accepts any valid CSS colour string, e.g. '#f97316', 'hsl(25,90%,55%)'.
+  focusColor: null,
 };

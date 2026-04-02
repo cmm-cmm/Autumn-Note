@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-04-02
+
+### Added
+- Favicon (`/image/favicon.ico`) added to the dev and demo pages
+- `focusColor` option — accepts any valid CSS colour string to override the default blue focus ring on the editor
+- `readOnly` option — starts the editor in read-only (non-editable) mode with toolbar hidden; synced preview panel added to the demo page
+
+### Changed
+- Enhanced caret navigation around FontAwesome icon elements in Typing and IconDialog
+- Refactored read-only editor internals with improved placeholder styling
+- Toolbar now correctly hides when the editor is initialised in `readOnly` mode
+
+---
+
 ## [1.0.2] - 2026-04-01
 
 ### Added
