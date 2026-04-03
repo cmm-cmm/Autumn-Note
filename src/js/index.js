@@ -99,7 +99,7 @@ const AutumnNote = {
   registerModule(name, ModuleClass) { _customModules.set(name, ModuleClass); },
 
   /** Library version */
-  version: '1.0.1',
+  version: '1.0.4',
 };
 
 // ---------------------------------------------------------------------------

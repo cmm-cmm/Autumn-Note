@@ -46,7 +46,7 @@ const SHORTCUTS = [
   {
     category: 'Editor',
     items: [
-      { keys: 'Shift + ?', action: 'Show this keyboard shortcuts dialog' },
+      { keys: 'Ctrl + Shift + /', action: 'Show this keyboard shortcuts dialog' },
     ],
   },
 ];

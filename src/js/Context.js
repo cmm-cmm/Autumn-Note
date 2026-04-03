@@ -157,6 +157,9 @@ export class Context {
   }
 
   _bindEditorEvents(editable) {
+    // Keep the original textarea/input value in sync immediately on every input.
+    // This guarantees form.submit() sees fresh data even before debounced change.
+    const d0 = on(editable, 'input', () => this._syncToTarget());
     const d1 = on(editable, 'focus', () => {
       this.layoutInfo.container.classList.add('an-focused');
       if (typeof this.options.onFocus === 'function') {
@@ -172,7 +175,7 @@ export class Context {
     });
     // Sync textarea/input value on every change so form.submit() always gets fresh content
     const d3 = this.on('change', () => this._syncToTarget());
-    this._disposers.push(d1, d2, d3);
+    this._disposers.push(d0, d1, d2, d3);
 
     // Auto-save to localStorage on every change
     if (this.options.autoSave && this.options.autoSaveKey) {
