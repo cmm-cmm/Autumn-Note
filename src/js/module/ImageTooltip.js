@@ -13,6 +13,7 @@ const ICONS = {
   caption:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/></svg>`,
   rotateLeft:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>`,
   rotateRight: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
+  crop:        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 2 6 18 22 18"/><polyline points="2 6 18 6 18 22"/></svg>`,
 };
 
 const SHOW_DELAY = 100;
@@ -107,6 +108,11 @@ export class ImageTooltip {
 
     el.appendChild(this._makeBtn(ICONS.rotateLeft,  'Rotate Left',  () => this._rotate(-90)));
     el.appendChild(this._makeBtn(ICONS.rotateRight, 'Rotate Right', () => this._rotate(90)));
+
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
+
+    this._cropBtn = this._makeBtn(ICONS.crop, 'Crop Image', () => this._crop());
+    el.appendChild(this._cropBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
@@ -285,6 +291,15 @@ export class ImageTooltip {
       img.parentNode.removeChild(img);
     }
     this.context.invoke('editor.afterCommand');
+  }
+
+  _crop() {
+    const img = this._activeImg;
+    if (!img) return;
+    // Hide the tooltip while the crop overlay is active
+    this._hide();
+    // Delegate to imageCropOverlay module
+    this.context.invoke('imageCropOverlay.open', img);
   }
 
   _toggleCaption() {

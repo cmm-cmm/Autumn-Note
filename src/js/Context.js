@@ -32,6 +32,7 @@ import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 import { FindReplace } from './module/FindReplace.js';
+import { ImageCropOverlay } from './module/ImageCropOverlay.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
@@ -133,6 +134,7 @@ export class Context {
     register('iconDialog', IconDialog);
     register('shortcutsDialog', ShortcutsDialog);
     register('findReplace', FindReplace);
+    register('imageCropOverlay', ImageCropOverlay);
 
     // Custom modules registered via AutumnNote.registerModule()
     for (const [name, ModuleClass] of _customModules) {
