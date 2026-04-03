@@ -108,8 +108,8 @@ export class Context {
   _registerModules() {
     const register = (name, ModuleClass) => {
       const instance = new ModuleClass(this);
-      instance.initialize();
       this._modules.set(name, instance);
+      instance.initialize();
     };
 
     register('editor', Editor);
