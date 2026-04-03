@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.0.0
+ * @version 1.0.4
  */
 
 // ---------------------------------------------------------------------------
@@ -21,7 +21,7 @@ export interface AsnOptions {
   /** Show the resize handle in the statusbar. */
   resizable?: boolean;
   /** Toolbar button group configuration. */
-  toolbar?: Array<Array<ButtonDef | DropdownDef>>;
+  toolbar?: Array<Array<ToolbarItemDef>>;
   /** Use Bootstrap button classes on toolbar buttons. */
   useBootstrap?: boolean;
   /** CSS class(es) applied to Bootstrap toolbar buttons. */
@@ -127,6 +127,34 @@ export interface ButtonDef {
   className?: string;
 }
 
+export interface GridButtonDef {
+  /** Unique identifier used in toolbar config arrays. */
+  name: string;
+  /** Discriminator for table grid picker buttons. */
+  type: 'grid';
+  /** Icon identifier (maps to SVG or Font Awesome class). */
+  icon: string;
+  /** Tooltip text. */
+  tooltip: string;
+  /** Action executed when a grid size is selected. */
+  action: (context: Context, rows: number, cols: number) => void;
+}
+
+export interface ColorPickerDef {
+  /** Unique identifier used in toolbar config arrays. */
+  name: string;
+  /** Discriminator for split color picker buttons. */
+  type: 'colorpicker';
+  /** Icon identifier (maps to SVG or Font Awesome class). */
+  icon: string;
+  /** Tooltip text. */
+  tooltip: string;
+  /** Default color shown in the picker. */
+  defaultColor: string;
+  /** Action executed when a color is selected/applied. */
+  action: (context: Context, color: string) => void;
+}
+
 export interface DropdownDef {
   /** Unique identifier. */
   name: string;
@@ -135,12 +163,30 @@ export interface DropdownDef {
   /** Tooltip text. */
   tooltip: string;
   /** Static item list (may be overridden at render time from options). */
-  items?: string[];
+  items?: Array<string | { value: string; label: string }>;
   /** Action executed when a value is selected. */
   action: (context: Context, value: string) => void;
   /** Returns the current value to show as selected. */
   getValue?: (context: Context) => string;
 }
+
+export type ToolbarItemDef = ButtonDef | DropdownDef | GridButtonDef | ColorPickerDef;
+
+// ---------------------------------------------------------------------------
+// Entry-point re-exports
+// ---------------------------------------------------------------------------
+
+/** Runtime default options object (same export as `src/js/index.js`). */
+export declare const defaultOptions: Required<AsnOptions>;
+
+// Re-export core utility modules exposed by the package entry-point.
+export * from '../src/js/core/dom.js';
+export * from '../src/js/core/range.js';
+export * from '../src/js/core/func.js';
+export * from '../src/js/core/key.js';
+export * from '../src/js/core/lists.js';
+export * from '../src/js/core/env.js';
+export * from '../src/js/core/sanitise.js';
 
 // ---------------------------------------------------------------------------
 // Context — per-instance editor hub
@@ -263,8 +309,7 @@ export declare const hrBtn: ButtonDef;
 export declare const linkBtn: ButtonDef;
 export declare const imageBtn: ButtonDef;
 export declare const videoBtn: ButtonDef;
-export declare const tableBtn: ButtonDef;
-export declare const codeBlockBtn: ButtonDef;
+export declare const tableBtn: GridButtonDef;
 export declare const codeviewBtn: ButtonDef;
 export declare const fullscreenBtn: ButtonDef;
 export declare const emojiBtn: ButtonDef;
@@ -272,16 +317,18 @@ export declare const iconBtn: ButtonDef;
 export declare const shortcutsBtn: ButtonDef;
 export declare const findBtn: ButtonDef;
 export declare const findReplaceBtn: ButtonDef;
+export declare const inlineCodeBtn: ButtonDef;
+export declare const checklistBtn: ButtonDef;
+export declare const printBtn: ButtonDef;
 export declare const removeFormatBtn: ButtonDef;
 export declare const directionBtn: ButtonDef;
 export declare const fontFamilyBtn: DropdownDef;
 export declare const fontSizeBtn: DropdownDef;
-export declare const headingBtn: DropdownDef;
 export declare const lineHeightBtn: DropdownDef;
 export declare const paragraphStyleBtn: DropdownDef;
-export declare const foreColorBtn: DropdownDef;
-export declare const backColorBtn: DropdownDef;
-export declare const defaultToolbar: Array<Array<ButtonDef | DropdownDef>>;
+export declare const foreColorBtn: ColorPickerDef;
+export declare const backColorBtn: ColorPickerDef;
+export declare const defaultToolbar: Array<Array<ToolbarItemDef>>;
 
 // ---------------------------------------------------------------------------
 // Main AutumnNote API

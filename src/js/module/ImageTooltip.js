@@ -11,6 +11,9 @@ const ICONS = {
   originalSize:`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
   deleteImg:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
   caption:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/></svg>`,
+  rotateLeft:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>`,
+  rotateRight: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
+  crop:        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 2 6 18 22 18"/><polyline points="2 6 18 6 18 22"/></svg>`,
 };
 
 const SHOW_DELAY = 100;
@@ -40,13 +43,13 @@ export class ImageTooltip {
         if (img && editable.contains(img) && !img.closest('a[href]')) {
           this._scheduleShow(img);
         }
-      }),
+      }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         const to = e.relatedTarget;
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }
-      }),
+      }, { passive: true }),
       // Hide when image is deselected by clicking elsewhere
       on(document, 'click', (e) => {
         if (this._activeImg && !this._activeImg.contains(e.target) && !this._el.contains(e.target)) {
@@ -100,6 +103,16 @@ export class ImageTooltip {
     this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
 
     el.appendChild(this._originalBtn);
+
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
+
+    el.appendChild(this._makeBtn(ICONS.rotateLeft,  'Rotate Left',  () => this._rotate(-90)));
+    el.appendChild(this._makeBtn(ICONS.rotateRight, 'Rotate Right', () => this._rotate(90)));
+
+    el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
+
+    this._cropBtn = this._makeBtn(ICONS.crop, 'Crop Image', () => this._crop());
+    el.appendChild(this._cropBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
@@ -166,7 +179,10 @@ export class ImageTooltip {
 
   _show(img) {
     this._el.style.display = 'flex';
-    this._positionNear(img);
+    // Defer positioning: offsetWidth on a newly-visible element forces layout
+    requestAnimationFrame(() => {
+      if (this._activeImg) this._positionNear(this._activeImg);
+    });
   }
 
   _hide() {
@@ -213,7 +229,7 @@ export class ImageTooltip {
     target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _setCenter() {
@@ -226,7 +242,7 @@ export class ImageTooltip {
     target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _resetSize() {
@@ -236,7 +252,31 @@ export class ImageTooltip {
     img.style.height = '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    this._positionNear(img);
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
+  }
+
+  /**
+   * Rotate the active image by `delta` degrees (±90).
+   * Reads the existing rotate() value from the transform style so
+   * repeated clicks accumulate correctly.
+   * @param {number} delta
+   */
+  _rotate(delta) {
+    const img = this._activeImg;
+    if (!img) return;
+    // Parse current rotation angle from inline transform
+    const current = img.style.transform || '';
+    const match   = current.match(/rotate\((-?[\d.]+)deg\)/);
+    const prev    = match ? parseFloat(match[1]) : 0;
+    const next    = (prev + delta + 360) % 360; // normalise to [0, 360)
+    // Preserve any other transform functions (e.g. scale), replace only rotate()
+    const cleaned = current.replace(/rotate\(-?[\d.]+deg\)/, '').trim();
+    img.style.transform = cleaned
+      ? `${cleaned} rotate(${next}deg)`
+      : next === 0 ? '' : `rotate(${next}deg)`;
+    this.context.invoke('editor.afterCommand');
+    this.context.invoke('imageResizer.updateOverlay');
+    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
   }
 
   _delete() {
@@ -251,6 +291,15 @@ export class ImageTooltip {
       img.parentNode.removeChild(img);
     }
     this.context.invoke('editor.afterCommand');
+  }
+
+  _crop() {
+    const img = this._activeImg;
+    if (!img) return;
+    // Hide the tooltip while the crop overlay is active
+    this._hide();
+    // Delegate to imageCropOverlay module
+    this.context.invoke('imageCropOverlay.open', img);
   }
 
   _toggleCaption() {

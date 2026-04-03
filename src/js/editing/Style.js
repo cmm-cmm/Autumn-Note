@@ -313,8 +313,8 @@ export function isInlineCode() {
 
 /**
  * Toggles a task-list at the cursor.
- * If inside a checklist <li>, converts it back to a <p>.
- * Otherwise inserts a new <ul class="an-checklist"> with one item.
+ * If inside a checklist <li>, converts it (and any other selected items) back to <p> elements.
+ * Otherwise inserts a new <ul class="an-checklist"> with one item per selected line.
  */
 export function toggleChecklist() {
   const sel = window.getSelection();
@@ -322,59 +322,56 @@ export function toggleChecklist() {
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  const li = container && container.closest ? container.closest('.an-checklist li') : null;
-  if (li) {
-    // Exit checklist — convert item to a <p>
-    const ul = li.closest('.an-checklist');
-    const text = Array.from(li.childNodes)
-      .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
-      .map((n) => n.textContent).join('').replace(/\u00a0/g, ' ').trim();
-    const p = document.createElement('p');
-    p.textContent = text || '\u00a0';
-    ul.parentNode.insertBefore(p, ul.nextSibling);
-    ul.removeChild(li);
-    if (ul.children.length === 0) ul.remove();
-    const nr = document.createRange();
-    // Point into the text node (or first child) rather than the element node
-    // so the cursor is at a well-defined text position, not element-offset 0.
-    const startNode = p.firstChild || p;
-    nr.setStart(startNode, 0);
-    nr.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(nr);
-  } else {
-    // Use a temporary marker attribute so the new <li> can be found reliably
-    // even when execCommand('insertHTML') places the cursor outside the list.
-    // Chrome often moves the caret to a generated <p> after the <ul> rather
-    // than staying inside the <li>, making a selection-based lookup fail.
-    const MARKER = 'data-an-new-cli';
-    execCommand('insertHTML',
-      `<ul class="an-checklist"><li ${MARKER}><input type="checkbox" contenteditable="false"></li></ul>`);
-    const newLi = document.querySelector(`[${MARKER}]`);
-    if (newLi) {
-      newLi.removeAttribute(MARKER);
-      const cbEl = newLi.querySelector('input[type="checkbox"]');
-      if (cbEl) {
-        // Use \u200B (zero-width space) instead of an empty string.
-        // Chrome does not reliably honour a Selection pointing into an empty
-        // text node and may silently normalise it to an element-level offset,
-        // rendering the caret before the absolutely-positioned checkbox.
-        // \u200B is invisible/zero-width and is stripped by getHTML().
-        let textNode = cbEl.nextSibling;
-        if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
-          textNode = document.createTextNode('\u200B');
-          newLi.appendChild(textNode);
-        } else if (!textNode.textContent) {
-          textNode.textContent = '\u200B';
-        }
+
+  const ul = container.closest && container.closest('.an-checklist');
+  if (ul) {
+    // If selection covers multiple <li>, convert them all
+    const selectedLis = Array.from(ul.querySelectorAll('li')).filter((li) =>
+      sel.containsNode(li, true),
+    );
+    if (selectedLis.length > 0) {
+      let firstP = null;
+      selectedLis.forEach((li) => {
+        const text = Array.from(li.childNodes)
+          .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+          .map((n) => n.textContent)
+          .join('')
+          .replace(/\u00a0/g, ' ')
+          .trim();
+        const p = document.createElement('p');
+        p.textContent = text || '\u00a0';
+        ul.parentNode.insertBefore(p, ul);
+        if (!firstP) firstP = p;
+        ul.removeChild(li);
+      });
+      if (ul.children.length === 0) ul.remove();
+      // Move caret to first converted paragraph
+      if (firstP) {
         const nr = document.createRange();
-        nr.setStart(textNode, 0);
+        nr.setStart(firstP.firstChild || firstP, 0);
         nr.collapse(true);
         sel.removeAllRanges();
         sel.addRange(nr);
       }
+      return;
     }
   }
+
+  // Otherwise: insert new checklist from selected text
+  const text = sel.toString();
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return;
+  const items = lines
+    .map(
+      (l) =>
+        `<li><input type="checkbox" contenteditable="false">${l || '\u200B'}</li>`,
+    )
+    .join('');
+  document.execCommand(
+    'insertHTML',
+    false,
+    `<ul class="an-checklist">${items}</ul>`,
+  );
 }
 
 /**

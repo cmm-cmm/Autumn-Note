@@ -42,13 +42,13 @@ export class VideoTooltip {
         if (wrapper && editable.contains(wrapper)) {
           this._scheduleShow(wrapper);
         }
-      }),
+      }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         const to = e.relatedTarget;
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }
-      }),
+      }, { passive: true }),
       on(document, 'click', (e) => {
         if (
           this._activeWrapper &&
@@ -174,7 +174,10 @@ export class VideoTooltip {
 
   _show(wrapper) {
     this._el.style.display = 'flex';
-    this._positionNear(wrapper);
+    // Defer: offsetWidth on a newly-visible element forces synchronous layout
+    requestAnimationFrame(() => {
+      if (this._activeWrapper) this._positionNear(this._activeWrapper);
+    });
   }
 
   _hide() {
@@ -221,7 +224,7 @@ export class VideoTooltip {
     wrapper.style.marginRight  = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    this._positionNear(wrapper);
+    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
   }
 
   _setCenter() {
@@ -233,7 +236,7 @@ export class VideoTooltip {
     wrapper.style.marginRight = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    this._positionNear(wrapper);
+    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
   }
 
   _resetSize() {
@@ -250,7 +253,7 @@ export class VideoTooltip {
     }
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    this._positionNear(wrapper);
+    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
   }
 
   _delete() {

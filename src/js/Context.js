@@ -32,6 +32,7 @@ import { IconDialog } from './module/IconDialog.js';
 import { ContextMenu } from './module/ContextMenu.js';
 import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 import { FindReplace } from './module/FindReplace.js';
+import { ImageCropOverlay } from './module/ImageCropOverlay.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
@@ -107,8 +108,8 @@ export class Context {
   _registerModules() {
     const register = (name, ModuleClass) => {
       const instance = new ModuleClass(this);
-      instance.initialize();
       this._modules.set(name, instance);
+      instance.initialize();
     };
 
     register('editor', Editor);
@@ -133,6 +134,7 @@ export class Context {
     register('iconDialog', IconDialog);
     register('shortcutsDialog', ShortcutsDialog);
     register('findReplace', FindReplace);
+    register('imageCropOverlay', ImageCropOverlay);
 
     // Custom modules registered via AutumnNote.registerModule()
     for (const [name, ModuleClass] of _customModules) {
@@ -155,6 +157,9 @@ export class Context {
   }
 
   _bindEditorEvents(editable) {
+    // Keep the original textarea/input value in sync immediately on every input.
+    // This guarantees form.submit() sees fresh data even before debounced change.
+    const d0 = on(editable, 'input', () => this._syncToTarget());
     const d1 = on(editable, 'focus', () => {
       this.layoutInfo.container.classList.add('an-focused');
       if (typeof this.options.onFocus === 'function') {
@@ -170,7 +175,7 @@ export class Context {
     });
     // Sync textarea/input value on every change so form.submit() always gets fresh content
     const d3 = this.on('change', () => this._syncToTarget());
-    this._disposers.push(d1, d2, d3);
+    this._disposers.push(d0, d1, d2, d3);
 
     // Auto-save to localStorage on every change
     if (this.options.autoSave && this.options.autoSaveKey) {
