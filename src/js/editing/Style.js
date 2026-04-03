@@ -313,8 +313,8 @@ export function isInlineCode() {
 
 /**
  * Toggles a task-list at the cursor.
- * If inside a checklist <li>, converts it back to a <p>.
- * Otherwise inserts a new <ul class="an-checklist"> with one item.
+ * If inside a checklist <li>, converts it (and any other selected items) back to <p> elements.
+ * Otherwise inserts a new <ul class="an-checklist"> with one item per selected line.
  */
 export function toggleChecklist() {
   const sel = window.getSelection();
@@ -323,6 +323,7 @@ export function toggleChecklist() {
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
 
+<<<<<<< HEAD
   const ul = container.closest && container.closest(".an-checklist");
   if (ul) {
     // If selection covers multiple <li>, convert them all
@@ -340,11 +341,35 @@ export function toggleChecklist() {
         const p = document.createElement("p");
         p.textContent = text || "\u00a0";
         ul.parentNode.insertBefore(p, ul);
+=======
+  const ul = container.closest && container.closest('.an-checklist');
+  if (ul) {
+    // If selection covers multiple <li>, convert them all
+    const selectedLis = Array.from(ul.querySelectorAll('li')).filter((li) =>
+      sel.containsNode(li, true),
+    );
+    if (selectedLis.length > 0) {
+      let firstP = null;
+      selectedLis.forEach((li) => {
+        const text = Array.from(li.childNodes)
+          .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+          .map((n) => n.textContent)
+          .join('')
+          .replace(/\u00a0/g, ' ')
+          .trim();
+        const p = document.createElement('p');
+        p.textContent = text || '\u00a0';
+        ul.parentNode.insertBefore(p, ul);
+        if (!firstP) firstP = p;
+>>>>>>> 1cb68041d23c940d941575045a2178f7cb5255d6
         ul.removeChild(li);
       });
       if (ul.children.length === 0) ul.remove();
       // Move caret to first converted paragraph
+<<<<<<< HEAD
       const firstP = ul.previousSibling;
+=======
+>>>>>>> 1cb68041d23c940d941575045a2178f7cb5255d6
       if (firstP) {
         const nr = document.createRange();
         nr.setStart(firstP.firstChild || firstP, 0);
@@ -363,11 +388,19 @@ export function toggleChecklist() {
   const items = lines
     .map(
       (l) =>
+<<<<<<< HEAD
         `<li><input type="checkbox" contenteditable="false">${l || "\u200B"}</li>`,
     )
     .join("");
   document.execCommand(
     "insertHTML",
+=======
+        `<li><input type="checkbox" contenteditable="false">${l || '\u200B'}</li>`,
+    )
+    .join('');
+  document.execCommand(
+    'insertHTML',
+>>>>>>> 1cb68041d23c940d941575045a2178f7cb5255d6
     false,
     `<ul class="an-checklist">${items}</ul>`,
   );
