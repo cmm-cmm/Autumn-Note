@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-04-03
+
+### Added
+- **Image crop overlay** (`ImageCropOverlay`) — interactive inline crop tool for images inside the editor; uses clip-path scrim with drag handles (corners + edges), canvas-based crop on confirm, and CORS fallback warning
+- Crop action added to **ImageTooltip** to trigger the new crop overlay
+- Comprehensive **unit tests** for 20+ modules: Context, Table, ImageDialog, Buttons, Clipboard, Codeview, ContextMenu, Editor, FindReplace, Fullscreen, ImageResizer, LinkDialog, Placeholder, ShortcutsDialog, Statusbar, Toolbar, VideoResizer, RemainingModules smoke tests, and integration tests
+- Expanded **TypeScript definitions** (`types/index.d.ts`) with broader API coverage
+
+### Changed
+- Input value now synchronised on every `input` event via `Context` for more responsive state tracking
+
+### Fixed
+- Checklist toggle supports multi-line selection in both directions
+
+---
+
 ## [1.0.4] - 2026-04-02
 
 ### Changed
