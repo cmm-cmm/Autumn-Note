@@ -34,6 +34,11 @@ export class FindReplace {
     /** @type {'find'|'replace'} */
     this._mode = 'find';
 
+    /** Cached compiled regex — reused when query and case-sensitivity are unchanged */
+    this._queryRegex = null;
+    this._lastQuery = null;
+    this._lastCaseSensitive = null;
+
     this._disposers = [];
     this._removeTrap = null;
     this._focusTimer = null;
@@ -304,10 +309,15 @@ export class FindReplace {
    */
   _findRawMatches(query, root) {
     const results = [];
-    const flags = this._caseSensitive ? 'g' : 'gi';
-    // Escape regex special characters in the literal query string
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(escaped, flags);
+    // Reuse compiled regex when query and case-sensitivity haven't changed
+    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive) {
+      const flags = this._caseSensitive ? 'g' : 'gi';
+      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      this._queryRegex = new RegExp(escaped, flags);
+      this._lastQuery = query;
+      this._lastCaseSensitive = this._caseSensitive;
+    }
+    const re = this._queryRegex;
 
     const walker = document.createTreeWalker(root, 0x4 /* NodeFilter.SHOW_TEXT */);
     let node;

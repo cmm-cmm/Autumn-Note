@@ -127,9 +127,12 @@ export class Clipboard {
     // Unwrap purely presentational wrapper spans/divs with no semantic meaning
     const UNWRAP_TAGS = new Set(['span', 'div']);
     let changed = true;
-    // Iteratively unwrap until stable (handles deeply nested span soup)
-    while (changed) {
+    let iterations = 0;
+    // Iteratively unwrap until stable (handles deeply nested span soup).
+    // The 100-iteration cap is a safety guard against adversarially crafted HTML.
+    while (changed && iterations < 100) {
       changed = false;
+      iterations++;
       doc.querySelectorAll('span, div').forEach((el) => {
         if (!UNWRAP_TAGS.has(el.tagName.toLowerCase())) return;
         // Keep if it has a meaningful role (link, heading, list item are handled by parent)
