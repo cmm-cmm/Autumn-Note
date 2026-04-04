@@ -970,6 +970,55 @@
 }
 
 // ---------------------------------------------------------------------------
+// Image crop overlay
+// ---------------------------------------------------------------------------
+
+// The scrim and crop box are appended to <body> and positioned fixed, so they
+// live outside .an-container. All styles are standalone (no SCSS nesting).
+
+.an-crop-scrim {
+  // Inline styles handle position/z-index/background for performance;
+  // clip-path is updated by JS every frame so we only declare the transition.
+  transition: clip-path 0s; // disable transition — updated synchronously on drag
+}
+
+.an-crop-box {
+  // Core layout & interaction via inline styles in JS (position changes every drag frame).
+  // Only declare the animated ring so it stays in sync with $an-primary.
+  outline: none !important;
+
+  // Subtle inner shadow that frames the "live" area
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.an-crop-handle {
+  // Inline styles handle size/position; declare hover highlight only.
+  &:hover, &:active {
+    background: #74affa !important; // $an-primary lightened ~14%
+  }
+}
+
+.an-crop-toolbar {
+  // Inline styles handle position; add a subtle entrance animation.
+  animation: an-crop-toolbar-in 0.12s ease;
+}
+
+@keyframes an-crop-toolbar-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Hide canvas-based crop overlay when printing
+@media print {
+  .an-crop-scrim,
+  .an-crop-box,
+  .an-crop-toolbar {
+    display: none !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Video resize overlay
 // ---------------------------------------------------------------------------
 
