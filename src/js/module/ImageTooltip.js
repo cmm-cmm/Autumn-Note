@@ -173,7 +173,9 @@ export class ImageTooltip {
   _scheduleHide() {
     clearTimeout(this._showTimer);
     this._showTimer = null;
-    if (this._hideTimer) return;
+    // Always reset the hide timer so rapid mouseout→mouseover sequences
+    // don't leave a stale timer that hides the tooltip prematurely.
+    clearTimeout(this._hideTimer);
     this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
   }
 

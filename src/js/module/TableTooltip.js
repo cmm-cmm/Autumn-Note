@@ -74,6 +74,7 @@ const ICONS = {
   mergeCells:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
   colWidth:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="7" y1="12" x2="17" y2="12"/><path d="M10 9l-3 3 3 3"/><path d="M14 9l3 3-3 3"/></svg>`,
   rowHeight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`,
+  tableBorder: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="13" x2="21" y2="13" stroke-width="2"/><line x1="3" y1="20" x2="21" y2="20" stroke-width="3"/></svg>`,
   deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
 };
 
@@ -320,8 +321,9 @@ export class TableTooltip {
     el.appendChild(this._sep());
 
     // Resize
-    el.appendChild(this._makeBtn(ICONS.colWidth,  'Column Width', () => this._openSizePopover('col')));
-    el.appendChild(this._makeBtn(ICONS.rowHeight, 'Row Height',   () => this._openSizePopover('row')));
+    el.appendChild(this._makeBtn(ICONS.colWidth,   'Column Width',      () => this._openSizePopover('col')));
+    el.appendChild(this._makeBtn(ICONS.rowHeight,  'Row Height',        () => this._openSizePopover('row')));
+    el.appendChild(this._makeBtn(ICONS.tableBorder,'Table Border Width',() => this._openSizePopover('border')));
 
     el.appendChild(this._sep());
 
@@ -641,30 +643,59 @@ export class TableTooltip {
   _openSizePopover(type) {
     const cell = this._getCell();
     if (!cell || !this._sizePopover) return;
-    const isCol = type === 'col';
-    this._sizeTitleEl.textContent = isCol ? 'Column Width (px)' : 'Row Height (px)';
-    this._sizeInputEl.value = isCol
-      ? (cell.offsetWidth || 120)
-      : (cell.closest('tr') ? (cell.closest('tr').offsetHeight || 40) : 40);
 
-    this._sizeApply = (val) => {
-      if (isCol) {
-        const table        = cell.closest('table');
-        const visualColIdx = getVisualColIndex(cell);
-        const rows  = Array.from(table.querySelectorAll('tr'));
-        // Batch reads, then writes
-        const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
-        cells.forEach(c => {
-          if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
-        });
-      } else {
-        const row = cell.closest('tr');
-        if (row) {
-          for (const c of row.cells) { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; }
+    if (type === 'border') {
+      const table = cell.closest('table');
+      if (!table) return;
+      // Read current inline border-width, fall back to computed value, then default 1px
+      const firstCell = table.querySelector('td, th');
+      const currentPx = firstCell
+        ? (parseInt(firstCell.style.borderWidth, 10) ||
+           parseInt(window.getComputedStyle(firstCell).borderWidth, 10) || 1)
+        : 1;
+      this._sizeTitleEl.textContent = 'Table Border Width (px)';
+      this._sizeInputEl.min   = '0';
+      this._sizeInputEl.max   = '10';
+      this._sizeInputEl.value = currentPx;
+      this._sizeApply = (val) => {
+        // Apply border-width to every cell; with border-collapse:collapse this
+        // controls all grid lines including the outer table border.
+        // Setting only borderWidth preserves the existing border-color from CSS.
+        const cells = Array.from(table.querySelectorAll('td, th'));
+        if (val === 0) {
+          cells.forEach(c => { c.style.borderWidth = '0'; c.style.borderStyle = 'none'; });
+        } else {
+          cells.forEach(c => { c.style.borderWidth = `${val}px`; c.style.borderStyle = 'solid'; });
         }
-      }
-      this.context.invoke('editor.afterCommand');
-    };
+        this.context.invoke('editor.afterCommand');
+      };
+    } else {
+      const isCol = type === 'col';
+      this._sizeTitleEl.textContent = isCol ? 'Column Width (px)' : 'Row Height (px)';
+      this._sizeInputEl.min   = '1';
+      this._sizeInputEl.max   = '2000';
+      this._sizeInputEl.value = isCol
+        ? (cell.offsetWidth || 120)
+        : (cell.closest('tr') ? (cell.closest('tr').offsetHeight || 40) : 40);
+      this._sizeApply = (val) => {
+        if (isCol) {
+          const table        = cell.closest('table');
+          const visualColIdx = getVisualColIndex(cell);
+          const rows  = Array.from(table.querySelectorAll('tr'));
+          // Batch reads, then writes
+          const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
+          cells.forEach(c => {
+            if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
+          });
+        } else {
+          const row = cell.closest('tr');
+          if (row) {
+            for (const c of row.cells) { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; }
+          }
+        }
+        this.context.invoke('editor.afterCommand');
+      };
+    }
 
     this._sizePopover.style.display = 'block';
     requestAnimationFrame(() => {

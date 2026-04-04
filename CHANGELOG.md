@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-04-04
+
+### Added
+- **Table border width adjustment** — new control in `TableTooltip` to set border width on selected cells/table
+- **CDN build** (`vite.cdn.config.js`) — minified UMD bundle optimised for direct `<script>` tag usage
+- **TypeScript configuration** (`tsconfig.json`) — enables `typecheck` script for project-wide type checking
+- **Performance benchmarks** (`test/perf/performance.bench.js`) — Vitest bench suite covering critical hot-path functions
+
+### Changed
+- **Performance** — moved predicate functions outside keydown handler in `Typing.js`; reduced `Clipboard._cleanSocialHtml` from O(n²) to O(n); optimised `FindReplace` match-building; `Toolbar` now uses `DocumentFragment` for batch DOM updates; cached regex for language-class extraction in `CodeTooltip`
+- **`FindReplace`** — added safety checks and regex caching for more robust find/replace operations
+- **`Clipboard`** — added safety checks to prevent errors on malformed clipboard content
+- **`CodeTooltip`** — switched to `codeHighlightCDN` option for loading Prism resources
+- **Vite config** — supports dynamic plugin loading for bundle analysis; UMD output asset naming made consistent
+- Removed `NODE_ENV` checks from `Context` and `Clipboard` warning paths for cleaner runtime behaviour
+
+### Fixed
+- **Backspace near FA icons** — cursor position is now correctly restored after deleting a FontAwesome icon element
+
+---
+
 ## [1.0.5] - 2026-04-03
 
 ### Added

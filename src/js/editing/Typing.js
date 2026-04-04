@@ -8,6 +8,15 @@ import { closestPara, isLi } from '../core/dom.js';
 import { execCommand } from './Style.js';
 import { currentRange } from '../core/range.js';
 
+// ---------------------------------------------------------------------------
+// Module-level predicates — defined once, not re-created on every keypress.
+// Previously these were arrow functions inside handleKeydown() which fires
+// at ~120+ events/sec during normal typing.
+// ---------------------------------------------------------------------------
+const _FA_PATTERN = /\bfa-/;
+const isFAIcon = (n) => !!(n && n.nodeName === 'I' && _FA_PATTERN.test(n.className || ''));
+const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
+
 /**
  * Handles special keydown behaviour inside the editor.
  * @param {KeyboardEvent} event
@@ -16,8 +25,6 @@ import { currentRange } from '../core/range.js';
  * @returns {boolean} true if the event was consumed
  */
 export function handleKeydown(event, editable, options = {}) {
-  const isFAIcon = (n) => !!(n && n.nodeName === 'I' && /\bfa-/.test(n.className || ''));
-  const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
   const moveCaret = (setFn) => {
     const sel = window.getSelection();
     if (!sel) return false;
@@ -51,8 +58,26 @@ export function handleKeydown(event, editable, options = {}) {
         if (r.startOffset === 1 && textNode.textContent === '\u200B' &&
             isFAIcon(textNode.previousSibling)) {
           event.preventDefault();
-          textNode.previousSibling.remove();
+          const parent   = textNode.parentNode;
+          const icon     = textNode.previousSibling;
+          const prevNode = icon.previousSibling; // node before the icon (e.g. ZWS of prior icon)
+          icon.remove();
           textNode.remove();
+          // Explicitly restore the cursor to the node preceding the deleted icon.
+          // Without this, the browser collapses the selection to the parent element
+          // (not a text node), causing the next Backspace to miss Cases A/B and
+          // requiring an extra keypress when two icons are adjacent.
+          const nr = document.createRange();
+          if (prevNode && prevNode.nodeType === Node.TEXT_NODE) {
+            nr.setStart(prevNode, prevNode.textContent.length);
+          } else if (prevNode) {
+            nr.setStartAfter(prevNode);
+          } else if (parent) {
+            nr.setStart(parent, 0);
+          }
+          nr.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(nr);
           return true;
         }
       }
