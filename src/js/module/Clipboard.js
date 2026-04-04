@@ -321,9 +321,7 @@ export class Clipboard {
       }).catch((err) => {
         const message = `Image "${file.name}" could not be processed.`;
         this.context.triggerEvent('imageError', { file, message, error: err });
-        if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
-          console.warn('[AutumnNote]', message, err);
-        }
+        console.warn('[AutumnNote]', message, err);
       });
     });
   }

@@ -18,6 +18,7 @@ export default defineConfig({
       },
     },
     sourcemap: true,
+    minify: false,
   },
   css: {
     preprocessorOptions: {

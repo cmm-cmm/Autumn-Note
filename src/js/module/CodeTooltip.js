@@ -355,8 +355,7 @@ export class CodeTooltip {
    */
   _ensurePrism() {
     if (!this.context.options.codeHighlight || window.Prism) return;
-    const cdn = this.context.options.codeHighlightCDN
-      || 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+    const cdn = this.context.options.codeHighlightCDN;
     const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
     const scriptSrc = `${cdn}/prism.min.js`;
 
@@ -389,8 +388,7 @@ export class CodeTooltip {
    * @param {Function} cb  – called once the grammar is ready
    */
   _loadPrismComponent(lang, cb) {
-    const cdn = this.context.options.codeHighlightCDN
-      || 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0';
+    const cdn = this.context.options.codeHighlightCDN;
     const src = `${cdn}/components/prism-${lang}.min.js`;
     // Avoid loading the same component twice
     if (document.querySelector(`script[src="${src}"]`)) {
