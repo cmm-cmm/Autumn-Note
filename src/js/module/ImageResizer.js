@@ -55,7 +55,7 @@ export class ImageResizer {
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
       on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', onWindowResize),
+      on(window, 'resize', onWindowResize, { passive: true }),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
     );
 

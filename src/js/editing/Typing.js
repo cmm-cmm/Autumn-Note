@@ -8,6 +8,15 @@ import { closestPara, isLi } from '../core/dom.js';
 import { execCommand } from './Style.js';
 import { currentRange } from '../core/range.js';
 
+// ---------------------------------------------------------------------------
+// Module-level predicates — defined once, not re-created on every keypress.
+// Previously these were arrow functions inside handleKeydown() which fires
+// at ~120+ events/sec during normal typing.
+// ---------------------------------------------------------------------------
+const _FA_PATTERN = /\bfa-/;
+const isFAIcon = (n) => !!(n && n.nodeName === 'I' && _FA_PATTERN.test(n.className || ''));
+const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
+
 /**
  * Handles special keydown behaviour inside the editor.
  * @param {KeyboardEvent} event
@@ -16,8 +25,6 @@ import { currentRange } from '../core/range.js';
  * @returns {boolean} true if the event was consumed
  */
 export function handleKeydown(event, editable, options = {}) {
-  const isFAIcon = (n) => !!(n && n.nodeName === 'I' && /\bfa-/.test(n.className || ''));
-  const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
   const moveCaret = (setFn) => {
     const sel = window.getSelection();
     if (!sel) return false;

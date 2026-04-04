@@ -146,6 +146,9 @@ export class Toolbar {
 
   _buildButtons() {
     const toolbar = this.options.toolbar || [];
+    // Build into a DocumentFragment so all groups are appended in a single
+    // DOM operation, avoiding one reflow per group.
+    const fragment = document.createDocumentFragment();
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'an-btn-group' });
       group.forEach((btnDef) => {
@@ -156,8 +159,9 @@ export class Toolbar {
         else el = this._createButton(btnDef);
         groupEl.appendChild(el);
       });
-      this.el.appendChild(groupEl);
+      fragment.appendChild(groupEl);
     });
+    this.el.appendChild(fragment);
   }
 
   /**

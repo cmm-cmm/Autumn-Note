@@ -124,26 +124,22 @@ export class Clipboard {
    */
   _cleanSocialHtml(html) {
     const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
-    // Unwrap purely presentational wrapper spans/divs with no semantic meaning
-    const UNWRAP_TAGS = new Set(['span', 'div']);
-    let changed = true;
-    let iterations = 0;
-    // Iteratively unwrap until stable (handles deeply nested span soup).
-    // The 100-iteration cap is a safety guard against adversarially crafted HTML.
-    while (changed && iterations < 100) {
-      changed = false;
-      iterations++;
-      doc.querySelectorAll('span, div').forEach((el) => {
-        if (!UNWRAP_TAGS.has(el.tagName.toLowerCase())) return;
-        // Keep if it has a meaningful role (link, heading, list item are handled by parent)
-        if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) return;
-        // Unwrap — replace el with its children
-        const parent = el.parentNode;
-        if (!parent) return;
-        while (el.firstChild) parent.insertBefore(el.firstChild, el);
-        parent.removeChild(el);
-        changed = true;
-      });
+    // Unwrap purely presentational wrapper spans/divs with no semantic meaning.
+    // Single-pass reverse traversal: querySelectorAll returns elements in document
+    // order, so iterating backwards processes innermost elements first — once a
+    // child is unwrapped its parent may become unwrappable in the same pass.
+    // This replaces the previous O(n²) while-loop that re-queried the whole tree
+    // on every iteration.
+    const candidates = Array.from(doc.querySelectorAll('span, div'));
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const el = candidates[i];
+      if (!el.parentNode) continue; // already detached by an earlier iteration
+      // Keep if it contains any semantic child element
+      if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) continue;
+      // Unwrap — replace el with its children
+      const parent = el.parentNode;
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      parent.removeChild(el);
     }
     // Strip class and all data-* attributes from every remaining element
     doc.querySelectorAll('*').forEach((el) => {

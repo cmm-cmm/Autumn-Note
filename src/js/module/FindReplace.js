@@ -272,7 +272,10 @@ export class FindReplace {
 
     this._currentIndex = 0;
 
-    // Wrap in reverse order so earlier offsets in the same text node stay valid
+    // Wrap matches in reverse order so earlier text offsets stay valid when
+    // later sections of the same text node are split by surroundContents().
+    // Use push() instead of unshift() to avoid O(n²) shifting on every insert;
+    // reverse() at the end restores forward document order in O(n).
     for (let i = rawMatches.length - 1; i >= 0; i--) {
       const { node, start, end } = rawMatches[i];
       try {
@@ -282,13 +285,14 @@ export class FindReplace {
         const mark = document.createElement('mark');
         mark.className = 'an-highlight';
         range.surroundContents(mark);
-        this._matches.unshift({ mark });
+        this._matches.push({ mark });
       } catch (_) {
         // surroundContents fails when the range crosses element boundaries.
         // This can happen with <br> inside matched text — skip safely.
-        this._matches.unshift({ mark: null });
+        this._matches.push({ mark: null });
       }
     }
+    this._matches.reverse(); // O(n) — restore forward document order
 
     // Drop entries where wrapping failed so the counter and navigation are accurate
     this._matches = this._matches.filter((m) => m.mark);

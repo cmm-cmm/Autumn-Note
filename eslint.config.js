@@ -35,7 +35,6 @@ module.exports = [
         clearInterval: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
-        process: 'readonly',
       },
     },
     rules: {
