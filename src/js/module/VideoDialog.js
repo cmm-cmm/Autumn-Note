@@ -73,12 +73,12 @@ export class VideoDialog {
     // URL input
     const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = 'Video URL';
-    const urlInput = createElement('input', {
+    const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'url',
       class: 'an-input',
       placeholder: 'YouTube, Vimeo, or direct .mp4 URL',
       autocomplete: 'off',
-    });
+    }));
     this._urlInput = urlInput;
 
     // Hint (detected source)
@@ -88,14 +88,14 @@ export class VideoDialog {
     // Width
     const widthLabel = createElement('label', { class: 'an-label' });
     widthLabel.textContent = 'Width (px)';
-    const widthInput = createElement('input', {
+    const widthInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'number',
       class: 'an-input',
       placeholder: '560',
       min: '80',
       max: '1920',
       value: '560',
-    });
+    }));
     this._widthInput = widthInput;
 
     // Buttons
@@ -119,7 +119,7 @@ export class VideoDialog {
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d4 = on(urlInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     this._disposers.push(d0, d1, d2, d3, d4);
 
     return overlay;
