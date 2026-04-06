@@ -44,6 +44,34 @@ describe('sanitiseHTML', () => {
     expect(sanitiseHTML(input)).toContain('fill in:');
   });
 
+  it('preserves input[type="checkbox"] inside ul.an-checklist li', () => {
+    const input = '<ul class="an-checklist"><li><input type="checkbox">item</li></ul>';
+    const result = sanitiseHTML(input);
+    expect(result).toContain('<input type="checkbox">');
+    expect(result).toContain('item');
+  });
+
+  it('preserves checked state of checklist checkbox', () => {
+    const input = '<ul class="an-checklist"><li><input type="checkbox" checked>done</li></ul>';
+    const result = sanitiseHTML(input);
+    expect(result).toContain('checked');
+    expect(result).toContain('done');
+  });
+
+  it('strips input[type="checkbox"] that is NOT inside ul.an-checklist li', () => {
+    const input = '<p><input type="checkbox"> standalone</p>';
+    expect(sanitiseHTML(input)).not.toContain('<input');
+  });
+
+  it('strips extra attributes from checklist checkboxes (hardening)', () => {
+    const input = '<ul class="an-checklist"><li><input type="checkbox" id="x" class="y" onclick="evil()">item</li></ul>';
+    const result = sanitiseHTML(input);
+    expect(result).toContain('<input type="checkbox">');
+    expect(result).not.toContain('id="x"');
+    expect(result).not.toContain('class="y"');
+    expect(result).not.toContain('onclick');
+  });
+
   it('removes all on* event handler attributes', () => {
     const input = '<p onclick="evil()" onmouseover="bad()">text</p>';
     const result = sanitiseHTML(input);

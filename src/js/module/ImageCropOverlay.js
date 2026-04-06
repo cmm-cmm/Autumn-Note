@@ -66,7 +66,7 @@ function drawCropToCanvas(img, naturalRect, renderW, renderH) {
     if (
       img.src.startsWith('data:') ||
       img.src.startsWith('blob:') ||
-      img.src.startsWith(location.origin)
+      img.src.startsWith(window.location.origin)
     ) {
       tryDraw(img);
       return;
@@ -489,7 +489,7 @@ export class ImageCropOverlay {
 
     if (!canvas) {
       // Cross-origin failure — inform user and abort
-      alert(
+      window.alert(
         'Cannot crop this image: the image server does not allow cross-origin access.\n' +
         'Upload the image directly to use the crop tool.',
       );

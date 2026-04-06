@@ -11,6 +11,97 @@ import { createElement, on } from '../core/dom.js';
 // auto-injects its own FA <link> for the icon-picker glyph rendering.
 let _faPageLevelReady = null;
 
+// ---------------------------------------------------------------------------
+// Module-level icon lookup tables — built once, shared across all instances.
+// Previously these were re-created inside _createButton() on every button
+// render, producing O(buttons × map-size) allocations per toolbar init.
+// ---------------------------------------------------------------------------
+const _S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const _svgWrap = (paths) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${_S} style="display:block">${paths}</svg>`;
+
+const _SVG_MAP = new Map([
+  // Format
+  ['bold',          _svgWrap('<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>')],
+  ['italic',        _svgWrap('<line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/>')],
+  ['underline',     _svgWrap('<path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/>')],
+  ['strikethrough', _svgWrap('<path d="M17.3 12H6.7"/><path d="M10 6.5C10 5.1 11.1 4 12.5 4c1.4 0 2.5 1.1 2.5 2.5 0 .8-.4 1.5-1 2"/><path d="M14 17.5C14 19 12.9 20 11.5 20 10.1 20 9 18.9 9 17.5c0-.8.4-1.5 1-2"/>')],
+  ['superscript',   _svgWrap('<path d="m4 19 8-8"/><path d="m12 19-8-8"/><path d="M20 12h-4c0-1.5.44-2 1.5-2.5S20 8.33 20 7.25C20 6 19 5 17.5 5S15 6 15 7"/>')],
+  ['subscript',     _svgWrap('<path d="m4 5 8 8"/><path d="m12 5-8 8"/><path d="M20 21h-4c0-1.5.44-2 1.5-2.5S20 17.33 20 16.25C20 15 19 14 17.5 14S15 15 15 16"/>')],
+  // Alignment
+  ['align-left',    _svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/>')],
+  ['align-center',  _svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="18" y1="12" x2="6" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>')],
+  ['align-right',   _svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/>')],
+  ['align-justify', _svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>')],
+  // Lists
+  ['list-ul',       _svgWrap('<line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/>')],
+  ['list-ol',       _svgWrap('<line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1V3"/><path d="M4 10h2l-2 2h2"/><path d="M4 16.5A1.5 1.5 0 0 1 5.5 15a1.5 1.5 0 0 1 0 3H4"/>')],
+  ['indent',        _svgWrap('<polyline points="3 8 7 12 3 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
+  ['outdent',       _svgWrap('<polyline points="7 8 3 12 7 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
+  // History
+  ['undo',          _svgWrap('<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>')],
+  ['redo',          _svgWrap('<path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>')],
+  // Insert
+  ['minus',         _svgWrap('<line x1="5" y1="12" x2="19" y2="12"/>')],
+  ['link',          _svgWrap('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>')],
+  ['image',         _svgWrap('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>')],
+  ['video',         _svgWrap('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>')],
+  ['table',         _svgWrap('<rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>')],
+  ['emoji',         _svgWrap('<circle cx="12" cy="12" r="10"/><path d="M8.5 14.5s1.5 2.5 3.5 2.5 3.5-2.5 3.5-2.5"/><circle cx="9" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>')],
+  ['icon',          _svgWrap('<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><rect x="5" y="13" width="6" height="6" rx="1"/><rect x="13" y="13" width="6" height="6" rx="1"/>')],
+  // View
+  ['code',          _svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
+  ['expand',        _svgWrap('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')],
+  // Color pickers
+  ['foreColor',     _svgWrap('<path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>')],
+  ['backColor',     _svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
+  ['keyboard',      _svgWrap('<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-width="2.5"/><line x1="14" y1="10" x2="14" y2="10" stroke-width="2.5"/><line x1="18" y1="10" x2="18" y2="10" stroke-width="2.5"/><line x1="8" y1="14" x2="16" y2="14" stroke-width="2"/>')],
+  ['caption',       _svgWrap('<rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/>')],
+  ['remove-format', _svgWrap('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>')],
+  ['direction',     _svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
+  ['search',        _svgWrap('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')],
+  ['find-replace',  _svgWrap('<circle cx="10" cy="10" r="6"/><line x1="18" y1="18" x2="14.35" y2="14.35"/><path d="M16 19h6"/><path d="M19 16v6"/>')],
+  ['inline-code',   _svgWrap('<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5c0 1.1.9 2 2 2a2 2 0 0 1-2 2v5a2 2 0 0 1-2 2h-1"/>')],
+  ['checklist',     _svgWrap('<rect x="3" y="4" width="5" height="5" rx="1"/><path d="m4 6.5 1 1 2-2"/><rect x="3" y="13" width="5" height="5" rx="1"/><line x1="10" y1="6.5" x2="21" y2="6.5"/><line x1="10" y1="15.5" x2="21" y2="15.5"/>')],
+  ['print',         _svgWrap('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>')],
+]);
+
+const _FA_MAP = new Map([
+  ['bold',          'fa-bold'],
+  ['italic',        'fa-italic'],
+  ['underline',     'fa-underline'],
+  ['strikethrough', 'fa-strikethrough'],
+  ['superscript',   'fa-superscript'],
+  ['subscript',     'fa-subscript'],
+  ['align-left',    'fa-align-left'],
+  ['align-center',  'fa-align-center'],
+  ['align-right',   'fa-align-right'],
+  ['align-justify', 'fa-align-justify'],
+  ['list-ul',       'fa-list-ul'],
+  ['list-ol',       'fa-list-ol'],
+  ['indent',        'fa-indent'],
+  ['outdent',       'fa-outdent'],
+  ['undo',          'fa-rotate-left'],
+  ['redo',          'fa-rotate-right'],
+  ['minus',         'fa-minus'],
+  ['link',          'fa-link'],
+  ['image',         'fa-image'],
+  ['code',          'fa-code'],
+  ['expand',        'fa-expand'],
+  ['emoji',         'fa-face-smile'],
+  ['icon',          'fa-icons'],
+  ['foreColor',     'fa-font'],
+  ['backColor',     'fa-highlighter'],
+  ['keyboard',      'fa-keyboard'],
+  ['remove-format', 'fa-remove-format'],
+  ['direction',     'fa-arrow-right-arrow-left'],
+  ['search',        'fa-magnifying-glass'],
+  ['find-replace',  'fa-magnifying-glass-plus'],
+  ['inline-code',   'fa-code'],
+  ['checklist',     'fa-list-check'],
+  ['print',         'fa-print'],
+]);
+
 export class Toolbar {
   /**
    * @param {import('../Context.js').Context} context
@@ -55,6 +146,9 @@ export class Toolbar {
 
   _buildButtons() {
     const toolbar = this.options.toolbar || [];
+    // Build into a DocumentFragment so all groups are appended in a single
+    // DOM operation, avoiding one reflow per group.
+    const fragment = document.createDocumentFragment();
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'an-btn-group' });
       group.forEach((btnDef) => {
@@ -65,8 +159,9 @@ export class Toolbar {
         else el = this._createButton(btnDef);
         groupEl.appendChild(el);
       });
-      this.el.appendChild(groupEl);
+      fragment.appendChild(groupEl);
     });
+    this.el.appendChild(fragment);
   }
 
   /**
@@ -271,10 +366,13 @@ export class Toolbar {
 
     const restoreSelection = () => {
       if (!savedRange) return;
-      const sel = window.getSelection();
-      if (sel) {
+      try {
+        const sel = window.getSelection();
+        if (!sel) return;
         sel.removeAllRanges();
         sel.addRange(savedRange);
+      } catch (_) {
+        // Range target may be detached if DOM changed while popup was open
       }
     };
 
@@ -415,16 +513,34 @@ export class Toolbar {
       select.appendChild(opt);
     });
 
+    // Save the editor selection when the user starts interacting with the
+    // dropdown (mousedown fires before the editor loses focus).  When the
+    // change handler runs, focus has moved to the <select>; we restore the
+    // saved range so execCommand / fontSize() act on the intended text.
+    /** @type {Range|null} */
+    let _savedRange = null;
+    const dMousedown = on(select, 'mousedown', () => {
+      const sel = window.getSelection();
+      _savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+    });
+
     const disposer = on(select, 'change', (e) => {
-      const value = e.target.value;
-      const selectedOpt = e.target.options[e.target.selectedIndex];
+      const value = /** @type {HTMLSelectElement} */ (e.target).value;
+      const selectedOpt = /** @type {HTMLSelectElement} */ (e.target).options[/** @type {HTMLSelectElement} */ (e.target).selectedIndex];
       if (!value || selectedOpt.disabled) return;
       this.context.invoke('editor.focus');
+      // Restore selection saved on mousedown so the action targets the correct text.
+      if (_savedRange) {
+        try {
+          const sel = window.getSelection();
+          if (sel) { sel.removeAllRanges(); sel.addRange(_savedRange); }
+        } catch (_) { /* range may be stale if DOM changed */ }
+      }
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');
     });
 
-    this._disposers.push(disposer);
+    this._disposers.push(dMousedown, disposer);
     return select;
   }
 
@@ -448,110 +564,23 @@ export class Toolbar {
     });
 
     // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.
-
-    // Heroicons-style stroke SVGs — consistent with context menu icons
-    const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-    const svgWrap = (paths) => `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block">${paths}</svg>`;
-
-    const svgMap = new Map([
-      // Format
-      ['bold',          svgWrap('<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>')],
-      ['italic',        svgWrap('<line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/>')],
-      ['underline',     svgWrap('<path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/>')],
-      ['strikethrough', svgWrap('<path d="M17.3 12H6.7"/><path d="M10 6.5C10 5.1 11.1 4 12.5 4c1.4 0 2.5 1.1 2.5 2.5 0 .8-.4 1.5-1 2"/><path d="M14 17.5C14 19 12.9 20 11.5 20 10.1 20 9 18.9 9 17.5c0-.8.4-1.5 1-2"/>')],
-      ['superscript',   svgWrap('<path d="m4 19 8-8"/><path d="m12 19-8-8"/><path d="M20 12h-4c0-1.5.44-2 1.5-2.5S20 8.33 20 7.25C20 6 19 5 17.5 5S15 6 15 7"/>')],
-      ['subscript',     svgWrap('<path d="m4 5 8 8"/><path d="m12 5-8 8"/><path d="M20 21h-4c0-1.5.44-2 1.5-2.5S20 17.33 20 16.25C20 15 19 14 17.5 14S15 15 15 16"/>')],
-      // Alignment
-      ['align-left',    svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/>')],
-      ['align-center',  svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="18" y1="12" x2="6" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>')],
-      ['align-right',   svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/>')],
-      ['align-justify', svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>')],
-      // Lists
-      ['list-ul',       svgWrap('<line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/>')],
-      ['list-ol',       svgWrap('<line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1V3"/><path d="M4 10h2l-2 2h2"/><path d="M4 16.5A1.5 1.5 0 0 1 5.5 15a1.5 1.5 0 0 1 0 3H4"/>')],
-      ['indent',        svgWrap('<polyline points="3 8 7 12 3 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
-      ['outdent',       svgWrap('<polyline points="7 8 3 12 7 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
-      // History
-      ['undo',          svgWrap('<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>')],
-      ['redo',          svgWrap('<path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>')],
-      // Insert
-      ['minus',         svgWrap('<line x1="5" y1="12" x2="19" y2="12"/>')],
-      ['link',          svgWrap('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>')],
-      ['image',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>')],
-      ['video',         svgWrap('<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>')],
-      ['table',         svgWrap('<rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>')],
-      ['emoji',         svgWrap('<circle cx="12" cy="12" r="10"/><path d="M8.5 14.5s1.5 2.5 3.5 2.5 3.5-2.5 3.5-2.5"/><circle cx="9" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>')],
-      ['icon',          svgWrap('<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><rect x="5" y="13" width="6" height="6" rx="1"/><rect x="13" y="13" width="6" height="6" rx="1"/>')],
-      // View
-      ['code',          svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
-      ['expand',        svgWrap('<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>')],
-      // Color pickers
-      ['foreColor',     svgWrap('<path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>')],
-      ['backColor',     svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
-      ['keyboard',      svgWrap('<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-width="2.5"/><line x1="14" y1="10" x2="14" y2="10" stroke-width="2.5"/><line x1="18" y1="10" x2="18" y2="10" stroke-width="2.5"/><line x1="8" y1="14" x2="16" y2="14" stroke-width="2"/>')],
-      ['caption',      svgWrap('<rect x="3" y="3" width="18" height="11" rx="2"/><line x1="6" y1="18" x2="18" y2="18"/><line x1="9" y1="21" x2="15" y2="21"/>')],
-      ['remove-format', svgWrap('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>')],
-      ['direction',     svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
-      ['search',        svgWrap('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')],
-      ['find-replace',  svgWrap('<circle cx="10" cy="10" r="6"/><line x1="18" y1="18" x2="14.35" y2="14.35"/><path d="M16 19h6"/><path d="M19 16v6"/>')],
-      ['inline-code',   svgWrap('<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5c0 1.1.9 2 2 2a2 2 0 0 1-2 2v5a2 2 0 0 1-2 2h-1"/>')],
-      ['checklist',     svgWrap('<rect x="3" y="4" width="5" height="5" rx="1"/><path d="m4 6.5 1 1 2-2"/><rect x="3" y="13" width="5" height="5" rx="1"/><line x1="10" y1="6.5" x2="21" y2="6.5"/><line x1="10" y1="15.5" x2="21" y2="15.5"/>')],
-      ['print',         svgWrap('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>')],
-    ]);
-
     const faPrefix = this.options.fontAwesomeClass || 'fas';
-    const faMap = new Map([
-      ['bold', 'fa-bold'],
-      ['italic', 'fa-italic'],
-      ['underline', 'fa-underline'],
-      ['strikethrough', 'fa-strikethrough'],
-      ['superscript', 'fa-superscript'],
-      ['subscript', 'fa-subscript'],
-      ['align-left', 'fa-align-left'],
-      ['align-center', 'fa-align-center'],
-      ['align-right', 'fa-align-right'],
-      ['align-justify', 'fa-align-justify'],
-      ['list-ul', 'fa-list-ul'],
-      ['list-ol', 'fa-list-ol'],
-      ['indent', 'fa-indent'],
-      ['outdent', 'fa-outdent'],
-      ['undo', 'fa-rotate-left'],
-      ['redo', 'fa-rotate-right'],
-      ['minus', 'fa-minus'],
-      ['link', 'fa-link'],
-      ['image', 'fa-image'],
-      ['code', 'fa-code'],
-      ['expand', 'fa-expand'],
-      ['emoji', 'fa-face-smile'],
-      ['icon', 'fa-icons'],
-      ['foreColor', 'fa-font'],
-      ['backColor', 'fa-highlighter'],
-      ['keyboard',      'fa-keyboard'],
-      ['remove-format', 'fa-remove-format'],
-      ['direction',     'fa-arrow-right-arrow-left'],
-      ['search',        'fa-magnifying-glass'],
-      ['find-replace',  'fa-magnifying-glass-plus'],
-      ['inline-code',   'fa-code'],
-      ['checklist',     'fa-list-check'],
-      ['print',         'fa-print'],
-    ]);
-
     const useFaNow = this._faReady;
     if (useFaNow) {
-      const faName = faMap.get(btnDef.icon) || faMap.get(btnDef.name) || null;
+      const faName = _FA_MAP.get(btnDef.icon) || _FA_MAP.get(btnDef.name) || null;
       if (faName) {
         btn.innerHTML = `<i class="${faPrefix} ${faName}" aria-hidden="true"></i>`;
-      } else if (svgMap.has(btnDef.icon)) {
-        btn.innerHTML = svgMap.get(btnDef.icon);
+      } else if (_SVG_MAP.has(btnDef.icon)) {
+        btn.innerHTML = _SVG_MAP.get(btnDef.icon);
       } else {
         btn.textContent = btnDef.icon || btnDef.name;
       }
     } else {
       // FontAwesome absent: use SVG fallback when available
-      if (svgMap.has(btnDef.icon)) {
-        btn.innerHTML = svgMap.get(btnDef.icon);
-      } else if (svgMap.has(btnDef.name)) {
-        btn.innerHTML = svgMap.get(btnDef.name);
+      if (_SVG_MAP.has(btnDef.icon)) {
+        btn.innerHTML = _SVG_MAP.get(btnDef.icon);
+      } else if (_SVG_MAP.has(btnDef.name)) {
+        btn.innerHTML = _SVG_MAP.get(btnDef.name);
       } else {
         btn.textContent = btnDef.icon || btnDef.name;
       }

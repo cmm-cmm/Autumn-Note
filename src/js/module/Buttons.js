@@ -59,13 +59,14 @@ export const boldBtn = btn('bold', 'bold', 'Bold (Ctrl+B)', () => Style.bold(), 
 export const italicBtn = btn('italic', 'italic', 'Italic (Ctrl+I)', () => Style.italic(), () => document.queryCommandState('italic'));
 export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', () => Style.underline(), () => {
   // queryCommandState('underline') is unreliable inside <code> elements;
-  // also check for a <u> ancestor in the DOM.
+  // also check for a <u> ancestor in the DOM using startContainer for
+  // consistent behaviour across both collapsed and range selections.
   if (document.queryCommandState('underline')) return true;
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return false;
-  let container = sel.getRangeAt(0).commonAncestorContainer;
-  if (container.nodeType === 3) container = container.parentElement;
-  return !!(container && container.closest && container.closest('u'));
+  let sc = sel.getRangeAt(0).startContainer;
+  if (sc.nodeType === 3) sc = sc.parentElement;
+  return !!(sc && sc.closest && sc.closest('u'));
 });
 export const strikeBtn = btn('strikethrough', 'strikethrough', 'Strikethrough', () => Style.strikethrough(), () => document.queryCommandState('strikeThrough'));
 export const superscriptBtn = btn('superscript', 'superscript', 'Superscript', () => Style.superscript(), () => document.queryCommandState('superscript'));

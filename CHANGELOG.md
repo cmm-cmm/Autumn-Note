@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.7] - 2026-04-06
+
+### Added
+- **Color palette in Context Menu** — right-click context menu now includes a custom colour palette for quick text/highlight colour changes
+- **Color-strip variant for context menu icons** — icons in the context menu display a colour-strip indicator for colour-related actions
+- **Checklist on collapsed cursor** — inserting a checklist item now works correctly when the cursor is collapsed (no selection)
+- **Unit tests** — expanded test coverage for Editor, Clipboard, ImageDialog, Placeholder, Tooltip, and VideoResizer modules
+
+### Changed
+- **Read-only mode enforcement** — tooltips and resizers now check `readOnly` state and prevent all interactions when the editor is in read-only mode
+- **Checklist with `input[type="checkbox"]`** — checklist rendering now handles native checkbox inputs alongside the custom toggle; sanitisation updated accordingly
+- **Selection handling** — improved accuracy of selection save/restore when caret is at edge positions
+- **Image format validation** — stricter MIME-type and extension checks in ImageDialog
+- **Placeholder behaviour** — placeholder now hides/shows more reliably after programmatic content changes
+- **VideoDialog** — added TypeScript type annotations for input elements
+
+### Fixed
+- **Cross-origin check** — replaced `location.origin` with `window.location.origin` to avoid `ReferenceError` in non-browser environments
+
+---
+
+## [1.0.6] - 2026-04-04
+
+### Added
+- **Table border width adjustment** — new control in `TableTooltip` to set border width on selected cells/table
+- **CDN build** (`vite.cdn.config.js`) — minified UMD bundle optimised for direct `<script>` tag usage
+- **TypeScript configuration** (`tsconfig.json`) — enables `typecheck` script for project-wide type checking
+- **Performance benchmarks** (`test/perf/performance.bench.js`) — Vitest bench suite covering critical hot-path functions
+
+### Changed
+- **Performance** — moved predicate functions outside keydown handler in `Typing.js`; reduced `Clipboard._cleanSocialHtml` from O(n²) to O(n); optimised `FindReplace` match-building; `Toolbar` now uses `DocumentFragment` for batch DOM updates; cached regex for language-class extraction in `CodeTooltip`
+- **`FindReplace`** — added safety checks and regex caching for more robust find/replace operations
+- **`Clipboard`** — added safety checks to prevent errors on malformed clipboard content
+- **`CodeTooltip`** — switched to `codeHighlightCDN` option for loading Prism resources
+- **Vite config** — supports dynamic plugin loading for bundle analysis; UMD output asset naming made consistent
+- Removed `NODE_ENV` checks from `Context` and `Clipboard` warning paths for cleaner runtime behaviour
+
+### Fixed
+- **Backspace near FA icons** — cursor position is now correctly restored after deleting a FontAwesome icon element
+
+---
+
 ## [1.0.5] - 2026-04-03
 
 ### Added

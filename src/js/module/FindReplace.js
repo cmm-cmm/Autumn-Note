@@ -34,6 +34,11 @@ export class FindReplace {
     /** @type {'find'|'replace'} */
     this._mode = 'find';
 
+    /** Cached compiled regex — reused when query and case-sensitivity are unchanged */
+    this._queryRegex = null;
+    this._lastQuery = null;
+    this._lastCaseSensitive = null;
+
     this._disposers = [];
     this._removeTrap = null;
     this._focusTimer = null;
@@ -267,7 +272,10 @@ export class FindReplace {
 
     this._currentIndex = 0;
 
-    // Wrap in reverse order so earlier offsets in the same text node stay valid
+    // Wrap matches in reverse order so earlier text offsets stay valid when
+    // later sections of the same text node are split by surroundContents().
+    // Use push() instead of unshift() to avoid O(n²) shifting on every insert;
+    // reverse() at the end restores forward document order in O(n).
     for (let i = rawMatches.length - 1; i >= 0; i--) {
       const { node, start, end } = rawMatches[i];
       try {
@@ -277,13 +285,14 @@ export class FindReplace {
         const mark = document.createElement('mark');
         mark.className = 'an-highlight';
         range.surroundContents(mark);
-        this._matches.unshift({ mark });
+        this._matches.push({ mark });
       } catch (_) {
         // surroundContents fails when the range crosses element boundaries.
         // This can happen with <br> inside matched text — skip safely.
-        this._matches.unshift({ mark: null });
+        this._matches.push({ mark: null });
       }
     }
+    this._matches.reverse(); // O(n) — restore forward document order
 
     // Drop entries where wrapping failed so the counter and navigation are accurate
     this._matches = this._matches.filter((m) => m.mark);
@@ -304,10 +313,15 @@ export class FindReplace {
    */
   _findRawMatches(query, root) {
     const results = [];
-    const flags = this._caseSensitive ? 'g' : 'gi';
-    // Escape regex special characters in the literal query string
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(escaped, flags);
+    // Reuse compiled regex when query and case-sensitivity haven't changed
+    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive) {
+      const flags = this._caseSensitive ? 'g' : 'gi';
+      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      this._queryRegex = new RegExp(escaped, flags);
+      this._lastQuery = query;
+      this._lastCaseSensitive = this._caseSensitive;
+    }
+    const re = this._queryRegex;
 
     const walker = document.createTreeWalker(root, 0x4 /* NodeFilter.SHOW_TEXT */);
     let node;

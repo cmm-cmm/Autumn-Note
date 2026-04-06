@@ -41,6 +41,7 @@ export class VideoResizer {
     this._disposers.push(
       on(editable, 'click', (e) => this._onEditorClick(e)),
       on(editable, 'contextmenu', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const wrapper = this._findWrapper(e.target);
         if (wrapper) this._select(wrapper);
       }),
@@ -48,6 +49,15 @@ export class VideoResizer {
       on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
       on(window, 'resize', onWindowResize),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
+      // D1: Prevent native browser drag of video wrappers. Without this, a user
+      // can hold-and-drag to produce a "copy" that lands outside .an-editable,
+      // where the .an-video-shield CSS loses its containing context so the
+      // copied video becomes directly playable.
+      on(editable, 'dragstart', (e) => {
+        if (e.target instanceof Element && e.target.closest('.an-video-wrapper')) {
+          e.preventDefault();
+        }
+      }),
     );
 
     return this;
@@ -131,6 +141,7 @@ export class VideoResizer {
   }
 
   _onEditorClick(e) {
+    if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     const wrapper = this._findWrapper(e.target);
     if (wrapper) {
       e.preventDefault();

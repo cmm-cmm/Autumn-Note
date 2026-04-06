@@ -143,6 +143,8 @@ export class Editor {
       sel.addRange(nr);
     };
 
+    const isReadOnly = () => this.context.layoutInfo.container.classList.contains('an-disabled');
+
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'beforeinput', onBeforeInput),
@@ -151,6 +153,48 @@ export class Editor {
       on(editable, 'click', onCheckboxClick),
       on(editable, 'mouseup', fixChecklistCursor),
       on(editable, 'keyup',   fixChecklistCursor),
+      // Block drag-out and external drops in read-only mode
+      on(editable, 'dragstart', (e) => { if (isReadOnly()) e.preventDefault(); }),
+      on(editable, 'drop',      (e) => { if (isReadOnly()) e.preventDefault(); }),
+    );
+
+    // B-V: Re-apply superscript / subscript after IME composition ends.
+    // Vietnamese and other IME-based inputs fire compositionstart/end around
+    // the inserted characters. During composition the browser may place the
+    // provisional text outside the current <sup>/<sub> element. When
+    // compositionend fires we detect whether the cursor escaped the sup/sub
+    // context and re-apply the command so the composed character stays inside.
+    /** @type {string|null} 'superscript' | 'subscript' | null */
+    let _compositionSupSub = null;
+    const onCompositionStart = () => {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) { _compositionSupSub = null; return; }
+      let node = sel.getRangeAt(0).startContainer;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      if (node && node.closest) {
+        if (node.closest('sup')) _compositionSupSub = 'superscript';
+        else if (node.closest('sub')) _compositionSupSub = 'subscript';
+        else _compositionSupSub = null;
+      }
+    };
+    const onCompositionEnd = () => {
+      const tag = _compositionSupSub;
+      _compositionSupSub = null;
+      if (!tag) return;
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      let node = sel.getRangeAt(0).startContainer;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      const inContext = node && node.closest &&
+        (tag === 'superscript' ? node.closest('sup') : node.closest('sub'));
+      if (!inContext) {
+        // The composed character escaped the sup/sub — re-apply the format.
+        document.execCommand(tag);
+      }
+    };
+    this._disposers.push(
+      on(editable, 'compositionstart', onCompositionStart),
+      on(editable, 'compositionend',   onCompositionEnd),
     );
   }
 
@@ -256,6 +300,9 @@ export class Editor {
   // ---------------------------------------------------------------------------
 
   afterCommand() {
+    // C4: Remove figure.an-figure elements whose <img> has been deleted so
+    // orphaned figcaptions do not accumulate in the DOM.
+    this._cleanOrphanedFigures();
     // Immediate: keep toolbar and statusbar in sync on every mutation.
     this.context.invoke('toolbar.refresh');
     this.context.invoke('statusbar.update');
@@ -277,6 +324,20 @@ export class Editor {
       if (this._history) this._history.recordUndo();
       this.context.triggerEvent('change', this.getHTML());
     }, 400);
+  }
+
+  /**
+   * C4: Removes figure.an-figure elements that no longer contain an <img>.
+   * This happens when a user selects only the image (not the whole figure)
+   * and deletes or replaces it, leaving a dangling figcaption.
+   */
+  _cleanOrphanedFigures() {
+    const editable = this.context.layoutInfo.editable;
+    editable.querySelectorAll('figure.an-figure').forEach((fig) => {
+      if (!fig.querySelector('img')) {
+        fig.parentNode.removeChild(fig);
+      }
+    });
   }
 
   // ---------------------------------------------------------------------------

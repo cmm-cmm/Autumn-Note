@@ -30,12 +30,31 @@ const ICONS = {
   removeFormat:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>`,
   // Table
   table:       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
+  // Color
+  textColor:      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`,
+  highlightColor: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/><line x1="3" y1="21" x2="21" y2="21"/></svg>`,
+  noColor:        `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`,
+  back:           `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
 };
 
+const COLOR_PRESETS = [
+  // Grayscale
+  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
+  // Saturated
+  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
+  // Pastel
+  '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
+];
+
+function makeColorSubItems(colorType) {
+  const label = colorType === 'foreColor' ? 'Text Color' : 'Highlight Color';
+  return () => [
+    { back: true, label, navigate: () => defaultItems },
+    { colorPalette: true, colorType },
+  ];
+}
+
 const defaultItems = [
-  { name: 'undo',      label: 'Undo',         icon: ICONS.undo,      action: (ctx) => ctx.invoke('editor.undo') },
-  { name: 'redo',      label: 'Redo',         icon: ICONS.redo,      action: (ctx) => ctx.invoke('editor.redo') },
-  { separator: true },
   { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: () => document.execCommand('cut') },
   { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => document.execCommand('copy') },
   { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
@@ -75,6 +94,9 @@ const defaultItems = [
   { name: 'bold',      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
   { name: 'italic',    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },
   { name: 'underline', label: 'Underline',    icon: ICONS.underline, action: (ctx) => ctx.invoke('editor.underline') },
+  { separator: true },
+  { name: 'textColor',      label: 'Text Color',      icon: ICONS.textColor,      colorStrip: 'foreColor',  navigate: makeColorSubItems('foreColor') },
+  { name: 'highlightColor', label: 'Highlight Color', icon: ICONS.highlightColor, colorStrip: 'hiliteColor', navigate: makeColorSubItems('hiliteColor') },
   { separator: true },
   { name: 'copyFormat',   label: 'Copy Format',   icon: ICONS.copyFormat,   action: (ctx) => ctx.invoke('contextMenu.copyFormat') },
   { name: 'pasteFormat',  label: 'Paste Format',  icon: ICONS.pasteFormat,  action: (ctx) => ctx.invoke('contextMenu.pasteFormat'), disabled: (ctx) => !ctx.invoke('contextMenu.hasCopiedFormat') },
@@ -152,8 +174,10 @@ export class ContextMenu {
         backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || 'Back']));
         const off = on(backBtn, 'click', (e) => {
           e.stopPropagation();
+          const curLeft = parseFloat(this.el.style.left);
+          const curTop = parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
-          this._reposition();
+          this._reposition(curLeft, curTop);
         });
         this._menuDisposers.push(off);
         this.el.appendChild(backBtn);
@@ -164,9 +188,21 @@ export class ContextMenu {
       if (it.navigate) {
         const btn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', 'data-name': it.name || '' });
         if (it.icon) {
-          const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
-          iconSpan.innerHTML = it.icon;
-          btn.appendChild(iconSpan);
+          if (it.colorStrip) {
+            // Toolbar-style icon: SVG stacked above a colored strip
+            const iconWrap = createElement('span', { class: 'an-context-icon an-context-icon--color', 'aria-hidden': 'true' });
+            const svgSpan = createElement('span', { class: 'an-context-icon-svg' });
+            svgSpan.innerHTML = it.icon;
+            const strip = createElement('span', { class: 'an-context-color-strip' });
+            strip.style.background = this._getSelectionColor(it.colorStrip);
+            iconWrap.appendChild(svgSpan);
+            iconWrap.appendChild(strip);
+            btn.appendChild(iconWrap);
+          } else {
+            const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
+            iconSpan.innerHTML = it.icon;
+            btn.appendChild(iconSpan);
+          }
         }
         btn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || it.name]));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
@@ -174,11 +210,59 @@ export class ContextMenu {
         btn.appendChild(chevron);
         const off = on(btn, 'click', (e) => {
           e.stopPropagation();
+          const curLeft = parseFloat(this.el.style.left);
+          const curTop = parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
-          this._reposition();
+          this._reposition(curLeft, curTop);
         });
         this._menuDisposers.push(off);
         this.el.appendChild(btn);
+        return;
+      }
+
+      // Color palette item — renders inline color swatches
+      if (it.colorPalette) {
+        const palette = createElement('div', { class: 'an-context-color-palette' });
+        COLOR_PRESETS.forEach((color) => {
+          const sw = createElement('div', {
+            class: 'an-context-color-swatch',
+            title: color,
+            role: 'button',
+            'aria-label': color,
+          });
+          sw.style.background = color;
+          const offSw = on(sw, 'click', (e) => { e.stopPropagation(); this._applyColor(it.colorType, color); });
+          this._menuDisposers.push(offSw);
+          palette.appendChild(sw);
+        });
+        if (it.colorType === 'hiliteColor') {
+          const noColor = createElement('div', {
+            class: 'an-context-color-swatch an-context-color-none',
+            title: 'No highlight',
+            role: 'button',
+            'aria-label': 'No highlight',
+          });
+          noColor.innerHTML = ICONS.noColor;
+          const offNo = on(noColor, 'click', (e) => { e.stopPropagation(); this._applyColor('hiliteColor', 'transparent'); });
+          this._menuDisposers.push(offNo);
+          palette.appendChild(noColor);
+        }
+        this.el.appendChild(palette);
+
+        // Custom color row
+        const customRow = createElement('div', { class: 'an-context-color-custom' });
+        const colorInput = createElement('input', {
+          type: 'color',
+          value: it.colorType === 'foreColor' ? '#000000' : '#ffff00',
+          title: 'Custom color',
+          'aria-label': 'Custom color',
+        });
+        const customLabel = createElement('span', {}, ['Custom…']);
+        const offCustom = on(colorInput, 'change', () => this._applyColor(it.colorType, colorInput.value));
+        this._menuDisposers.push(offCustom);
+        customRow.appendChild(colorInput);
+        customRow.appendChild(customLabel);
+        this.el.appendChild(customRow);
         return;
       }
 
@@ -289,6 +373,7 @@ export class ContextMenu {
     const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
     if (!editable) return;
     if (!editable.contains(event.target)) return;
+    if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     event.preventDefault();
     this._lastX = event.clientX;
     this._lastY = event.clientY;
@@ -318,7 +403,29 @@ export class ContextMenu {
     let left = rx;
     let top = ry;
     if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 8;
+    if (left < 8) left = 8;
     if (top + rect.height > window.innerHeight) top = window.innerHeight - rect.height - 8;
+    if (top < 8) top = 8;
+
+    // Avoid covering the saved selection range
+    if (this._savedRange) {
+      try {
+        const sel = this._savedRange.getBoundingClientRect();
+        if (sel.width > 0 || sel.height > 0) {
+          const overlaps = top < sel.bottom && (top + rect.height) > sel.top &&
+                           left < sel.right  && (left + rect.width)  > sel.left;
+          if (overlaps) {
+            const belowTop = sel.bottom + 6;
+            if (belowTop + rect.height <= window.innerHeight - 8) {
+              top = belowTop;
+            } else {
+              top = Math.max(8, sel.top - rect.height - 6);
+            }
+          }
+        }
+      } catch (_) { /* stale range — ignore */ }
+    }
+
     this.el.style.left = `${left}px`;
     this.el.style.top = `${top}px`;
   }
@@ -332,6 +439,37 @@ export class ContextMenu {
   // ---------------------------------------------------------------------------
   // Format operations (Copy Format / Paste Format / Remove Format)
   // ---------------------------------------------------------------------------
+
+  /** Read the current selection's text or highlight color for the strip.
+   * @param {'foreColor'|'hiliteColor'} type
+   * @returns {string} CSS color string
+   */
+  _getSelectionColor(type) {
+    const range = this._savedRange;
+    if (!range) return type === 'foreColor' ? '#000000' : 'transparent';
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (!node) return type === 'foreColor' ? '#000000' : 'transparent';
+    const cs = window.getComputedStyle(node);
+    if (type === 'foreColor') {
+      return cs.color || '#000000';
+    }
+    const bg = cs.backgroundColor;
+    return (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') ? 'transparent' : bg;
+  }
+
+  /** Restore selection, apply a color command, then hide the menu. */
+  _applyColor(type, color) {
+    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    if (!editable || !this._savedRange) return;
+    editable.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(this._savedRange.cloneRange());
+    document.execCommand(type, false, color);
+    this.context.invoke('editor.afterCommand');
+    this.hide();
+  }
 
   /** Returns true if a format has been copied — used to disable Paste Format. */
   hasCopiedFormat() { return !!this._copiedFormat; }

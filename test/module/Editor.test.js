@@ -36,3 +36,64 @@ describe('Editor content helpers', () => {
     expect(editor.isEmpty()).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// C4: _cleanOrphanedFigures — removes figure.an-figure elements without <img>
+// ---------------------------------------------------------------------------
+
+describe('Editor._cleanOrphanedFigures', () => {
+  it('removes a figure.an-figure that contains only a figcaption (no img)', () => {
+    const context = makeContext(
+      '<p>Text before</p>' +
+      '<figure class="an-figure"><figcaption class="an-figcaption">Caption</figcaption></figure>' +
+      '<p>Text after</p>',
+    );
+    const editor = new Editor(context);
+
+    editor._cleanOrphanedFigures();
+
+    expect(context.layoutInfo.editable.querySelector('figure.an-figure')).toBeNull();
+    // Surrounding paragraphs must be preserved
+    const paras = context.layoutInfo.editable.querySelectorAll('p');
+    expect(paras.length).toBe(2);
+  });
+
+  it('preserves a figure.an-figure that still contains an <img>', () => {
+    const context = makeContext(
+      '<figure class="an-figure">' +
+        '<img src="photo.jpg" alt="photo">' +
+        '<figcaption class="an-figcaption">A caption</figcaption>' +
+      '</figure>',
+    );
+    const editor = new Editor(context);
+
+    editor._cleanOrphanedFigures();
+
+    expect(context.layoutInfo.editable.querySelector('figure.an-figure')).not.toBeNull();
+    expect(context.layoutInfo.editable.querySelector('img')).not.toBeNull();
+  });
+
+  it('removes multiple orphaned figures in a single call', () => {
+    const context = makeContext(
+      '<figure class="an-figure"><figcaption>Cap 1</figcaption></figure>' +
+      '<p>Middle</p>' +
+      '<figure class="an-figure"><figcaption>Cap 2</figcaption></figure>',
+    );
+    const editor = new Editor(context);
+
+    editor._cleanOrphanedFigures();
+
+    expect(context.layoutInfo.editable.querySelectorAll('figure.an-figure').length).toBe(0);
+  });
+
+  it('is called by afterCommand so orphans are cleaned on every edit', () => {
+    const context = makeContext(
+      '<figure class="an-figure"><figcaption>Ghost</figcaption></figure>',
+    );
+    const editor = new Editor(context);
+
+    editor.afterCommand();
+
+    expect(context.layoutInfo.editable.querySelector('figure.an-figure')).toBeNull();
+  });
+});

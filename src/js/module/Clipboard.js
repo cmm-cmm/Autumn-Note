@@ -124,23 +124,22 @@ export class Clipboard {
    */
   _cleanSocialHtml(html) {
     const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
-    // Unwrap purely presentational wrapper spans/divs with no semantic meaning
-    const UNWRAP_TAGS = new Set(['span', 'div']);
-    let changed = true;
-    // Iteratively unwrap until stable (handles deeply nested span soup)
-    while (changed) {
-      changed = false;
-      doc.querySelectorAll('span, div').forEach((el) => {
-        if (!UNWRAP_TAGS.has(el.tagName.toLowerCase())) return;
-        // Keep if it has a meaningful role (link, heading, list item are handled by parent)
-        if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) return;
-        // Unwrap — replace el with its children
-        const parent = el.parentNode;
-        if (!parent) return;
-        while (el.firstChild) parent.insertBefore(el.firstChild, el);
-        parent.removeChild(el);
-        changed = true;
-      });
+    // Unwrap purely presentational wrapper spans/divs with no semantic meaning.
+    // Single-pass reverse traversal: querySelectorAll returns elements in document
+    // order, so iterating backwards processes innermost elements first — once a
+    // child is unwrapped its parent may become unwrappable in the same pass.
+    // This replaces the previous O(n²) while-loop that re-queried the whole tree
+    // on every iteration.
+    const candidates = Array.from(doc.querySelectorAll('span, div'));
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const el = candidates[i];
+      if (!el.parentNode) continue; // already detached by an earlier iteration
+      // Keep if it contains any semantic child element
+      if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) continue;
+      // Unwrap — replace el with its children
+      const parent = el.parentNode;
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      parent.removeChild(el);
     }
     // Strip class and all data-* attributes from every remaining element
     doc.querySelectorAll('*').forEach((el) => {
@@ -300,9 +299,17 @@ export class Clipboard {
       return;
     }
 
+    // C2: Reject image formats that browsers cannot decode/display.
+    const UNSUPPORTED = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp'];
     const maxBytes = (this.options.maxImageSize || 5) * 1024 * 1024;
     files.forEach((file) => {
       if (!file || !file.type.startsWith('image/')) return;
+      if (UNSUPPORTED.includes(file.type)) {
+        const message = `Image format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
+        this.context.triggerEvent('imageError', { file, message });
+        console.warn('[AutumnNote]', message);
+        return;
+      }
       if (file.size > maxBytes) {
         const message = `Image "${file.name}" exceeds the ${this.options.maxImageSize || 5} MB size limit.`;
         this.context.triggerEvent('imageError', { file, message });
@@ -321,9 +328,7 @@ export class Clipboard {
       }).catch((err) => {
         const message = `Image "${file.name}" could not be processed.`;
         this.context.triggerEvent('imageError', { file, message, error: err });
-        if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
-          console.warn('[AutumnNote]', message, err);
-        }
+        console.warn('[AutumnNote]', message, err);
       });
     });
   }

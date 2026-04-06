@@ -38,6 +38,7 @@ export class ImageTooltip {
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const img = e.target.closest('img');
         // Skip when the image is inside a link — LinkTooltip takes priority there
         if (img && editable.contains(img) && !img.closest('a[href]')) {
@@ -173,7 +174,9 @@ export class ImageTooltip {
   _scheduleHide() {
     clearTimeout(this._showTimer);
     this._showTimer = null;
-    if (this._hideTimer) return;
+    // Always reset the hide timer so rapid mouseout→mouseover sequences
+    // don't leave a stale timer that hides the tooltip prematurely.
+    clearTimeout(this._hideTimer);
     this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
   }
 
@@ -225,6 +228,8 @@ export class ImageTooltip {
     const target = img.closest('figure.an-figure') || img;
     target.style.float = value;
     target.style.display = '';
+    // Clear explicit width set for centering so the figure is free to float
+    if (target !== img) target.style.width = '';
     target.style.marginLeft  = value === 'right' ? '12px' : '';
     target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
@@ -238,6 +243,9 @@ export class ImageTooltip {
     const target = img.closest('figure.an-figure') || img;
     target.style.float        = '';
     target.style.display      = 'block';
+    // C1/C3: use fit-content so the block figure shrinks to the image width;
+    // without an explicit width, margin:auto has no effect on a 100%-wide block.
+    if (target !== img) target.style.width = 'fit-content';
     target.style.marginLeft   = 'auto';
     target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
@@ -333,7 +341,10 @@ export class ImageTooltip {
       img.style.marginLeft  = '';
       img.style.marginRight = '';
     } else if (img.style.display === 'block' && img.style.marginLeft === 'auto') {
+      // C1/C3: use fit-content so the centered block figure tightly wraps the
+      // image, making margin:auto actually centre it regardless of image width.
       figure.style.display      = 'block';
+      figure.style.width        = 'fit-content';
       figure.style.marginLeft   = 'auto';
       figure.style.marginRight  = 'auto';
       img.style.display     = '';

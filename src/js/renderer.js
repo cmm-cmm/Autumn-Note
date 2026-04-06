@@ -78,6 +78,9 @@ export function renderLayout(targetEl, options) {
   // Read-only mode
   if (options.readOnly) {
     container.classList.add('an-disabled');
+    editable.querySelectorAll('ul.an-checklist input[type="checkbox"]').forEach((cb) => {
+      cb.setAttribute('disabled', '');
+    });
   }
 
   // Text direction

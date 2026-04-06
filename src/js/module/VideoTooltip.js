@@ -37,6 +37,7 @@ export class VideoTooltip {
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         // The shield div sits on top of iframes — we detect hover via it or the wrapper
         const wrapper = e.target.closest('.an-video-wrapper');
         if (wrapper && editable.contains(wrapper)) {

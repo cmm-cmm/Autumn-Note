@@ -2,7 +2,7 @@
 
 <p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
-[![Version](https://img.shields.io/badge/version-1.0.5-blue)](#)
+[![Version](https://img.shields.io/badge/version-1.0.7-blue)](#)
 [![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Build](https://img.shields.io/badge/Build-Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -51,7 +51,7 @@ Floating toolbars appear automatically when the user clicks on an editable eleme
 | **Link** | Open in new tab, Edit (reopens dialog), Unlink |
 | **Image** | Edit alt/URL (reopens dialog), Delete |
 | **Video** | Edit (reopens dialog), Delete |
-| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Column width, Row height, Delete table |
+| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Column width, Row height, Border width, Delete table |
 | **Code block** (`<pre>`) | Copy code, Delete block |
 
 ### Context menu

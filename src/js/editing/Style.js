@@ -98,15 +98,54 @@ export const fontName = (name) => execCommand('fontName', name);
  * @param {HTMLElement} [editable] - scoping element to avoid touching nodes outside this editor
  */
 export function fontSize(size, editable = document) {
+  const sel = window.getSelection();
+  const wasCollapsed = !sel || !sel.rangeCount || sel.getRangeAt(0).collapsed;
+
   execCommand('fontSize', '7'); // placeholder
   // Replace font elements with spans, scoped to the active editable
-  editable.querySelectorAll('font[size="7"]').forEach((el) => {
+  const scope = editable instanceof HTMLElement ? editable : document;
+  const newSpans = [];
+  scope.querySelectorAll('font[size="7"]').forEach((el) => {
     const span = document.createElement('span');
     span.style.fontSize = size;
     el.parentNode.insertBefore(span, el);
     while (el.firstChild) span.appendChild(el.firstChild);
     el.parentNode.removeChild(el);
+    newSpans.push(span);
   });
+
+  // Restore the selection inside the new span(s) so:
+  // 1. The toolbar getValue() correctly reflects the new font size.
+  // 2. For a collapsed (caret) selection, subsequent typing inherits the
+  //    chosen size rather than the browser's stale execCommand state (which
+  //    would produce size 7 = 48 px instead of the requested value).
+  if (sel && newSpans.length > 0) {
+    const first = newSpans[0];
+    const last  = newSpans[newSpans.length - 1];
+    try {
+      if (wasCollapsed) {
+        // Ensure the span has a text anchor so the cursor can live inside it.
+        if (!first.firstChild) {
+          first.appendChild(document.createTextNode('\u200B'));
+        }
+        const nr = document.createRange();
+        const anchor = first.firstChild;
+        nr.setStart(anchor, anchor.textContent.length);
+        nr.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nr);
+      } else {
+        // Re-select all replaced content so toolbar refresh reads the new size.
+        const nr = document.createRange();
+        const startNode = first.firstChild || first;
+        const endNode   = last.lastChild  || last;
+        nr.setStart(startNode, 0);
+        nr.setEnd(endNode, endNode.nodeType === Node.TEXT_NODE ? endNode.textContent.length : endNode.childNodes.length);
+        sel.removeAllRanges();
+        sel.addRange(nr);
+      }
+    } catch (_) { /* ignore range errors on unusual DOM structures */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -263,11 +302,36 @@ export function toggleInlineCode(editable) {
   if (container.nodeType === 3) container = container.parentElement;
   const codeEl = container && container.closest ? container.closest('code') : null;
   if (codeEl && !codeEl.closest('pre')) {
-    // Unwrap
+    // Unwrap — save range endpoints relative to surrounding text so we can
+    // restore the selection after normalize() merges adjacent text nodes.
     const parent = codeEl.parentNode;
+    // Note the sibling before the code element so we can re-anchor later.
+    const prevSibling = codeEl.previousSibling;
+    const movedChildren = Array.from(codeEl.childNodes);
     while (codeEl.firstChild) parent.insertBefore(codeEl.firstChild, codeEl);
     parent.removeChild(codeEl);
-    if (editable) editable.normalize();
+    // Normalize only the immediate parent to merge adjacent text nodes without
+    // invalidating distant selection anchors (full editable.normalize() can
+    // cause selection offsets to shift, making subsequent format toggles miss).
+    if (parent && parent.normalize) parent.normalize();
+    // Restore selection to the text that was inside the unwrapped <code>.
+    if (movedChildren.length > 0) {
+      try {
+        // After normalize, find the merged text node that contains the content.
+        const firstMoved = movedChildren[0];
+        const lastMoved  = movedChildren[movedChildren.length - 1];
+        const nr = document.createRange();
+        // Use the (possibly merged) live node if still in the DOM.
+        const anchorNode = (firstMoved.parentNode === parent) ? firstMoved : (prevSibling ? prevSibling.nextSibling : parent.firstChild);
+        if (anchorNode) {
+          nr.setStart(anchorNode, 0);
+          const endAnchor = (lastMoved.parentNode === parent) ? lastMoved : anchorNode;
+          nr.setEnd(endAnchor, endAnchor.nodeType === Node.TEXT_NODE ? endAnchor.textContent.length : endAnchor.childNodes.length);
+          sel.removeAllRanges();
+          sel.addRange(nr);
+        }
+      } catch (_) { /* ignore */ }
+    }
   } else {
     if (range.collapsed) return;
     try {
@@ -296,14 +360,17 @@ export function toggleInlineCode(editable) {
 /**
  * Returns true when the cursor / selection is inside an inline <code>
  * (not nested in a <pre>).
+ * Uses startContainer for reliable cross-browser detection regardless of
+ * whether the selection is collapsed or a range (commonAncestorContainer
+ * can behave inconsistently for range selections on some browsers).
  * @returns {boolean}
  */
 export function isInlineCode() {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return false;
-  let container = sel.getRangeAt(0).commonAncestorContainer;
-  if (container.nodeType === 3) container = container.parentElement;
-  const code = container && container.closest ? container.closest('code') : null;
+  let sc = sel.getRangeAt(0).startContainer;
+  if (sc.nodeType === 3) sc = sc.parentElement;
+  const code = sc && sc.closest ? sc.closest('code') : null;
   return !!(code && !code.closest('pre'));
 }
 
@@ -357,7 +424,53 @@ export function toggleChecklist() {
     }
   }
 
-  // Otherwise: insert new checklist from selected text
+  // Otherwise: insert new checklist from selected text (or current block when collapsed).
+  const isCollapsed = range.collapsed;
+  if (isCollapsed) {
+    // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote, etc.)
+    // and convert it into a single checklist item.
+    const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
+    let block = container;
+    while (block && block.parentNode && !BLOCK_TAGS.has(block.tagName)) {
+      block = block.parentNode;
+    }
+    // Fallback: if no block element found (e.g. cursor directly in editable root), use the
+    // insertion approach with a zero-width-space item so the cursor ends up inside.
+    const itemText = (block && BLOCK_TAGS.has(block.tagName))
+      ? Array.from(block.childNodes)
+          .map((n) => n.textContent)
+          .join('')
+          .replace(/\u00a0/g, ' ')
+      : '';
+
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    const li = document.createElement('li');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.contentEditable = 'false';
+    li.appendChild(checkbox);
+    li.appendChild(document.createTextNode(itemText || '\u200B'));
+    ul.appendChild(li);
+
+    if (block && BLOCK_TAGS.has(block.tagName)) {
+      block.parentNode.replaceChild(ul, block);
+    } else {
+      document.execCommand('insertHTML', false, ul.outerHTML);
+      return;
+    }
+
+    // Move caret to the text node inside the new <li>
+    const textNode = li.lastChild;
+    const nr = document.createRange();
+    const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
+    nr.setStart(textNode, offset);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+    return;
+  }
+
   const text = sel.toString();
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return;

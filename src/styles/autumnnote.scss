@@ -50,6 +50,20 @@
       user-select: text;
       // Subtle visual cue that the area is read-only.
       background: #fafafa;
+
+      // Block checklist checkbox interaction in read-only mode.
+      ul.an-checklist input[type='checkbox'] {
+        pointer-events: none;
+        cursor: default;
+      }
+
+      // Prevent images and videos from being dragged out.
+      img,
+      .an-video-wrapper {
+        -webkit-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+      }
     }
   }
 
@@ -86,6 +100,12 @@
   display: flex;
   align-items: center;
   gap: 2px;
+
+  // Icon-only toolbar buttons should not have horizontal padding so all
+  // buttons appear consistently square (min-width = height = $an-btn-height).
+  // Dialog buttons (.an-dialog-actions .an-btn) keep their padding via the
+  // lower-specificity .an-btn rule.
+  > .an-btn { padding: 0; }
 
   // Separator between groups
   & + .an-btn-group {
@@ -388,6 +408,7 @@
 // =============================================================================
 
 .an-editable {
+  position: relative; // Establishes containing block for the ::before placeholder
   flex: 1;
   padding: $an-editable-pad;
   min-height: 0;
@@ -397,18 +418,18 @@
   overflow-y: auto;
   word-break: break-word;
 
-  // Placeholder — only shown when not focused.
-  // float:left is the standard contenteditable placeholder technique (used by
-  // Quill.js): the pseudo-element is out of normal flow so it never shifts the
-  // cursor, yet it renders visually at the start of the empty editing area.
-  // Avoid position:absolute here — without position:relative on the parent it
-  // would be positioned relative to .an-container (contain:layout) and overlap
-  // the toolbar.
+  // Placeholder — shown only when the editable is empty and not focused.
+  // Uses position:absolute so it never shifts the cursor or block content,
+  // and requires position:relative on this element (added above) so it is
+  // scoped to the editable area and never overlaps the toolbar.
   &.an-placeholder:not(:focus)::before {
     content: attr(data-placeholder);
     color: $an-muted;
     pointer-events: none;
-    float: left;
+    position: absolute;
+    top: 12px;   // matches top padding from $an-editable-pad (12px 14px)
+    left: 14px;  // matches left padding
+    right: 14px;
   }
 
   // Content styles
@@ -472,7 +493,19 @@
       inset: 0;
       z-index: 2;
       cursor: default;
+      pointer-events: all; // Explicitly block pointer events reaching the iframe
     }
+  }
+
+  // Ensure video shield stays effective even when a video copy moves outside
+  // .an-editable temporarily (e.g. native drag-and-drop).
+  // This global rule mirrors the scoped one above.
+  @at-root .an-video-wrapper .an-video-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: default;
+    pointer-events: all;
   }
 
   // Table styles — target both classed and unclassed tables
@@ -934,6 +967,91 @@
   background: $an-border;
 }
 
+// Color-strip variant — SVG stacked above a thin color bar (matches toolbar)
+.an-context-icon--color {
+  flex-direction: column;
+  gap: 2px;
+  width: 16px;
+  align-items: center;
+
+  .an-context-icon-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+}
+
+.an-context-color-strip {
+  display: block;
+  width: 100%;
+  height: 3px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+// Color palette inside context menu
+.an-context-color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 6px 12px 2px;
+}
+
+.an-context-color-swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.1s;
+
+  &:hover {
+    transform: scale(1.28);
+    z-index: 1;
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+.an-context-color-none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff !important;
+  color: #999;
+
+  svg { display: block; }
+
+  &:hover { color: #333; }
+}
+
+.an-context-color-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 8px;
+  font-size: 12px;
+  color: $an-muted;
+  cursor: pointer;
+
+  input[type='color'] {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid $an-border;
+    border-radius: 3px;
+    cursor: pointer;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  span { flex: 1; }
+  &:hover span { color: $an-text; }
+}
+
 // ---------------------------------------------------------------------------
 // Image resize overlay
 // ---------------------------------------------------------------------------
@@ -1378,7 +1496,11 @@ $an-video-accent: #8b5cf6; // violet-500
     margin: 0.75em 0;
     text-align: center;
 
-    img { display: block; max-width: 100%; }
+    img {
+      display: block;
+      max-width: 100%;
+      margin: 0 auto; // Centers img when figure uses fit-content or explicit width
+    }
   }
 
   figcaption.an-figcaption {
@@ -1649,6 +1771,21 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-context-item { color: #cdd6f4; }
   .an-context-sep { background: #3f3f5f; }
+
+  .an-context-color-swatch {
+    border-color: rgba(255, 255, 255, 0.15);
+    &:hover { border-color: rgba(255, 255, 255, 0.5); }
+  }
+
+  .an-context-color-none {
+    background: #1e1e2e !important;
+    color: #888;
+    &:hover { color: #ccc; }
+  }
+
+  .an-context-color-custom {
+    input[type='color'] { border-color: #3f3f5f; }
+  }
 
   .an-icon-cat {
     border-color: #3f3f5f;

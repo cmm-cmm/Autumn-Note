@@ -50,12 +50,13 @@ export class ImageResizer {
       on(editable, 'click', (e) => this._onEditorClick(e)),
       // Also select on right-click so the highlight shows before the context menu
       on(editable, 'contextmenu', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const img = e.target.closest('img');
         if (img) this._select(img);
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
       on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', onWindowResize),
+      on(window, 'resize', onWindowResize, { passive: true }),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
     );
 
@@ -127,6 +128,7 @@ export class ImageResizer {
   }
 
   _onEditorClick(e) {
+    if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     const img = e.target.closest('img');
     if (img) {
       // Prevent browser from deselecting the current text selection / opening native resize
