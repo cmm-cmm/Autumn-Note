@@ -800,6 +800,7 @@ export class TableTooltip {
     const first = rectCells[0];
     first.colSpan = maxC - minC + 1;
     first.rowSpan = maxR - minR + 1;
+    first.style.verticalAlign = 'middle';
     first.innerHTML = rectCells.map((c) => c.innerHTML).join('');
     rectCells.slice(1).forEach((c) => c.parentElement?.removeChild(c));
 
