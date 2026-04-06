@@ -121,9 +121,12 @@ export class ImageDialog {
         accept: 'image/*',
       });
       this._fileInput = fileInput;
+      // Hint line shown below the file input for format errors
+      const fileHint = createElement('p', { class: 'an-dialog-hint' });
+      this._fileHint = fileHint;
       const d = on(fileInput, 'change', () => this._onFileChange());
       this._disposers.push(d);
-      box.append(fileLabel, fileInput);
+      box.append(fileLabel, fileInput, fileHint);
     }
 
     // Buttons
@@ -156,10 +159,22 @@ export class ImageDialog {
     const file = this._fileInput && this._fileInput.files && this._fileInput.files[0];
     if (!file || !file.type.startsWith('image/')) return;
 
+    // C2: Reject image formats browsers cannot display (TIFF, BMP, etc.).
+    const UNSUPPORTED = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp'];
+    if (UNSUPPORTED.includes(file.type)) {
+      const message = `Format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
+      if (this._fileHint) this._fileHint.textContent = message;
+      this.context.triggerEvent('imageError', { file, message });
+      this._fileInput.value = '';
+      return;
+    }
+    if (this._fileHint) this._fileHint.textContent = '';
+
     // Validate file size (max 5 MB by default)
     const maxSize = (this.options.maxImageSize || 5) * 1024 * 1024;
     if (file.size > maxSize) {
       const message = `Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`;
+      if (this._fileHint) this._fileHint.textContent = message;
       console.warn('[AutumnNote] ImageDialog:', message);
       this.context.triggerEvent('imageError', { file, message });
       this._fileInput.value = '';
@@ -168,7 +183,7 @@ export class ImageDialog {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      this._urlInput.value = e.target.result;
+      this._urlInput.value = /** @type {string} */ (e.target.result);
     };
     reader.readAsDataURL(file);
   }

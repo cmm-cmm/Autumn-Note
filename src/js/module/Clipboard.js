@@ -299,9 +299,17 @@ export class Clipboard {
       return;
     }
 
+    // C2: Reject image formats that browsers cannot decode/display.
+    const UNSUPPORTED = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp'];
     const maxBytes = (this.options.maxImageSize || 5) * 1024 * 1024;
     files.forEach((file) => {
       if (!file || !file.type.startsWith('image/')) return;
+      if (UNSUPPORTED.includes(file.type)) {
+        const message = `Image format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
+        this.context.triggerEvent('imageError', { file, message });
+        console.warn('[AutumnNote]', message);
+        return;
+      }
       if (file.size > maxBytes) {
         const message = `Image "${file.name}" exceeds the ${this.options.maxImageSize || 5} MB size limit.`;
         this.context.triggerEvent('imageError', { file, message });

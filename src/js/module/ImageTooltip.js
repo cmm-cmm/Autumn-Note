@@ -227,6 +227,8 @@ export class ImageTooltip {
     const target = img.closest('figure.an-figure') || img;
     target.style.float = value;
     target.style.display = '';
+    // Clear explicit width set for centering so the figure is free to float
+    if (target !== img) target.style.width = '';
     target.style.marginLeft  = value === 'right' ? '12px' : '';
     target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
@@ -240,6 +242,9 @@ export class ImageTooltip {
     const target = img.closest('figure.an-figure') || img;
     target.style.float        = '';
     target.style.display      = 'block';
+    // C1/C3: use fit-content so the block figure shrinks to the image width;
+    // without an explicit width, margin:auto has no effect on a 100%-wide block.
+    if (target !== img) target.style.width = 'fit-content';
     target.style.marginLeft   = 'auto';
     target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
@@ -335,7 +340,10 @@ export class ImageTooltip {
       img.style.marginLeft  = '';
       img.style.marginRight = '';
     } else if (img.style.display === 'block' && img.style.marginLeft === 'auto') {
+      // C1/C3: use fit-content so the centered block figure tightly wraps the
+      // image, making margin:auto actually centre it regardless of image width.
       figure.style.display      = 'block';
+      figure.style.width        = 'fit-content';
       figure.style.marginLeft   = 'auto';
       figure.style.marginRight  = 'auto';
       img.style.display     = '';

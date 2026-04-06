@@ -513,16 +513,34 @@ export class Toolbar {
       select.appendChild(opt);
     });
 
+    // Save the editor selection when the user starts interacting with the
+    // dropdown (mousedown fires before the editor loses focus).  When the
+    // change handler runs, focus has moved to the <select>; we restore the
+    // saved range so execCommand / fontSize() act on the intended text.
+    /** @type {Range|null} */
+    let _savedRange = null;
+    const dMousedown = on(select, 'mousedown', () => {
+      const sel = window.getSelection();
+      _savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+    });
+
     const disposer = on(select, 'change', (e) => {
-      const value = e.target.value;
-      const selectedOpt = e.target.options[e.target.selectedIndex];
+      const value = /** @type {HTMLSelectElement} */ (e.target).value;
+      const selectedOpt = /** @type {HTMLSelectElement} */ (e.target).options[/** @type {HTMLSelectElement} */ (e.target).selectedIndex];
       if (!value || selectedOpt.disabled) return;
       this.context.invoke('editor.focus');
+      // Restore selection saved on mousedown so the action targets the correct text.
+      if (_savedRange) {
+        try {
+          const sel = window.getSelection();
+          if (sel) { sel.removeAllRanges(); sel.addRange(_savedRange); }
+        } catch (_) { /* range may be stale if DOM changed */ }
+      }
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');
     });
 
-    this._disposers.push(disposer);
+    this._disposers.push(dMousedown, disposer);
     return select;
   }
 

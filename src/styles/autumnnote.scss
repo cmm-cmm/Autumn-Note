@@ -87,6 +87,12 @@
   align-items: center;
   gap: 2px;
 
+  // Icon-only toolbar buttons should not have horizontal padding so all
+  // buttons appear consistently square (min-width = height = $an-btn-height).
+  // Dialog buttons (.an-dialog-actions .an-btn) keep their padding via the
+  // lower-specificity .an-btn rule.
+  > .an-btn { padding: 0; }
+
   // Separator between groups
   & + .an-btn-group {
     position: relative;
@@ -388,6 +394,7 @@
 // =============================================================================
 
 .an-editable {
+  position: relative; // Establishes containing block for the ::before placeholder
   flex: 1;
   padding: $an-editable-pad;
   min-height: 0;
@@ -397,18 +404,18 @@
   overflow-y: auto;
   word-break: break-word;
 
-  // Placeholder — only shown when not focused.
-  // float:left is the standard contenteditable placeholder technique (used by
-  // Quill.js): the pseudo-element is out of normal flow so it never shifts the
-  // cursor, yet it renders visually at the start of the empty editing area.
-  // Avoid position:absolute here — without position:relative on the parent it
-  // would be positioned relative to .an-container (contain:layout) and overlap
-  // the toolbar.
+  // Placeholder — shown only when the editable is empty and not focused.
+  // Uses position:absolute so it never shifts the cursor or block content,
+  // and requires position:relative on this element (added above) so it is
+  // scoped to the editable area and never overlaps the toolbar.
   &.an-placeholder:not(:focus)::before {
     content: attr(data-placeholder);
     color: $an-muted;
     pointer-events: none;
-    float: left;
+    position: absolute;
+    top: 12px;   // matches top padding from $an-editable-pad (12px 14px)
+    left: 14px;  // matches left padding
+    right: 14px;
   }
 
   // Content styles
@@ -472,7 +479,19 @@
       inset: 0;
       z-index: 2;
       cursor: default;
+      pointer-events: all; // Explicitly block pointer events reaching the iframe
     }
+  }
+
+  // Ensure video shield stays effective even when a video copy moves outside
+  // .an-editable temporarily (e.g. native drag-and-drop).
+  // This global rule mirrors the scoped one above.
+  @at-root .an-video-wrapper .an-video-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: default;
+    pointer-events: all;
   }
 
   // Table styles — target both classed and unclassed tables
@@ -1378,7 +1397,11 @@ $an-video-accent: #8b5cf6; // violet-500
     margin: 0.75em 0;
     text-align: center;
 
-    img { display: block; max-width: 100%; }
+    img {
+      display: block;
+      max-width: 100%;
+      margin: 0 auto; // Centers img when figure uses fit-content or explicit width
+    }
   }
 
   figcaption.an-figcaption {

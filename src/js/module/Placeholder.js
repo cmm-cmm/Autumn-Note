@@ -39,7 +39,8 @@ export class Placeholder {
   _update() {
     const editable = this.context.layoutInfo.editable;
     const isFocused = document.activeElement === editable;
-    const isEmpty = !editable.textContent.trim() && !editable.querySelector('img, table, hr');
+    const isEmpty = !editable.textContent.trim() &&
+      !editable.querySelector('img, table, hr, .an-video-wrapper');
     editable.classList.toggle('an-placeholder', isEmpty && !isFocused);
   }
 }
