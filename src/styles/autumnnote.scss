@@ -967,6 +967,68 @@
   background: $an-border;
 }
 
+// Color palette inside context menu
+.an-context-color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 6px 12px 2px;
+}
+
+.an-context-color-swatch {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.1s;
+
+  &:hover {
+    transform: scale(1.28);
+    z-index: 1;
+    border-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+.an-context-color-none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff !important;
+  color: #999;
+
+  svg { display: block; }
+
+  &:hover { color: #333; }
+}
+
+.an-context-color-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 8px;
+  font-size: 12px;
+  color: $an-muted;
+  cursor: pointer;
+
+  input[type='color'] {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid $an-border;
+    border-radius: 3px;
+    cursor: pointer;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  span { flex: 1; }
+  &:hover span { color: $an-text; }
+}
+
 // ---------------------------------------------------------------------------
 // Image resize overlay
 // ---------------------------------------------------------------------------
@@ -1686,6 +1748,21 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-context-item { color: #cdd6f4; }
   .an-context-sep { background: #3f3f5f; }
+
+  .an-context-color-swatch {
+    border-color: rgba(255, 255, 255, 0.15);
+    &:hover { border-color: rgba(255, 255, 255, 0.5); }
+  }
+
+  .an-context-color-none {
+    background: #1e1e2e !important;
+    color: #888;
+    &:hover { color: #ccc; }
+  }
+
+  .an-context-color-custom {
+    input[type='color'] { border-color: #3f3f5f; }
+  }
 
   .an-icon-cat {
     border-color: #3f3f5f;
