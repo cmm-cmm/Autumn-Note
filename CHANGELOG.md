@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.7] - 2026-04-06
+
+### Added
+- **Color palette in Context Menu** — right-click context menu now includes a custom colour palette for quick text/highlight colour changes
+- **Color-strip variant for context menu icons** — icons in the context menu display a colour-strip indicator for colour-related actions
+- **Checklist on collapsed cursor** — inserting a checklist item now works correctly when the cursor is collapsed (no selection)
+- **Unit tests** — expanded test coverage for Editor, Clipboard, ImageDialog, Placeholder, Tooltip, and VideoResizer modules
+
+### Changed
+- **Read-only mode enforcement** — tooltips and resizers now check `readOnly` state and prevent all interactions when the editor is in read-only mode
+- **Checklist with `input[type="checkbox"]`** — checklist rendering now handles native checkbox inputs alongside the custom toggle; sanitisation updated accordingly
+- **Selection handling** — improved accuracy of selection save/restore when caret is at edge positions
+- **Image format validation** — stricter MIME-type and extension checks in ImageDialog
+- **Placeholder behaviour** — placeholder now hides/shows more reliably after programmatic content changes
+- **VideoDialog** — added TypeScript type annotations for input elements
+
+### Fixed
+- **Cross-origin check** — replaced `location.origin` with `window.location.origin` to avoid `ReferenceError` in non-browser environments
+
+---
+
 ## [1.0.6] - 2026-04-04
 
 ### Added
