@@ -108,7 +108,8 @@ const ICONS = {
   colLeft:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M3 12h7"/><path d="M7 8l-4 4 4 4"/></svg>`,
   colRight:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M12 12h9"/><path d="M17 8l4 4-4 4"/></svg>`,
   deleteCol:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="15" y1="6" x2="21" y2="12"/><line x1="21" y1="6" x2="15" y2="12"/></svg>`,
-  mergeCells:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
+  mergeCells:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
+  unmergeCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="12" y1="5" x2="12" y2="19" stroke-dasharray="2.5 2"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="2.5 2"/><path d="M9 9 L6 12 L9 15"/><path d="M15 9 L18 12 L15 15"/></svg>`,
   colWidth:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="7" y1="12" x2="17" y2="12"/><path d="M10 9l-3 3 3 3"/><path d="M14 9l3 3-3 3"/></svg>`,
   rowHeight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`,
   tableBorder: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="13" x2="21" y2="13" stroke-width="2"/><line x1="3" y1="20" x2="21" y2="20" stroke-width="3"/></svg>`,
@@ -405,7 +406,8 @@ export class TableTooltip {
     el.appendChild(this._sep());
 
     // Merge cells
-    el.appendChild(this._makeBtn(ICONS.mergeCells, 'Merge Cells', () => this._mergeCells()));
+    el.appendChild(this._makeBtn(ICONS.mergeCells,   'Merge Cells',   () => this._mergeCells()));
+    el.appendChild(this._makeBtn(ICONS.unmergeCells, 'Unmerge Cells', () => this._unmergeCells()));
 
     el.appendChild(this._sep());
 
@@ -814,6 +816,73 @@ export class TableTooltip {
     this._hide();
     if (table.parentNode) table.parentNode.removeChild(table);
     this.context.invoke('editor.afterCommand');
+  }
+
+  _unmergeCells() {
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
+    if (!table) return;
+    const mergedCells = cells.filter(
+      (c) => table.contains(c) && ((c.colSpan || 1) > 1 || (c.rowSpan || 1) > 1)
+    );
+    if (!mergedCells.length) return;
+    mergedCells.forEach((cell) => {
+      if (table.contains(cell)) this._unmergeOne(cell, table);
+    });
+    this._clearSelection();
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
+    this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Split a single merged cell (colspan/rowspan > 1) back into individual cells.
+   * New cells are empty (&nbsp;); the original cell retains its content.
+   * @param {HTMLTableCellElement} cell
+   * @param {HTMLTableElement} table
+   */
+  _unmergeOne(cell, table) {
+    const cs = cell.colSpan || 1;
+    const rs = cell.rowSpan || 1;
+    if (cs === 1 && rs === 1) return;
+
+    // Build grid map from current DOM state (before any mutation)
+    const { cellPos } = buildGridMap(table);
+    const pos = cellPos.get(cell);
+    if (!pos) return;
+
+    const { r, c } = pos;
+    const tableRows = Array.from(table.rows);
+    const tag = cell.tagName.toLowerCase(); // preserve td / th
+
+    // Reset the original cell
+    cell.rowSpan = 1;
+    cell.colSpan = 1;
+    cell.style.verticalAlign = '';
+
+    // Same row: insert (cs - 1) sibling cells after the original cell
+    if (cs > 1) {
+      const insertRef = cell.nextElementSibling;
+      for (let dc = 1; dc < cs; dc++) {
+        tableRows[r].insertBefore(createElement(tag, {}, ['\u00a0']), insertRef);
+      }
+    }
+
+    // Rows below: insert cs cells at the correct visual column position (for rowspan)
+    for (let dr = 1; dr < rs; dr++) {
+      const targetRow = tableRows[r + dr];
+      if (!targetRow) continue;
+      // Find the first cell in this row whose visual-col origin is beyond c
+      // (using cellPos built before mutations — valid for these untouched rows)
+      let ref = null;
+      for (const tc of targetRow.cells) {
+        const tp = cellPos.get(tc);
+        if (tp && tp.c > c) { ref = tc; break; }
+      }
+      for (let dc = 0; dc < cs; dc++) {
+        targetRow.insertBefore(createElement(tag, {}, ['\u00a0']), ref);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
