@@ -6,7 +6,7 @@
  */
 
 /** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'];
+const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'button'];
 
 /** Attributes whose values must be sanitised as URLs. */
 const URL_ATTRS = ['href', 'src', 'action', 'formaction'];
@@ -26,7 +26,8 @@ const TRUSTED_IFRAME_HOSTS = new Set([
  * Uses DOMParser so the sanitisation follows normal browser parsing rules —
  * no regex shortcuts that can be bypassed by encoding tricks.
  *
- * - Strips PROHIBITED_TAGS (script, style, iframe, object, embed, form, input, button)
+ * - Strips PROHIBITED_TAGS (script, style, iframe, object, embed, form, button)
+ * - Allows input[type="checkbox"] only inside ul.an-checklist li; removes all other <input>
  * - Removes all on* event-handler attributes
  * - Rejects javascript: and vbscript: URLs in URL attributes
  * - Rejects data: URIs everywhere except img[src] (base64 uploads)
@@ -79,6 +80,23 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
         }
       }
     });
+  });
+
+  // Allow only input[type="checkbox"] inside ul.an-checklist li; strip everything else.
+  // This preserves checklist state while blocking arbitrary <input> injection.
+  doc.querySelectorAll('input').forEach((el) => {
+    const inChecklist = el.closest('ul.an-checklist') !== null &&
+                        el.closest('li') !== null;
+    if (!inChecklist || el.getAttribute('type') !== 'checkbox') {
+      el.remove();
+    } else {
+      // Harden: keep only safe attributes on checklist checkboxes
+      Array.from(el.attributes).forEach((attr) => {
+        if (!['type', 'checked', 'contenteditable'].includes(attr.name)) {
+          el.removeAttribute(attr.name);
+        }
+      });
+    }
   });
 
   return doc.body.innerHTML;

@@ -50,6 +50,12 @@
       user-select: text;
       // Subtle visual cue that the area is read-only.
       background: #fafafa;
+
+      // Block checklist checkbox interaction in read-only mode.
+      ul.an-checklist input[type='checkbox'] {
+        pointer-events: none;
+        cursor: default;
+      }
     }
   }
 

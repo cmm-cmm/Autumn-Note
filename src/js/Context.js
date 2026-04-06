@@ -444,9 +444,15 @@ export class Context {
     if (disabled) {
       editable.setAttribute('contenteditable', 'false');
       this.layoutInfo.container.classList.add('an-disabled');
+      editable.querySelectorAll('ul.an-checklist input[type="checkbox"]').forEach((cb) => {
+        cb.setAttribute('disabled', '');
+      });
     } else {
       editable.setAttribute('contenteditable', 'true');
       this.layoutInfo.container.classList.remove('an-disabled');
+      editable.querySelectorAll('ul.an-checklist input[type="checkbox"]').forEach((cb) => {
+        cb.removeAttribute('disabled');
+      });
     }
   }
 
