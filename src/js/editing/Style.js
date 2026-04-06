@@ -424,7 +424,53 @@ export function toggleChecklist() {
     }
   }
 
-  // Otherwise: insert new checklist from selected text
+  // Otherwise: insert new checklist from selected text (or current block when collapsed).
+  const isCollapsed = range.collapsed;
+  if (isCollapsed) {
+    // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote, etc.)
+    // and convert it into a single checklist item.
+    const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
+    let block = container;
+    while (block && block.parentNode && !BLOCK_TAGS.has(block.tagName)) {
+      block = block.parentNode;
+    }
+    // Fallback: if no block element found (e.g. cursor directly in editable root), use the
+    // insertion approach with a zero-width-space item so the cursor ends up inside.
+    const itemText = (block && BLOCK_TAGS.has(block.tagName))
+      ? Array.from(block.childNodes)
+          .map((n) => n.textContent)
+          .join('')
+          .replace(/\u00a0/g, ' ')
+      : '';
+
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    const li = document.createElement('li');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.contentEditable = 'false';
+    li.appendChild(checkbox);
+    li.appendChild(document.createTextNode(itemText || '\u200B'));
+    ul.appendChild(li);
+
+    if (block && BLOCK_TAGS.has(block.tagName)) {
+      block.parentNode.replaceChild(ul, block);
+    } else {
+      document.execCommand('insertHTML', false, ul.outerHTML);
+      return;
+    }
+
+    // Move caret to the text node inside the new <li>
+    const textNode = li.lastChild;
+    const nr = document.createRange();
+    const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
+    nr.setStart(textNode, offset);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+    return;
+  }
+
   const text = sel.toString();
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return;

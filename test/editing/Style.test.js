@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { fontSize, isInlineCode, toggleInlineCode } from '../../src/js/editing/Style.js';
+import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist } from '../../src/js/editing/Style.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -198,5 +198,153 @@ describe('toggleInlineCode', () => {
     window.getSelection().removeAllRanges();
     // Must not throw
     expect(() => toggleInlineCode(document.body)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toggleChecklist — collapsed cursor (empty/filled paragraph)
+// ---------------------------------------------------------------------------
+
+describe('toggleChecklist — collapsed cursor', () => {
+  beforeEach(() => {
+    document.execCommand = () => false;
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('converts a non-empty <p> into a checklist item when cursor is collapsed inside it', () => {
+    const p = document.createElement('p');
+    p.textContent = 'Buy groceries';
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 5);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    toggleChecklist();
+
+    const ul = document.body.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    expect(ul.querySelector('li')).not.toBeNull();
+    expect(ul.querySelector('li input[type="checkbox"]')).not.toBeNull();
+    expect(ul.textContent).toContain('Buy groceries');
+    // Original <p> must be removed
+    expect(document.body.querySelector('p')).toBeNull();
+  });
+
+  it('creates a checklist item from an empty <p> (cursor on blank line)', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    toggleChecklist();
+
+    const ul = document.body.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    const li = ul.querySelector('li');
+    expect(li).not.toBeNull();
+    expect(li.querySelector('input[type="checkbox"]')).not.toBeNull();
+    expect(document.body.querySelector('p')).toBeNull();
+  });
+
+  it('converts a <p> with text and places cursor inside the new <li>', () => {
+    const p = document.createElement('p');
+    p.textContent = 'Task item';
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    toggleChecklist();
+
+    // The selection should now be inside the new li
+    const newSel = window.getSelection();
+    expect(newSel.rangeCount).toBeGreaterThan(0);
+    const anchor = newSel.anchorNode;
+    const li = document.body.querySelector('ul.an-checklist li');
+    expect(li.contains(anchor)).toBe(true);
+  });
+
+  it('isInChecklist returns true after converting a paragraph', () => {
+    const p = document.createElement('p');
+    p.textContent = 'To do';
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    expect(isInChecklist()).toBe(true);
+  });
+});
+
+describe('toggleChecklist — range selection (existing behaviour)', () => {
+  beforeEach(() => {
+    document.execCommand = () => false;
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('calls insertHTML with an-checklist markup for a range selection', () => {
+    const p = document.createElement('p');
+    p.textContent = 'Selected text';
+    document.body.appendChild(p);
+
+    let insertedHTML = '';
+    document.execCommand = (cmd, _ui, val) => {
+      if (cmd === 'insertHTML') insertedHTML = val;
+      return false;
+    };
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, p.textContent.length);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    expect(insertedHTML).toContain('an-checklist');
+    expect(insertedHTML).toContain('Selected text');
+  });
+
+  it('does nothing when range selection is whitespace-only', () => {
+    const p = document.createElement('p');
+    p.textContent = '   ';
+    document.body.appendChild(p);
+
+    let execCalled = false;
+    document.execCommand = () => { execCalled = true; return false; };
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 3);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    // execCommand should NOT be called because all lines are empty after filter
+    expect(execCalled).toBe(false);
   });
 });
