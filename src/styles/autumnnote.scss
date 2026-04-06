@@ -638,6 +638,26 @@
   letter-spacing: 0.02em;
 }
 
+// Active state for toggle buttons in tooltips (e.g. Select Cells)
+.an-link-tooltip-btn--active {
+  background: rgba(#3b82f6, 0.12) !important;
+  color: #3b82f6 !important;
+  svg { stroke: #3b82f6; }
+}
+
+// Cells highlighted when select mode is active
+.an-cell-selected {
+  background-color: rgba(#3b82f6, 0.18) !important;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+// Cursor hint for all cells when select mode is on
+.an-table-select-mode td,
+.an-table-select-mode th {
+  cursor: cell;
+}
+
 // Size popover (column width / row height)
 .an-size-popover {
   position: fixed;
@@ -1757,6 +1777,17 @@ $an-video-accent: #8b5cf6; // violet-500
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
+  }
+
+  .an-link-tooltip-btn--active {
+    background: rgba(#6366f1, 0.2) !important;
+    color: #818cf8 !important;
+    svg { stroke: #818cf8; }
+  }
+
+  .an-cell-selected {
+    background-color: rgba(#6366f1, 0.25) !important;
+    outline-color: #6366f1;
   }
 
   .an-table-cell {
