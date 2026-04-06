@@ -13,12 +13,15 @@ if (typeof window.cancelAnimationFrame !== 'function') {
 }
 
 function makeContext() {
+  const container = document.createElement('div');
+  container.className = 'an-container';
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = '<p><img src="x.png" alt="img"></p>';
-  document.body.appendChild(editable);
+  container.appendChild(editable);
+  document.body.appendChild(container);
   return {
-    layoutInfo: { editable },
+    layoutInfo: { editable, container },
   };
 }
 

@@ -289,6 +289,7 @@ export class ContextMenu {
     const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
     if (!editable) return;
     if (!editable.contains(event.target)) return;
+    if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     event.preventDefault();
     this._lastX = event.clientX;
     this._lastY = event.clientY;

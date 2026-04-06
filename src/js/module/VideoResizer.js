@@ -41,6 +41,7 @@ export class VideoResizer {
     this._disposers.push(
       on(editable, 'click', (e) => this._onEditorClick(e)),
       on(editable, 'contextmenu', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const wrapper = this._findWrapper(e.target);
         if (wrapper) this._select(wrapper);
       }),
@@ -140,6 +141,7 @@ export class VideoResizer {
   }
 
   _onEditorClick(e) {
+    if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     const wrapper = this._findWrapper(e.target);
     if (wrapper) {
       e.preventDefault();

@@ -39,6 +39,7 @@ export class CodeTooltip {
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const pre = e.target.closest('pre');
         if (pre && editable.contains(pre)) {
           this._scheduleShow(pre);

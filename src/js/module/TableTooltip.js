@@ -105,6 +105,7 @@ export class TableTooltip {
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const table = e.target.closest('table');
         if (table && editable.contains(table)) {
           const cell = e.target.closest('td, th');
@@ -169,6 +170,10 @@ export class TableTooltip {
 
     const onEditorMove = (e) => {
       if (_resizing) return;
+      if (this.context.layoutInfo.container.classList.contains('an-disabled')) {
+        clearHover();
+        return;
+      }
       // Throttle to one check per animation frame — getBoundingClientRect forces reflow
       if (_rafEditorMove !== null) return;
       const target  = e.target;
@@ -195,6 +200,7 @@ export class TableTooltip {
     };
 
     const onEditorDown = (e) => {
+      if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
       if (!_nearCell || !_nearEdge) return;
       _resizing = true;
       _edge     = _nearEdge;

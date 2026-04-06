@@ -125,9 +125,13 @@ export class LinkTooltip {
   }
 
   _show(anchor) {
+    const isReadOnly = this.context.layoutInfo.container.classList.contains('an-disabled');
     const url = anchor.getAttribute('href') || '';
     this._urlLabel.textContent = this._truncateUrl(url);
     this._urlLabel.title = url;
+    // In read-only mode keep only open + copy; hide edit and unlink
+    this._editBtn.style.display   = isReadOnly ? 'none' : '';
+    this._unlinkBtn.style.display = isReadOnly ? 'none' : '';
     this._el.style.display = 'flex';
     this._positionNear(anchor);
   }

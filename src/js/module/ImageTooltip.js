@@ -38,6 +38,7 @@ export class ImageTooltip {
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
+        if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const img = e.target.closest('img');
         // Skip when the image is inside a link — LinkTooltip takes priority there
         if (img && editable.contains(img) && !img.closest('a[href]')) {

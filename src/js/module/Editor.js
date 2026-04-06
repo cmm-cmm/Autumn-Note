@@ -143,6 +143,8 @@ export class Editor {
       sel.addRange(nr);
     };
 
+    const isReadOnly = () => this.context.layoutInfo.container.classList.contains('an-disabled');
+
     this._disposers.push(
       on(editable, 'keydown', onKeydown),
       on(editable, 'beforeinput', onBeforeInput),
@@ -151,6 +153,9 @@ export class Editor {
       on(editable, 'click', onCheckboxClick),
       on(editable, 'mouseup', fixChecklistCursor),
       on(editable, 'keyup',   fixChecklistCursor),
+      // Block drag-out and external drops in read-only mode
+      on(editable, 'dragstart', (e) => { if (isReadOnly()) e.preventDefault(); }),
+      on(editable, 'drop',      (e) => { if (isReadOnly()) e.preventDefault(); }),
     );
 
     // B-V: Re-apply superscript / subscript after IME composition ends.

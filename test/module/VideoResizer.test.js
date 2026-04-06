@@ -23,6 +23,8 @@ if (typeof globalThis.DragEvent === 'undefined') {
 }
 
 function makeContext() {
+  const container = document.createElement('div');
+  container.className = 'an-container';
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = [
@@ -31,9 +33,10 @@ function makeContext() {
     '  <div class="an-video-shield"></div>',
     '</div>',
   ].join('');
-  document.body.appendChild(editable);
+  container.appendChild(editable);
+  document.body.appendChild(container);
   return {
-    layoutInfo: { editable },
+    layoutInfo: { editable, container },
   };
 }
 

@@ -56,6 +56,14 @@
         pointer-events: none;
         cursor: default;
       }
+
+      // Prevent images and videos from being dragged out.
+      img,
+      .an-video-wrapper {
+        -webkit-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+      }
     }
   }
 
