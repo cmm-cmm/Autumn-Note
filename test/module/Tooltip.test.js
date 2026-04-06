@@ -103,3 +103,110 @@ describe('ImageTooltip', () => {
     tooltip.destroy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// C1 / C3: ImageTooltip _setCenter uses fit-content on figure target
+// ---------------------------------------------------------------------------
+
+describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
+  it('_setCenter sets width:fit-content on a figure.an-figure target', () => {
+    let invokedPaths = [];
+    const context = makeContext();
+    context.invoke = (path) => { invokedPaths.push(path); };
+
+    const tooltip = new ImageTooltip(context);
+    tooltip.initialize();
+
+    const figure = document.createElement('figure');
+    figure.className = 'an-figure';
+    const img = document.createElement('img');
+    figure.appendChild(img);
+    context.layoutInfo.editable.appendChild(figure);
+
+    tooltip._activeImg = img;
+    tooltip._setCenter();
+
+    expect(figure.style.display).toBe('block');
+    expect(figure.style.marginLeft).toBe('auto');
+    expect(figure.style.marginRight).toBe('auto');
+    // C1/C3: fit-content makes the block figure match the image width so
+    // margin:auto actually centres it visually.
+    expect(figure.style.width).toBe('fit-content');
+    expect(invokedPaths).toContain('editor.afterCommand');
+
+    // Null out _activeImg before destroy so the pending requestAnimationFrame
+    // guard `if (this._activeImg)` prevents _positionNear from firing on a
+    // nulled tooltip element.
+    tooltip._activeImg = null;
+    tooltip.destroy();
+  });
+
+  it('_setCenter does NOT set width on a bare <img> (not wrapped in figure)', () => {
+    const context = makeContext();
+    context.invoke = () => {};
+
+    const tooltip = new ImageTooltip(context);
+    tooltip.initialize();
+
+    const img = document.createElement('img');
+    context.layoutInfo.editable.appendChild(img);
+
+    tooltip._activeImg = img;
+    tooltip._setCenter();
+
+    // When target === img, width should not be set (to avoid stretching the image)
+    expect(img.style.width).toBe('');
+
+    tooltip._activeImg = null;
+    tooltip.destroy();
+  });
+
+  it('_setFloat clears figure width so it can shrink-wrap while floating', () => {
+    const context = makeContext();
+    context.invoke = () => {};
+
+    const tooltip = new ImageTooltip(context);
+    tooltip.initialize();
+
+    const figure = document.createElement('figure');
+    figure.className = 'an-figure';
+    figure.style.width = 'fit-content'; // previously centred
+    const img = document.createElement('img');
+    figure.appendChild(img);
+    context.layoutInfo.editable.appendChild(figure);
+
+    tooltip._activeImg = img;
+    tooltip._setFloat('left');
+
+    expect(figure.style.width).toBe('');
+    expect(figure.style.float).toBe('left');
+
+    tooltip._activeImg = null;
+    tooltip.destroy();
+  });
+
+  it('_setFloat("") removes float and sets no width', () => {
+    const context = makeContext();
+    context.invoke = () => {};
+
+    const tooltip = new ImageTooltip(context);
+    tooltip.initialize();
+
+    const figure = document.createElement('figure');
+    figure.className = 'an-figure';
+    figure.style.float = 'right';
+    figure.style.width = 'fit-content';
+    const img = document.createElement('img');
+    figure.appendChild(img);
+    context.layoutInfo.editable.appendChild(figure);
+
+    tooltip._activeImg = img;
+    tooltip._setFloat('');
+
+    expect(figure.style.float).toBe('');
+    expect(figure.style.width).toBe('');
+
+    tooltip._activeImg = null;
+    tooltip.destroy();
+  });
+});

@@ -1,0 +1,202 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { fontSize, isInlineCode, toggleInlineCode } from '../../src/js/editing/Style.js';
+
+afterEach(() => {
+  document.body.innerHTML = '';
+});
+
+// ---------------------------------------------------------------------------
+// fontSize — B-I: span replacement for precise px sizing
+// ---------------------------------------------------------------------------
+
+describe('fontSize', () => {
+  // jsdom does not implement execCommand; stub it so fontSize() can run
+  // its span-replacement logic without throwing.
+  beforeEach(() => {
+    document.execCommand = () => false;
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('replaces font[size="7"] placeholder elements with styled <span>s', () => {
+    // Simulate what execCommand('fontSize','7') would insert into the DOM.
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p><font size="7">Hello</font></p>';
+    document.body.appendChild(scope);
+
+    fontSize('18px', scope);
+
+    const span = scope.querySelector('span');
+    expect(span).not.toBeNull();
+    expect(span.style.fontSize).toBe('18px');
+    expect(span.textContent).toBe('Hello');
+    // Original <font> element must be removed
+    expect(scope.querySelector('font')).toBeNull();
+  });
+
+  it('replaces multiple font placeholder elements when selection spans several nodes', () => {
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p><font size="7">A</font><font size="7">B</font></p>';
+    document.body.appendChild(scope);
+
+    fontSize('14px', scope);
+
+    const spans = scope.querySelectorAll('span');
+    expect(spans.length).toBe(2);
+    spans.forEach((s) => expect(s.style.fontSize).toBe('14px'));
+    expect(scope.querySelector('font')).toBeNull();
+  });
+
+  it('preserves child nodes of the replaced <font> element', () => {
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p><font size="7"><strong>Bold text</strong></font></p>';
+    document.body.appendChild(scope);
+
+    fontSize('12px', scope);
+
+    const span = scope.querySelector('span');
+    expect(span).not.toBeNull();
+    expect(span.querySelector('strong')).not.toBeNull();
+    expect(span.querySelector('strong').textContent).toBe('Bold text');
+  });
+
+  it('does not create spans when no font[size="7"] placeholder exists', () => {
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p>No font elements here</p>';
+    document.body.appendChild(scope);
+
+    fontSize('14px', scope);
+
+    expect(scope.querySelector('span')).toBeNull();
+  });
+
+  it('scopes replacement to the provided editable — does not touch elements outside', () => {
+    const outside = document.createElement('div');
+    outside.innerHTML = '<font size="7">Outside</font>';
+    document.body.appendChild(outside);
+
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p><font size="7">Inside</font></p>';
+    document.body.appendChild(scope);
+
+    fontSize('20px', scope);
+
+    // Scope's font element should be replaced
+    expect(scope.querySelector('font')).toBeNull();
+    // Outside element should be untouched
+    expect(outside.querySelector('font')).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isInlineCode — B-IV: startContainer-based detection
+// ---------------------------------------------------------------------------
+
+describe('isInlineCode', () => {
+  it('returns false when there is no selection', () => {
+    // No selection active in the document — getSelection().rangeCount === 0
+    window.getSelection().removeAllRanges();
+    expect(isInlineCode()).toBe(false);
+  });
+
+  it('returns true when cursor is inside an inline <code> element', () => {
+    const code = document.createElement('code');
+    code.textContent = 'console.log()';
+    const p = document.createElement('p');
+    p.appendChild(code);
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(code.firstChild, 4);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    expect(isInlineCode()).toBe(true);
+  });
+
+  it('returns false when cursor is inside a <code> that is inside a <pre> block', () => {
+    const pre = document.createElement('pre');
+    const code = document.createElement('code');
+    code.textContent = 'block code';
+    pre.appendChild(code);
+    document.body.appendChild(pre);
+
+    const range = document.createRange();
+    range.setStart(code.firstChild, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    expect(isInlineCode()).toBe(false);
+  });
+
+  it('returns false when cursor is in plain paragraph text', () => {
+    const p = document.createElement('p');
+    p.textContent = 'plain text';
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    expect(isInlineCode()).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toggleInlineCode — B-III: wrap / unwrap inline code
+// ---------------------------------------------------------------------------
+
+describe('toggleInlineCode', () => {
+  it('wraps a range selection in a <code> element', () => {
+    const p = document.createElement('p');
+    p.textContent = 'highlighted text here';
+    document.body.appendChild(p);
+
+    // Select "highlighted text"
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 'highlighted text'.length);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    toggleInlineCode(document.body);
+
+    expect(p.querySelector('code')).not.toBeNull();
+    expect(p.querySelector('code').textContent).toBe('highlighted text');
+  });
+
+  it('unwraps an existing inline <code> element when cursor is inside it', () => {
+    const p = document.createElement('p');
+    const code = document.createElement('code');
+    code.textContent = 'remove';
+    p.appendChild(code);
+    document.body.appendChild(p);
+
+    // Place cursor inside the <code>
+    const range = document.createRange();
+    range.setStart(code.firstChild, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    toggleInlineCode(document.body);
+
+    expect(p.querySelector('code')).toBeNull();
+    expect(p.textContent).toBe('remove');
+  });
+
+  it('does nothing when there is no selection', () => {
+    window.getSelection().removeAllRanges();
+    // Must not throw
+    expect(() => toggleInlineCode(document.body)).not.toThrow();
+  });
+});
