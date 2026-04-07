@@ -305,16 +305,10 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
     delete document.execCommand;
   });
 
-  it('calls insertHTML with an-checklist markup for a range selection', () => {
+  it('converts selected <p> into an an-checklist item via DOM manipulation', () => {
     const p = document.createElement('p');
     p.textContent = 'Selected text';
     document.body.appendChild(p);
-
-    let insertedHTML = '';
-    document.execCommand = (cmd, _ui, val) => {
-      if (cmd === 'insertHTML') insertedHTML = val;
-      return false;
-    };
 
     const range = document.createRange();
     range.setStart(p.firstChild, 0);
@@ -324,17 +318,20 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
 
     toggleChecklist();
 
-    expect(insertedHTML).toContain('an-checklist');
-    expect(insertedHTML).toContain('Selected text');
+    // DOM-based implementation: the original <p> is replaced with a <ul>
+    const ul = document.body.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    const li = ul.querySelector('li');
+    expect(li).not.toBeNull();
+    expect(li.textContent).toContain('Selected text');
+    // The original <p> should have been removed
+    expect(document.body.querySelector('p')).toBeNull();
   });
 
   it('does nothing when range selection is whitespace-only', () => {
     const p = document.createElement('p');
     p.textContent = '   ';
     document.body.appendChild(p);
-
-    let execCalled = false;
-    document.execCommand = () => { execCalled = true; return false; };
 
     const range = document.createRange();
     range.setStart(p.firstChild, 0);
@@ -344,7 +341,8 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
 
     toggleChecklist();
 
-    // execCommand should NOT be called because all lines are empty after filter
-    expect(execCalled).toBe(false);
+    // Whitespace-only lines are filtered — no checklist should be created,
+    // and the execCommand path is also skipped.
+    expect(document.body.querySelector('ul.an-checklist')).toBeNull();
   });
 });

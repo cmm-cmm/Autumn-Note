@@ -64,6 +64,43 @@ function getCellAfterVisualCol(row, visualIdx) {
   return null;
 }
 
+/**
+ * Build a 2D grid map of the table, accounting for both rowspan and colspan.
+ *
+ * gridMap[r][c] = the DOM cell occupying visual grid position (r, c).
+ * cellPos       = WeakMap: cell → { r, c, rs, cs }  (top-left grid origin + span).
+ *
+ * Uses HTMLTableElement.rows which is scoped to the table itself and never
+ * includes rows from nested tables.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {{ gridMap: Object, cellPos: WeakMap }}
+ */
+function buildGridMap(table) {
+  const rows = Array.from(table.rows);
+  const gridMap = {};
+  const cellPos = new WeakMap();
+  rows.forEach((row, r) => {
+    if (!gridMap[r]) gridMap[r] = {};
+    let c = 0;
+    for (const cell of row.cells) {
+      // Skip positions already occupied by a rowspan from a previous row
+      while (gridMap[r][c]) c++;
+      const rs = cell.rowSpan || 1;
+      const cs = cell.colSpan || 1;
+      cellPos.set(cell, { r, c, rs, cs });
+      for (let dr = 0; dr < rs; dr++) {
+        if (!gridMap[r + dr]) gridMap[r + dr] = {};
+        for (let dc = 0; dc < cs; dc++) {
+          gridMap[r + dr][c + dc] = cell;
+        }
+      }
+      c += cs;
+    }
+  });
+  return { gridMap, cellPos };
+}
+
 const ICONS = {
   rowAbove:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3v7"/><path d="M9 7l3-4 3 4"/></svg>`,
   rowBelow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 12v7"/><path d="M9 17l3 4 3-4"/></svg>`,
@@ -71,11 +108,13 @@ const ICONS = {
   colLeft:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M3 12h7"/><path d="M7 8l-4 4 4 4"/></svg>`,
   colRight:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M12 12h9"/><path d="M17 8l4 4-4 4"/></svg>`,
   deleteCol:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="15" y1="6" x2="21" y2="12"/><line x1="21" y1="6" x2="15" y2="12"/></svg>`,
-  mergeCells:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
+  mergeCells:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
+  unmergeCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="12" y1="5" x2="12" y2="19" stroke-dasharray="2.5 2"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="2.5 2"/><path d="M9 9 L6 12 L9 15"/><path d="M15 9 L18 12 L15 15"/></svg>`,
   colWidth:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="7" y1="12" x2="17" y2="12"/><path d="M10 9l-3 3 3 3"/><path d="M14 9l3 3-3 3"/></svg>`,
   rowHeight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`,
   tableBorder: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="13" x2="21" y2="13" stroke-width="2"/><line x1="3" y1="20" x2="21" y2="20" stroke-width="3"/></svg>`,
   deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
+  selectCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z" fill="currentColor" opacity="0.15"/><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z"/></svg>`,
 };
 
 export class TableTooltip {
@@ -92,6 +131,13 @@ export class TableTooltip {
     this._sizeApply = null;
     this._sizeTitleEl = null;
     this._sizeInputEl = null;
+    // Cell selection
+    this._selectMode = false;
+    this._selectedCells = [];
+    this._selectStart = null;
+    this._selectDragging = false;
+    this._selectBtn = null;
+    this._editable = null;
   }
 
   initialize() {
@@ -102,6 +148,36 @@ export class TableTooltip {
     document.body.appendChild(this._sizePopover);
 
     const editable = this.context.layoutInfo.editable;
+    this._editable = editable;
+
+    // ── Cell selection drag ──────────────────────────────────────────────────
+    const onSelMousedown = (e) => {
+      if (!this._selectMode) return;
+      const cell = e.target.closest('td, th');
+      if (!cell || !editable.contains(cell)) return;
+      // Don't interfere with col/row resize (inline cursor is set by resize logic)
+      if (cell.style.cursor === 'col-resize' || cell.style.cursor === 'row-resize') return;
+      e.preventDefault(); // suppress text-cursor placement while selecting cells
+      this._activeTable = cell.closest('table');
+      this._selectStart = cell;
+      this._selectDragging = true;
+      this._setSelection([cell]);
+    };
+    const onSelMousemove = (e) => {
+      if (!this._selectMode || !this._selectDragging || !this._selectStart) return;
+      const cell = e.target.closest('td, th');
+      if (!cell || !editable.contains(cell)) return;
+      if (cell.closest('table') !== this._activeTable) return;
+      this._setSelection(this._getRectCells(this._selectStart, cell));
+    };
+    const onSelMouseup = () => { this._selectDragging = false; };
+
+    this._disposers.push(
+      on(editable, 'mousedown', onSelMousedown),
+      on(editable, 'mousemove', onSelMousemove),
+      on(document, 'mouseup',   onSelMouseup),
+    );
+    // ────────────────────────────────────────────────────────────────────────
 
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
@@ -114,6 +190,7 @@ export class TableTooltip {
         }
       }, { passive: true }),
       on(editable, 'mouseout', (e) => {
+        if (this._selectMode) return; // keep tooltip alive during cell selection
         const to = e.relatedTarget;
         if (!to || (
           !editable.contains(to) &&
@@ -124,6 +201,7 @@ export class TableTooltip {
         }
       }, { passive: true }),
       on(document, 'click', (e) => {
+        if (this._selectMode && this._activeTable && this._activeTable.contains(e.target)) return;
         if (this._activeTable &&
           !this._activeTable.contains(e.target) &&
           !this._el.contains(e.target) &&
@@ -210,11 +288,16 @@ export class TableTooltip {
       if (_edge === 'col') {
         _startW   = _nearCell.offsetWidth;
         _colIdx   = getVisualColIndex(_nearCell);
-        // Cache column cells once so onDocMove never runs querySelectorAll per frame
+        // Cache column cells once so onDocMove never runs querySelectorAll per frame.
+        // F-1: skip merged cells (colSpan > 1) — setting width on a merged cell
+        // distributes it equally across all spanned columns instead of resizing
+        // only the target column.  Rows that have an individual cell at this
+        // visual column index are resized independently as expected.
         _colCells = _colIdx >= 0
           ? Array.from(_table.querySelectorAll('tr'))
               .map(r => getCellAtVisualCol(r, _colIdx))
               .filter(Boolean)
+              .filter(c => (c.colSpan || 1) === 1)
           : [];
         document.body.style.cursor = 'col-resize';
       } else {
@@ -307,6 +390,12 @@ export class TableTooltip {
 
     el.appendChild(this._sep());
 
+    // Select-cells toggle
+    this._selectBtn = this._makeBtn(ICONS.selectCells, 'Select Cells', () => this._toggleSelectMode());
+    el.appendChild(this._selectBtn);
+
+    el.appendChild(this._sep());
+
     // Row operations
     el.appendChild(this._makeBtn(ICONS.rowAbove, 'Add Row Above', () => this._addRow('above')));
     el.appendChild(this._makeBtn(ICONS.rowBelow, 'Add Row Below', () => this._addRow('below')));
@@ -322,7 +411,8 @@ export class TableTooltip {
     el.appendChild(this._sep());
 
     // Merge cells
-    el.appendChild(this._makeBtn(ICONS.mergeCells, 'Merge Cells', () => this._mergeCells()));
+    el.appendChild(this._makeBtn(ICONS.mergeCells,   'Merge Cells',   () => this._mergeCells()));
+    el.appendChild(this._makeBtn(ICONS.unmergeCells, 'Unmerge Cells', () => this._unmergeCells()));
 
     el.appendChild(this._sep());
 
@@ -342,6 +432,7 @@ export class TableTooltip {
     this._disposers.push(
       on(el, 'mouseenter', () => this._clearTimers()),
       on(el, 'mouseleave', () => {
+        if (this._selectMode) return; // keep tooltip alive during cell selection
         if (this._sizePopover && this._sizePopover.style.display !== 'none') return;
         this._scheduleHide();
       }),
@@ -412,6 +503,13 @@ export class TableTooltip {
     this._el.style.display = 'none';
     this._activeTable = null;
     this._activeCell = null;
+    // Reset select mode
+    if (this._selectMode) {
+      this._selectMode = false;
+      if (this._selectBtn) this._selectBtn.classList.remove('an-link-tooltip-btn--active');
+      if (this._editable) this._editable.classList.remove('an-table-select-mode');
+    }
+    this._clearSelection();
     this._clearTimers();
     this._hideSizePopover();
   }
@@ -462,17 +560,128 @@ export class TableTooltip {
   }
 
   // ---------------------------------------------------------------------------
+  // Cell selection helpers
+  // ---------------------------------------------------------------------------
+
+  _toggleSelectMode() {
+    this._selectMode = !this._selectMode;
+    if (this._selectBtn) {
+      this._selectBtn.classList.toggle('an-link-tooltip-btn--active', this._selectMode);
+    }
+    if (this._editable) {
+      this._editable.classList.toggle('an-table-select-mode', this._selectMode);
+    }
+    if (!this._selectMode) {
+      this._clearSelection();
+    }
+  }
+
+  _clearSelection() {
+    this._selectedCells.forEach((c) => c.classList.remove('an-cell-selected'));
+    this._selectedCells = [];
+    this._selectStart = null;
+  }
+
+  _setSelection(cells) {
+    // Remove highlight from cells no longer in selection
+    this._selectedCells.forEach((c) => {
+      if (!cells.includes(c)) c.classList.remove('an-cell-selected');
+    });
+    this._selectedCells = cells;
+    cells.forEach((c) => c.classList.add('an-cell-selected'));
+  }
+
+  /**
+   * Returns all cells in the rectangular area between startCell and endCell,
+   * correctly handling rowspan/colspan by using the grid map.
+   * The rect is expanded iteratively until it is stable — this ensures any
+   * merged cell that starts outside the initial rect but spans into it is
+   * fully included.
+   */
+  _getRectCells(startCell, endCell) {
+    if (!startCell) return [];
+    if (!endCell || startCell === endCell) return [startCell];
+    const table = startCell.closest('table');
+    if (!table || !table.contains(endCell)) return [startCell];
+
+    const { gridMap, cellPos } = buildGridMap(table);
+    const sp = cellPos.get(startCell);
+    const ep = cellPos.get(endCell);
+    if (!sp || !ep) return [startCell];
+
+    let minR = Math.min(sp.r, ep.r);
+    let maxR = Math.max(sp.r + sp.rs - 1, ep.r + ep.rs - 1);
+    let minC = Math.min(sp.c, ep.c);
+    let maxC = Math.max(sp.c + sp.cs - 1, ep.c + ep.cs - 1);
+
+    // Iteratively expand until stable — handles spans that exceed the current rect
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let r = minR; r <= maxR; r++) {
+        const rowMap = gridMap[r];
+        if (!rowMap) continue;
+        for (let c = minC; c <= maxC; c++) {
+          const cell = rowMap[c];
+          if (!cell) continue;
+          const pos = cellPos.get(cell);
+          if (!pos) continue;
+          if (pos.r < minR)              { minR = pos.r;               changed = true; }
+          if (pos.r + pos.rs - 1 > maxR) { maxR = pos.r + pos.rs - 1; changed = true; }
+          if (pos.c < minC)              { minC = pos.c;               changed = true; }
+          if (pos.c + pos.cs - 1 > maxC) { maxC = pos.c + pos.cs - 1; changed = true; }
+        }
+      }
+    }
+
+    // Collect unique cells in document order
+    const seen = new Set();
+    const result = [];
+    for (let r = minR; r <= maxR; r++) {
+      const rowMap = gridMap[r];
+      if (!rowMap) continue;
+      for (let c = minC; c <= maxC; c++) {
+        const cell = rowMap[c];
+        if (cell && !seen.has(cell)) {
+          seen.add(cell);
+          result.push(cell);
+        }
+      }
+    }
+    return result.length > 0 ? result : [startCell];
+  }
+
+  /**
+   * Returns the active cell set: user-selected cells when available,
+   * otherwise the single active/cursor cell.
+   * @returns {HTMLTableCellElement[]}
+   */
+  _getSelectedCells() {
+    return this._selectedCells.length > 0
+      ? this._selectedCells
+      : [this._getCell()].filter(Boolean);
+  }
+
+  // ---------------------------------------------------------------------------
   // Table operations
   // ---------------------------------------------------------------------------
 
   _addRow(position) {
-    const cell = this._getCell();
-    if (!cell) return;
-    const row = cell.closest('tr');
-    if (!row) return;
-    const colCount = Array.from(row.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
+    if (!table) return;
+    const allRows = Array.from(table.querySelectorAll('tr'));
+    const selectedRows = [...new Set(cells.map((c) => c.closest('tr')).filter(Boolean))];
+    // Reference row: topmost for 'above', bottommost for 'below'
+    const refRow = selectedRows.reduce((best, r) => {
+      const bi = allRows.indexOf(best);
+      const ri = allRows.indexOf(r);
+      return position === 'above' ? (ri < bi ? r : best) : (ri > bi ? r : best);
+    });
+    const colCount = Array.from(refRow.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
     const newRow = document.createElement('tr');
-    const refCells = Array.from(row.cells);
+    const refCells = Array.from(refRow.cells);
     for (let i = 0; i < colCount; i++) {
       const td = createElement('td', {}, ['\u00a0']);
       const ref = refCells[i];
@@ -480,25 +689,24 @@ export class TableTooltip {
       if (ref && ref.style.minWidth) td.style.minWidth = ref.style.minWidth;
       newRow.appendChild(td);
     }
-    if (position === 'above') row.parentElement?.insertBefore(newRow, row);
-    else row.insertAdjacentElement('afterend', newRow);
-    // Defer positioning until the browser has painted the new layout
+    if (position === 'above') refRow.parentElement?.insertBefore(newRow, refRow);
+    else refRow.insertAdjacentElement('afterend', newRow);
     requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
   _addColumn(position) {
-    const cell = this._getCell();
-    if (!cell) return;
-    const table = cell.closest('table');
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
     if (!table) return;
-    const visualColIdx = getVisualColIndex(cell);
+    const colIndices = cells.map((c) => getVisualColIndex(c));
+    const targetColIdx = position === 'left' ? Math.min(...colIndices) : Math.max(...colIndices);
     const rows = Array.from(table.querySelectorAll('tr'));
-    // Batch reads first, then writes — prevents layout thrashing inside the loop
-    const refs      = rows.map(r => position === 'left'
-      ? getCellAtVisualCol(r, visualColIdx)
-      : getCellAfterVisualCol(r, visualColIdx));
-    const isHeaders = rows.map(r => r.closest('thead') !== null);
+    const refs      = rows.map((r) => position === 'left'
+      ? getCellAtVisualCol(r, targetColIdx)
+      : getCellAfterVisualCol(r, targetColIdx));
+    const isHeaders = rows.map((r) => r.closest('thead') !== null);
     rows.forEach((r, i) => {
       r.insertBefore(createElement(isHeaders[i] ? 'th' : 'td', {}, ['\u00a0']), refs[i]);
     });
@@ -507,34 +715,45 @@ export class TableTooltip {
   }
 
   _deleteRow() {
-    const cell = this._getCell();
-    if (!cell) return;
-    const row   = cell.closest('tr');
-    const table = cell.closest('table');
-    if (!row || !table) return;
-    // Guard: do not delete the last body row (thead rows are not counted)
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
+    if (!table) return;
     const tbody = table.querySelector('tbody');
-    const bodyRows = tbody ? tbody.querySelectorAll('tr').length : table.querySelectorAll('tr').length;
-    if (bodyRows <= 1 && row.closest('tbody')) return;
+    const totalBodyRows = tbody
+      ? tbody.querySelectorAll('tr').length
+      : table.querySelectorAll('tr').length;
+    const selectedRows = [...new Set(cells.map((c) => c.closest('tr')).filter(Boolean))];
+    const bodyRowsToDelete = selectedRows.filter((r) => r.closest('tbody'));
+    // Guard: keep at least one body row
+    if (bodyRowsToDelete.length >= totalBodyRows) return;
     this._activeCell = null;
-    row.parentElement?.removeChild(row);
+    this._clearSelection();
+    selectedRows.forEach((r) => r.parentElement?.removeChild(r));
     requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
 
   _deleteColumn() {
-    const cell = this._getCell();
-    if (!cell) return;
-    const table = cell.closest('table');
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
     if (!table) return;
-    const row = cell.closest('tr');
-    if (row && row.cells.length <= 1) return;
-    const visualColIdx = getVisualColIndex(cell);
+    const tableRows = Array.from(table.querySelectorAll('tr'));
+    if (tableRows[0] && tableRows[0].cells.length <= 1) return; // guard: keep ≥1 col
+    const colIndices = [...new Set(cells.map((c) => getVisualColIndex(c)))];
+    if (colIndices.length >= (tableRows[0]?.cells.length ?? 1)) return;
+    // Collect all cell references upfront before any removal (avoids stale visual indices)
+    const cellsToDelete = [];
+    colIndices.forEach((colIdx) => {
+      tableRows.forEach((r) => {
+        const c = getCellAtVisualCol(r, colIdx);
+        if (c) cellsToDelete.push(c);
+      });
+    });
     this._activeCell = null;
-    const rows  = Array.from(table.querySelectorAll('tr'));
-    // Batch reads before writes to avoid forced reflows inside the loop
-    const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
-    cells.forEach((c, i) => { if (c) rows[i].removeChild(c); });
+    this._clearSelection();
+    cellsToDelete.forEach((c) => c.parentElement?.removeChild(c));
     requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
@@ -542,41 +761,57 @@ export class TableTooltip {
   _mergeCells() {
     const cell = this._getCell();
     if (!cell) return;
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0);
     const table = cell.closest('table');
     if (!table) return;
 
-    // Collect all cells (in any row) that intersect the selection
-    const allCells = Array.from(table.querySelectorAll('td, th'));
-    const selected = allCells.filter((c) => {
-      try { return range.intersectsNode(c); } catch { return false; }
-    });
-    if (selected.length < 2) return;
-
-    // Determine if all selected cells are in the same row (horizontal merge)
-    const rows = [...new Set(selected.map((c) => c.closest('tr')))];
-    if (rows.length === 1) {
-      // Horizontal merge within a single row
-      const row = rows[0];
-      const rowSelected = Array.from(row.cells).filter((c) => selected.includes(c));
-      if (rowSelected.length < 2) return;
-      const first = rowSelected[0];
-      first.colSpan = rowSelected.reduce((sum, c) => sum + (c.colSpan || 1), 0);
-      first.innerHTML = rowSelected.map((c) => c.innerHTML).join('');
-      rowSelected.slice(1).forEach((c) => row.removeChild(c));
-    } else {
-      // Vertical merge across rows — merge into first selected cell (rowspan)
-      const visualCols = [...new Set(selected.map((c) => getVisualColIndex(c)))];
-      if (visualCols.length !== 1) return; // only support single-column vertical merge
-      const first = selected[0];
-      first.rowSpan = selected.reduce((sum, c) => sum + (c.rowSpan || 1), 0);
-      first.innerHTML = selected.map((c) => c.innerHTML).join('');
-      selected.slice(1).forEach((c) => {
-        if (c.closest('tr')) c.closest('tr').removeChild(c);
+    // Prefer user panel-selected cells; fall back to text-selection range
+    let selected = this._getSelectedCells().filter((c) => table.contains(c));
+    if (selected.length < 2) {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      const allCells = Array.from(table.querySelectorAll('td, th'));
+      selected = allCells.filter((c) => {
+        try { return range.intersectsNode(c); } catch { return false; }
       });
+      if (selected.length < 2) return;
     }
+
+    const { gridMap, cellPos } = buildGridMap(table);
+
+    // Bounding rect that encompasses every selected cell's full span
+    let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+    selected.forEach((c) => {
+      const pos = cellPos.get(c);
+      if (!pos) return;
+      if (pos.r < minR)              minR = pos.r;
+      if (pos.r + pos.rs - 1 > maxR) maxR = pos.r + pos.rs - 1;
+      if (pos.c < minC)              minC = pos.c;
+      if (pos.c + pos.cs - 1 > maxC) maxC = pos.c + pos.cs - 1;
+    });
+    if (minR === Infinity) return;
+
+    // Collect every unique cell in the bounding rect
+    const seen = new Set();
+    const rectCells = [];
+    for (let r = minR; r <= maxR; r++) {
+      const rowMap = gridMap[r];
+      if (!rowMap) continue;
+      for (let c = minC; c <= maxC; c++) {
+        const tc = rowMap[c];
+        if (tc && !seen.has(tc)) { seen.add(tc); rectCells.push(tc); }
+      }
+    }
+    if (rectCells.length < 2) return;
+
+    const first = rectCells[0];
+    first.colSpan = maxC - minC + 1;
+    first.rowSpan = maxR - minR + 1;
+    first.style.verticalAlign = 'middle';
+    first.innerHTML = rectCells.map((c) => c.innerHTML).join('');
+    rectCells.slice(1).forEach((c) => c.parentElement?.removeChild(c));
+
+    this._clearSelection();
     this.context.invoke('editor.afterCommand');
   }
 
@@ -586,6 +821,73 @@ export class TableTooltip {
     this._hide();
     if (table.parentNode) table.parentNode.removeChild(table);
     this.context.invoke('editor.afterCommand');
+  }
+
+  _unmergeCells() {
+    const cells = this._getSelectedCells();
+    if (!cells.length) return;
+    const table = cells[0].closest('table');
+    if (!table) return;
+    const mergedCells = cells.filter(
+      (c) => table.contains(c) && ((c.colSpan || 1) > 1 || (c.rowSpan || 1) > 1)
+    );
+    if (!mergedCells.length) return;
+    mergedCells.forEach((cell) => {
+      if (table.contains(cell)) this._unmergeOne(cell, table);
+    });
+    this._clearSelection();
+    requestAnimationFrame(() => this._positionNear(this._activeTable));
+    this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Split a single merged cell (colspan/rowspan > 1) back into individual cells.
+   * New cells are empty (&nbsp;); the original cell retains its content.
+   * @param {HTMLTableCellElement} cell
+   * @param {HTMLTableElement} table
+   */
+  _unmergeOne(cell, table) {
+    const cs = cell.colSpan || 1;
+    const rs = cell.rowSpan || 1;
+    if (cs === 1 && rs === 1) return;
+
+    // Build grid map from current DOM state (before any mutation)
+    const { cellPos } = buildGridMap(table);
+    const pos = cellPos.get(cell);
+    if (!pos) return;
+
+    const { r, c } = pos;
+    const tableRows = Array.from(table.rows);
+    const tag = cell.tagName.toLowerCase(); // preserve td / th
+
+    // Reset the original cell
+    cell.rowSpan = 1;
+    cell.colSpan = 1;
+    cell.style.verticalAlign = '';
+
+    // Same row: insert (cs - 1) sibling cells after the original cell
+    if (cs > 1) {
+      const insertRef = cell.nextElementSibling;
+      for (let dc = 1; dc < cs; dc++) {
+        tableRows[r].insertBefore(createElement(tag, {}, ['\u00a0']), insertRef);
+      }
+    }
+
+    // Rows below: insert cs cells at the correct visual column position (for rowspan)
+    for (let dr = 1; dr < rs; dr++) {
+      const targetRow = tableRows[r + dr];
+      if (!targetRow) continue;
+      // Find the first cell in this row whose visual-col origin is beyond c
+      // (using cellPos built before mutations — valid for these untouched rows)
+      let ref = null;
+      for (const tc of targetRow.cells) {
+        const tp = cellPos.get(tc);
+        if (tp && tp.c > c) { ref = tc; break; }
+      }
+      for (let dc = 0; dc < cs; dc++) {
+        targetRow.insertBefore(createElement(tag, {}, ['\u00a0']), ref);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -653,7 +955,6 @@ export class TableTooltip {
     if (type === 'border') {
       const table = cell.closest('table');
       if (!table) return;
-      // Read current inline border-width, fall back to computed value, then default 1px
       const firstCell = table.querySelector('td, th');
       const currentPx = firstCell
         ? (parseInt(firstCell.style.borderWidth, 10) ||
@@ -664,19 +965,20 @@ export class TableTooltip {
       this._sizeInputEl.max   = '10';
       this._sizeInputEl.value = currentPx;
       this._sizeApply = (val) => {
-        // Apply border-width to every cell; with border-collapse:collapse this
-        // controls all grid lines including the outer table border.
-        // Setting only borderWidth preserves the existing border-color from CSS.
         const cells = Array.from(table.querySelectorAll('td, th'));
         if (val === 0) {
-          cells.forEach(c => { c.style.borderWidth = '0'; c.style.borderStyle = 'none'; });
+          cells.forEach((c) => { c.style.borderWidth = '0'; c.style.borderStyle = 'none'; });
         } else {
-          cells.forEach(c => { c.style.borderWidth = `${val}px`; c.style.borderStyle = 'solid'; });
+          cells.forEach((c) => { c.style.borderWidth = `${val}px`; c.style.borderStyle = 'solid'; });
         }
         this.context.invoke('editor.afterCommand');
       };
     } else {
       const isCol = type === 'col';
+      const activeCells = this._getSelectedCells().filter((c) => {
+        const t = c.closest('table');
+        return t && t === cell.closest('table');
+      });
       this._sizeTitleEl.textContent = isCol ? 'Column Width (px)' : 'Row Height (px)';
       this._sizeInputEl.min   = '1';
       this._sizeInputEl.max   = '2000';
@@ -684,20 +986,25 @@ export class TableTooltip {
         ? (cell.offsetWidth || 120)
         : (cell.closest('tr') ? (cell.closest('tr').offsetHeight || 40) : 40);
       this._sizeApply = (val) => {
+        const table = cell.closest('table');
+        if (!table) return;
         if (isCol) {
-          const table        = cell.closest('table');
-          const visualColIdx = getVisualColIndex(cell);
-          const rows  = Array.from(table.querySelectorAll('tr'));
-          // Batch reads, then writes
-          const cells = rows.map(r => getCellAtVisualCol(r, visualColIdx));
-          cells.forEach(c => {
-            if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
+          // Apply to all selected columns (or just the current column)
+          const colIndices = [...new Set(activeCells.map((c) => getVisualColIndex(c)))];
+          const tableRows  = Array.from(table.querySelectorAll('tr'));
+          colIndices.forEach((colIdx) => {
+            tableRows.forEach((r) => {
+              const c = getCellAtVisualCol(r, colIdx);
+              // F-1: skip merged cells — same reason as drag-resize _colCells.
+              if (c && (c.colSpan || 1) === 1) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
+            });
           });
         } else {
-          const row = cell.closest('tr');
-          if (row) {
+          // Apply to all selected rows (or just the current row)
+          const selectedRows = [...new Set(activeCells.map((c) => c.closest('tr')).filter(Boolean))];
+          selectedRows.forEach((row) => {
             for (const c of row.cells) { c.style.height = `${val}px`; c.style.minHeight = `${val}px`; }
-          }
+          });
         }
         this.context.invoke('editor.afterCommand');
       };

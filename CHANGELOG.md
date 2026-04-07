@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.8] - 2026-04-07
+
+### Added
+- **Cell selection mode** — click-and-drag or keyboard-driven cell selection in tables with visual highlight feedback and tooltip integration
+- **Unmerge cells** — new action in TableTooltip to split previously merged cells back to their original state with visual feedback
+- **Iframe support in `setHTML()`** — `setHTML()` now permits `<iframe>` elements so embedded content (e.g. YouTube) can be restored programmatically
+
+### Changed
+- **Outdent converts checklist items to paragraphs** — outdenting a checklist item at the top level now converts it to a plain paragraph instead of doing nothing
+- **Table tooltip handles merged cells** — improved tooltip behaviour and action availability when the selection contains merged cells
+- **Strikethrough & fontSize on partial selections** — improved handling for fragmented selections; commands now apply/toggle correctly across complex inline structures
+- **Checklist conversion** — `fontSize` command correctly converts checklist items when the whole list is selected
+- **Tooltip vertical alignment** — tooltip content is now vertically centred for a more polished appearance
+- **File input restricted to web-displayable images** — image dialog now filters `<input type="file">` to MIME types renderable in browsers (`image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/svg+xml`); unsupported formats show a clear error message
+- **Video shield disabled in read-only mode** — the click-shield overlay on video embeds is no longer rendered when the editor is in read-only mode
+
+---
+
 ## [1.0.7] - 2026-04-06
 
 ### Added

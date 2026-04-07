@@ -2,7 +2,7 @@
 
 <p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
-[![Version](https://img.shields.io/badge/version-1.0.7-blue)](#)
+[![Version](https://img.shields.io/badge/version-1.0.8-blue)](#)
 [![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Build](https://img.shields.io/badge/Build-Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -51,7 +51,7 @@ Floating toolbars appear automatically when the user clicks on an editable eleme
 | **Link** | Open in new tab, Edit (reopens dialog), Unlink |
 | **Image** | Edit alt/URL (reopens dialog), Delete |
 | **Video** | Edit (reopens dialog), Delete |
-| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Column width, Row height, Border width, Delete table |
+| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Unmerge cells, Cell selection mode, Column width, Row height, Border width, Delete table |
 | **Code block** (`<pre>`) | Copy code, Delete block |
 
 ### Context menu
@@ -74,7 +74,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Tree-shakeable** — ES module build; all core utilities are individually exported
 
 ### Security
-- All HTML (pasted content, `setHTML()`, or code-view output) is passed through a DOM-based sanitiser that strips `<script>`, `<iframe>`, `<object>`, `<embed>`, and all `on*` event handler attributes
+- All HTML (pasted content, `setHTML()`, or code-view output) is passed through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes; `<iframe>` elements are permitted in `setHTML()` to support embedded content
 - `javascript:` and `data:` URLs are rejected in links and images
 - Clipboard paste sanitises rich content to remove XSS vectors before inserting
 

@@ -48,20 +48,34 @@
     .an-editable {
       cursor: text;
       user-select: text;
-      // Subtle visual cue that the area is read-only.
-      background: #fafafa;
+      // No background change — keep the same appearance as editable mode
+      // so read-only content looks identical to the live editor.
 
       // Block checklist checkbox interaction in read-only mode.
+      // Keep opacity:1 so disabled checkboxes are still clearly visible.
       ul.an-checklist input[type='checkbox'] {
         pointer-events: none;
         cursor: default;
+        opacity: 1;
       }
 
-      // Prevent images and videos from being dragged out.
-      img,
+      // Prevent images from being dragged out.
+      img {
+        -webkit-user-drag: none;
+        user-drag: none;
+      }
+
+      // Prevent video wrapper itself from being dragged, but keep pointer-events
+      // active so the video shield works and the iframe is visible/interactive.
       .an-video-wrapper {
         -webkit-user-drag: none;
         user-drag: none;
+      }
+
+      // D-3: In read-only mode, disable the video shield so clicks reach the
+      // underlying <iframe> / <video> and users can play videos normally.
+      // The shield is only needed in edit mode to prevent accidental interaction.
+      .an-video-wrapper .an-video-shield {
         pointer-events: none;
       }
     }
@@ -435,7 +449,7 @@
   // Content styles
   p       { margin: 0 0 0.75em; }
   h1, h2, h3, h4, h5, h6 { margin: 0.5em 0; line-height: 1.3; }
-  ul, ol  { margin: 0 0 0.75em 1.5em; padding: 0; }
+  ul, ol  { margin: 0 0 0.75em 0; padding-left: 1.5em; list-style-position: inside; }
   li      { margin-bottom: 0.25em; }
   blockquote {
     margin: 0.5em 0 0.5em 1em;
@@ -636,6 +650,26 @@
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 11px;
   letter-spacing: 0.02em;
+}
+
+// Active state for toggle buttons in tooltips (e.g. Select Cells)
+.an-link-tooltip-btn--active {
+  background: rgba(#3b82f6, 0.12) !important;
+  color: #3b82f6 !important;
+  svg { stroke: #3b82f6; }
+}
+
+// Cells highlighted when select mode is active
+.an-cell-selected {
+  background-color: rgba(#3b82f6, 0.18) !important;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+// Cursor hint for all cells when select mode is on
+.an-table-select-mode td,
+.an-table-select-mode th {
+  cursor: cell;
 }
 
 // Size popover (column width / row height)
@@ -1757,6 +1791,17 @@ $an-video-accent: #8b5cf6; // violet-500
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
+  }
+
+  .an-link-tooltip-btn--active {
+    background: rgba(#6366f1, 0.2) !important;
+    color: #818cf8 !important;
+    svg { stroke: #818cf8; }
+  }
+
+  .an-cell-selected {
+    background-color: rgba(#6366f1, 0.25) !important;
+    outline-color: #6366f1;
   }
 
   .an-table-cell {

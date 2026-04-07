@@ -575,7 +575,18 @@ export class IconDialog {
 
     // 3. Insert the <i> node directly — never via execCommand/insertHTML
     //    (execCommand leaves the caret inside the inserted element)
+    //
+    // E-1: When the range covers the entire content of a <td>/<th>,
+    // deleteContents() can drift the range endpoint outside the cell in some
+    // browsers.  Save the cell reference first and re-anchor after deletion.
+    const _sc = range.startContainer;
+    const _tdAnchor = (_sc.nodeType === 1 ? _sc : _sc.parentElement)
+      ?.closest?.('td, th');
     range.deleteContents();
+    if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
+      range.setStart(_tdAnchor, 0);
+      range.collapse(true);
+    }
     range.insertNode(iconEl);
 
     // 4. Place cursor after the icon.

@@ -60,8 +60,29 @@ export function underline() {
 
 /**
  * Strikethrough / removes strikethrough.
+ * Falls back to manual DOM manipulation inside nested formats where
+ * execCommand's state detection is unreliable (mirrors underline() logic).
  */
-export const strikethrough = () => execCommand('strikeThrough');
+export function strikethrough() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  // Use startContainer for consistent detection across collapsed and range
+  // selections — commonAncestorContainer can miss ancestor <s>/<strike> tags
+  // when the selection spans across nested inline elements.
+  let sc = sel.getRangeAt(0).startContainer;
+  if (sc.nodeType === 3) sc = sc.parentElement;
+  const sEl = sc && sc.closest && (sc.closest('s') || sc.closest('strike'));
+  const nativeState = document.queryCommandState('strikeThrough');
+  if (sEl && !nativeState) {
+    // Browser doesn’t recognise the strikethrough state (e.g. inside <code>
+    // or deeply nested inline formats). Manually unwrap the <s>/<strike>.
+    const parent = sEl.parentNode;
+    while (sEl.firstChild) parent.insertBefore(sEl.firstChild, sEl);
+    parent.removeChild(sEl);
+    return;
+  }
+  execCommand('strikeThrough');
+}
 
 /**
  * Superscript toggle.
@@ -101,8 +122,35 @@ export function fontSize(size, editable = document) {
   const sel = window.getSelection();
   const wasCollapsed = !sel || !sel.rangeCount || sel.getRangeAt(0).collapsed;
 
-  execCommand('fontSize', '7'); // placeholder
-  // Replace font elements with spans, scoped to the active editable
+  // B-I-3/4: For a collapsed (caret) selection the browser's execCommand
+  // 'fontSize' leaves an internal "pending" state of size-7 (=48px) instead of
+  // creating a <font> element, so the very next typed character comes out at
+  // 48px. Fix: bypass execCommand entirely for collapsed selections and directly
+  // insert a span with the requested size, placing the cursor inside it.
+  // Only applies when there IS an active selection (sel.rangeCount > 0); when
+  // there is no selection at all (e.g. jsdom unit tests) fall through to the
+  // execCommand path so the font-replacement logic still runs.
+  if (wasCollapsed && sel && sel.rangeCount > 0) {
+    try {
+      const range = sel.getRangeAt(0);
+      const span = document.createElement('span');
+      span.style.fontSize = size;
+      const zwsNode = document.createTextNode('\u200B');
+      span.appendChild(zwsNode);
+      range.insertNode(span);
+      const nr = document.createRange();
+      nr.setStart(zwsNode, zwsNode.textContent.length);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
+    } catch (_) { /* ignore range errors on unusual DOM structures */ }
+    return;
+  }
+
+  // Non-collapsed selection (or no selection — handles jsdom test setup where
+  // <font size="7"> elements are injected directly without a live selection):
+  // use execCommand placeholder approach then replace <font> with <span>.
+  execCommand('fontSize', '7');
   const scope = editable instanceof HTMLElement ? editable : document;
   const newSpans = [];
   scope.querySelectorAll('font[size="7"]').forEach((el) => {
@@ -114,36 +162,20 @@ export function fontSize(size, editable = document) {
     newSpans.push(span);
   });
 
-  // Restore the selection inside the new span(s) so:
-  // 1. The toolbar getValue() correctly reflects the new font size.
-  // 2. For a collapsed (caret) selection, subsequent typing inherits the
-  //    chosen size rather than the browser's stale execCommand state (which
-  //    would produce size 7 = 48 px instead of the requested value).
-  if (sel && newSpans.length > 0) {
+  // Re-select all replaced content so toolbar getValue() reads the new size
+  // (B-I-1/2: without this re-selection the toolbar dropdown stays on the old
+  // value until the next selectionchange event).
+  if (!wasCollapsed && sel && newSpans.length > 0) {
     const first = newSpans[0];
     const last  = newSpans[newSpans.length - 1];
     try {
-      if (wasCollapsed) {
-        // Ensure the span has a text anchor so the cursor can live inside it.
-        if (!first.firstChild) {
-          first.appendChild(document.createTextNode('\u200B'));
-        }
-        const nr = document.createRange();
-        const anchor = first.firstChild;
-        nr.setStart(anchor, anchor.textContent.length);
-        nr.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(nr);
-      } else {
-        // Re-select all replaced content so toolbar refresh reads the new size.
-        const nr = document.createRange();
-        const startNode = first.firstChild || first;
-        const endNode   = last.lastChild  || last;
-        nr.setStart(startNode, 0);
-        nr.setEnd(endNode, endNode.nodeType === Node.TEXT_NODE ? endNode.textContent.length : endNode.childNodes.length);
-        sel.removeAllRanges();
-        sel.addRange(nr);
-      }
+      const nr = document.createRange();
+      const startNode = first.firstChild || first;
+      const endNode   = last.lastChild  || last;
+      nr.setStart(startNode, 0);
+      nr.setEnd(endNode, endNode.nodeType === Node.TEXT_NODE ? endNode.textContent.length : endNode.childNodes.length);
+      sel.removeAllRanges();
+      sel.addRange(nr);
     } catch (_) { /* ignore range errors on unusual DOM structures */ }
   }
 }
@@ -185,8 +217,69 @@ export const indent = () => execCommand('indent');
 
 /**
  * Outdents the list or block.
+ * G.5: When cursor is inside a checklist item, "outdent" means converting
+ * that item back to a regular <p> element rather than calling execCommand
+ * (which would destroy the ul > li checklist structure).
  */
-export const outdent = () => execCommand('outdent');
+export function outdent() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount) {
+    let container = sel.getRangeAt(0).commonAncestorContainer;
+    if (container.nodeType === 3) container = container.parentElement;
+    const checkLi = container && container.closest && container.closest('.an-checklist li');
+    if (checkLi) {
+      _checklistItemToP(checkLi);
+      return;
+    }
+  }
+  execCommand('outdent');
+}
+
+/**
+ * G.5 helper: splits a checklist at checkLi, converts it to a <p>,
+ * and keeps items before/after as separate checklists.
+ * @param {HTMLElement} checkLi
+ */
+function _checklistItemToP(checkLi) {
+  const checkUl = checkLi.closest('.an-checklist');
+  if (!checkUl) return;
+
+  const allLis  = Array.from(checkUl.children);
+  const liIndex = allLis.indexOf(checkLi);
+  const afterLis = allLis.slice(liIndex + 1);
+
+  // Build <p> from the item's text (skip the checkbox INPUT)
+  const p = document.createElement('p');
+  const text = Array.from(checkLi.childNodes)
+    .filter(n => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+    .map(n => n.textContent).join('').replace(/\u200B/g, '').trim();
+  p.textContent = text || '\u00a0';
+
+  // Move items after the current li into a new checklist
+  if (afterLis.length > 0) {
+    const newUl = document.createElement('ul');
+    newUl.className = 'an-checklist';
+    afterLis.forEach(li => newUl.appendChild(li));
+    checkUl.parentNode.insertBefore(newUl, checkUl.nextSibling);
+  }
+
+  // Insert <p> after checkUl (before any newUl)
+  checkUl.parentNode.insertBefore(p, checkUl.nextSibling);
+
+  // Remove current li from checkUl; delete checkUl if now empty
+  checkUl.removeChild(checkLi);
+  if (checkUl.children.length === 0) checkUl.parentNode.removeChild(checkUl);
+
+  // Place caret at start of the new <p>
+  try {
+    const nr = document.createRange();
+    const firstChild = p.firstChild;
+    nr.setStart(firstChild && firstChild.nodeType === 3 ? firstChild : p, 0);
+    nr.collapse(true);
+    const s = window.getSelection();
+    if (s) { s.removeAllRanges(); s.addRange(nr); }
+  } catch {}
+}
 
 /**
  * Inserts an unordered list or converts selection.
@@ -471,20 +564,78 @@ export function toggleChecklist() {
     return;
   }
 
-  const text = sel.toString();
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length === 0) return;
-  const items = lines
-    .map(
-      (l) =>
-        `<li><input type="checkbox" contenteditable="false">${l || '\u200B'}</li>`,
-    )
-    .join('');
-  document.execCommand(
-    'insertHTML',
-    false,
-    `<ul class="an-checklist">${items}</ul>`,
+  // G-4: Non-collapsed, non-checklist selection — convert each intersected
+  // block element into a checklist item using direct DOM manipulation.
+  // execCommand('insertHTML') is avoided here because in modern browsers it
+  // deletes the selection but may silently fail to insert when the selection
+  // spans multiple block elements, causing text to disappear.
+
+  // Guard: if the raw selection is entirely whitespace, do nothing (mirrors
+  // the old line-filter behaviour that prevented empty checklist creation).
+  const rawSelText = sel.toString().replace(/[\u00a0\u200B]/g, ' ').trim();
+  if (!rawSelText) return;
+
+  const BLOCK_TAGS_MULTI = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'LI']);
+
+  // Collect block-level ancestors of every node in the selection, in order.
+  const blocks = [];
+  const seenBlocks = new Set();
+  const commonAncestor = range.commonAncestorContainer;
+  const iter = document.createNodeIterator(
+    commonAncestor.nodeType === Node.TEXT_NODE ? commonAncestor.parentNode : commonAncestor,
+    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+    null,
   );
+  let node;
+  while ((node = iter.nextNode())) {
+    if (!range.intersectsNode(node)) continue;
+    let block = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    while (block && !BLOCK_TAGS_MULTI.has(block.tagName)) {
+      block = block.parentElement;
+    }
+    if (block && !seenBlocks.has(block)) {
+      seenBlocks.add(block);
+      blocks.push(block);
+    }
+  }
+
+  if (blocks.length === 0) return;
+
+  // Build checklist and replace collected blocks.
+  const newUl = document.createElement('ul');
+  newUl.className = 'an-checklist';
+  let lastTextNode = null;
+  blocks.forEach((block) => {
+    const li = document.createElement('li');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.setAttribute('contenteditable', 'false');
+    li.appendChild(cb);
+    // Preserve plain text content; ZWS/NBSP are stripped for display.
+    const blockText = Array.from(block.childNodes)
+      .map((n) => n.textContent)
+      .join('')
+      .replace(/[\u00a0\u200B]/g, ' ')
+      .trim();
+    const tn = document.createTextNode(blockText || '\u200B');
+    li.appendChild(tn);
+    newUl.appendChild(li);
+    lastTextNode = tn;
+  });
+
+  // Insert the new list before the first block, then remove all source blocks.
+  const firstBlock = blocks[0];
+  firstBlock.parentNode.insertBefore(newUl, firstBlock);
+  blocks.forEach((block) => block.parentNode && block.parentNode.removeChild(block));
+
+  // Move caret to end of the last checklist item.
+  if (lastTextNode) {
+    const nr = document.createRange();
+    nr.setStart(lastTextNode, lastTextNode.textContent.length);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+  }
 }
 
 /**
