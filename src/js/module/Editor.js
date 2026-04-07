@@ -381,7 +381,7 @@ export class Editor {
    * @param {string} html - HTML string (will be sanitised)
    */
   setHTML(html) {
-    this.context.layoutInfo.editable.innerHTML = sanitiseHTML(html);
+    this.context.layoutInfo.editable.innerHTML = sanitiseHTML(html, { allowIframes: true });
     if (this._history) this._history.reset();
     this.afterCommand();
   }

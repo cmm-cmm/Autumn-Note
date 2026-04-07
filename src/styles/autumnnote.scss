@@ -71,6 +71,13 @@
         -webkit-user-drag: none;
         user-drag: none;
       }
+
+      // D-3: In read-only mode, disable the video shield so clicks reach the
+      // underlying <iframe> / <video> and users can play videos normally.
+      // The shield is only needed in edit mode to prevent accidental interaction.
+      .an-video-wrapper .an-video-shield {
+        pointer-events: none;
+      }
     }
   }
 
