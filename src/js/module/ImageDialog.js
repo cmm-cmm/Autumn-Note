@@ -118,7 +118,7 @@ export class ImageDialog {
       const fileInput = createElement('input', {
         type: 'file',
         class: 'an-input',
-        accept: 'image/*',
+        accept: 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif',
       });
       this._fileInput = fileInput;
       // Hint line shown below the file input for format errors
@@ -159,10 +159,14 @@ export class ImageDialog {
     const file = this._fileInput && this._fileInput.files && this._fileInput.files[0];
     if (!file || !file.type.startsWith('image/')) return;
 
-    // C2: Reject image formats browsers cannot display (TIFF, BMP, etc.).
-    const UNSUPPORTED = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp'];
-    if (UNSUPPORTED.includes(file.type)) {
-      const message = `Format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
+    // C2: Only allow web-displayable formats. TIFF, BMP, RAW and similar
+    // formats are not rendered by browsers — reject them with a clear message.
+    const SUPPORTED = new Set([
+      'image/jpeg', 'image/png', 'image/gif',
+      'image/webp', 'image/svg+xml', 'image/avif',
+    ]);
+    if (!SUPPORTED.has(file.type)) {
+      const message = `Format "${file.type}" is not supported for display in web browsers. Please convert to JPEG, PNG, or WebP first.`;
       if (this._fileHint) this._fileHint.textContent = message;
       this.context.triggerEvent('imageError', { file, message });
       this._fileInput.value = '';
