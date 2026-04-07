@@ -288,11 +288,16 @@ export class TableTooltip {
       if (_edge === 'col') {
         _startW   = _nearCell.offsetWidth;
         _colIdx   = getVisualColIndex(_nearCell);
-        // Cache column cells once so onDocMove never runs querySelectorAll per frame
+        // Cache column cells once so onDocMove never runs querySelectorAll per frame.
+        // F-1: skip merged cells (colSpan > 1) — setting width on a merged cell
+        // distributes it equally across all spanned columns instead of resizing
+        // only the target column.  Rows that have an individual cell at this
+        // visual column index are resized independently as expected.
         _colCells = _colIdx >= 0
           ? Array.from(_table.querySelectorAll('tr'))
               .map(r => getCellAtVisualCol(r, _colIdx))
               .filter(Boolean)
+              .filter(c => (c.colSpan || 1) === 1)
           : [];
         document.body.style.cursor = 'col-resize';
       } else {
@@ -990,7 +995,8 @@ export class TableTooltip {
           colIndices.forEach((colIdx) => {
             tableRows.forEach((r) => {
               const c = getCellAtVisualCol(r, colIdx);
-              if (c) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
+              // F-1: skip merged cells — same reason as drag-resize _colCells.
+              if (c && (c.colSpan || 1) === 1) { c.style.width = `${val}px`; c.style.minWidth = `${val}px`; }
             });
           });
         } else {

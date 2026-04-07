@@ -217,8 +217,69 @@ export const indent = () => execCommand('indent');
 
 /**
  * Outdents the list or block.
+ * G.5: When cursor is inside a checklist item, "outdent" means converting
+ * that item back to a regular <p> element rather than calling execCommand
+ * (which would destroy the ul > li checklist structure).
  */
-export const outdent = () => execCommand('outdent');
+export function outdent() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount) {
+    let container = sel.getRangeAt(0).commonAncestorContainer;
+    if (container.nodeType === 3) container = container.parentElement;
+    const checkLi = container && container.closest && container.closest('.an-checklist li');
+    if (checkLi) {
+      _checklistItemToP(checkLi);
+      return;
+    }
+  }
+  execCommand('outdent');
+}
+
+/**
+ * G.5 helper: splits a checklist at checkLi, converts it to a <p>,
+ * and keeps items before/after as separate checklists.
+ * @param {HTMLElement} checkLi
+ */
+function _checklistItemToP(checkLi) {
+  const checkUl = checkLi.closest('.an-checklist');
+  if (!checkUl) return;
+
+  const allLis  = Array.from(checkUl.children);
+  const liIndex = allLis.indexOf(checkLi);
+  const afterLis = allLis.slice(liIndex + 1);
+
+  // Build <p> from the item's text (skip the checkbox INPUT)
+  const p = document.createElement('p');
+  const text = Array.from(checkLi.childNodes)
+    .filter(n => !(n.nodeType === 1 && n.tagName === 'INPUT'))
+    .map(n => n.textContent).join('').replace(/\u200B/g, '').trim();
+  p.textContent = text || '\u00a0';
+
+  // Move items after the current li into a new checklist
+  if (afterLis.length > 0) {
+    const newUl = document.createElement('ul');
+    newUl.className = 'an-checklist';
+    afterLis.forEach(li => newUl.appendChild(li));
+    checkUl.parentNode.insertBefore(newUl, checkUl.nextSibling);
+  }
+
+  // Insert <p> after checkUl (before any newUl)
+  checkUl.parentNode.insertBefore(p, checkUl.nextSibling);
+
+  // Remove current li from checkUl; delete checkUl if now empty
+  checkUl.removeChild(checkLi);
+  if (checkUl.children.length === 0) checkUl.parentNode.removeChild(checkUl);
+
+  // Place caret at start of the new <p>
+  try {
+    const nr = document.createRange();
+    const firstChild = p.firstChild;
+    nr.setStart(firstChild && firstChild.nodeType === 3 ? firstChild : p, 0);
+    nr.collapse(true);
+    const s = window.getSelection();
+    if (s) { s.removeAllRanges(); s.addRange(nr); }
+  } catch {}
+}
 
 /**
  * Inserts an unordered list or converts selection.

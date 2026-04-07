@@ -5,7 +5,7 @@
 
 import { key, isKey } from '../core/key.js';
 import { closestPara, isLi } from '../core/dom.js';
-import { execCommand } from './Style.js';
+import { execCommand, outdent } from './Style.js';
 import { currentRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -199,7 +199,7 @@ export function handleKeydown(event, editable, options = {}) {
     if (para && isLi(para)) {
       event.preventDefault();
       if (event.shiftKey) {
-        execCommand('outdent');
+        outdent();
       } else {
         execCommand('indent');
       }

@@ -688,7 +688,18 @@ export class EmojiDialog {
 
     // 2. Insert emoji as a plain text node — no ZWS or execCommand needed.
     //    Text nodes are natively navigable so the caret lands cleanly after.
+    //
+    // E-1: When the range covers the entire content of a <td>/<th>,
+    // deleteContents() can drift the range endpoint outside the cell in some
+    // browsers.  Save the cell reference first and re-anchor after deletion.
+    const _sc = range.startContainer;
+    const _tdAnchor = (_sc.nodeType === 1 ? _sc : _sc.parentElement)
+      ?.closest?.('td, th');
     range.deleteContents();
+    if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
+      range.setStart(_tdAnchor, 0);
+      range.collapse(true);
+    }
     const textNode = document.createTextNode(char);
     range.insertNode(textNode);
 
