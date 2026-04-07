@@ -153,8 +153,19 @@ export class Editor {
       on(editable, 'click', onCheckboxClick),
       on(editable, 'mouseup', fixChecklistCursor),
       on(editable, 'keyup',   fixChecklistCursor),
-      // Block drag-out and external drops in read-only mode
-      on(editable, 'dragstart', (e) => { if (isReadOnly()) e.preventDefault(); }),
+      // Block drag-out and external drops in read-only mode.
+      // D-1: Also block dragging of iframes and .an-video-wrapper elements in
+      // edit mode — a user can inadvertently drag the iframe out of its wrapper
+      // (making it playable/removable from contenteditable protection) by holding
+      // the mouse and moving outside the wrapper before releasing.
+      on(editable, 'dragstart', (e) => {
+        if (isReadOnly()) { e.preventDefault(); return; }
+        const target = e.target;
+        if (target && (target.nodeName === 'IFRAME' ||
+            (target.closest && target.closest('.an-video-wrapper')))) {
+          e.preventDefault();
+        }
+      }),
       on(editable, 'drop',      (e) => { if (isReadOnly()) e.preventDefault(); }),
     );
 
