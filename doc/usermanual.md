@@ -22,6 +22,13 @@ AutumnNote is a modern, lightweight WYSIWYG rich-text editor built with plain Ja
 14. [Destroying an Editor](#14-destroying-an-editor)
 15. [Advanced — Module Invocation](#15-advanced--module-invocation)
 16. [Building from Source](#16-building-from-source)
+17. [Find & Replace](#17-find--replace)
+18. [Checklist](#18-checklist)
+19. [Image Crop Overlay](#19-image-crop-overlay)
+20. [Read-only Mode](#20-read-only-mode)
+21. [Auto-save](#21-auto-save)
+22. [RTL Support](#22-rtl-support)
+23. [Character & Word Limits](#23-character--word-limits)
 
 ---
 
@@ -88,30 +95,49 @@ Pass options as the second argument to `AutumnNote.create()`, or set global defa
 | `focus` | `boolean` | `false` | Automatically focus the editor on creation. |
 | `resizable` | `boolean` | `true` | Show the resize handle at the bottom of the editor. |
 | `toolbar` | `Array[]` | _all buttons_ | Toolbar layout. See [Toolbar Customisation](#7-toolbar-customisation). |
+| `toolbarOverflow` | `string` | `'wrap'` | How the toolbar handles overflow: `'wrap'` (wraps to next line) or `'scroll'` (single scrollable row). |
 | `useBootstrap` | `boolean` | `false` | Apply Bootstrap CSS classes to toolbar buttons. |
+| `bootstrapVersion` | `number` | `5` | Bootstrap major version (`4` or `5`). |
 | `toolbarButtonClass` | `string` | `'btn btn-sm btn-light'` | CSS classes added to each toolbar button when `useBootstrap` is `true`. |
-| `useFontAwesome` | `boolean` | `true` | Use Font Awesome icons for toolbar buttons. Set to `false` to use Unicode fallbacks. |
+| `useFontAwesome` | `boolean` | `true` | Use Font Awesome icons for toolbar buttons. Set to `false` to use built-in SVG fallbacks. |
 | `fontAwesomeClass` | `string` | `'fas'` | Font Awesome prefix class. Use `'fas'` for FA5, `'fa-solid'` for FA6. |
 | `pasteAsPlainText` | `boolean` | `false` | Strip all formatting when pasting. |
 | `pasteCleanHTML` | `boolean` | `true` | Sanitise HTML on paste (removes scripts, dangerous attributes, etc.). |
-| `allowImageUpload` | `boolean` | `true` | Allow dragging/pasting images into the editor. |
+| `pasteStripAttributes` | `boolean` | `false` | Strip `class`, `style`, and `data-*` attributes from pasted HTML elements. |
+| `markdownPaste` | `boolean` | `true` | Convert pasted Markdown shortcuts (e.g. `**bold**`, `# Heading`) to HTML as you type. |
+| `allowImageUpload` | `boolean` | `true` | Allow dragging/pasting images and file upload in the image dialog. |
 | `maxImageSize` | `number` | `5` | Maximum image file size in megabytes. |
 | `tabSize` | `number` | `4` | Number of spaces inserted when Tab is pressed. |
+| `historyLimit` | `number` | `100` | Maximum number of undo steps to retain. |
+| `defaultFontFamily` | `string` | `'Arial'` | Font shown by default in the font-family dropdown. |
+| `defaultFontSize` | `string` | `'14px'` | Default font size applied to new content. |
+| `fontFamilies` | `string[]` | _(see below)_ | List of fonts available in the font-family dropdown. |
+| `stickyToolbar` | `boolean` | `false` | Pin the toolbar to the viewport top while scrolling. |
+| `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. height of a fixed nav bar). |
+| `theme` | `string` | `'light'` | Colour theme: `'light'` or `'dark'`. |
+| `readOnly` | `boolean` | `false` | Start the editor in non-editable mode with toolbar hidden. Toggle at runtime via `setDisabled()`. |
+| `spellcheck` | `boolean` | `true` | Enable browser spellcheck in the editable area. |
+| `direction` | `string` | `'ltr'` | Text direction: `'ltr'` (default) or `'rtl'`. Sets `dir` attribute on the editable area. |
+| `autoSave` | `boolean` | `false` | Persist content to `localStorage` on every change. |
+| `autoSaveKey` | `string` | `'autumnnote-autosave'` | `localStorage` key used when `autoSave` is enabled. |
+| `maxChars` | `number` | `0` | Maximum character count. `0` = unlimited. Shows a warning in the statusbar when reached. |
+| `maxWords` | `number` | `0` | Maximum word count. `0` = unlimited. Shows a warning in the statusbar when reached. |
+| `tableHeaderRow` | `boolean` | `false` | Insert a `<thead>` header row when creating new tables. |
+| `codeHighlight` | `boolean` | `true` | Syntax-highlight `<code>` blocks using Prism.js via CDN. |
+| `codeHighlightCDN` | `string` | `'https://cdnjs.cloudflare.com/…/prism/1.29.0'` | Base URL for Prism.js CDN assets. |
+| `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
+| `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour string). Overrides the default blue. |
 | `onChange` | `function\|null` | `null` | Called with `(html: string)` on every content change. |
 | `onFocus` | `function\|null` | `null` | Called with `(context)` when the editor gains focus. |
 | `onBlur` | `function\|null` | `null` | Called with `(context)` when the editor loses focus. |
 | `onInit` | `function\|null` | `null` | Called with `(context)` once the editor has fully initialised. |
-| `onImageUpload` | `function\|null` | `null` | Called with `(files: FileList)` when images are dropped/pasted. Use this to upload to a server. See [Image Upload](#11-image-upload). |
+| `onImageUpload` | `function\|null` | `null` | Called with `(files: FileList)` when images are dropped/pasted. See [Image Upload](#11-image-upload). |
 | `onImageError` | `function\|null` | `null` | Called with `({ file, message })` when an image is rejected (e.g. over `maxImageSize`). |
-| `stickyToolbar` | `boolean` | `false` | Make the toolbar sticky (fixed at the top while scrolling). |
-| `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. to clear a fixed nav bar). |
-| `theme` | `string` | `'light'` | Colour theme: `'light'` or `'dark'`. |
-| `codeHighlight` | `boolean` | `true` | Syntax-highlight `<code>` blocks using Prism.js via CDN. |
-| `codeHighlightCDN` | `string` | `'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0'` | Base URL for Prism.js CDN assets. |
-| `markdownPaste` | `boolean` | `true` | Convert Markdown shortcuts (e.g. `**bold**`, `# Heading`) to HTML as you type. |
-| `historyLimit` | `number` | `100` | Maximum number of undo steps to retain. |
-| `defaultFontFamily` | `string` | `'Arial'` | Font shown by default in the font-family dropdown. |
-| `fontFamilies` | `string[]` | _(see below)_ | List of fonts available in the font-family dropdown. |
+| `onPaste` | `function\|null` | `null` | Called with `({ text, html })` after every paste event. |
+| `onSelectionChange` | `function\|null` | `null` | Called with `(context)` when the cursor or selection changes inside the editor. |
+| `onDestroy` | `function\|null` | `null` | Called with `(context)` just before the editor instance is destroyed. |
+| `onCharLimitReached` | `function\|null` | `null` | Called with `(context)` when `maxChars` is hit. |
+| `onWordLimitReached` | `function\|null` | `null` | Called with `(context)` when `maxWords` is hit. |
 
 **Default `fontFamilies`:**
 ```js
@@ -129,17 +155,31 @@ AutumnNote.create('#editor', {
   placeholder: 'Start typing…',
   focus: true,
   theme: 'dark',
+  direction: 'ltr',
+  readOnly: false,
+  spellcheck: true,
   pasteAsPlainText: false,
   pasteCleanHTML: true,
+  pasteStripAttributes: false,
   allowImageUpload: true,
   maxImageSize: 10,
   stickyToolbar: true,
-  stickyToolbarOffset: 56, // height of a fixed nav bar
+  stickyToolbarOffset: 56,  // height of a fixed nav bar
+  autoSave: true,
+  autoSaveKey: 'my-draft',
+  maxChars: 5000,
+  maxWords: 1000,
+  tableHeaderRow: true,
   historyLimit: 50,
   fontFamilies: ['Arial', 'Roboto', 'Open Sans'],
   defaultFontFamily: 'Roboto',
+  defaultFontSize: '16px',
+  colorSwatches: ['#e74c3c', '#f39c12', '#2ecc71', '#3498db'],
+  focusColor: '#f97316',
   onChange(html) { /* ... */ },
-  onInit(ctx) { /* ... */ }
+  onInit(ctx) { /* ... */ },
+  onDestroy(ctx) { /* ... */ },
+  onCharLimitReached(ctx) { alert('Limit reached'); },
 });
 ```
 
@@ -383,6 +423,11 @@ Events can be registered either as option callbacks or via `editor.on()`.
 | `init` | `onInit` | `context` | Fired once, after the editor has fully initialised. |
 | `imageUpload` | `onImageUpload` | `files: FileList` | Fired when images are dropped or pasted, **only** when `onImageUpload` is provided. The editor does **not** embed the image itself — your handler must insert it. |
 | `imageError` | `onImageError` | `{ file, message }` | Fired when an image is rejected (e.g. exceeds `maxImageSize`). |
+| `paste` | `onPaste` | `{ text, html }` | Fired after every paste event with the raw clipboard text and HTML. |
+| `selectionChange` | `onSelectionChange` | `context` | Fired when the cursor or selection changes inside the editor. |
+| `destroy` | `onDestroy` | `context` | Fired just before the editor instance is destroyed. |
+| `charLimitReached` | `onCharLimitReached` | `context` | Fired when the character count hits `maxChars`. |
+| `wordLimitReached` | `onWordLimitReached` | `context` | Fired when the word count hits `maxWords`. |
 
 ### Using `editor.on()`
 
@@ -417,14 +462,15 @@ import {
   boldBtn, italicBtn, underlineBtn, strikeBtn,
   superscriptBtn, subscriptBtn,
   alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn,
-  ulBtn, olBtn, indentBtn, outdentBtn,
+  ulBtn, olBtn, checklistBtn, indentBtn, outdentBtn,
   undoBtn, redoBtn,
   hrBtn,
   linkBtn, imageBtn, videoBtn,
   emojiBtn, iconBtn, tableBtn,
   fontFamilyBtn, paragraphStyleBtn, lineHeightBtn,
   codeviewBtn, fullscreenBtn, shortcutsBtn,
-  foreColorBtn, backColorBtn
+  foreColorBtn, backColorBtn,
+  findBtn, findReplaceBtn,
 } from 'autumnnote';
 ```
 
@@ -440,7 +486,7 @@ If you do not specify `toolbar`, this layout is used:
   [superscriptBtn, subscriptBtn],
   [foreColorBtn, backColorBtn],
   [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
-  [ulBtn, olBtn, indentBtn, outdentBtn],
+  [ulBtn, olBtn, checklistBtn, indentBtn, outdentBtn],
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
   [codeviewBtn, fullscreenBtn, shortcutsBtn]
 ]
@@ -491,9 +537,12 @@ AutumnNote.create('#editor', { toolbar: [] });
 | `Ctrl + B` | Bold |
 | `Ctrl + I` | Italic |
 | `Ctrl + U` | Underline |
-| `Shift + ?` | Open Shortcuts Dialog |
-| `Tab` | Insert spaces (default: 4) |
+| `Ctrl + F` | Open Find dialog |
+| `Ctrl + H` | Open Find & Replace dialog |
 | `Shift + Enter` | Insert line break (`<br>`) |
+| `Tab` | Insert spaces / indent list item |
+| `Shift + Tab` | Outdent list item |
+| `Shift + ?` | Open Keyboard Shortcuts dialog |
 
 > The number of spaces inserted by `Tab` is controlled by the `tabSize` option.
 
@@ -697,6 +746,8 @@ This is primarily used for building toolbar buttons or extending the editor. Mos
 | `'imageDialog.show'` | Open the image dialog |
 | `'videoDialog.show'` | Open the video dialog |
 | `'emojiDialog.show'` | Open the emoji picker |
+| `'findReplace.show', mode` | Open Find (`mode: 'find'`) or Find & Replace (`mode: 'replace'`) dialog |
+| `'editor.toggleChecklist'` | Toggle checklist on current selection |
 | `'shortcutsDialog.show'` | Open the keyboard shortcuts dialog |
 
 ### Example
@@ -768,6 +819,167 @@ npm run test:watch # run in watch mode
 npm run lint
 ```
 
+### Type checking
+
+```bash
+npm run typecheck
+```
+
+---
+
+## 17. Find & Replace
+
+AutumnNote includes a built-in Find and Replace dialog available via keyboard shortcuts or toolbar buttons.
+
+- **`Ctrl+F`** opens the **Find** panel — a compact overlay that highlights all matches in the editor using `<mark>` elements and allows Prev/Next navigation.
+- **`Ctrl+H`** opens the **Find & Replace** panel — the same overlay extended with a replace input, a single-replace button, and a Replace All button.
+
+### Features
+
+- **Case-sensitive** toggle via a checkbox.
+- **Live matching** using `TreeWalker` — matches update as you type in the find box.
+- **Match counter** shows the current match position and total count (e.g. `2 / 7`).
+- **Replace** replaces only the currently highlighted match and advances to the next.
+- **Replace All** replaces every match in one operation.
+- Closing the dialog removes all `<mark>` highlights and restores the editor state.
+
+### Programmatic usage
+
+```js
+// Open find-only mode
+editor.invoke('findReplace.show', 'find');
+
+// Open find-and-replace mode
+editor.invoke('findReplace.show', 'replace');
+```
+
+---
+
+## 18. Checklist
+
+A checklist inserts interactive checkbox items inside the editor content.
+
+```js
+// Toggle checklist on the current selection
+editor.invoke('editor.toggleChecklist');
+```
+
+- Clicking a checkbox in the rendered editor toggles its checked state.
+- Outdenting a checklist item at the top level converts it to a plain paragraph.
+- The `checklistBtn` export adds a toolbar button for this action.
+
+```js
+import AutumnNote, { checklistBtn } from 'autumnnote';
+
+AutumnNote.create('#editor', {
+  toolbar: [
+    [boldBtn, italicBtn],
+    [ulBtn, olBtn, checklistBtn],
+  ],
+});
+```
+
+---
+
+## 19. Image Crop Overlay
+
+When the user clicks an inserted image, the image tooltip includes a **Crop** action. Clicking it opens an inline crop overlay directly over the image.
+
+### How it works
+
+1. A semi-transparent scrim covers the image.
+2. Corner and edge drag handles allow the user to select the crop region.
+3. Pressing **Confirm** renders the cropped area to a `<canvas>` and replaces the `src` of the image with the resulting data URI.
+4. Pressing **Cancel** dismisses the overlay without any changes.
+
+### CORS limitation
+
+If the image is hosted on a different origin without CORS headers, the canvas export will be blocked by the browser's security policy. AutumnNote shows a clear warning in this case and cancels the operation gracefully.
+
+---
+
+## 20. Read-only Mode
+
+Use `readOnly: true` to initialise the editor as a non-editable preview. The toolbar is hidden and all user input is blocked.
+
+```js
+const preview = AutumnNote.create('#preview', { readOnly: true });
+preview.setHTML(savedHtml);
+```
+
+Toggle read-only state at runtime:
+
+```js
+editor.setDisabled(true);  // enter read-only mode
+editor.setDisabled(false); // return to editable mode
+```
+
+Video embeds suppress the click-shield overlay in read-only mode so embedded players work normally.
+
+---
+
+## 21. Auto-save
+
+Enable auto-save to persist content to `localStorage` on every content change.
+
+```js
+AutumnNote.create('#editor', {
+  autoSave: true,
+  autoSaveKey: 'my-editor-draft',
+});
+```
+
+Restore a draft on page load:
+
+```js
+const editor = AutumnNote.create('#editor', {
+  autoSave: true,
+  autoSaveKey: 'my-editor-draft',
+  onInit(ctx) {
+    const draft = localStorage.getItem('my-editor-draft');
+    if (draft) ctx.setHTML(draft);
+  },
+});
+```
+
+---
+
+## 22. RTL Support
+
+Set `direction: 'rtl'` to flip the editor layout and content direction for right-to-left languages.
+
+```js
+AutumnNote.create('#editor', { direction: 'rtl' });
+```
+
+This sets the `dir` attribute on the editable area and mirrors toolbar alignment controls accordingly.
+
+---
+
+## 23. Character & Word Limits
+
+Use `maxChars` and/or `maxWords` to enforce content length limits. When a limit is reached, the statusbar shows a warning and the relevant callback fires.
+
+```js
+AutumnNote.create('#editor', {
+  maxChars: 1000,
+  maxWords: 200,
+  onCharLimitReached(ctx) {
+    alert('Character limit reached!');
+  },
+  onWordLimitReached(ctx) {
+    alert('Word limit reached!');
+  },
+});
+```
+
+Subscribing via events:
+
+```js
+editor.on('charLimitReached', (ctx) => showWarning('Too many characters'));
+editor.on('wordLimitReached', (ctx) => showWarning('Too many words'));
+```
+
 ---
 
 ## Appendix — All Available Button Exports
@@ -793,6 +1005,7 @@ npm run lint
 | `alignJustifyBtn` | Justify | Full justify |
 | `ulBtn` | Unordered List | Bullet list |
 | `olBtn` | Ordered List | Numbered list |
+| `checklistBtn` | Checklist | Toggle interactive checkbox list |
 | `indentBtn` | Indent | Increase indent |
 | `outdentBtn` | Outdent | Decrease indent |
 | `hrBtn` | Horizontal Rule | Insert `<hr>` |
@@ -802,6 +1015,8 @@ npm run lint
 | `tableBtn` | Table | Insert table (grid picker) |
 | `emojiBtn` | Emoji | Open emoji picker |
 | `iconBtn` | Icon | Insert Font Awesome icon |
+| `findBtn` | Find | Open Find dialog (Ctrl+F) |
+| `findReplaceBtn` | Find & Replace | Open Find & Replace dialog (Ctrl+H) |
 | `codeviewBtn` | Code View | Toggle raw HTML source view |
 | `fullscreenBtn` | Fullscreen | Toggle fullscreen mode |
 | `shortcutsBtn` | Shortcuts | Show keyboard shortcuts reference |
