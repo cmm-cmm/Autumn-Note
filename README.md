@@ -126,7 +126,7 @@ import 'autumnnote/dist/autumnnote.css';
 
 ### CDN
 
-**jsDelivr** (khuyên dùng):
+**jsDelivr** (Recommended):
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
@@ -138,7 +138,6 @@ import 'autumnnote/dist/autumnnote.css';
 <script src="https://unpkg.com/autumnnote"></script>
 ```
 
-Hoặc dùng file từ thư mục `dist/` (cài qua npm):
 
 ```html
 <link rel="stylesheet" href="dist/autumnnote.css" />
