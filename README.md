@@ -126,6 +126,19 @@ import 'autumnnote/dist/autumnnote.css';
 
 ### CDN
 
+**jsDelivr** (Recommended):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
+```
+
+**unpkg:**
+
+```html
+<script src="https://unpkg.com/autumnnote"></script>
+```
+
+
 ```html
 <link rel="stylesheet" href="dist/autumnnote.css" />
 <script src="dist/autumnnote.umd.js"></script>
