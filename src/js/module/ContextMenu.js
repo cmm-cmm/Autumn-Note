@@ -48,8 +48,9 @@ const COLOR_PRESETS = [
 
 function makeColorSubItems(colorType) {
   const label = colorType === 'foreColor' ? 'Text Color' : 'Highlight Color';
+  const localeKey = colorType === 'foreColor' ? 'textColor' : 'highlightColor';
   return () => [
-    { back: true, label, navigate: () => defaultItems },
+    { back: true, label, localeKey, navigate: () => defaultItems },
     { colorPalette: true, colorType },
   ];
 }
@@ -171,7 +172,8 @@ export class ContextMenu {
         const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = ICONS.back;
         backBtn.appendChild(iconSpan);
-        backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || 'Back']));
+        const backLabel = (it.localeKey && this.context.locale.contextMenu[it.localeKey]) || it.label || this.context.locale.contextMenu.back || 'Back';
+        backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [backLabel]));
         const off = on(backBtn, 'click', (e) => {
           e.stopPropagation();
           const curLeft = parseFloat(this.el.style.left);
@@ -204,7 +206,7 @@ export class ContextMenu {
             btn.appendChild(iconSpan);
           }
         }
-        btn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || it.name]));
+        btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
         chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
         btn.appendChild(chevron);
@@ -238,9 +240,9 @@ export class ContextMenu {
         if (it.colorType === 'hiliteColor') {
           const noColor = createElement('div', {
             class: 'an-context-color-swatch an-context-color-none',
-            title: 'No highlight',
+            title: this.context.locale.contextMenu.noHighlight || 'No highlight',
             role: 'button',
-            'aria-label': 'No highlight',
+            'aria-label': this.context.locale.contextMenu.noHighlight || 'No highlight',
           });
           noColor.innerHTML = ICONS.noColor;
           const offNo = on(noColor, 'click', (e) => { e.stopPropagation(); this._applyColor('hiliteColor', 'transparent'); });
@@ -254,10 +256,10 @@ export class ContextMenu {
         const colorInput = createElement('input', {
           type: 'color',
           value: it.colorType === 'foreColor' ? '#000000' : '#ffff00',
-          title: 'Custom color',
-          'aria-label': 'Custom color',
+          title: this.context.locale.contextMenu.customColor || 'Custom color',
+          'aria-label': this.context.locale.contextMenu.customColor || 'Custom color',
         });
-        const customLabel = createElement('span', {}, ['Custom…']);
+        const customLabel = createElement('span', {}, [this.context.locale.contextMenu.customColorLabel || 'Custom…']);
         const offCustom = on(colorInput, 'change', () => this._applyColor(it.colorType, colorInput.value));
         this._menuDisposers.push(offCustom);
         customRow.appendChild(colorInput);
@@ -277,7 +279,7 @@ export class ContextMenu {
           iconSpan.innerHTML = it.icon;
           headerBtn.appendChild(iconSpan);
         }
-        headerBtn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || 'Insert Table']));
+        headerBtn.appendChild(createElement('span', { class: 'an-context-label' }, [this.context.locale.contextMenu.table || it.label || 'Insert Table']));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
         chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
         headerBtn.appendChild(chevron);
@@ -305,7 +307,7 @@ export class ContextMenu {
           cells.forEach((cell) => {
             cell.classList.toggle('active', +cell.dataset.row <= rows && +cell.dataset.col <= cols);
           });
-          labelEl.textContent = (rows && cols) ? `${cols} × ${rows}` : 'Insert Table';
+          labelEl.textContent = (rows && cols) ? `${cols} × ${rows}` : (this.context.locale.contextMenu.table || 'Insert Table');
         };
 
         panel.appendChild(gridEl);
@@ -358,7 +360,7 @@ export class ContextMenu {
         iconSpan.innerHTML = it.icon;
         btn.appendChild(iconSpan);
       }
-      btn.appendChild(createElement('span', { class: 'an-context-label' }, [it.label || it.name]));
+      btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
         this.hide();

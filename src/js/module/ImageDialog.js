@@ -57,35 +57,36 @@ export class ImageDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
+    const L = this.context.locale.imageDialog;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Insert image',
+      'aria-label': L.ariaLabel,
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Insert Image';
+    title.textContent = L.title;
 
     // URL tab
     const urlLabel = createElement('label', { class: 'an-label' });
-    urlLabel.textContent = 'Image URL';
+    urlLabel.textContent = L.imageUrl;
     const urlInput = createElement('input', {
       type: 'url',
       class: 'an-input',
-      placeholder: 'https://example.com/image.png',
+      placeholder: L.urlPlaceholder,
       autocomplete: 'off',
     });
     this._urlInput = urlInput;
 
     // Alt text
     const altLabel = createElement('label', { class: 'an-label' });
-    altLabel.textContent = 'Alt Text';
+    altLabel.textContent = L.altText;
     const altInput = createElement('input', {
       type: 'text',
       class: 'an-input',
-      placeholder: 'Describe the image',
+      placeholder: L.altPlaceholder,
       autocomplete: 'off',
     });
     this._altInput = altInput;
@@ -94,13 +95,13 @@ export class ImageDialog {
 
     // Alignment
     const alignLabel = createElement('label', { class: 'an-label' });
-    alignLabel.textContent = 'Alignment';
+    alignLabel.textContent = L.alignment;
     const alignRow = createElement('div', { class: 'an-align-row' });
     const alignOptions = [
-      { value: '',       label: 'None'   },
-      { value: 'left',   label: 'Left'   },
-      { value: 'center', label: 'Center' },
-      { value: 'right',  label: 'Right'  },
+      { value: '',       label: L.alignNone   },
+      { value: 'left',   label: L.alignLeft   },
+      { value: 'center', label: L.alignCenter },
+      { value: 'right',  label: L.alignRight  },
     ];
     alignOptions.forEach(({ value, label }) => {
       const radioId = `an-align-${value || 'none'}`;
@@ -114,7 +115,7 @@ export class ImageDialog {
     box.append(alignLabel, alignRow);
     if (this.options.allowImageUpload !== false) {
       const fileLabel = createElement('label', { class: 'an-label' });
-      fileLabel.textContent = 'Or upload a file';
+      fileLabel.textContent = L.uploadLabel;
       const fileInput = createElement('input', {
         type: 'file',
         class: 'an-input',
@@ -132,9 +133,9 @@ export class ImageDialog {
     // Buttons
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
     const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    insertBtn.textContent = 'Insert';
+    insertBtn.textContent = L.insertBtn;
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = L.cancelBtn;
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
@@ -166,7 +167,7 @@ export class ImageDialog {
       'image/webp', 'image/svg+xml', 'image/avif',
     ]);
     if (!SUPPORTED.has(file.type)) {
-      const message = `Format "${file.type}" is not supported for display in web browsers. Please convert to JPEG, PNG, or WebP first.`;
+      const message = this.context.locale.errors.imageFormat(file.type);
       if (this._fileHint) this._fileHint.textContent = message;
       this.context.triggerEvent('imageError', { file, message });
       this._fileInput.value = '';
@@ -177,7 +178,7 @@ export class ImageDialog {
     // Validate file size (max 5 MB by default)
     const maxSize = (this.options.maxImageSize || 5) * 1024 * 1024;
     if (file.size > maxSize) {
-      const message = `Image file is too large. Maximum allowed size is ${this.options.maxImageSize || 5} MB.`;
+      const message = this.context.locale.errors.imageSize(this.options.maxImageSize || 5);
       if (this._fileHint) this._fileHint.textContent = message;
       console.warn('[AutumnNote] ImageDialog:', message);
       this.context.triggerEvent('imageError', { file, message });

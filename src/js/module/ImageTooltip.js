@@ -75,24 +75,25 @@ export class ImageTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
+    const L = this.context.locale.tooltips.image;
     const el = createElement('div', {
       class: 'an-link-tooltip an-image-tooltip',
       role: 'toolbar',
-      'aria-label': 'Image actions',
+      'aria-label': L.ariaLabel,
     });
     el.style.display = 'none';
 
     // Label showing "Image"
     this._label = createElement('span', { class: 'an-link-tooltip-url' });
-    this._label.textContent = 'Image';
+    this._label.textContent = L.label;
     el.appendChild(this._label);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._floatLeftBtn    = this._makeBtn(ICONS.floatLeft,    'Float Left',     () => this._setFloat('left'));
-    this._floatNoneBtn    = this._makeBtn(ICONS.floatNone,    'No Float',       () => this._setFloat(''));
-    this._alignCenterBtn  = this._makeBtn(ICONS.alignCenter,  'Align Center',   () => this._setCenter());
-    this._floatRightBtn   = this._makeBtn(ICONS.floatRight,   'Float Right',    () => this._setFloat('right'));
+    this._floatLeftBtn    = this._makeBtn(ICONS.floatLeft,    L.floatLeft,    () => this._setFloat('left'));
+    this._floatNoneBtn    = this._makeBtn(ICONS.floatNone,    L.noFloat,      () => this._setFloat(''));
+    this._alignCenterBtn  = this._makeBtn(ICONS.alignCenter,  L.alignCenter,  () => this._setCenter());
+    this._floatRightBtn   = this._makeBtn(ICONS.floatRight,   L.floatRight,   () => this._setFloat('right'));
 
     el.appendChild(this._floatLeftBtn);
     el.appendChild(this._floatNoneBtn);
@@ -101,28 +102,28 @@ export class ImageTooltip {
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
+    this._originalBtn = this._makeBtn(ICONS.originalSize, L.originalSize, () => this._resetSize());
 
     el.appendChild(this._originalBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    el.appendChild(this._makeBtn(ICONS.rotateLeft,  'Rotate Left',  () => this._rotate(-90)));
-    el.appendChild(this._makeBtn(ICONS.rotateRight, 'Rotate Right', () => this._rotate(90)));
+    el.appendChild(this._makeBtn(ICONS.rotateLeft,  L.rotateLeft,  () => this._rotate(-90)));
+    el.appendChild(this._makeBtn(ICONS.rotateRight, L.rotateRight, () => this._rotate(90)));
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._cropBtn = this._makeBtn(ICONS.crop, 'Crop Image', () => this._crop());
+    this._cropBtn = this._makeBtn(ICONS.crop, L.cropImage, () => this._crop());
     el.appendChild(this._cropBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._captionBtn = this._makeBtn(ICONS.caption, 'Add / Edit Caption', () => this._toggleCaption());
+    this._captionBtn = this._makeBtn(ICONS.caption, L.addCaption, () => this._toggleCaption());
     el.appendChild(this._captionBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._deleteBtn = this._makeBtn(ICONS.deleteImg, 'Delete Image', () => this._delete(), true);
+    this._deleteBtn = this._makeBtn(ICONS.deleteImg, L.deleteImage, () => this._delete(), true);
 
     el.appendChild(this._deleteBtn);
 

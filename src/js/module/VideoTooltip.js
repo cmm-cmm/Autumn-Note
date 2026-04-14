@@ -78,24 +78,25 @@ export class VideoTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
+    const L = this.context.locale.tooltips.video;
     const el = createElement('div', {
       class: 'an-link-tooltip an-video-tooltip',
       role: 'toolbar',
-      'aria-label': 'Video actions',
+      'aria-label': L.ariaLabel,
     });
     el.style.display = 'none';
 
     // Label
     this._label = createElement('span', { class: 'an-link-tooltip-url' });
-    this._label.textContent = 'Video';
+    this._label.textContent = L.label;
     el.appendChild(this._label);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._floatLeftBtn  = this._makeBtn(ICONS.floatLeft,    'Float Left',     () => this._setFloat('left'));
-    this._floatNoneBtn  = this._makeBtn(ICONS.floatNone,    'No Float',       () => this._setFloat(''));
-    this._alignCenterBtn = this._makeBtn(ICONS.alignCenter, 'Align Center',   () => this._setCenter());
-    this._floatRightBtn = this._makeBtn(ICONS.floatRight,   'Float Right',    () => this._setFloat('right'));
+    this._floatLeftBtn  = this._makeBtn(ICONS.floatLeft,    L.floatLeft,    () => this._setFloat('left'));
+    this._floatNoneBtn  = this._makeBtn(ICONS.floatNone,    L.noFloat,      () => this._setFloat(''));
+    this._alignCenterBtn = this._makeBtn(ICONS.alignCenter, L.alignCenter,  () => this._setCenter());
+    this._floatRightBtn = this._makeBtn(ICONS.floatRight,   L.floatRight,   () => this._setFloat('right'));
 
     el.appendChild(this._floatLeftBtn);
     el.appendChild(this._floatNoneBtn);
@@ -104,18 +105,18 @@ export class VideoTooltip {
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._originalBtn = this._makeBtn(ICONS.originalSize, 'Original Size', () => this._resetSize());
+    this._originalBtn = this._makeBtn(ICONS.originalSize, L.originalSize, () => this._resetSize());
 
     el.appendChild(this._originalBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._previewBtn = this._makeBtn(ICONS.preview, 'Preview Video', () => this._togglePreview());
+    this._previewBtn = this._makeBtn(ICONS.preview, L.previewVideo, () => this._togglePreview());
     el.appendChild(this._previewBtn);
 
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
-    this._deleteBtn = this._makeBtn(ICONS.deleteVideo, 'Delete Video', () => this._delete(), true);
+    this._deleteBtn = this._makeBtn(ICONS.deleteVideo, L.deleteVideo, () => this._delete(), true);
 
     el.appendChild(this._deleteBtn);
 
@@ -292,7 +293,7 @@ export class VideoTooltip {
 
     // Visual feedback: button turns primary-coloured
     this._previewBtn.classList.add('an-link-tooltip-btn--copied');
-    this._previewBtn.title = 'Exit Preview';
+    this._previewBtn.title = this.context.locale.tooltips.video.exitPreview;
 
     // Exit preview on mousedown outside the wrapper.
     // Using 'mousedown' (not 'click') so clicks inside an iframe
@@ -319,7 +320,7 @@ export class VideoTooltip {
 
     // Reset button appearance
     this._previewBtn.classList.remove('an-link-tooltip-btn--copied');
-    this._previewBtn.title = 'Preview Video';
+    this._previewBtn.title = this.context.locale.tooltips.video.previewVideo;
 
     if (this._previewClickOff) {
       document.removeEventListener('mousedown', this._previewClickOff, true);

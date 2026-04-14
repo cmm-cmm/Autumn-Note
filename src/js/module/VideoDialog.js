@@ -59,24 +59,25 @@ export class VideoDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
+    const L = this.context.locale.videoDialog;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Insert video',
+      'aria-label': L.ariaLabel,
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Insert Video';
+    title.textContent = L.title;
 
     // URL input
     const urlLabel = createElement('label', { class: 'an-label' });
-    urlLabel.textContent = 'Video URL';
+    urlLabel.textContent = L.videoUrl;
     const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'url',
       class: 'an-input',
-      placeholder: 'YouTube, Vimeo, or direct .mp4 URL',
+      placeholder: L.urlPlaceholder,
       autocomplete: 'off',
     }));
     this._urlInput = urlInput;
@@ -87,7 +88,7 @@ export class VideoDialog {
 
     // Width
     const widthLabel = createElement('label', { class: 'an-label' });
-    widthLabel.textContent = 'Width (px)';
+    widthLabel.textContent = L.widthLabel;
     const widthInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'number',
       class: 'an-input',
@@ -101,9 +102,9 @@ export class VideoDialog {
     // Buttons
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
     const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    insertBtn.textContent = 'Insert';
+    insertBtn.textContent = L.insertBtn;
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = L.cancelBtn;
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
@@ -113,7 +114,7 @@ export class VideoDialog {
     // Live URL hint
     const d0 = on(urlInput, 'input', () => {
       const info = this._parseVideoUrl(urlInput.value.trim());
-      hintEl.textContent = info ? `Detected: ${info.type}` : (urlInput.value ? 'Unknown format — will try direct video embed' : '');
+      hintEl.textContent = info ? this.context.locale.videoDialog.detected(info.type) : (urlInput.value ? this.context.locale.videoDialog.unknownFormat : '');
     });
 
     const d1 = on(insertBtn, 'click', () => this._onInsert());
@@ -140,7 +141,7 @@ export class VideoDialog {
 
     const html = this._buildEmbedHtml(rawUrl, width);
     if (!html) {
-      this._hintEl.textContent = 'Invalid URL — please enter a valid video link.';
+      this._hintEl.textContent = this.context.locale.videoDialog.invalidUrl;
       this._urlInput.focus();
       return;
     }

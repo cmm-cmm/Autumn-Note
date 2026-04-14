@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LinkDialog } from '../../src/js/module/LinkDialog.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -13,6 +14,7 @@ function makeContext() {
   return {
     options: {},
     layoutInfo: { editable },
+    locale: en,
     invoke: vi.fn(),
   };
 }

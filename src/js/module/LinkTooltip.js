@@ -63,7 +63,8 @@ export class LinkTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
-    const el = createElement('div', { class: 'an-link-tooltip', role: 'toolbar', 'aria-label': 'Link actions' });
+    const L = this.context.locale.tooltips.link;
+    const el = createElement('div', { class: 'an-link-tooltip', role: 'toolbar', 'aria-label': L.ariaLabel });
     el.style.display = 'none';
 
     // URL preview text (truncated)
@@ -74,10 +75,10 @@ export class LinkTooltip {
     el.appendChild(createElement('div', { class: 'an-link-tooltip-sep' }));
 
     // Action buttons
-    this._openBtn   = this._makeBtn(ICONS.open,   'Open link',   () => this._openLink());
-    this._copyBtn   = this._makeBtn(ICONS.copy,   'Copy URL',    () => this._copyLink());
-    this._editBtn   = this._makeBtn(ICONS.edit,   'Edit link',   () => this._editLink());
-    this._unlinkBtn = this._makeBtn(ICONS.unlink, 'Remove link', () => this._unlink());
+    this._openBtn   = this._makeBtn(ICONS.open,   L.openLink,   () => this._openLink());
+    this._copyBtn   = this._makeBtn(ICONS.copy,   L.copyUrl,    () => this._copyLink());
+    this._editBtn   = this._makeBtn(ICONS.edit,   L.editLink,   () => this._editLink());
+    this._unlinkBtn = this._makeBtn(ICONS.unlink, L.removeLink, () => this._unlink());
 
     el.appendChild(this._openBtn);
     el.appendChild(this._copyBtn);

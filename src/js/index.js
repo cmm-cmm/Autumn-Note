@@ -27,6 +27,7 @@ export * from './core/lists.js';
 export * from './core/env.js';
 export * from './core/sanitise.js';
 export * from './module/Buttons.js';
+export { locales, resolveLocale } from './i18n/index.js';
 
 // ---------------------------------------------------------------------------
 // Main factory

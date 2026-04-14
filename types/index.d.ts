@@ -104,6 +104,12 @@ export interface AsnOptions {
   onPaste?: (data: { text: string; html: string | null }) => void;
   /** Additional color swatches shown at the top of the color picker. */
   colorSwatches?: string[];
+  /**
+   * Display language for the editor UI.
+   * Built-in: 'en' (default) | 'vi' | 'ja' | 'zh' | 'fr'.
+   * Pass a partial locale object to override individual strings.
+   */
+  lang?: string | Partial<AsnLocale>;
 }
 
 // ---------------------------------------------------------------------------
@@ -178,6 +184,57 @@ export type ToolbarItemDef = ButtonDef | DropdownDef | GridButtonDef | ColorPick
 
 /** Runtime default options object (same export as `src/js/index.js`). */
 export declare const defaultOptions: Required<AsnOptions>;
+
+// ---------------------------------------------------------------------------
+// Locale / i18n
+// ---------------------------------------------------------------------------
+
+/** Full locale object shape used by the editor. All leaf values are strings or template functions. */
+export interface AsnLocale {
+  toolbar: Record<string, string | ((n: string | number) => string) | Record<string, string>>;
+  linkDialog: Record<string, string>;
+  imageDialog: Record<string, string>;
+  videoDialog: Record<string, string | ((type: string) => string)>;
+  emojiDialog: Record<string, string | Record<string, string>>;
+  iconDialog: Record<string, string | Record<string, string>>;
+  findReplace: Record<string, string>;
+  shortcutsDialog: {
+    title: string;
+    ariaLabel: string;
+    close: string;
+    shortcuts: Array<{ category: string; items: Array<{ keys: string; action: string }> }>;
+  };
+  contextMenu: Record<string, string>;
+  statusbar: {
+    resizeHandle: string;
+    words: (n: number) => string;
+    wordsLimit: (n: number, max: number) => string;
+    chars: (n: number) => string;
+    charsLimit: (n: number, max: number) => string;
+  };
+  tooltips: {
+    link: Record<string, string>;
+    image: Record<string, string>;
+    code: Record<string, string>;
+    table: Record<string, string>;
+    video: Record<string, string>;
+  };
+  errors: {
+    imageFormat: (type: string) => string;
+    imageSize: (maxMb: number) => string;
+  };
+}
+
+/** Registry of all built-in locales (keys: 'en', 'vi', 'ja', 'zh', 'fr'). */
+export declare const locales: Record<string, AsnLocale>;
+
+/**
+ * Resolves a lang value to a full AsnLocale.
+ * - string key → looks up locales registry, deep-merges with 'en' fallback.
+ * - object → deep-merges with 'en' as base.
+ * - falsy / 'en' → returns the canonical English locale.
+ */
+export declare function resolveLocale(lang: string | Partial<AsnLocale> | null | undefined): AsnLocale;
 
 // Re-export core utility modules exposed by the package entry-point.
 export * from '../src/js/core/dom.js';

@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { IconDialog } from '../../src/js/module/IconDialog.js';
+import { en } from '../../src/js/i18n/en.js';
 
 function setCaret(node, offset) {
   const sel = window.getSelection();
@@ -29,6 +30,7 @@ describe('IconDialog insertion caret behavior', () => {
     const context = {
       layoutInfo: { editable },
       options: {},
+      locale: en,
       invoke: vi.fn(),
     };
 

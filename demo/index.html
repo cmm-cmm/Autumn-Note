@@ -62,11 +62,41 @@
       white-space: pre-wrap;
       word-break: break-all;
     }
+    #lang-bar {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    #lang-bar label { font-size: 14px; font-weight: 600; white-space: nowrap; }
+    #lang-select {
+      padding: 5px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>AutumnNote</h1>
   <p>A modern WYSIWYG editor — no jQuery required.</p>
+
+  <div id="lang-bar">
+    <label for="lang-select">🌐 Language:</label>
+    <select id="lang-select">
+      <option value="en">English</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="ja">日本語</option>
+      <option value="zh">简体中文</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+      <option value="ko">한국어</option>
+    </select>
+  </div>
 
   <div id="editor-wrapper">
     <textarea id="editor">
@@ -94,30 +124,61 @@
 
   <script src="./dist/autumnnote.umd.js"></script>
   <script>
-    const sharedOptions = {
+    const langSelect = document.getElementById('lang-select');
+
+    const sharedOptions = () => ({
       height: 300,
       codeHighlight: true,
-    };
+      lang: langSelect.value,
+    });
 
-    const editor = AutumnNote.create('#editor', {
-      ...sharedOptions,
+    let editor = AutumnNote.create('#editor', {
+      ...sharedOptions(),
       placeholder: 'Start typing here…',
-      focusColor: '#e8751a',  // warm autumn orange
+      focusColor: '#e8751a',
       onChange(html) {
         document.getElementById('output').textContent = html;
-        // Keep read-only instance in sync
         if (window.editorRO) window.editorRO.setHTML(html);
       },
     });
 
-    // Read-only instance — same options as main editor, starts disabled
-    const editorRO = AutumnNote.create('#editor-readonly', {
-      ...sharedOptions,
+    let editorRO = AutumnNote.create('#editor-readonly', {
+      ...sharedOptions(),
       readOnly: true,
     });
     editorRO.setHTML(editor.getHTML());
 
-    // Expose to console for testing
+    langSelect.addEventListener('change', () => {
+      const html = editor.getHTML();
+      const editorEl = editor.targetEl;
+      const editorROEl = editorRO.targetEl;
+
+      AutumnNote.destroy(editorEl);
+      AutumnNote.destroy(editorROEl);
+      window.editorRO = null;
+
+      editor = AutumnNote.create(editorEl, {
+        ...sharedOptions(),
+        placeholder: 'Start typing here…',
+        focusColor: '#e8751a',
+        onChange(h) {
+          document.getElementById('output').textContent = h;
+          if (window.editorRO) window.editorRO.setHTML(h);
+        },
+      });
+
+      editorRO = AutumnNote.create(editorROEl, {
+        ...sharedOptions(),
+        readOnly: true,
+      });
+
+      window.editor = editor;
+      window.editorRO = editorRO;
+
+      editor.setHTML(html);
+      document.getElementById('output').textContent = html;
+    });
+
     window.editor = editor;
     window.editorRO = editorRO;
     document.getElementById('output').textContent = editor.getHTML();

@@ -82,7 +82,7 @@ export class Statusbar {
     if (this.options.resizable !== false) {
       const handle = createElement('div', {
         class: 'an-resize-handle',
-        title: 'Resize editor',
+        title: this.context.locale.statusbar.resizeHandle,
         'aria-hidden': 'true',
       });
       this._bindResize(handle);
@@ -220,12 +220,13 @@ export class Statusbar {
     const maxWords = this.options.maxWords || 0;
     const maxChars = this.options.maxChars || 0;
 
+    const LS = this.context.locale.statusbar;
     this._wordCountEl.textContent = maxWords
-      ? `Words: ${words}/${maxWords}`
-      : `Words: ${words}`;
+      ? LS.wordsLimit(words, maxWords)
+      : LS.words(words);
     this._charCountEl.textContent = maxChars
-      ? `Chars: ${chars}/${maxChars}`
-      : `Chars: ${chars}`;
+      ? LS.charsLimit(chars, maxChars)
+      : LS.chars(chars);
 
     // Apply warning / exceeded styles
     _applyLimitClass(this._wordCountEl, words, maxWords);

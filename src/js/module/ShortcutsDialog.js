@@ -93,7 +93,7 @@ export class ShortcutsDialog {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Keyboard Shortcuts',
+      'aria-label': this.context.locale.shortcutsDialog.ariaLabel,
     });
 
     const box = createElement('div', { class: 'an-dialog-box an-shortcuts-box' });
@@ -101,18 +101,19 @@ export class ShortcutsDialog {
     // Title row with close button
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Keyboard Shortcuts';
+    title.textContent = this.context.locale.shortcutsDialog.title;
     const closeBtn = createElement('button', {
       type: 'button',
       class: 'an-icon-close',
-      'aria-label': 'Close',
+      'aria-label': this.context.locale.shortcutsDialog.close,
     });
     closeBtn.textContent = '×';
     this._closeBtn = closeBtn;
     titleRow.append(title, closeBtn);
     box.appendChild(titleRow);
 
-    SHORTCUTS.forEach(({ category, items }) => {
+    const shortcuts = this.context.locale.shortcutsDialog.shortcuts || SHORTCUTS;
+    shortcuts.forEach(({ category, items }) => {
       const catEl = createElement('div', { class: 'an-shortcuts-cat' });
       catEl.textContent = category;
       box.appendChild(catEl);

@@ -19,6 +19,22 @@
     }
     h1 { margin: 0 0 4px; font-size: 24px; }
     p  { margin: 0 0 20px; color: #6b7280; }
+    #lang-bar {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    #lang-bar label { font-size: 14px; font-weight: 600; white-space: nowrap; }
+    #lang-select {
+      padding: 5px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+    }
     #editor-wrapper, #output-wrapper { width: 50%; }
     #readonly-wrapper {
       width: 50%;
@@ -68,6 +84,20 @@
   <h1>AutumnNote</h1>
   <p>A modern WYSIWYG editor — no jQuery required.</p>
 
+  <div id="lang-bar">
+    <label for="lang-select">🌐 Language:</label>
+    <select id="lang-select">
+      <option value="en">English</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="ja">日本語</option>
+      <option value="zh">简体中文</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+      <option value="ko">한국어</option>
+    </select>
+  </div>
+
   <div id="editor-wrapper">
     <textarea id="editor">
       <p>Hello, <strong>AutumnNote</strong>! ✨</p>
@@ -95,28 +125,63 @@
   <script type="module">
     import AutumnNote from '/src/js/index.js';
 
-    const sharedOptions = {
+    const langSelect = document.getElementById('lang-select');
+
+    const sharedOptions = () => ({
       height: 300,
       codeHighlight: true,
-    };
+      lang: langSelect.value,
+    });
 
-    const editor = AutumnNote.create('#editor', {
-      ...sharedOptions,
-      placeholder: 'Start typing here…',
-      focusColor: '#e8751a',  // warm autumn orange
+    let editor = AutumnNote.create('#editor', {
+      ...sharedOptions(),
+      placeholder: 'Start typing here\u2026',
+      focusColor: '#e8751a',
       onChange(html) {
         document.getElementById('output').textContent = html;
-        // Keep read-only instance in sync
         if (window.editorRO) window.editorRO.setHTML(html);
       },
     });
 
-    // Read-only instance — same options as main editor, starts disabled
-    const editorRO = AutumnNote.create('#editor-readonly', {
-      ...sharedOptions,
+    let editorRO = AutumnNote.create('#editor-readonly', {
+      ...sharedOptions(),
       readOnly: true,
     });
     editorRO.setHTML(editor.getHTML());
+
+    langSelect.addEventListener('change', () => {
+      const html = editor.getHTML();
+      const editorEl = editor.targetEl;
+      const editorROEl = editorRO.targetEl;
+
+      // Use the static destroy so the internal WeakMap entry is cleared,
+      // allowing AutumnNote.create() on the same element to build a fresh instance.
+      AutumnNote.destroy(editorEl);
+      AutumnNote.destroy(editorROEl);
+      window.editorRO = null;
+
+      editor = AutumnNote.create(editorEl, {
+        ...sharedOptions(),
+        placeholder: 'Start typing here\u2026',
+        focusColor: '#e8751a',
+        onChange(h) {
+          document.getElementById('output').textContent = h;
+          if (window.editorRO) window.editorRO.setHTML(h);
+        },
+      });
+
+      editorRO = AutumnNote.create(editorROEl, {
+        ...sharedOptions(),
+        readOnly: true,
+      });
+
+      // Assign before setHTML so onChange can safely sync the new read-only instance
+      window.editor = editor;
+      window.editorRO = editorRO;
+
+      editor.setHTML(html);
+      document.getElementById('output').textContent = html;
+    });
 
     // Expose to console for dev testing
     window.editor = editor;

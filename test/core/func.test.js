@@ -10,6 +10,7 @@ import {
   isFunction,
   mergeDeep,
   isPlainObject,
+  rect2bnd,
 } from '../../src/js/core/func.js';
 
 describe('clamp', () => {
@@ -174,5 +175,42 @@ describe('mergeDeep', () => {
     const result = mergeDeep({}, source);
     result.nested.a = 99;
     expect(source.nested.a).toBe(1);
+  });
+});
+
+describe('rect2bnd', () => {
+  it('returns null for null input', () => {
+    expect(rect2bnd(null)).toBeNull();
+  });
+
+  it('returns null for undefined input', () => {
+    expect(rect2bnd(undefined)).toBeNull();
+  });
+
+  it('returns null for falsy zero', () => {
+    expect(rect2bnd(0)).toBeNull();
+  });
+
+  it('rounds and maps all DOMRect properties', () => {
+    const result = rect2bnd({ top: 1.4, left: 2.6, width: 10.1, height: 5.5, bottom: 6.9, right: 12.4 });
+    expect(result).toEqual({
+      top: 1,
+      left: 3,
+      width: 10,
+      height: 6,
+      bottom: 7,
+      right: 12,
+    });
+  });
+
+  it('handles integer values (no rounding change)', () => {
+    const result = rect2bnd({ top: 10, left: 20, width: 100, height: 50, bottom: 60, right: 120 });
+    expect(result).toEqual({ top: 10, left: 20, width: 100, height: 50, bottom: 60, right: 120 });
+  });
+
+  it('rounds negative values correctly', () => {
+    const result = rect2bnd({ top: -1.6, left: -2.4, width: 5, height: 5, bottom: 3.4, right: 2.6 });
+    expect(result.top).toBe(-2);
+    expect(result.left).toBe(-2);
   });
 });

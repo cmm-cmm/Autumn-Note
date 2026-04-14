@@ -332,11 +332,12 @@ export class IconDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
+    const L = this.context.locale.iconDialog;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Insert FA icon',
+      'aria-label': L.ariaLabel,
     });
 
     const box = createElement('div', { class: 'an-dialog-box an-icon-box' });
@@ -344,8 +345,8 @@ export class IconDialog {
     // Title row
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Insert FA Icon';
-    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': 'Close' });
+    title.textContent = L.title;
+    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': L.close });
     closeBtn.innerHTML = '&times;';
     titleRow.append(title, closeBtn);
 
@@ -353,7 +354,7 @@ export class IconDialog {
     const searchInput = createElement('input', {
       type: 'search',
       class: 'an-input an-icon-search',
-      placeholder: 'Search icons…',
+      placeholder: L.searchPlaceholder,
       autocomplete: 'off',
     });
     this._searchInput = searchInput;
@@ -361,11 +362,11 @@ export class IconDialog {
     // Category tabs
     const catBar = createElement('div', { class: 'an-icon-cats' });
     const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
-    allTab.textContent = 'All';
+    allTab.textContent = L.all;
     catBar.appendChild(allTab);
     ICON_CATEGORIES.forEach(({ id, label }) => {
       const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
-      tab.textContent = label;
+      tab.textContent = (L.categories && L.categories[id]) || label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
@@ -386,7 +387,7 @@ export class IconDialog {
     const optRow = createElement('div', { class: 'an-icon-options' });
 
     const styleLabel = createElement('label', { class: 'an-label' });
-    styleLabel.textContent = 'Style';
+    styleLabel.textContent = L.style;
     const styleSelect = createElement('select', { class: 'an-input an-icon-option-select' });
     [['fa-solid', 'Solid'], ['fa-regular', 'Regular'], ['fa-light', 'Light (Pro)']].forEach(([v, t]) => {
       const opt = createElement('option', { value: v });
@@ -397,7 +398,7 @@ export class IconDialog {
     this._styleSelect = styleSelect;
 
     const sizeLabel = createElement('label', { class: 'an-label' });
-    sizeLabel.textContent = 'Size';
+    sizeLabel.textContent = L.size;
     const sizeSelect = createElement('select', { class: 'an-input an-icon-option-select' });
     [['', 'Inherit'], ['0.75em', '0.75em'], ['1em', '1em'], ['1.25em', '1.25em'], ['1.5em', '1.5em'], ['2em', '2em'], ['3em', '3em']].forEach(([v, t]) => {
       const opt = createElement('option', { value: v });
@@ -408,30 +409,30 @@ export class IconDialog {
     this._sizeSelect = sizeSelect;
 
     const colorLabel = createElement('label', { class: 'an-label' });
-    colorLabel.textContent = 'Color';
+    colorLabel.textContent = L.color;
     const colorInput = createElement('input', { type: 'color', class: 'an-icon-color', value: '#000000' });
     this._colorInput = colorInput;
 
     const useColorLabel = createElement('label', { class: 'an-label an-label-inline an-icon-use-color' });
     const useColorCb = createElement('input', { type: 'checkbox', checked: '' });
     this._useColorCb = useColorCb;
-    useColorLabel.append(useColorCb, document.createTextNode(' Use color'));
+    useColorLabel.append(useColorCb, document.createTextNode(L.useColor));
 
     optRow.append(styleLabel, styleSelect, sizeLabel, sizeSelect, colorLabel, colorInput, useColorLabel);
 
     // Preview
     const preview = createElement('div', { class: 'an-icon-preview' });
     const previewHint = createElement('span', { class: 'an-icon-preview-hint' });
-    previewHint.textContent = 'Select an icon';
+    previewHint.textContent = L.selectHint;
     preview.appendChild(previewHint);
     this._preview = preview;
 
     // Actions
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
     const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary', disabled: '' });
-    insertBtn.textContent = 'Insert FA Icon';
+    insertBtn.textContent = L.insertBtn;
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = L.cancelBtn;
     btnRow.append(insertBtn, cancelBtn);
     this._insertBtn = insertBtn;
 
