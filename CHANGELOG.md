@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.9] - 2026-04-14
+
+### Added
+- **Built-in localisation packs** — toolbar, dialogs, tooltips, and statusbar strings now ship with English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), French (`fr`), German (`de`), Spanish (`es`), and Korean (`ko`)
+- **Internationalisation test coverage** — added core tests for locale fallback, key handling, and DOM helpers that support translated UI flows
+
+### Changed
+- **Locale typing** — `AsnLocale` now accepts nested toolbar records so custom locale overrides can stay strongly typed
+- **Documentation refresh** — README and manual updated to reflect the current installation guidance and localisation support
+
+---
+
 ## [1.0.8] - 2026-04-07
 
 ### Added
