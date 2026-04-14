@@ -191,7 +191,7 @@ export declare const defaultOptions: Required<AsnOptions>;
 
 /** Full locale object shape used by the editor. All leaf values are strings or template functions. */
 export interface AsnLocale {
-  toolbar: Record<string, string | ((n: string | number) => string)>;
+  toolbar: Record<string, string | ((n: string | number) => string) | Record<string, string>>;
   linkDialog: Record<string, string>;
   imageDialog: Record<string, string>;
   videoDialog: Record<string, string | ((type: string) => string)>;
