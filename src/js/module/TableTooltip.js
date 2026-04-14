@@ -376,55 +376,56 @@ export class TableTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
+    const L = this.context.locale.tooltips.table;
     const el = createElement('div', {
       class: 'an-link-tooltip an-table-tooltip',
       role: 'toolbar',
-      'aria-label': 'Table actions',
+      'aria-label': L.ariaLabel,
     });
     el.style.display = 'none';
 
     // Label
     this._label = createElement('span', { class: 'an-link-tooltip-url' });
-    this._label.textContent = 'Table';
+    this._label.textContent = L.label;
     el.appendChild(this._label);
 
     el.appendChild(this._sep());
 
     // Select-cells toggle
-    this._selectBtn = this._makeBtn(ICONS.selectCells, 'Select Cells', () => this._toggleSelectMode());
+    this._selectBtn = this._makeBtn(ICONS.selectCells, L.selectCells, () => this._toggleSelectMode());
     el.appendChild(this._selectBtn);
 
     el.appendChild(this._sep());
 
     // Row operations
-    el.appendChild(this._makeBtn(ICONS.rowAbove, 'Add Row Above', () => this._addRow('above')));
-    el.appendChild(this._makeBtn(ICONS.rowBelow, 'Add Row Below', () => this._addRow('below')));
-    el.appendChild(this._makeBtn(ICONS.deleteRow, 'Delete Row',   () => this._deleteRow()));
+    el.appendChild(this._makeBtn(ICONS.rowAbove, L.addRowAbove, () => this._addRow('above')));
+    el.appendChild(this._makeBtn(ICONS.rowBelow, L.addRowBelow, () => this._addRow('below')));
+    el.appendChild(this._makeBtn(ICONS.deleteRow, L.deleteRow,  () => this._deleteRow()));
 
     el.appendChild(this._sep());
 
     // Column operations
-    el.appendChild(this._makeBtn(ICONS.colLeft,   'Add Column Left',  () => this._addColumn('left')));
-    el.appendChild(this._makeBtn(ICONS.colRight,  'Add Column Right', () => this._addColumn('right')));
-    el.appendChild(this._makeBtn(ICONS.deleteCol, 'Delete Column',    () => this._deleteColumn()));
+    el.appendChild(this._makeBtn(ICONS.colLeft,   L.addColumnLeft,   () => this._addColumn('left')));
+    el.appendChild(this._makeBtn(ICONS.colRight,  L.addColumnRight,  () => this._addColumn('right')));
+    el.appendChild(this._makeBtn(ICONS.deleteCol, L.deleteColumn,    () => this._deleteColumn()));
 
     el.appendChild(this._sep());
 
     // Merge cells
-    el.appendChild(this._makeBtn(ICONS.mergeCells,   'Merge Cells',   () => this._mergeCells()));
-    el.appendChild(this._makeBtn(ICONS.unmergeCells, 'Unmerge Cells', () => this._unmergeCells()));
+    el.appendChild(this._makeBtn(ICONS.mergeCells,   L.mergeCells,   () => this._mergeCells()));
+    el.appendChild(this._makeBtn(ICONS.unmergeCells, L.unmergeCells, () => this._unmergeCells()));
 
     el.appendChild(this._sep());
 
     // Resize
-    el.appendChild(this._makeBtn(ICONS.colWidth,   'Column Width',      () => this._openSizePopover('col')));
-    el.appendChild(this._makeBtn(ICONS.rowHeight,  'Row Height',        () => this._openSizePopover('row')));
-    el.appendChild(this._makeBtn(ICONS.tableBorder,'Table Border Width',() => this._openSizePopover('border')));
+    el.appendChild(this._makeBtn(ICONS.colWidth,   L.columnWidth,      () => this._openSizePopover('col')));
+    el.appendChild(this._makeBtn(ICONS.rowHeight,  L.rowHeight,        () => this._openSizePopover('row')));
+    el.appendChild(this._makeBtn(ICONS.tableBorder,L.tableBorderWidth, () => this._openSizePopover('border')));
 
     el.appendChild(this._sep());
 
     // Delete table (danger)
-    el.appendChild(this._makeBtn(ICONS.deleteTable, 'Delete Table', () => this._deleteTable(), true));
+    el.appendChild(this._makeBtn(ICONS.deleteTable, L.deleteTable, () => this._deleteTable(), true));
 
     // Keep tooltip alive while hovering.
     // Don't schedule hide on mouseleave when the size popover is open —
@@ -909,9 +910,9 @@ export class TableTooltip {
 
     const actionsEl  = createElement('div', { class: 'an-size-popover-actions' });
     const cancelBtn  = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = this.context.locale.tooltips.table.cancelBtn;
     const applyBtn   = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    applyBtn.textContent = 'Apply';
+    applyBtn.textContent = this.context.locale.tooltips.table.applyBtn;
     actionsEl.appendChild(cancelBtn);
     actionsEl.appendChild(applyBtn);
 
@@ -960,7 +961,7 @@ export class TableTooltip {
         ? (parseInt(firstCell.style.borderWidth, 10) ||
            parseInt(window.getComputedStyle(firstCell).borderWidth, 10) || 1)
         : 1;
-      this._sizeTitleEl.textContent = 'Table Border Width (px)';
+      this._sizeTitleEl.textContent = this.context.locale.tooltips.table.tableBorderWidthPx;
       this._sizeInputEl.min   = '0';
       this._sizeInputEl.max   = '10';
       this._sizeInputEl.value = currentPx;
@@ -979,7 +980,9 @@ export class TableTooltip {
         const t = c.closest('table');
         return t && t === cell.closest('table');
       });
-      this._sizeTitleEl.textContent = isCol ? 'Column Width (px)' : 'Row Height (px)';
+      this._sizeTitleEl.textContent = isCol
+        ? this.context.locale.tooltips.table.columnWidthPx
+        : this.context.locale.tooltips.table.rowHeightPx;
       this._sizeInputEl.min   = '1';
       this._sizeInputEl.max   = '2000';
       this._sizeInputEl.value = isCol

@@ -29,6 +29,7 @@ AutumnNote is a modern, lightweight WYSIWYG rich-text editor built with plain Ja
 21. [Auto-save](#21-auto-save)
 22. [RTL Support](#22-rtl-support)
 23. [Character & Word Limits](#23-character--word-limits)
+24. [Internationalisation (i18n)](#24-internationalisation-i18n)
 
 ---
 
@@ -127,6 +128,7 @@ Pass options as the second argument to `AutumnNote.create()`, or set global defa
 | `codeHighlightCDN` | `string` | `'https://cdnjs.cloudflare.com/…/prism/1.29.0'` | Base URL for Prism.js CDN assets. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour string). Overrides the default blue. |
+| `lang` | `string \| object` | `'en'` | UI display language. Built-in codes: `'en'`, `'vi'`, `'ja'`, `'zh'`, `'fr'`, `'de'`, `'es'`, `'ko'`. Pass a partial locale object for custom string overrides. |
 | `onChange` | `function\|null` | `null` | Called with `(html: string)` on every content change. |
 | `onFocus` | `function\|null` | `null` | Called with `(context)` when the editor gains focus. |
 | `onBlur` | `function\|null` | `null` | Called with `(context)` when the editor loses focus. |
@@ -1020,3 +1022,89 @@ editor.on('wordLimitReached', (ctx) => showWarning('Too many words'));
 | `codeviewBtn` | Code View | Toggle raw HTML source view |
 | `fullscreenBtn` | Fullscreen | Toggle fullscreen mode |
 | `shortcutsBtn` | Shortcuts | Show keyboard shortcuts reference |
+
+---
+
+## 24. Internationalisation (i18n)
+
+AutumnNote ships with 8 built-in UI locales. All toolbar tooltips, dialogs, context menu entries, status bar messages, and error strings switch automatically when you set the `lang` option.
+
+### Built-in language codes
+
+| Code | Language |
+|------|----------|
+| `'en'` | English (default) |
+| `'vi'` | Vietnamese — Tiếng Việt |
+| `'ja'` | Japanese — 日本語 |
+| `'zh'` | Simplified Chinese — 简体中文 |
+| `'fr'` | French — Français |
+| `'de'` | German — Deutsch |
+| `'es'` | Spanish — Español |
+| `'ko'` | Korean — 한국어 |
+
+### Using a built-in locale
+
+```js
+const editor = AutumnNote.create('#editor', {
+  lang: 'de',   // all UI strings switch to German
+});
+```
+
+Each editor instance on the same page can use a different language:
+
+```js
+const editorEn = AutumnNote.create('#editor-en', { lang: 'en' });
+const editorKo = AutumnNote.create('#editor-ko', { lang: 'ko' });
+```
+
+### Custom / partial locale
+
+Pass an object to override individual strings while inheriting everything else from English:
+
+```js
+const editor = AutumnNote.create('#editor', {
+  lang: {
+    toolbar: { bold: 'B (Ctrl+B)' },
+    linkDialog: { title: 'Add hyperlink' },
+  },
+});
+```
+
+Any key not provided falls back to the English string automatically.
+
+### Accessing locales programmatically
+
+```js
+import { locales, resolveLocale } from 'autumnnote';
+
+// All built-in locale objects keyed by code:
+console.log(Object.keys(locales)); // ['en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko']
+
+// Resolve a full locale from any valid lang value:
+const locale = resolveLocale('es');
+console.log(locale.toolbar.bold); // 'Negrita (Ctrl+B)'
+```
+
+### Switching language at runtime
+
+The `lang` option is read only during `AutumnNote.create()`. To switch language dynamically, destroy the editor and recreate it with the new `lang` value, preserving existing content:
+
+```js
+let editor = AutumnNote.create('#editor', { lang: 'en' });
+
+function switchLang(code) {
+  const html = editor.getHTML();
+  const el   = editor.targetEl;     // save element reference before destroy
+
+  AutumnNote.destroy(el);            // clears internal registry — required for safe recreation
+
+  editor = AutumnNote.create(el, { lang: code });
+  editor.setHTML(html);
+}
+
+document.getElementById('lang-select').addEventListener('change', (e) => {
+  switchLang(e.target.value);
+});
+```
+
+> **Important:** always use `AutumnNote.destroy(element)` (the static method) rather than `editor.destroy()` before recreating an editor on the same element. The static method removes the element from the internal registry, allowing a fresh instance to be created.

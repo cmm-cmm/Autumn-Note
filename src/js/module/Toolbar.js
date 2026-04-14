@@ -182,9 +182,9 @@ export class Toolbar {
     const btn = createElement('button', {
       type: 'button',
       class: baseClass,
-      title: def.tooltip || '',
+      title: this.context.locale.toolbar[def.name] || def.tooltip || '',
       'data-btn': def.name,
-      'aria-label': def.tooltip || def.name,
+      'aria-label': this.context.locale.toolbar[def.name] || def.tooltip || def.name,
       'aria-haspopup': 'true',
       'aria-expanded': 'false',
     });
@@ -206,7 +206,7 @@ export class Toolbar {
     });
     const grid = createElement('div', { class: 'an-table-grid' });
     const label = createElement('div', { class: 'an-table-label' });
-    label.textContent = 'Insert Table';
+    label.textContent = this.context.locale.toolbar.insertTableLabel || 'Insert Table';
 
     const cells = [];
     for (let r = 1; r <= ROWS; r++) {
@@ -232,7 +232,7 @@ export class Toolbar {
         const c = +cell.getAttribute('data-col');
         cell.classList.toggle('active', r <= rows && c <= cols);
       });
-      label.textContent = (rows && cols) ? `${rows} × ${cols}` : 'Insert Table';
+      label.textContent = (rows && cols) ? `${rows} × ${cols}` : (this.context.locale.toolbar.insertTableLabel || 'Insert Table');
     };
 
     const openPopup = () => {
@@ -307,9 +307,9 @@ export class Toolbar {
     const applyBtn = createElement('button', {
       type: 'button',
       class: `${baseClass} an-color-btn`,
-      title: def.tooltip || '',
+      title: this.context.locale.toolbar[def.name] || def.tooltip || '',
       'data-btn': def.name,
-      'aria-label': def.tooltip || def.name,
+      'aria-label': this.context.locale.toolbar[def.name] || def.tooltip || def.name,
     });
 
     const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -326,7 +326,9 @@ export class Toolbar {
     const arrowBtn = createElement('button', {
       type: 'button',
       class: `${baseClass} an-color-arrow`,
-      title: `Choose ${def.name === 'foreColor' ? 'text' : 'highlight'} color`,
+      title: def.name === 'foreColor'
+        ? (this.context.locale.toolbar.chooseTextColor || 'Choose text color')
+        : (this.context.locale.toolbar.chooseHighlightColor || 'Choose highlight color'),
       'aria-haspopup': 'true',
       'aria-expanded': 'false',
     });
@@ -346,8 +348,8 @@ export class Toolbar {
     });
 
     const customRow = createElement('div', { class: 'an-color-custom' });
-    const colorInput = createElement('input', { type: 'color', value: currentColor, title: 'Custom color' });
-    const customLabel = createElement('span', {}, ['Custom color']);
+    const colorInput = createElement('input', { type: 'color', value: currentColor, title: this.context.locale.toolbar.customColor || 'Custom color' });
+    const customLabel = createElement('span', {}, [this.context.locale.toolbar.customColor || 'Custom color']);
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
 
@@ -491,19 +493,23 @@ export class Toolbar {
     const cls = def.selectClass ? `an-select ${def.selectClass}` : 'an-select';
     const select = createElement('select', {
       class: cls,
-      title: def.tooltip || '',
+      title: this.context.locale.toolbar[def.name] || def.tooltip || '',
       'data-btn': def.name,
-      'aria-label': def.tooltip || def.name,
+      'aria-label': this.context.locale.toolbar[def.name] || def.tooltip || def.name,
     });
 
     // Blank "placeholder" option (non-selectable header)
-    const placeholderText = def.placeholder || 'Font';
+    const placeholderText = this.context.locale.toolbar[def.name + 'Placeholder'] || def.placeholder || 'Font';
     const placeholder = createElement('option', { value: '', disabled: '', hidden: '' }, [placeholderText]);
     select.appendChild(placeholder);
 
     items.forEach((item) => {
       const value    = (typeof item === 'object') ? item.value    : item;
-      const label    = (typeof item === 'object') ? item.label    : item;
+      const label    = (typeof item === 'object')
+        ? (def.name === 'paragraphStyle'
+            ? ((this.context.locale.toolbar.paragraphItems || {})[item.value] || item.label)
+            : item.label)
+        : item;
       const isHeader = (typeof item === 'object') && !!item.disabled;
       const attrs    = { value };
       if (isHeader) attrs.disabled = '';
@@ -558,9 +564,9 @@ export class Toolbar {
     const btn = createElement('button', {
       type: 'button',
       class: classAttr,
-      title: btnDef.tooltip || '',
+      title: this.context.locale.toolbar[btnDef.name] || btnDef.tooltip || '',
       'data-btn': btnDef.name,
-      'aria-label': btnDef.tooltip || btnDef.name,
+      'aria-label': this.context.locale.toolbar[btnDef.name] || btnDef.tooltip || btnDef.name,
     });
 
     // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.

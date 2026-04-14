@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { FindReplace } from '../../src/js/module/FindReplace.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -16,6 +17,7 @@ function makeContext(html = '<p>Hello world hello</p>') {
   document.body.appendChild(editable);
   return {
     layoutInfo: { editable },
+    locale: en,
     invoke: vi.fn(),
   };
 }

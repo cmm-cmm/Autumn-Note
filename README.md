@@ -79,6 +79,12 @@ Floating toolbars appear automatically when the user clicks on an editable eleme
 ### Context menu
 Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **Cut**, **Copy**, **Paste**, **Bold**, **Italic**, **Underline**, **Copy Format**, **Paste Format**, **Remove Format**, and a **colour palette** for quick text/highlight colour changes.
 
+### Internationalisation
+- **Built-in locales** — English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), French (`fr`), German (`de`), Spanish (`es`), Korean (`ko`)
+- **Custom locale** — pass any partial locale object to override individual strings
+- **Per-instance language** — set a different `lang` per editor instance on the same page
+- **Auto-fallback** — unknown codes or missing keys fall back to English
+
 ### UI
 - **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
@@ -313,6 +319,7 @@ const editor = AutumnNote.create('#my-editor', {
 | `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL for Prism assets. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
+| `lang` | `string \| object` | `'en'` | UI display language. Built-in codes: `'en'`, `'vi'`, `'ja'`, `'zh'`, `'fr'`, `'de'`, `'es'`, `'ko'`. Pass a partial locale object for custom overrides. |
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
 | `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |
@@ -536,6 +543,8 @@ The table below compares AutumnNote against editors commonly used in this catego
 | Iframe support in setHTML | No | No | Restricted | **Yes (host-trusted)** |
 | Dark theme | No | No | Yes | **Yes (built-in)** |
 | RTL text direction | No | Partial | No | **Yes** |
+| Built-in i18n locales | No | No | Partial | **Yes (8 languages)** |
+| Custom locale object | No | No | No | **Yes** |
 | Checklist (todo list) | No | No | No | **Yes** |
 | Find and Replace | No | No | No | **Yes (Ctrl+F / Ctrl+H)** |
 | Emoji picker | No | No | No | **Yes (~380 emoji)** |

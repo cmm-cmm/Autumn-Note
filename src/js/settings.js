@@ -135,4 +135,8 @@ export const defaultOptions = {
   // Custom focus ring colour — overrides the default blue when set.
   // Accepts any valid CSS colour string, e.g. '#f97316', 'hsl(25,90%,55%)'.
   focusColor: null,
+  // Display language for the editor UI.
+  // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr'.
+  // Pass a partial or full locale object to override individual strings.
+  lang: 'en',
 };

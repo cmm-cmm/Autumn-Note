@@ -4,6 +4,7 @@ import { ImageCropOverlay } from '../../src/js/module/ImageCropOverlay.js';
 import { LinkTooltip } from '../../src/js/module/LinkTooltip.js';
 import { TableTooltip } from '../../src/js/module/TableTooltip.js';
 import { VideoTooltip } from '../../src/js/module/VideoTooltip.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -27,6 +28,7 @@ function makeEditableContext(html = '<p>x</p>') {
   return {
     options: {},
     layoutInfo: { editable },
+    locale: en,
     invoke: vi.fn(),
   };
 }

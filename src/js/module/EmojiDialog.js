@@ -555,19 +555,20 @@ export class EmojiDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
+    const L = this.context.locale.emojiDialog;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Insert emoji',
+      'aria-label': L.ariaLabel,
     });
     const box = createElement('div', { class: 'an-dialog-box an-emoji-box' });
 
     // Title row
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Insert Emoji';
-    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': 'Close' });
+    title.textContent = L.title;
+    const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': L.close });
     closeBtn.innerHTML = '&times;';
     titleRow.append(title, closeBtn);
 
@@ -575,7 +576,7 @@ export class EmojiDialog {
     const searchInput = createElement('input', {
       type: 'search',
       class: 'an-input an-icon-search',
-      placeholder: 'Search emojis…',
+      placeholder: L.searchPlaceholder,
       autocomplete: 'off',
     });
     this._searchInput = searchInput;
@@ -583,11 +584,11 @@ export class EmojiDialog {
     // Category tabs
     const catBar = createElement('div', { class: 'an-icon-cats' });
     const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
-    allTab.textContent = 'All';
+    allTab.textContent = L.all;
     catBar.appendChild(allTab);
     EMOJI_CATS.forEach(({ id, label }) => {
       const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
-      tab.textContent = label;
+      tab.textContent = (L.categories && L.categories[id]) || label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
@@ -611,7 +612,7 @@ export class EmojiDialog {
     // Cancel only — clicking an emoji inserts immediately
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = L.cancelBtn;
     btnRow.appendChild(cancelBtn);
 
     box.append(titleRow, searchInput, catBar, grid, btnRow);

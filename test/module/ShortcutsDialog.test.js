@@ -1,12 +1,13 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { ShortcutsDialog } from '../../src/js/module/ShortcutsDialog.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
 });
 
 function makeDialog() {
-  const dialog = new ShortcutsDialog({});
+  const dialog = new ShortcutsDialog({ locale: en });
   dialog.initialize();
   return dialog;
 }

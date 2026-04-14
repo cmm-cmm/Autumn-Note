@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Toolbar } from '../../src/js/module/Toolbar.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -20,6 +21,7 @@ function makeContext() {
         },
       ]],
     },
+    locale: en,
     invoke: vi.fn(),
   };
 }

@@ -76,16 +76,17 @@ export class CodeTooltip {
   // ---------------------------------------------------------------------------
 
   _buildTooltip() {
+    const L = this.context.locale.tooltips.code;
     const el = createElement('div', {
       class: 'an-link-tooltip an-code-tooltip',
       role: 'toolbar',
-      'aria-label': 'Code block actions',
+      'aria-label': L.ariaLabel,
     });
     el.style.display = 'none';
 
     // Label
     this._label = createElement('span', { class: 'an-link-tooltip-url' });
-    this._label.textContent = 'Code';
+    this._label.textContent = L.label;
     el.appendChild(this._label);
 
     el.appendChild(this._sep());
@@ -93,8 +94,8 @@ export class CodeTooltip {
     // Language selector
     this._langSelect = createElement('select', {
       class: 'an-code-lang-select',
-      title: 'Syntax Language',
-      'aria-label': 'Syntax language',
+      title: L.syntaxLanguage,
+      'aria-label': L.syntaxAriaLabel,
     });
     const LANGUAGES = [
       ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
@@ -115,25 +116,25 @@ export class CodeTooltip {
     el.appendChild(this._sep());
 
     // Copy code
-    this._copyBtn = this._makeBtn(ICONS.copy, 'Copy Code', () => this._copyCode());
+    this._copyBtn = this._makeBtn(ICONS.copy, L.copyCode, () => this._copyCode());
 
     el.appendChild(this._copyBtn);
 
     el.appendChild(this._sep());
 
     // Toggle word-wrap
-    this._wrapBtn = this._makeBtn(ICONS.wrapOn, 'Toggle Word Wrap', () => this._toggleWrap());
+    this._wrapBtn = this._makeBtn(ICONS.wrapOn, L.toggleWordWrap, () => this._toggleWrap());
     el.appendChild(this._wrapBtn);
 
     el.appendChild(this._sep());
 
     // Convert to normal paragraph
-    el.appendChild(this._makeBtn(ICONS.toParagraph, 'Convert to Paragraph', () => this._toParagraph()));
+    el.appendChild(this._makeBtn(ICONS.toParagraph, L.convertToParagraph, () => this._toParagraph()));
 
     el.appendChild(this._sep());
 
     // Delete block
-    el.appendChild(this._makeBtn(ICONS.deleteCode, 'Delete Code Block', () => this._delete(), true));
+    el.appendChild(this._makeBtn(ICONS.deleteCode, L.deleteCodeBlock, () => this._delete(), true));
 
     // Keep tooltip alive while hovering it
     this._disposers.push(
@@ -241,7 +242,9 @@ export class CodeTooltip {
     const wrapped = (this._activePre.style.whiteSpace || '').includes('pre-wrap')
       || window.getComputedStyle(this._activePre).whiteSpace === 'pre-wrap';
     this._wrapBtn.classList.toggle('active', wrapped);
-    this._wrapBtn.title = wrapped ? 'Disable Word Wrap' : 'Enable Word Wrap';
+    this._wrapBtn.title = wrapped
+      ? this.context.locale.tooltips.code.disableWordWrap
+      : this.context.locale.tooltips.code.enableWordWrap;
   }
 
   _syncLangSelect() {

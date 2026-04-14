@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { CodeTooltip } from '../../src/js/module/CodeTooltip.js';
 import { ImageTooltip } from '../../src/js/module/ImageTooltip.js';
+import { en } from '../../src/js/i18n/en.js';
 
 function makeContext(options = {}) {
   const editable = document.createElement('div');
@@ -8,6 +9,7 @@ function makeContext(options = {}) {
   return {
     layoutInfo: { editable },
     options: { codeHighlight: false, ...options },
+    locale: en,
     invoke: () => {},
   };
 }

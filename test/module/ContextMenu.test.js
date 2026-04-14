@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { ContextMenu } from '../../src/js/module/ContextMenu.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -23,6 +24,7 @@ function makeContext(html = '<p><span style="font-size:20px;color:#ff0000">abc</
   return {
     layoutInfo: { editable },
     options: {},
+    locale: en,
     invoke: vi.fn(),
   };
 }

@@ -6,6 +6,7 @@
 
 import { mergeDeep } from './core/func.js';
 import { defaultOptions } from './settings.js';
+import { resolveLocale } from './i18n/index.js';
 import { renderLayout } from './renderer.js';
 import { on } from './core/dom.js';
 
@@ -45,6 +46,9 @@ export class Context {
   constructor(targetEl, userOptions = {}) {
     this.targetEl = targetEl;
     this.options = mergeDeep(defaultOptions, userOptions);
+
+    /** @type {import('./i18n/index.js').AsnLocale} */
+    this.locale = resolveLocale(this.options.lang);
 
     /** @type {{ container: HTMLElement, editable: HTMLElement, toolbar?: HTMLElement, statusbar?: HTMLElement }} */
     this.layoutInfo = {};

@@ -59,19 +59,20 @@ export class LinkDialog {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
-    const overlay = createElement('div', { class: 'an-dialog-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Insert link' });
+    const L = this.context.locale.linkDialog;
+    const overlay = createElement('div', { class: 'an-dialog-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.ariaLabel });
     const box = createElement('div', { class: 'an-dialog-box' });
 
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Insert Link';
+    title.textContent = L.title;
 
     // URL field
     const urlLabel = createElement('label', { class: 'an-label' });
-    urlLabel.textContent = 'URL';
+    urlLabel.textContent = L.url;
     const urlInput = createElement('input', {
       type: 'url',
       class: 'an-input',
-      placeholder: 'https://',
+      placeholder: L.urlPlaceholder,
       id: 'an-link-url',
       name: 'url',
       autocomplete: 'off',
@@ -80,11 +81,11 @@ export class LinkDialog {
 
     // Text field
     const textLabel = createElement('label', { class: 'an-label' });
-    textLabel.textContent = 'Display Text';
+    textLabel.textContent = L.displayText;
     const textInput = createElement('input', {
       type: 'text',
       class: 'an-input',
-      placeholder: 'Link text',
+      placeholder: L.textPlaceholder,
       id: 'an-link-text',
       name: 'linkText',
       autocomplete: 'off',
@@ -100,14 +101,14 @@ export class LinkDialog {
     });
     this._tabCheckbox = tabCheckbox;
     tabLabel.appendChild(tabCheckbox);
-    tabLabel.appendChild(document.createTextNode(' Open in new tab'));
+    tabLabel.appendChild(document.createTextNode(' ' + L.openInNewTab));
 
     // Buttons
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
     const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    insertBtn.textContent = 'Insert';
+    insertBtn.textContent = L.insertBtn;
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = 'Cancel';
+    cancelBtn.textContent = L.cancelBtn;
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 

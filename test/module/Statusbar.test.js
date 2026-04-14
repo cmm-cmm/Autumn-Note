@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { Statusbar } from '../../src/js/module/Statusbar.js';
+import { en } from '../../src/js/i18n/en.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -13,6 +14,7 @@ function makeContext(options = {}) {
   document.body.appendChild(container);
   return {
     layoutInfo: { container, editable },
+    locale: en,
     options: {
       resizable: false,
       maxWords: 0,

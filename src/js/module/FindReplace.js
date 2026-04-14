@@ -122,7 +122,7 @@ export class FindReplace {
     const isReplace = this._mode === 'replace';
     if (replaceRow) replaceRow.style.display = isReplace ? '' : 'none';
     if (replaceActions) replaceActions.style.display = isReplace ? '' : 'none';
-    if (title) title.textContent = isReplace ? 'Find & Replace' : 'Find';
+    if (title) title.textContent = isReplace ? this.context.locale.findReplace.findReplaceTitle : this.context.locale.findReplace.findTitle;
   }
 
   // ---------------------------------------------------------------------------
@@ -130,24 +130,25 @@ export class FindReplace {
   // ---------------------------------------------------------------------------
 
   _buildDialog() {
+    const L = this.context.locale.findReplace;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay an-fr-dialog',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-label': 'Find and Replace',
+      'aria-label': L.findReplaceTitle,
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
     // ---- Title row ----
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = 'Find';
+    title.textContent = L.findTitle;
     const closeBtn = createElement('button', {
       type: 'button',
       class: 'an-icon-close',
       'aria-label': 'Close',
     });
-    closeBtn.textContent = '×';
+    closeBtn.textContent = L.close;
     this._closeBtn = closeBtn;
     titleRow.append(title, closeBtn);
     box.appendChild(titleRow);
@@ -157,8 +158,8 @@ export class FindReplace {
     const findInput = createElement('input', {
       type: 'text',
       class: 'an-input',
-      placeholder: 'Find…',
-      'aria-label': 'Search text',
+      placeholder: L.findPlaceholder,
+      'aria-label': L.searchAriaLabel,
     });
     this._findInput = findInput;
     findRow.appendChild(findInput);
@@ -172,7 +173,7 @@ export class FindReplace {
       'aria-label': 'Case sensitive',
     });
     this._caseCheckbox = caseCheckbox;
-    caseLabel.append(caseCheckbox, document.createTextNode('\u00a0Case sensitive'));
+    caseLabel.append(caseCheckbox, document.createTextNode(L.caseSensitive));
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;
     optRow.append(caseLabel, counter);
@@ -181,9 +182,9 @@ export class FindReplace {
     // ---- Find actions ----
     const findActions = createElement('div', { class: 'an-dialog-actions an-fr-find-actions' });
     const prevBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    prevBtn.textContent = '\u2190 Prev';
+    prevBtn.textContent = L.prevBtn;
     const nextBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    nextBtn.textContent = 'Next \u2192';
+    nextBtn.textContent = L.nextBtn;
     findActions.append(prevBtn, nextBtn);
     box.appendChild(findActions);
 
@@ -193,8 +194,8 @@ export class FindReplace {
     const replaceInput = createElement('input', {
       type: 'text',
       class: 'an-input',
-      placeholder: 'Replace with\u2026',
-      'aria-label': 'Replace with',
+      placeholder: L.replacePlaceholder,
+      'aria-label': L.replaceAriaLabel,
     });
     this._replaceInput = replaceInput;
     replaceRow.appendChild(replaceInput);
@@ -204,9 +205,9 @@ export class FindReplace {
     const replaceActions = createElement('div', { class: 'an-dialog-actions an-fr-replace-actions' });
     replaceActions.style.display = 'none';
     const replaceBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    replaceBtn.textContent = 'Replace';
+    replaceBtn.textContent = L.replaceBtn;
     const replaceAllBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    replaceAllBtn.textContent = 'Replace All';
+    replaceAllBtn.textContent = L.replaceAllBtn;
     replaceActions.append(replaceBtn, replaceAllBtn);
     box.appendChild(replaceActions);
 
