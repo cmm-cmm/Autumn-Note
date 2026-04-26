@@ -1,4 +1,4 @@
-# AutumnNote
+# Autumn Note
 
 <p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
