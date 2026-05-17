@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(git merge dev --no-ff -m ' *)",
+      "Bash(git tag -a v1.1.0 -m 'Release v1.1.0 *)",
+      "Bash(git push *)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:api.npmjs.org)",
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:cmm-cmm.github.io)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm whoami *)",
+      "Bash(npm config *)",
+      "Read(//c/Users/cmmph/**)",
+      "Bash(npm pack *)",
+      "Bash(npm publish *)",
+      "Bash(npm view *)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); console.log\\('latest:', d['dist-tags'].latest\\); console.log\\('published:', d.time[d['dist-tags'].latest]\\); console.log\\('homepage:', d.homepage||'\\(none\\)'\\); console.log\\('repository:', d.repository?.url||'\\(none\\)'\\);\")",
+      "Bash(git tag *)"
+    ]
+  }
+}
