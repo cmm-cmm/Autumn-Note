@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-05-17
+
+### Added
+- **Bubble toolbar** — a mini floating toolbar that appears above the current text selection for quick access to bold, italic, underline, strikethrough, link, text colour, remove format, and inline code; activated via `bubbleToolbar: true`; button set is configurable via `bubbleToolbarItems`
+- **Markdown shortcuts** — type Markdown-style syntax directly in the editor and it auto-converts on Space / Enter: `# ` → H1–H3, `> ` → blockquote, `- ` / `* ` → unordered list, `1. ` → ordered list, `[ ] ` → checklist, `---` → horizontal rule, ` ``` ` → code block; inline: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``; enabled by default (`markdownShortcuts: true`)
+- **Auto-save restore** — when `autoSave` and `autoSaveRestore` are both `true`, a dismissible banner is shown on load if a draft exists in localStorage; configurable age window via `autoSaveRestoreTimeout` (days); `onAutoSaveRestore(html, context)` callback fires after restore
+- **@mention autocomplete** — type the trigger character (default `@`) to open a floating dropdown populated by a custom `mention.onSearch(query, callback)` function; configurable `trigger`, `minChars`, `maxResults`, `debounce`, `mentionClass`, `allowSpaces`, and `onInsert` for custom chip HTML
+
+### Changed
+- Improved `ContextMenu` layout and icon rendering for better visual consistency
+- `func.js` — minor utility improvements used by new modules
+
+---
+
 ## [1.0.9] - 2026-04-14
 
 ### Added

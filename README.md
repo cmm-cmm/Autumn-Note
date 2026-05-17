@@ -2,7 +2,7 @@
 
 <p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
-[![Version](https://img.shields.io/badge/version-1.0.9-blue)](#)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](#)
 [![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Build](https://img.shields.io/badge/Build-Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -30,9 +30,10 @@ A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES
 5. [Options](#options)
 6. [Toolbar Customisation](#toolbar-customisation)
 7. [Keyboard Shortcuts](#keyboard-shortcuts)
-8. [Project Structure](#project-structure)
-9. [Comparison](#comparison)
-10. [License](#license)
+8. [Mentions](#mentions)
+9. [Project Structure](#project-structure)
+10. [Comparison](#comparison)
+11. [License](#license)
 
 ---
 
@@ -97,6 +98,9 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Placeholder** — CSS `::before` pseudo-element, zero DOM node cost
 - **Read-only mode** — `readOnly: true` renders a non-editable preview with toolbar hidden; toggle at runtime via `editor.setDisabled()`
 - **Auto-save** — `autoSave: true` persists content to `localStorage` on every change; key configurable via `autoSaveKey`
+- **Auto-save restore** — when `autoSave` and `autoSaveRestore` are both `true`, a dismissible banner prompts the user to restore or discard a previously saved draft on load; configurable age window via `autoSaveRestoreTimeout`
+- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text with quick-access buttons (bold, italic, underline, strikethrough, link, text colour, remove format, inline code); button set configurable via `bubbleToolbarItems`
+- **Markdown shortcuts** — `markdownShortcuts: true` (default) converts Markdown syntax typed in the editor into HTML in real time: `# ` → H1–H3, `> ` → blockquote, `- ` / `* ` → unordered list, `1. ` → ordered list, `[ ] ` → checklist, `---` → HR, ` ``` ` → code block; inline: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``
 - **Custom focus ring** — `focusColor` accepts any CSS colour string to override the default blue focus ring
 - **Spellcheck** — browser spellcheck enabled by default (`spellcheck: true`)
 
@@ -107,6 +111,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Plugin-ready** — register custom modules via `AutumnNote.defaults`
 - **Tree-shakeable** — ES module build; all core utilities individually exported
 - **TypeScript definitions** — bundled `types/index.d.ts` with full JSDoc coverage
+- **@mention autocomplete** — type `@` (or any custom trigger) to open a floating dropdown backed by a user-supplied `onSearch` function; inserts a non-editable mention chip; customisable chip HTML via `onInsert`
 
 ### Security
 - All HTML (pasted content, `setHTML()`, or code-view output) passes through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes
@@ -231,6 +236,36 @@ const editor = AutumnNote.create('#my-editor', {
 });
 ```
 
+### Bubble toolbar
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  bubbleToolbar: true,
+  bubbleToolbarItems: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'removeFormat'],
+});
+```
+
+### @mention autocomplete
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  mention: {
+    onSearch(query, callback) {
+      const users = [
+        { id: 1, label: 'Alice' },
+        { id: 2, label: 'Bob' },
+        { id: 3, label: 'Charlie' },
+      ];
+      callback(users.filter(u => u.label.toLowerCase().includes(query.toLowerCase())));
+    },
+    onInsert(item) {
+      // optional: return custom HTML for the mention chip
+      return `<span class="mention" data-id="${item.id}">@${item.label}</span>`;
+    },
+  },
+});
+```
+
 ---
 
 ## API
@@ -320,6 +355,13 @@ const editor = AutumnNote.create('#my-editor', {
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
 | `lang` | `string \| object` | `'en'` | UI display language. Built-in codes: `'en'`, `'vi'`, `'ja'`, `'zh'`, `'fr'`, `'de'`, `'es'`, `'ko'`. Pass a partial locale object for custom overrides. |
+| `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |
+| `bubbleToolbar` | `boolean` | `false` | Show a mini floating toolbar above the text selection for quick formatting. |
+| `bubbleToolbarItems` | `string[]` | `['bold','italic','underline','link','foreColor','removeFormat']` | Buttons shown in the bubble toolbar. Available names: `'bold'`, `'italic'`, `'underline'`, `'strikethrough'`, `'link'`, `'foreColor'`, `'removeFormat'`, `'inlineCode'`. |
+| `autoSaveRestore` | `boolean` | `false` | When `autoSave` is also `true`, show a restore banner on load if a draft exists. |
+| `autoSaveRestoreTimeout` | `number` | `7` | Max draft age in days before it is auto-discarded. `0` = no expiry. |
+| `onAutoSaveRestore` | `Function` | `null` | `(html, context) => void` — called after the user restores a draft. |
+| `mention` | `object` | `null` | @mention configuration object. Set `mention.onSearch` to activate. See [Mentions](#mentions). |
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
 | `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |
@@ -452,6 +494,39 @@ Object.assign(AutumnNote.defaults, {
 
 ---
 
+## Mentions
+
+The `mention` option object activates `@mention` autocomplete. Only `onSearch` is required; all other fields are optional.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `onSearch` | `Function` | — | `(query, callback) => void` — called when the user types after the trigger character. Pass an array of `{ id, label, avatar? }` to the callback. |
+| `onInsert` | `Function` | `null` | `(item) => string \| null` — return custom HTML for the inserted mention chip. Return `null` to use the built-in chip. |
+| `trigger` | `string` | `'@'` | Character that opens the dropdown. |
+| `minChars` | `number` | `0` | Minimum characters after the trigger before `onSearch` is called. `0` = open immediately. |
+| `maxResults` | `number` | `8` | Maximum items shown in the dropdown. |
+| `debounce` | `number` | `200` | Debounce delay in milliseconds for `onSearch` calls. |
+| `mentionClass` | `string` | `'an-mention'` | CSS class applied to the inserted mention chip. |
+| `allowSpaces` | `boolean` | `false` | Allow spaces in the query string before the dropdown closes. |
+
+### Example
+
+```js
+AutumnNote.create('#editor', {
+  mention: {
+    trigger: '@',
+    minChars: 1,
+    onSearch(query, callback) {
+      fetch(`/api/users?q=${encodeURIComponent(query)}`)
+        .then(r => r.json())
+        .then(users => callback(users)); // [{ id, label, avatar? }]
+    },
+  },
+});
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -495,7 +570,11 @@ src/
 │   │   ├── CodeTooltip.js    Floating toolbar for code blocks (copy/delete)
 │   │   ├── EmojiDialog.js    Unicode emoji picker (~380 emoji, 7 categories)
 │   │   ├── IconDialog.js     FontAwesome icon picker (FA 6 Free Solid, 8 categories)
-│   │   └── ShortcutsDialog.js  Keyboard shortcuts reference dialog (Shift+?)
+│   │   ├── ShortcutsDialog.js  Keyboard shortcuts reference dialog (Shift+?)
+│   │   ├── BubbleToolbar.js  Mini floating toolbar above text selection
+│   │   ├── MarkdownShortcuts.js  Inline Markdown-to-HTML input rules
+│   │   ├── AutoSaveRestore.js   Draft restore banner for localStorage drafts
+│   │   └── Mention.js        @mention autocomplete with floating dropdown
 │   ├── Context.js            Editor instance hub: module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
 │   ├── renderer.js           DOM layout builder
