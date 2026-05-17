@@ -34,6 +34,10 @@ import { ContextMenu } from './module/ContextMenu.js';
 import { ShortcutsDialog } from './module/ShortcutsDialog.js';
 import { FindReplace } from './module/FindReplace.js';
 import { ImageCropOverlay } from './module/ImageCropOverlay.js';
+import { AutoSaveRestore } from './module/AutoSaveRestore.js';
+import { MarkdownShortcuts } from './module/MarkdownShortcuts.js';
+import { BubbleToolbar } from './module/BubbleToolbar.js';
+import { Mention } from './module/Mention.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
@@ -139,6 +143,10 @@ export class Context {
     register('shortcutsDialog', ShortcutsDialog);
     register('findReplace', FindReplace);
     register('imageCropOverlay', ImageCropOverlay);
+    register('autoSaveRestore', AutoSaveRestore);
+    register('markdownShortcuts', MarkdownShortcuts);
+    register('bubbleToolbar', BubbleToolbar);
+    register('mention', Mention);
 
     // Custom modules registered via AutumnNote.registerModule()
     for (const [name, ModuleClass] of _customModules) {
@@ -181,10 +189,14 @@ export class Context {
     const d3 = this.on('change', () => this._syncToTarget());
     this._disposers.push(d0, d1, d2, d3);
 
-    // Auto-save to localStorage on every change
+    // Auto-save to localStorage on every change (also writes :asrmeta for restore banner)
     if (this.options.autoSave && this.options.autoSaveKey) {
       const d4 = this.on('change', () => {
-        try { localStorage.setItem(this.options.autoSaveKey, this.getHTML()); } catch (_) {}
+        try {
+          const key = this.options.autoSaveKey;
+          localStorage.setItem(key, this.getHTML());
+          localStorage.setItem(key + ':asrmeta', JSON.stringify({ savedAt: Date.now() }));
+        } catch (_) {}
       });
       this._disposers.push(d4);
     }

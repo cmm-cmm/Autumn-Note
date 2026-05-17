@@ -1999,3 +1999,194 @@ $an-video-accent: #8b5cf6; // violet-500
     display: none !important;
   }
 }
+
+// =============================================================================
+// Auto-save restore banner (#2)
+// =============================================================================
+
+.an-asr-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  font-size: 13px;
+  color: #1e40af;
+  flex-wrap: wrap;
+
+  .an-theme-dark & {
+    background: #1e3a5f;
+    border-bottom-color: #1e4d8c;
+    color: #93c5fd;
+  }
+}
+
+.an-asr-msg {
+  flex: 1;
+  min-width: 0;
+}
+
+.an-asr-btn-restore {
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: $an-primary;
+  color: #fff;
+  border: none;
+  border-radius: $an-radius-sm;
+  cursor: pointer;
+  line-height: 1.5;
+
+  &:hover {
+    background: $an-primary-hover;
+  }
+}
+
+.an-asr-btn-discard {
+  padding: 3px 10px;
+  font-size: 12px;
+  background: transparent;
+  color: $an-muted;
+  border: 1px solid $an-border;
+  border-radius: $an-radius-sm;
+  cursor: pointer;
+  line-height: 1.5;
+
+  &:hover {
+    background: $an-bg-btn-hover;
+  }
+}
+
+// =============================================================================
+// Bubble toolbar (#4)
+// =============================================================================
+
+.an-bubble-toolbar {
+  display: none;
+  position: fixed;
+  z-index: 10040;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  padding: 4px 6px;
+  gap: 2px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  align-items: center;
+  animation: an-bubble-in 0.1s ease;
+  pointer-events: auto;
+  user-select: none;
+
+  .an-theme-dark & {
+    background: #24273a;
+    border-color: #3f3f5f;
+  }
+}
+
+@keyframes an-bubble-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.an-bubble-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: $an-text;
+  cursor: pointer;
+  transition: background $an-transition, color $an-transition;
+
+  svg {
+    pointer-events: none;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+  }
+
+  &.an-active {
+    background: $an-bg-btn-active;
+    color: $an-primary;
+  }
+
+  .an-theme-dark & {
+    color: #cdd6f4;
+
+    &:hover {
+      background: #313244;
+    }
+
+    &.an-active {
+      background: #1e3a5f;
+      color: #93c5fd;
+    }
+  }
+}
+
+// =============================================================================
+// @mention dropdown + chip (#5)
+// =============================================================================
+
+.an-mention-dropdown {
+  display: none;
+  position: fixed;
+  z-index: 9998;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: $an-radius;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 180px;
+  max-width: 280px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.an-mention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: $an-text;
+  transition: background $an-transition;
+
+  &:hover,
+  &.an-mention-active {
+    background: $an-bg-btn-hover;
+  }
+}
+
+.an-mention-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+// Mention chip — inserted inline in the editor content
+.an-mention {
+  display: inline;
+  background: #eff6ff;
+  color: $an-primary;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-weight: 500;
+  cursor: default;
+  user-select: all;
+
+  .an-theme-dark & {
+    background: #1e3a5f;
+    color: #93c5fd;
+  }
+}

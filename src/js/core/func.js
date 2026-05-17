@@ -110,11 +110,11 @@ export function mergeDeep(target, source) {
   if (isPlainObject(target) && isPlainObject(source)) {
     for (const key of Object.keys(source)) {
       if (isPlainObject(source[key])) {
-        if (!(key in target)) {
-          output[key] = mergeDeep({}, source[key]);
-        } else {
-          output[key] = mergeDeep(target[key], source[key]);
-        }
+        // When target[key] is null / undefined / a non-object (e.g. the `mention: null`
+        // default), merge into an empty object instead of passing null to the next
+        // recursive call — which would silently drop all source properties.
+        const base = isPlainObject(target[key]) ? target[key] : {};
+        output[key] = mergeDeep(base, source[key]);
       } else if (Array.isArray(source[key])) {
         output[key] = [...source[key]];
       } else {

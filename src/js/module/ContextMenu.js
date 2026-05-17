@@ -377,12 +377,30 @@ export class ContextMenu {
     if (!editable.contains(event.target)) return;
     if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     event.preventDefault();
-    this._lastX = event.clientX;
-    this._lastY = event.clientY;
+
     const winSel = window.getSelection();
     this._savedRange = (winSel && winSel.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     this._renderItems(this._items);
-    this.showAt(event.clientX, event.clientY);
+
+    // Open below the selected text so the selection stays visible.
+    // Only apply when there is a real (non-collapsed) selection — a collapsed range
+    // (cursor only) also has height > 0, which would misplace the menu relative
+    // to the actual click point.
+    let openX = event.clientX;
+    let openY = event.clientY;
+    if (this._savedRange && !this._savedRange.collapsed) {
+      try {
+        const selRect = this._savedRange.getBoundingClientRect();
+        if (selRect.width > 0 && selRect.height > 0) {
+          // Keep X at click position (feels natural); Y just below the selection.
+          openY = selRect.bottom + 4;
+        }
+      } catch (_) {}
+    }
+
+    this._lastX = openX;
+    this._lastY = openY;
+    this.showAt(openX, openY);
   }
 
   _maybeHide(event) {
@@ -395,39 +413,22 @@ export class ContextMenu {
     this.el.style.display = 'block';
     this._reposition(x, y);
     this.el.setAttribute('aria-hidden', 'false');
+    this.context.triggerEvent('contextMenu:show');
   }
 
   _reposition(x, y) {
     if (!this.el) return;
     const rx = x !== undefined ? x : this._lastX;
     const ry = y !== undefined ? y : this._lastY;
-    const rect = this.el.getBoundingClientRect();
+    const w = this.el.offsetWidth;
+    const h = this.el.offsetHeight;
     let left = rx;
     let top = ry;
-    if (left + rect.width > window.innerWidth) left = window.innerWidth - rect.width - 8;
+    // Clamp to viewport so the menu never overflows the screen edge
+    if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
     if (left < 8) left = 8;
-    if (top + rect.height > window.innerHeight) top = window.innerHeight - rect.height - 8;
+    if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
     if (top < 8) top = 8;
-
-    // Avoid covering the saved selection range
-    if (this._savedRange) {
-      try {
-        const sel = this._savedRange.getBoundingClientRect();
-        if (sel.width > 0 || sel.height > 0) {
-          const overlaps = top < sel.bottom && (top + rect.height) > sel.top &&
-                           left < sel.right  && (left + rect.width)  > sel.left;
-          if (overlaps) {
-            const belowTop = sel.bottom + 6;
-            if (belowTop + rect.height <= window.innerHeight - 8) {
-              top = belowTop;
-            } else {
-              top = Math.max(8, sel.top - rect.height - 6);
-            }
-          }
-        }
-      } catch (_) { /* stale range — ignore */ }
-    }
-
     this.el.style.left = `${left}px`;
     this.el.style.top = `${top}px`;
   }
@@ -436,6 +437,7 @@ export class ContextMenu {
     if (!this.el) return;
     this.el.style.display = 'none';
     this.el.setAttribute('aria-hidden', 'true');
+    this.context.triggerEvent('contextMenu:hide');
   }
 
   // ---------------------------------------------------------------------------
