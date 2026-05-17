@@ -110,6 +110,62 @@ export interface AsnOptions {
    * Pass a partial locale object to override individual strings.
    */
   lang?: string | Partial<AsnLocale>;
+
+  // ---- Auto-save restore (#2) -----------------------------------------------
+
+  /** Show a restore banner when a previously auto-saved draft exists. Requires autoSave: true. */
+  autoSaveRestore?: boolean;
+  /** Maximum age in days for a draft to be offered for restore (0 = no expiry). Default: 7. */
+  autoSaveRestoreTimeout?: number;
+  /** Callback fired after the user chooses to restore a draft. */
+  onAutoSaveRestore?: (html: string, context: Context) => void;
+
+  // ---- Markdown input shortcuts (#3) ----------------------------------------
+
+  /** Convert Markdown-style syntax typed inline (e.g. "## ", "**bold**") to rich HTML. Default: true. */
+  markdownShortcuts?: boolean;
+
+  // ---- Bubble toolbar (#4) --------------------------------------------------
+
+  /** Show a mini floating toolbar above the text selection. Default: false. */
+  bubbleToolbar?: boolean;
+  /** Button names shown in the bubble toolbar. */
+  bubbleToolbarItems?: Array<'bold' | 'italic' | 'underline' | 'strikethrough' | 'link' | 'foreColor' | 'removeFormat' | 'inlineCode'>;
+
+  // ---- @mention (#5) --------------------------------------------------------
+
+  /** @mention autocomplete configuration. Activated when mention.onSearch is provided. */
+  mention?: MentionOptions | null;
+}
+
+// ---------------------------------------------------------------------------
+// Mention types (#5)
+// ---------------------------------------------------------------------------
+
+export interface MentionItem {
+  id: string | number;
+  label: string;
+  avatar?: string;
+  [key: string]: unknown;
+}
+
+export interface MentionOptions {
+  /** Trigger character. Default: '@'. */
+  trigger?: string;
+  /** Minimum characters to type before searching. Default: 0 (show on trigger character). */
+  minChars?: number;
+  /** Maximum results shown in the dropdown. Default: 8. */
+  maxResults?: number;
+  /** Debounce delay in ms before calling onSearch. Default: 200. */
+  debounce?: number;
+  /** Required. Called with (query, callback) to fetch matching items. */
+  onSearch: (query: string, callback: (items: MentionItem[]) => void) => void;
+  /** Optional. Return custom HTML string for the inserted chip, or null to use the default. */
+  onInsert?: (item: MentionItem) => string | null;
+  /** CSS class added to the inserted mention chip. Default: 'an-mention'. */
+  mentionClass?: string;
+  /** Allow spaces in the query string. Default: false. */
+  allowSpaces?: boolean;
 }
 
 // ---------------------------------------------------------------------------

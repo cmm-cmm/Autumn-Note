@@ -133,10 +133,25 @@
       lang: langSelect.value,
     });
 
+    const MENTION_USERS = [
+      { id: 1, label: 'Minh Pham' },
+      { id: 2, label: 'An Nguyen' },
+      { id: 3, label: 'Linh Tran' },
+      { id: 4, label: 'Duc Le' },
+      { id: 5, label: 'Hoa Vo' },
+    ];
+
     let editor = AutumnNote.create('#editor', {
       ...sharedOptions(),
       placeholder: 'Start typing here\u2026',
       focusColor: '#e8751a',
+      bubbleToolbar: true,
+      mention: {
+        onSearch(query, callback) {
+          const q = query.toLowerCase();
+          callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
+        },
+      },
       onChange(html) {
         document.getElementById('output').textContent = html;
         if (window.editorRO) window.editorRO.setHTML(html);

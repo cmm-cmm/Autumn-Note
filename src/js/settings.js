@@ -139,4 +139,23 @@ export const defaultOptions = {
   // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr'.
   // Pass a partial or full locale object to override individual strings.
   lang: 'en',
+
+  // Auto-save restore: show a banner when a draft exists in localStorage.
+  // Requires autoSave: true. Set autoSaveRestoreTimeout to the max age in days
+  // (0 = no expiry). onAutoSaveRestore(html, context) fires after restore.
+  autoSaveRestore: false,
+  autoSaveRestoreTimeout: 7,
+  onAutoSaveRestore: null,
+
+  // Markdown input shortcuts: convert markdown syntax typed inline to HTML.
+  // e.g. "## " at line start → <h2>, "**bold**" → <strong>
+  markdownShortcuts: true,
+
+  // Bubble toolbar: show a mini floating toolbar above text selections.
+  bubbleToolbar: false,
+  bubbleToolbarItems: ['bold', 'italic', 'underline', 'link', 'foreColor', 'removeFormat'],
+
+  // @mention support. mention.onSearch(query, callback) must be provided to activate.
+  // mention.minChars defaults to 0 — dropdown opens immediately on trigger character.
+  mention: null,
 };

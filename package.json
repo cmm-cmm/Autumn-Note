@@ -23,7 +23,8 @@
     "typecheck": "tsc --noEmit",
     "build:cdn": "vite build --config vite.cdn.config.js",
     "analyze": "cross-env ANALYZE=1 vite build",
-    "bench": "vitest bench"
+    "bench": "vitest bench",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "wysiwyg",
