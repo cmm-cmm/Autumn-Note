@@ -28,20 +28,39 @@
   },
   "keywords": [
     "wysiwyg",
+    "wysiwyg-editor",
     "editor",
     "rich-text",
     "rich-text-editor",
     "vanilla-js",
     "vanilla-javascript",
     "contenteditable",
-    "summernote",
     "text-editor",
     "html-editor",
     "no-jquery",
     "lightweight",
     "toolbar",
-    "javascript-editor"
+    "javascript-editor",
+    "summernote",
+    "summernote-alternative",
+    "quill-alternative",
+    "tinymce-alternative",
+    "markdown",
+    "mention",
+    "bubble-toolbar",
+    "dark-mode",
+    "i18n",
+    "typescript",
+    "esm"
   ],
+  "homepage": "https://cmm-cmm.github.io/Autumn-Note/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmm-cmm/Autumn-Note.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cmm-cmm/Autumn-Note/issues"
+  },
   "author": "Minh Pham",
   "license": "MIT",
   "devDependencies": {
