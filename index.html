@@ -158,12 +158,38 @@
     .features-strip {
       background: #242220;
       border-bottom: 1px solid rgba(255,255,255,.06);
-      padding: 14px 24px; overflow-x: auto; scrollbar-width: none;
+      padding: 14px 0;
+      overflow: hidden;
+      position: relative;
     }
-    .features-strip::-webkit-scrollbar { display: none; }
+    /* Fade edges using the actual background color instead of mask-image */
+    .features-strip::before,
+    .features-strip::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 80px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .features-strip::before {
+      left: 0;
+      background: linear-gradient(to right, #242220 0%, transparent 100%);
+    }
+    .features-strip::after {
+      right: 0;
+      background: linear-gradient(to left, #242220 0%, transparent 100%);
+    }
     .features-inner {
       display: flex; gap: 8px; align-items: center;
-      max-width: 1100px; margin: 0 auto; white-space: nowrap;
+      width: max-content; white-space: nowrap;
+      animation: an-marquee 40s linear infinite;
+    }
+    /* Pause on hover so users can read individual items */
+    .features-strip:hover .features-inner { animation-play-state: paused; }
+    @keyframes an-marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
     .feat {
       font-size: 12px; font-weight: 500; color: #a8a29e;
@@ -326,6 +352,7 @@
   <!-- ===================== FEATURE STRIP ===================== -->
   <div class="features-strip" role="list" aria-label="Key features">
     <div class="features-inner">
+      <!-- Set 1 — accessible -->
       <span class="feat" role="listitem">✦ Zero dependencies</span>
       <span class="feat" role="listitem">✦ ES2022 + TypeScript</span>
       <span class="feat" role="listitem">✦ Dark / Light theme</span>
@@ -340,6 +367,21 @@
       <span class="feat" role="listitem">✦ ~380 emoji picker</span>
       <span class="feat" role="listitem">✦ FontAwesome icon picker</span>
       <span class="feat" role="listitem">✦ Video embeds</span>
+      <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
+      <span class="feat" aria-hidden="true">✦ Zero dependencies</span>
+      <span class="feat" aria-hidden="true">✦ ES2022 + TypeScript</span>
+      <span class="feat" aria-hidden="true">✦ Dark / Light theme</span>
+      <span class="feat" aria-hidden="true">✦ 8 languages (i18n)</span>
+      <span class="feat" aria-hidden="true">✦ Bubble toolbar</span>
+      <span class="feat" aria-hidden="true">✦ Markdown shortcuts</span>
+      <span class="feat" aria-hidden="true">✦ @mention autocomplete</span>
+      <span class="feat" aria-hidden="true">✦ Auto-save restore</span>
+      <span class="feat" aria-hidden="true">✦ Find &amp; Replace</span>
+      <span class="feat" aria-hidden="true">✦ Image crop overlay</span>
+      <span class="feat" aria-hidden="true">✦ Table merge / unmerge</span>
+      <span class="feat" aria-hidden="true">✦ ~380 emoji picker</span>
+      <span class="feat" aria-hidden="true">✦ FontAwesome icon picker</span>
+      <span class="feat" aria-hidden="true">✦ Video embeds</span>
     </div>
   </div>
 
