@@ -237,26 +237,29 @@ export class Toolbar {
 
     const openPopup = () => {
       isOpen = true;
-      // Use fixed positioning to escape overflow-clipping ancestors
-      // (toolbar scroll mode and mobile overflow-x:auto both clip position:absolute)
       const rect = btn.getBoundingClientRect();
+
+      // Measure popup dimensions while invisible so we can set the correct
+      // position before the browser paints (matches the color-picker pattern).
+      popup.style.visibility = 'hidden';
       popup.style.display = 'block';
       const pw = popup.offsetWidth;
       const ph = popup.offsetHeight;
+
       let left = rect.left;
       let top  = rect.bottom + 4;
       if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
-      if (top + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
+      if (top  + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
+
       popup.style.left = `${left}px`;
       popup.style.top  = `${top}px`;
+      popup.style.visibility = '';
       btn.setAttribute('aria-expanded', 'true');
     };
 
     const closePopup = () => {
       isOpen = false;
       popup.style.display = 'none';
-      popup.style.top  = '';
-      popup.style.left = '';
       btn.setAttribute('aria-expanded', 'false');
       setHighlight(0, 0);
     };
@@ -286,10 +289,14 @@ export class Toolbar {
 
     const d5 = on(document, 'click', () => { if (isOpen) closePopup(); });
 
-    this._disposers.push(d1, d2, d3, d4, d5);
+    // Append popup to body so position:fixed is truly viewport-relative,
+    // unaffected by any ancestor transform / filter (same pattern as color picker).
+    this._disposers.push(d1, d2, d3, d4, d5, () => {
+      if (popup.parentNode) popup.parentNode.removeChild(popup);
+    });
 
     wrap.appendChild(btn);
-    wrap.appendChild(popup);
+    document.body.appendChild(popup);
     return wrap;
   }
 
