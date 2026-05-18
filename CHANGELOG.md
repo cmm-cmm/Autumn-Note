@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-05-18
+
+### Fixed
+- **Table picker popup position** — popup was still appended to the toolbar DOM tree, causing `position: fixed` to break when any ancestor had `transform`/`filter`/`backdrop-filter`; popup is now appended to `document.body` (matching the color-picker pattern); a disposer removes it on editor destroy. Additionally, `display: block` was set before `left`/`top`, risking a paint flash at the viewport origin — fixed by measuring with `visibility: hidden` first, then setting the correct position before revealing
+- **Demo page favicon on GitHub Pages** — `href="/image/favicon.ico"` and `src="/image/banner.png"` used absolute root paths that resolved to `https://cmm-cmm.github.io/image/…` instead of the correct `/Autumn-Note/image/…` sub-path; moved `image/` into `public/` (Vite's default `publicDir`) so Vite copies the files to `_site/image/` and rewrites HTML paths with the base during production build
+
+---
+
 ## [1.2.0] - 2026-05-18
 
 ### Added
