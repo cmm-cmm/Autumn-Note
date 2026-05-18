@@ -108,6 +108,8 @@
   background: $an-bg-toolbar;
   border-bottom: 1px solid $an-border;
   user-select: none;
+  // Round the top corners to match the container border-radius
+  border-radius: $an-radius $an-radius 0 0;
 }
 
 .an-btn-group {
@@ -761,6 +763,13 @@
   font-size: 11px;
   color: $an-muted;
   user-select: none;
+  // Round the bottom corners to match the container border-radius
+  border-radius: 0 0 $an-radius $an-radius;
+}
+
+// When there is no statusbar, the editable area is the last child — round its bottom corners
+.an-container > .an-editable:last-child {
+  border-radius: 0 0 $an-radius $an-radius;
 }
 
 .an-status-info {
