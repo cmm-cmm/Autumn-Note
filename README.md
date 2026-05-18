@@ -2,14 +2,15 @@
 
 <p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue)](#)
+[![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
+[![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/autumnnote?label=minzipped&color=success)](https://bundlephobia.com/package/autumnnote)
+[![GitHub Stars](https://img.shields.io/github/stars/cmm-cmm/Autumn-Note?style=flat&logo=github&color=yellow)](https://github.com/cmm-cmm/Autumn-Note)
 [![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Build](https://img.shields.io/badge/Build-Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Test](https://img.shields.io/badge/Test-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![License](https://img.shields.io/badge/License-MIT-brightgreen)](https://opensource.org/licenses/MIT)
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
-[![FontAwesome](https://img.shields.io/badge/FontAwesome-6.5.2-528DD7?logo=fontawesome&logoColor=white)](https://fontawesome.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
 
 A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
 
@@ -608,7 +609,7 @@ Build output in `dist/`:
 
 ## Comparison
 
-The table below compares AutumnNote against editors commonly used in this category. Specific library names are omitted to avoid bias.
+The table below compares AutumnNote against editors commonly used in this category — such as Summernote, Quill, TinyMCE, and Froala. Specific library names are kept generic to avoid direct bias; the comparison is based on publicly documented feature sets.
 
 | Feature | Editor A | Editor B | Editor C | **AutumnNote** |
 |---|---|---|---|---|
