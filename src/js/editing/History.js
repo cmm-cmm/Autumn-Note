@@ -138,6 +138,8 @@ export class History {
    * @returns {{ html: string, images: Object<string,string> }}
    */
   _tokenizeImages(html) {
+    // Fast-path: skip regex entirely when there are no data URIs (common case)
+    if (!html.includes('data:')) return { html, images: {} };
     const images = {};
     let index = 0;
     const tokenized = html.replace(/data:[^;]+;base64,[^"' >]*/g, (match) => {

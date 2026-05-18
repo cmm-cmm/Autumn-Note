@@ -172,6 +172,8 @@ export class BubbleToolbar {
 
     document.body.appendChild(el);
     this._el = el;
+    // Cache button references once — avoids querySelectorAll on every selectionchange
+    this._btnCache = Array.from(el.querySelectorAll('.an-bubble-btn'));
   }
 
   _buildColorPicker() {
@@ -349,10 +351,9 @@ export class BubbleToolbar {
   }
 
   _syncActive() {
-    if (!this._el) return;
-    this._el.querySelectorAll('.an-bubble-btn').forEach((btn) => {
-      const name = btn.dataset.name;
-      const activeFn = _ACTIVE[name];
+    if (!this._btnCache) return;
+    this._btnCache.forEach((btn) => {
+      const activeFn = _ACTIVE[btn.dataset.name];
       btn.classList.toggle('an-active', !!(activeFn && activeFn()));
     });
   }

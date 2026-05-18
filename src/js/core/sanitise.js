@@ -38,66 +38,70 @@ const TRUSTED_IFRAME_HOSTS = new Set([
 export function sanitiseHTML(html, { allowIframes = false } = {}) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
 
-  // Remove outright dangerous elements (optionally preserve iframes for video embeds)
-  const tags = allowIframes ? PROHIBITED_TAGS.filter((t) => t !== 'iframe') : PROHIBITED_TAGS;
-  tags.forEach((tag) => {
-    doc.querySelectorAll(tag).forEach((el) => el.remove());
-  });
+  // Single querySelectorAll pass — collect all elements once to avoid
+  // repeated full-tree traversals for each category of check.
+  const allElements = Array.from(doc.querySelectorAll('*'));
 
-  // Strip dangerous attributes from remaining elements
-  doc.querySelectorAll('*').forEach((el) => {
-    Array.from(el.attributes).forEach((attr) => {
+  // Build the prohibited tag set for fast O(1) lookup
+  const prohibited = new Set(
+    allowIframes ? PROHIBITED_TAGS.filter((t) => t !== 'iframe') : PROHIBITED_TAGS,
+  );
+
+  for (const el of allElements) {
+    const tag = el.tagName.toLowerCase();
+
+    // Remove outright dangerous elements
+    if (prohibited.has(tag)) {
+      el.remove();
+      continue;
+    }
+
+    // Strip dangerous attributes
+    for (const attr of Array.from(el.attributes)) {
       // Remove all event handlers (onclick, onload, onerror, …)
       if (attr.name.startsWith('on')) {
         el.removeAttribute(attr.name);
-        return;
+        continue;
       }
       // Sanitise URL attributes
       if (URL_ATTRS.includes(attr.name)) {
         const val = attr.value.trim();
-        // Block javascript: and vbscript: protocols
         if (/^(javascript|vbscript):/i.test(val)) {
           el.removeAttribute(attr.name);
-          return;
+          continue;
         }
         // Allow data: URIs only on img[src] (base64 image uploads); block elsewhere
         if (/^data:/i.test(val) && !(attr.name === 'src' && el.tagName === 'IMG')) {
           el.removeAttribute(attr.name);
         }
       }
-
-      // Strip iframe HTML-injection vectors and limit iframe src to trusted hosts.
+      // Strip iframe HTML-injection vectors; limit src to trusted hosts
       if (el.tagName === 'IFRAME') {
         if (attr.name === 'srcdoc') {
           el.removeAttribute(attr.name);
-          return;
+          continue;
         }
-        if (attr.name === 'src') {
-          if (!isTrustedIframeSrc(attr.value)) {
-            el.removeAttribute(attr.name);
-          }
-          return;
-        }
-      }
-    });
-  });
-
-  // Allow only input[type="checkbox"] inside ul.an-checklist li; strip everything else.
-  // This preserves checklist state while blocking arbitrary <input> injection.
-  doc.querySelectorAll('input').forEach((el) => {
-    const inChecklist = el.closest('ul.an-checklist') !== null &&
-                        el.closest('li') !== null;
-    if (!inChecklist || el.getAttribute('type') !== 'checkbox') {
-      el.remove();
-    } else {
-      // Harden: keep only safe attributes on checklist checkboxes
-      Array.from(el.attributes).forEach((attr) => {
-        if (!['type', 'checked', 'contenteditable'].includes(attr.name)) {
+        if (attr.name === 'src' && !isTrustedIframeSrc(attr.value)) {
           el.removeAttribute(attr.name);
         }
-      });
+      }
     }
-  });
+
+    // Allow only input[type="checkbox"] inside ul.an-checklist li
+    if (tag === 'input') {
+      const inChecklist = el.closest('ul.an-checklist') !== null &&
+                          el.closest('li') !== null;
+      if (!inChecklist || el.getAttribute('type') !== 'checkbox') {
+        el.remove();
+      } else {
+        for (const attr of Array.from(el.attributes)) {
+          if (!['type', 'checked', 'contenteditable'].includes(attr.name)) {
+            el.removeAttribute(attr.name);
+          }
+        }
+      }
+    }
+  }
 
   return doc.body.innerHTML;
 }

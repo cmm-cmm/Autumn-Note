@@ -92,16 +92,29 @@ export class Mention {
     const el = document.createElement('div');
     el.className = 'an-mention-dropdown';
     el.setAttribute('role', 'listbox');
+
+    // Event delegation: single listeners on the container instead of per-item
+    el.addEventListener('mousedown', (e) => e.preventDefault());
+    el.addEventListener('click', (e) => {
+      const item = e.target.closest('.an-mention-item');
+      if (item) this._select(+item.dataset.index);
+    });
+    el.addEventListener('mousemove', (e) => {
+      const item = e.target.closest('.an-mention-item');
+      if (item) this._highlightItem(+item.dataset.index);
+    });
+
     document.body.appendChild(el);
     this._dropdown = el;
   }
 
   _renderItems(items) {
     const dd = this._dropdown;
-    dd.innerHTML = '';
     this._items = items.slice(0, this._cfg.maxResults);
     this._activeIndex = this._items.length > 0 ? 0 : -1;
 
+    // Build all items in a DocumentFragment — one batch DOM insertion
+    const frag = document.createDocumentFragment();
     this._items.forEach((item, i) => {
       const li = document.createElement('div');
       li.className = 'an-mention-item';
@@ -117,10 +130,11 @@ export class Mention {
       const label = document.createElement('span');
       label.textContent = item.label;
       li.appendChild(label);
-      li.addEventListener('mousedown', (e) => e.preventDefault());
-      li.addEventListener('click', () => this._select(i));
-      dd.appendChild(li);
+      frag.appendChild(li);
     });
+
+    dd.innerHTML = '';        // one clear
+    dd.appendChild(frag);    // one batch insert
 
     this._highlightItem(this._activeIndex);
   }

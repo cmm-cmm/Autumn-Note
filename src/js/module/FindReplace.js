@@ -324,12 +324,14 @@ export class FindReplace {
     }
     const re = this._queryRegex;
 
+    // Cap results to prevent blocking the main thread on very large documents
+    const MAX_RESULTS = 500;
     const walker = document.createTreeWalker(root, 0x4 /* NodeFilter.SHOW_TEXT */);
     let node;
-    while ((node = walker.nextNode())) {
+    while ((node = walker.nextNode()) && results.length < MAX_RESULTS) {
       re.lastIndex = 0;
       let m;
-      while ((m = re.exec(node.textContent)) !== null) {
+      while ((m = re.exec(node.textContent)) !== null && results.length < MAX_RESULTS) {
         results.push({ node, start: m.index, end: m.index + m[0].length });
       }
     }
