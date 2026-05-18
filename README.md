@@ -1,6 +1,6 @@
 # Autumn Note
 
-<p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
+<p align="center"><img src="public/image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
 [![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
