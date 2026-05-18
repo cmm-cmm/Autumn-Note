@@ -307,7 +307,7 @@ export class ContextMenu {
           cells.forEach((cell) => {
             cell.classList.toggle('active', +cell.dataset.row <= rows && +cell.dataset.col <= cols);
           });
-          labelEl.textContent = (rows && cols) ? `${cols} × ${rows}` : (this.context.locale.contextMenu.table || 'Insert Table');
+          labelEl.textContent = (rows && cols) ? `${rows} × ${cols}` : (this.context.locale.contextMenu.table || 'Insert Table');
         };
 
         panel.appendChild(gridEl);

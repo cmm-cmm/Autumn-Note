@@ -351,7 +351,7 @@ export class Clipboard {
    */
   _dataUrlToBlob(dataUrl) {
     const [header, b64] = dataUrl.split(',');
-    const mime = header.match(/:(.*?);/)[1];
+    const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
     const binary = atob(b64);
     const arr = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);

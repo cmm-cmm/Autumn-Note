@@ -291,7 +291,7 @@ export class BubbleToolbar {
     editable.focus();
     const sel = window.getSelection();
     sel.removeAllRanges();
-    sel.addRange(this._savedRange.cloneRange());
+    try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { return; }
 
     document.execCommand(type, false, color);
     this.context.invoke('editor.afterCommand');
