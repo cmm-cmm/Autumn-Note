@@ -153,7 +153,7 @@ export const defaultOptions = {
 
   // Bubble toolbar: show a mini floating toolbar above text selections.
   bubbleToolbar: false,
-  bubbleToolbarItems: ['bold', 'italic', 'underline', 'link', 'foreColor', 'removeFormat'],
+  bubbleToolbarItems: ['bold', 'italic', 'underline', 'link', 'foreColor', 'hiliteColor', 'removeFormat'],
 
   // @mention support. mention.onSearch(query, callback) must be provided to activate.
   // mention.minChars defaults to 0 — dropdown opens immediately on trigger character.

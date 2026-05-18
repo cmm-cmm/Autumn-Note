@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc -l)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(node -e ' *)",
+      "Bash(node -p \"require\\('./package.json'\\).version\")",
+      "Bash(npm version *)",
+      "Bash(powershell -Command \"\\(Get-Content index.html\\) -replace 'v1\\\\.1\\\\.1', 'v1.2.0' | Set-Content index.html\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
