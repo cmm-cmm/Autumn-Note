@@ -2117,6 +2117,30 @@ $an-video-accent: #8b5cf6; // violet-500
     color: $an-primary;
   }
 
+  // Color variant: SVG stacked above a thin color-indicator strip
+  &.an-bubble-btn--color {
+    flex-direction: column;
+    gap: 1px;
+    padding: 4px 0 3px;
+
+    .an-bubble-btn-svg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+
+      svg { display: block; }
+    }
+
+    .an-bubble-color-strip {
+      display: block;
+      width: 14px;
+      height: 3px;
+      border-radius: 1px;
+      pointer-events: none;
+    }
+  }
+
   .an-theme-dark & {
     color: #cdd6f4;
 
@@ -2128,6 +2152,23 @@ $an-video-accent: #8b5cf6; // violet-500
       background: #1e3a5f;
       color: #93c5fd;
     }
+  }
+}
+
+// Bubble toolbar — color picker popup
+.an-bubble-color-picker {
+  position: fixed;
+  z-index: 10041;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  padding: 4px 0;
+  min-width: 160px;
+
+  .an-theme-dark & {
+    background: #24273a;
+    border-color: #3f3f5f;
   }
 }
 

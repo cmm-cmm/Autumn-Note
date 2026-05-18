@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)"
     ]
   }
 }
