@@ -215,6 +215,7 @@
 
     #lang-bar {
       display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+      flex-wrap: wrap;
     }
     #lang-bar label { font-size: 13px; font-weight: 600; color: #57534e; }
     #lang-select {
@@ -223,6 +224,46 @@
       transition: border-color .15s;
     }
     #lang-select:focus { outline: none; border-color: #e8751a; }
+
+    /* Spacer to push theme toggle to the right */
+    #lang-bar .bar-spacer { flex: 1; }
+
+    /* Theme toggle button */
+    #theme-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 7px; border: 1px solid #e7e5e4;
+      background: #fff; color: #44403c; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+      white-space: nowrap;
+    }
+    #theme-btn:hover { border-color: #e8751a; color: #e8751a; }
+    #theme-btn svg { flex-shrink: 0; transition: transform .35s; }
+    #theme-btn.is-dark {
+      background: #1e1e2e; border-color: #313244; color: #cdd6f4;
+    }
+    #theme-btn.is-dark:hover { border-color: #89b4fa; color: #89b4fa; }
+    #theme-btn.is-dark svg { transform: rotate(180deg); }
+
+    /* Demo outer wrapper — covers full viewport width for dark mode */
+    #demo-outer { transition: background .25s; }
+    #demo-outer.is-dark { background: #13131a; }
+    #demo-outer.is-dark .section-title { color: #cdd6f4; }
+    #demo-outer.is-dark .section-sub { color: #6c7086; }
+    #demo-outer.is-dark .section-sub code { background: #313244; color: #cdd6f4; }
+    #demo-outer.is-dark #lang-bar label { color: #a6adc8; }
+    #demo-outer.is-dark #lang-select {
+      background: #1e1e2e; border-color: #45475a; color: #cdd6f4;
+    }
+    #demo-outer.is-dark .out-label { color: #6c7086; }
+    #demo-outer.is-dark #output {
+      background: #181825; border-color: #313244; color: #cdd6f4;
+    }
+    #demo-outer.is-dark #readonly-badge {
+      background: #2a2010; color: #e8a44a; border-color: #6b4c1a;
+    }
+    #demo-outer.is-dark #readonly-editor-wrapper {
+      border-color: #45475a; background: #1e1e2e;
+    }
 
     .output-row {
       display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
@@ -386,6 +427,7 @@
   </div>
 
   <!-- ===================== LIVE DEMO ===================== -->
+  <div id="demo-outer">
   <main id="demo" class="demo-section">
     <div class="section-header">
       <h2 class="section-title">Live Demo</h2>
@@ -409,6 +451,23 @@
         <option value="es">Español</option>
         <option value="ko">한국어</option>
       </select>
+      <span class="bar-spacer"></span>
+      <button id="theme-btn" aria-label="Toggle dark mode" aria-pressed="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <span id="theme-label">Dark mode</span>
+      </button>
     </div>
 
     <div id="editor-wrapper">
@@ -431,6 +490,7 @@
       </div>
     </div>
   </main>
+  </div><!-- /#demo-outer -->
 
   <!-- ===================== QUICK START ===================== -->
   <section class="install-section" aria-labelledby="qs-heading">
@@ -499,6 +559,41 @@ const editor = AutumnNote.create('#my-editor', {
     import AutumnNote from '/src/js/index.js';
 
     const langSelect = document.getElementById('lang-select');
+    const themeBtn   = document.getElementById('theme-btn');
+    const themeLabel = document.getElementById('theme-label');
+    const demoOuter  = document.getElementById('demo-outer');
+
+    // SVG paths for sun and moon icons
+    const SUN_PATHS = `<circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+    const MOON_PATHS = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+
+    let isDark = false;
+
+    function applyTheme(editorCtx, editorROCtx) {
+      // Toggle an-theme-dark on both editor containers
+      [editorCtx, editorROCtx].forEach((ctx) => {
+        if (!ctx) return;
+        ctx.layoutInfo.container.classList.toggle('an-theme-dark', isDark);
+      });
+      // Toggle demo outer wrapper dark styling
+      demoOuter.classList.toggle('is-dark', isDark);
+      // Update button
+      themeBtn.classList.toggle('is-dark', isDark);
+      themeBtn.setAttribute('aria-pressed', String(isDark));
+      themeBtn.querySelector('svg').innerHTML = isDark ? MOON_PATHS : SUN_PATHS;
+      themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    themeBtn.addEventListener('click', () => {
+      isDark = !isDark;
+      applyTheme(window.editor, window.editorRO);
+    });
 
     const MENTION_USERS = [
       { id: 1, label: 'Minh Pham' },
@@ -573,6 +668,9 @@ const editor = AutumnNote.create('#my-editor', {
 
       editor.setHTML(html);
       document.getElementById('output').textContent = html;
+
+      // Re-apply current theme to newly created editors
+      applyTheme(editor, editorRO);
     });
 
     window.editor = editor;

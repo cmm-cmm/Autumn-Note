@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs wc -l)",
       "Bash(npm run *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(node -e ' *)"
     ]
   }
 }
