@@ -88,7 +88,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Auto-fallback** — unknown codes or missing keys fall back to English
 
 ### UI
-- **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; FontAwesome icons with built-in SVG fallback
+- **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
 - **Dark / light theme** — `theme: 'dark'` or `theme: 'light'` (default); full SCSS variable coverage
 - **Image resizer** — drag handle on selected image to resize proportionally
@@ -100,7 +100,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Read-only mode** — `readOnly: true` renders a non-editable preview with toolbar hidden; toggle at runtime via `editor.setDisabled()`
 - **Auto-save** — `autoSave: true` persists content to `localStorage` on every change; key configurable via `autoSaveKey`
 - **Auto-save restore** — when `autoSave` and `autoSaveRestore` are both `true`, a dismissible banner prompts the user to restore or discard a previously saved draft on load; configurable age window via `autoSaveRestoreTimeout`
-- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text with quick-access buttons (bold, italic, underline, strikethrough, link, text colour, remove format, inline code); button set configurable via `bubbleToolbarItems`
+- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text; default buttons: bold, italic, underline, strikethrough, link, **text colour**, **highlight colour**, remove format, inline code; each colour button displays a live colour-strip indicator and opens an inline colour palette (matching the context menu); button set configurable via `bubbleToolbarItems`
 - **Markdown shortcuts** — `markdownShortcuts: true` (default) converts Markdown syntax typed in the editor into HTML in real time: `# ` → H1–H3, `> ` → blockquote, `- ` / `* ` → unordered list, `1. ` → ordered list, `[ ] ` → checklist, `---` → HR, ` ``` ` → code block; inline: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``
 - **Custom focus ring** — `focusColor` accepts any CSS colour string to override the default blue focus ring
 - **Spellcheck** — browser spellcheck enabled by default (`spellcheck: true`)

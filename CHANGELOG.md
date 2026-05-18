@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-05-18
+
+### Added
+- **Highlight colour in bubble toolbar** — `hiliteColor` is now a first-class button; the default `bubbleToolbarItems` list is updated to include both `foreColor` and `hiliteColor`
+- **Colour picker popup in bubble toolbar** — replaces the previous `window.prompt()` with a full inline colour palette (preset swatches + custom colour input) matching the context menu; the text selection is saved before the picker opens and restored before the colour command is applied
+- **Mobile-responsive toolbar** — on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row instead of wrapping to multiple rows; scrollbar is hidden so touch-swipe works naturally; font-family, font-size, and paragraph-style dropdowns compact automatically
+- **Demo: dark / light theme toggle** — a sun/moon toggle button in the Live Demo lets visitors preview both editor themes without writing any code
+
+### Changed
+- **Bubble toolbar colour button icons** — buttons now render an SVG icon stacked above a colour-strip indicator (matching the context menu's icon style); the strip reflects the current selection colour in real time
+- **`removeFormat` in bubble toolbar** — was incorrectly invoking a non-existent `editor.removeFormat` method; now calls `document.execCommand('removeFormat')` directly, consistent with the context menu
+- **Table picker popup** — switched from `position: absolute` to `position: fixed` with JS-computed coordinates; the popup no longer gets clipped by the toolbar's `overflow-x: auto` ancestor in scroll mode or on mobile
+- **Editor corner radii** — `.an-toolbar` and `.an-statusbar` now carry matching `border-radius` values so the rounded corners of `.an-container` are always visible and never covered by child backgrounds; `.an-editable:last-child` receives bottom-corner radii when there is no statusbar
+
+### Fixed
+- Bubble toolbar colour picker lost selection — selection is now saved before the picker opens and restored before applying the command
+- Table picker clipping in scroll mode — `an-table-picker-popup` is now `position: fixed` and escapes any `overflow-x: auto` ancestor
+
+---
+
 ## [1.1.0] - 2026-05-17
 
 ### Added
