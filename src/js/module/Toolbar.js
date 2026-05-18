@@ -237,13 +237,26 @@ export class Toolbar {
 
     const openPopup = () => {
       isOpen = true;
+      // Use fixed positioning to escape overflow-clipping ancestors
+      // (toolbar scroll mode and mobile overflow-x:auto both clip position:absolute)
+      const rect = btn.getBoundingClientRect();
       popup.style.display = 'block';
+      const pw = popup.offsetWidth;
+      const ph = popup.offsetHeight;
+      let left = rect.left;
+      let top  = rect.bottom + 4;
+      if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
+      if (top + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
+      popup.style.left = `${left}px`;
+      popup.style.top  = `${top}px`;
       btn.setAttribute('aria-expanded', 'true');
     };
 
     const closePopup = () => {
       isOpen = false;
       popup.style.display = 'none';
+      popup.style.top  = '';
+      popup.style.left = '';
       btn.setAttribute('aria-expanded', 'false');
       setHighlight(0, 0);
     };

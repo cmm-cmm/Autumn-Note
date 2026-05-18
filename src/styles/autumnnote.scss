@@ -195,9 +195,7 @@
 
 .an-table-picker-popup {
   display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed; // top/left set dynamically by JS — escapes overflow-clipping ancestors
   background: $an-bg;
   border: 1px solid $an-border;
   border-radius: 6px;
@@ -1897,6 +1895,37 @@ $an-video-accent: #8b5cf6; // violet-500
       border-radius: 2px;
     }
   }
+}
+
+// =============================================================================
+// Responsive — mobile / small-viewport toolbar
+// =============================================================================
+//
+// On screens ≤ 640 px the default flex-wrap:wrap behaviour creates a multi-row
+// toolbar that pushes the editable area too far down.  We switch automatically
+// to a single horizontally-scrollable row (same as toolbarOverflow:'scroll'),
+// hide the scrollbar track, and compact the dropdown selects.
+
+@media (max-width: 640px) {
+  .an-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    // Hide scrollbar visually — users swipe naturally on touch devices
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  // Compact dropdown selects to save horizontal real-estate on small screens
+  .an-select {
+    min-width: 72px;
+    max-width: 90px;
+    font-size: 11px;
+  }
+
+  .an-select-style  { min-width: 62px; max-width: 76px; }
+  .an-select-narrow { min-width: 50px; max-width: 66px; }
 }
 
 // =============================================================================
