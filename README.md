@@ -12,9 +12,9 @@
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
 
-A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
+A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
 
-> Write rich text. No dependencies. No drama.
+> **Fast. Lightweight. Reliable. Efficient.**
 
 [Live Demo](https://cmm-cmm.github.io/Autumn-Note/) · [Docs](https://cmm-cmm.github.io/Autumn-Note/docs.html) · [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
 

@@ -1,6 +1,8 @@
 # AutumnNote — Developer Manual
 
-AutumnNote is a modern, lightweight WYSIWYG rich-text editor built with plain JavaScript and no jQuery dependency. It wraps any `<textarea>` (or block element) and exposes a clean API for reading/writing HTML content, customising the toolbar, handling events, and integrating with your own upload pipeline.
+**Fast. Lightweight. Reliable. Efficient.**
+
+AutumnNote is a modern WYSIWYG rich-text editor built with plain JavaScript and no jQuery dependency. It wraps any `<textarea>` (or block element) and exposes a clean API for reading/writing HTML content, customising the toolbar, handling events, and integrating with your own upload pipeline.
 
 ---
 
