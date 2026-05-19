@@ -517,7 +517,10 @@ function buildConfig() {
 function createEditor(html) {
   if (editor) {
     html = html ?? editor.getHTML();
-    editor.destroy();
+    // Use AutumnNote.destroy() — not editor.destroy() directly — so the
+    // instance is also removed from the internal WeakMap cache; otherwise
+    // AutumnNote.create() would return the stale destroyed instance again.
+    AutumnNote.destroy(editor.targetEl);
     editor = null;
   }
   const cfg = buildConfig();
