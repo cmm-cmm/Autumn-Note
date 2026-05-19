@@ -211,6 +211,7 @@ export function nodeValue(node) {
 export function isEmpty(node) {
   if (isText(node)) return !node.nodeValue;
   if (isVoid(node)) return false;
+  if (node.childNodes.length === 1 && node.firstChild?.nodeName === 'BR') return true;
   return !node.textContent.trim() && !node.querySelector('img, video, hr, table');
 }
 

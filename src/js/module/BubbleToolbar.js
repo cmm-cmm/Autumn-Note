@@ -44,11 +44,25 @@ const _ACTIONS = {
   strikethrough: (ctx) => ctx.invoke('editor.strikethrough'),
   link:          (ctx) => ctx.invoke('linkDialog.show'),
   removeFormat:  (ctx) => {
-    // editor.removeFormat does not exist — call execCommand directly
     const editable = ctx.layoutInfo && ctx.layoutInfo.editable;
     if (!editable) return;
     editable.focus();
     document.execCommand('removeFormat');
+    // Also strip inline style attributes which execCommand('removeFormat') misses
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
+      const range = sel.getRangeAt(0);
+      const ancestor = range.commonAncestorContainer;
+      const root = ancestor.nodeType === 1 ? ancestor : ancestor.parentElement;
+      if (root) {
+        const candidates = [root, ...root.querySelectorAll('[style]')];
+        for (const el of candidates) {
+          if (el.hasAttribute('style') && range.intersectsNode(el)) {
+            el.removeAttribute('style');
+          }
+        }
+      }
+    }
     ctx.invoke('editor.afterCommand');
   },
   inlineCode:    (ctx) => ctx.invoke('editor.inlineCode'),
@@ -295,7 +309,11 @@ export class BubbleToolbar {
     sel.removeAllRanges();
     try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { return; }
 
-    document.execCommand(type, false, color);
+    // Firefox does not support 'hiliteColor'; fall back to 'backColor'
+    const cmd = type === 'hiliteColor' ? 'hiliteColor' : type;
+    if (!document.execCommand(cmd, false, color) && cmd === 'hiliteColor') {
+      document.execCommand('backColor', false, color);
+    }
     this.context.invoke('editor.afterCommand');
 
     // Update the color strip on the corresponding button

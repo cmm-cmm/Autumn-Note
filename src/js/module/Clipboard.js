@@ -239,7 +239,7 @@ export class Clipboard {
       const raw = clipboardData.getData('text/html');
       // Detect source type and apply appropriate pre-cleaner
       const isWordContent = /<[a-z]+:[a-z]/i.test(raw) || /class="Mso/i.test(raw) || /\bmso-/i.test(raw);
-      const isSocialContent = /\bdata-testid\b/.test(raw) || /class="[^"]*\b(?:x[a-z0-9]{6,}|r-[a-z0-9]{3,})\b/.test(raw);
+      const isSocialContent = /class="[^"]*\b(?:x[a-z0-9]{6,}|r-[a-z0-9]{3,})\b/.test(raw);
       let html = raw;
       if (isWordContent) html = this._cleanWordHtml(html);
       else if (isSocialContent) html = this._cleanSocialHtml(html);

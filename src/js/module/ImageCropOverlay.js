@@ -227,6 +227,11 @@ export class ImageCropOverlay {
           e.stopPropagation();
           this._startHandleDrag(e, id);
         }),
+        on(h, 'touchstart', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this._startHandleDrag({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }, id);
+        }, { passive: false }),
       );
       this._handles[id] = h;
       cropBox.appendChild(h);
@@ -235,16 +240,19 @@ export class ImageCropOverlay {
     /* ---- crop move drag ---- */
     this._disposers.push(
       on(cropBox, 'mousedown', (e) => {
-        // Only directly on the box surface (not on a handle)
-        if (e.target !== cropBox && e.target !== grid && !(e.target.tagName === 'DIV' && !e.target.className.includes('handle'))) {
-          // Let handle mousedown handle it
-          return;
-        }
-        if (e.target.className && e.target.className.includes('an-crop-handle')) return;
+        if (e.target.classList.contains('an-crop-handle')) return;
+        if (e.target !== cropBox && e.target !== grid) return;
         e.preventDefault();
         e.stopPropagation();
         this._startBoxMove(e);
       }),
+      on(cropBox, 'touchstart', (e) => {
+        if (e.target.classList.contains('an-crop-handle')) return;
+        if (e.target !== cropBox && e.target !== grid) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this._startBoxMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+      }, { passive: false }),
     );
 
     /* ---- info label ---- */
@@ -434,15 +442,23 @@ export class ImageCropOverlay {
    * @param {(e: MouseEvent) => void} onMove
    */
   _attachDocDrag(onMove) {
+    const onTouchMove = (e) => {
+      e.preventDefault();
+      onMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+    };
     const cleanup = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup',   cleanup);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend',  cleanup);
       document.body.style.userSelect = '';
       document.body.style.cursor     = '';
     };
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   cleanup, { once: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend',  cleanup, { once: true });
   }
 
   // ---------------------------------------------------------------------------
@@ -489,8 +505,8 @@ export class ImageCropOverlay {
 
     if (!canvas) {
       // Cross-origin failure — inform user and abort
-      window.alert(
-        'Cannot crop this image: the image server does not allow cross-origin access.\n' +
+      this._showCropError(
+        'Cannot crop this image: the image server does not allow cross-origin access. ' +
         'Upload the image directly to use the crop tool.',
       );
       this._close(false);
@@ -514,6 +530,28 @@ export class ImageCropOverlay {
 
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
+  }
+
+  /**
+   * Show a non-blocking inline error banner appended to document.body.
+   * Auto-dismisses after 4 seconds.
+   * @param {string} msg
+   */
+  _showCropError(msg) {
+    const banner = document.createElement('div');
+    banner.setAttribute('role', 'alert');
+    banner.style.cssText = [
+      'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+      'z-index:10200', 'max-width:420px', 'width:max-content',
+      'background:#7f1d1d', 'color:#fecaca', 'border:1px solid #b91c1c',
+      'border-radius:8px', 'padding:12px 18px',
+      'font:13px/1.5 system-ui,sans-serif',
+      'box-shadow:0 4px 16px rgba(0,0,0,.4)',
+      'pointer-events:auto',
+    ].join(';');
+    banner.textContent = msg;
+    document.body.appendChild(banner);
+    setTimeout(() => { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 4000);
   }
 
   /**

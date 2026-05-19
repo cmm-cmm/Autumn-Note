@@ -35,13 +35,24 @@ export function debounce(fn, delay) {
  * @returns {Function}
  */
 export function throttle(fn, limit) {
-  let lastCall = 0;
+  let lastCall = -Infinity;
+  let trailingTimer = null;
   return function (...args) {
-    const now = Date.now();
-    if (now - lastCall >= limit) {
+    const now = performance.now();
+    const elapsed = now - lastCall;
+    if (elapsed >= limit) {
       lastCall = now;
+      clearTimeout(trailingTimer);
+      trailingTimer = null;
       return fn.apply(this, args);
     }
+    // Ensure the final event in a burst is not dropped
+    clearTimeout(trailingTimer);
+    trailingTimer = setTimeout(() => {
+      lastCall = performance.now();
+      trailingTimer = null;
+      fn.apply(this, args);
+    }, limit - elapsed);
   };
 }
 
@@ -143,11 +154,11 @@ export function isPlainObject(val) {
 export function rect2bnd(rect) {
   if (!rect) return null;
   return {
-    top: Math.round(rect.top),
-    left: Math.round(rect.left),
-    width: Math.round(rect.width),
-    height: Math.round(rect.height),
-    bottom: Math.round(rect.bottom),
-    right: Math.round(rect.right),
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    bottom: rect.bottom,
+    right: rect.right,
   };
 }

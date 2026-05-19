@@ -248,12 +248,18 @@ function _checklistItemToP(checkLi) {
   const liIndex = allLis.indexOf(checkLi);
   const afterLis = allLis.slice(liIndex + 1);
 
-  // Build <p> from the item's text (skip the checkbox INPUT)
+  // Build <p> preserving inline formatting (bold/italic/links) from the item's content
   const p = document.createElement('p');
-  const text = Array.from(checkLi.childNodes)
-    .filter(n => !(n.nodeType === 1 && n.tagName === 'INPUT'))
-    .map(n => n.textContent).join('').replace(/\u200B/g, '').trim();
-  p.textContent = text || '\u00a0';
+  for (const child of checkLi.childNodes) {
+    if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+    p.appendChild(child.cloneNode(true));
+  }
+  // Strip ZWS anchors left over from checklist markup
+  p.innerHTML = p.innerHTML.replace(/\u200B/g, '');
+  if (!p.hasChildNodes() || !p.textContent.trim()) {
+    p.innerHTML = '';
+    p.appendChild(document.createTextNode('\u00a0'));
+  }
 
   // Move items after the current li into a new checklist
   if (afterLis.length > 0) {
@@ -324,13 +330,15 @@ export function lineHeight(value) {
 
   // For a range selection, collect all unique block ancestors of text nodes
   const blocks = new Set();
-  const iter = document.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, null);
+  const iter = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_TEXT,
+    { acceptNode: (node) => range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP },
+  );
   let textNode;
   while ((textNode = iter.nextNode())) {
-    if (range.intersectsNode(textNode)) {
-      const block = nearestBlock(textNode);
-      if (block) blocks.add(block);
-    }
+    const block = nearestBlock(textNode);
+    if (block) blocks.add(block);
   }
   if (blocks.size === 0) {
     const block = nearestBlock(range.commonAncestorContainer);
@@ -549,8 +557,10 @@ export function toggleChecklist() {
     if (block && BLOCK_TAGS.has(block.tagName)) {
       block.parentNode.replaceChild(ul, block);
     } else {
-      document.execCommand('insertHTML', false, ul.outerHTML);
-      return;
+      // Cursor directly in editable root — insert via Range API
+      const nativeRange = sel.getRangeAt(0);
+      nativeRange.deleteContents();
+      nativeRange.insertNode(ul);
     }
 
     // Move caret to the text node inside the new <li>

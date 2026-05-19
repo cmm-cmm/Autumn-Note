@@ -206,11 +206,11 @@ export function handleKeydown(event, editable, options = {}) {
       return true;
     }
 
-    // In a pre/code block, insert spaces
+    // In a pre/code block, insert spaces using configured tabSize
     if (para && para.nodeName.toUpperCase() === 'PRE') {
       if (event.shiftKey) return false;
       event.preventDefault();
-      execCommand('insertText', '    ');
+      execCommand('insertText', ' '.repeat(options.tabSize || 4));
       return true;
     }
 
@@ -356,6 +356,13 @@ export function handleKeydown(event, editable, options = {}) {
     }
 
     const para = closestPara(range.sc, editable);
+
+    // Enter in a pre/code block: insert a literal newline instead of a new block
+    if (para && para.nodeName.toUpperCase() === 'PRE') {
+      event.preventDefault();
+      execCommand('insertText', '\n');
+      return true;
+    }
 
     // Pressing Enter at the end of a blockquote should exit it
     if (para && para.nodeName.toUpperCase() === 'BLOCKQUOTE') {

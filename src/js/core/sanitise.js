@@ -6,7 +6,10 @@
  */
 
 /** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'button'];
+const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base'];
+
+/** Tags whose element wrapper is stripped but content (child nodes) is preserved. */
+const UNWRAP_TAGS = new Set(['button']);
 
 /** Attributes whose values must be sanitised as URLs. */
 const URL_ATTRS = ['href', 'src', 'action', 'formaction'];
@@ -49,6 +52,12 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
 
   for (const el of allElements) {
     const tag = el.tagName.toLowerCase();
+
+    // Unwrap elements whose wrapper is unsafe but whose content should be kept
+    if (UNWRAP_TAGS.has(tag)) {
+      el.replaceWith(...el.childNodes);
+      continue;
+    }
 
     // Remove outright dangerous elements
     if (prohibited.has(tag)) {

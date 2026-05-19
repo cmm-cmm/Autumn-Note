@@ -158,6 +158,7 @@ export const vi = {
     replaceAriaLabel:   'Thay thế bằng',
     replaceBtn:         'Thay thế',
     replaceAllBtn:      'Thay thế tất cả',
+    noResults:          'Không có kết quả',
     close:              '\u00d7',
   },
 
