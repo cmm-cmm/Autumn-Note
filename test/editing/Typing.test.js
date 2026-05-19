@@ -333,3 +333,93 @@ describe('Typing unhandled keys', () => {
     expect(consumed).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Tab in <pre> block — uses options.tabSize, defaults to 4 spaces
+// ---------------------------------------------------------------------------
+
+describe('Typing Tab in <pre> block', () => {
+  beforeEach(() => {
+    document.execCommand = vi.fn(() => true);
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('inserts 4 spaces by default in a <pre> block', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<pre>code here</pre>';
+    document.body.appendChild(editable);
+
+    const pre = editable.querySelector('pre');
+    setCaret(pre.firstChild, 0);
+
+    const event = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+    const consumed = handleKeydown(event, editable, {});
+
+    expect(consumed).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '    ');
+  });
+
+  it('uses options.tabSize when set', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<pre>code</pre>';
+    document.body.appendChild(editable);
+
+    const pre = editable.querySelector('pre');
+    setCaret(pre.firstChild, 0);
+
+    const event = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+    handleKeydown(event, editable, { tabSize: 2 });
+
+    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '  ');
+  });
+
+  it('Shift+Tab in <pre> does nothing (returns false)', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<pre>code</pre>';
+    document.body.appendChild(editable);
+
+    const pre = editable.querySelector('pre');
+    setCaret(pre.firstChild, 0);
+
+    const event = { key: 'Tab', shiftKey: true, preventDefault: vi.fn() };
+    const consumed = handleKeydown(event, editable, {});
+
+    expect(consumed).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Enter in <pre> block — inserts literal newline
+// ---------------------------------------------------------------------------
+
+describe('Typing Enter in <pre> block', () => {
+  beforeEach(() => {
+    document.execCommand = vi.fn(() => true);
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('inserts a literal newline character in a <pre> block', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<pre>code</pre>';
+    document.body.appendChild(editable);
+
+    const pre = editable.querySelector('pre');
+    setCaret(pre.firstChild, 2);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const consumed = handleKeydown(event, editable, {});
+
+    expect(consumed).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '\n');
+  });
+});

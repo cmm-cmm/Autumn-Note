@@ -21,7 +21,7 @@ export interface AsnOptions {
   /** Show the resize handle in the statusbar. */
   resizable?: boolean;
   /** Toolbar button group configuration. */
-  toolbar?: Array<Array<ToolbarItemDef>>;
+  toolbar?: Array<Array<ToolbarItemDef | string>>;
   /** Use Bootstrap button classes on toolbar buttons. */
   useBootstrap?: boolean;
   /** CSS class(es) applied to Bootstrap toolbar buttons. */
@@ -235,6 +235,31 @@ export interface DropdownDef {
 export type ToolbarItemDef = ButtonDef | DropdownDef | GridButtonDef | ColorPickerDef;
 
 // ---------------------------------------------------------------------------
+// Plugin API
+// ---------------------------------------------------------------------------
+
+/**
+ * Plugin descriptor passed to `AutumnNote.use()` or `context.use()`.
+ * `T` is the shape of the public API returned by `install()`, accessible
+ * via `context.getPlugin<T>(name)`.
+ */
+export interface AsnPlugin<T = unknown> {
+  /** Unique plugin identifier. */
+  name: string;
+  /** Semantic version string (informational only). */
+  version?: string;
+  /** Button definitions to register in the global button registry. */
+  buttons?: ToolbarItemDef[];
+  /**
+   * Called after all built-in modules have initialised.
+   * Return an object to expose it as the plugin's public API.
+   */
+  install?: (context: Context, options: Record<string, unknown>) => T | null | void;
+  /** Called when the editor instance is destroyed. */
+  uninstall?: (context: Context) => void;
+}
+
+// ---------------------------------------------------------------------------
 // Entry-point re-exports
 // ---------------------------------------------------------------------------
 
@@ -394,6 +419,18 @@ export declare class Context {
    */
   registerModule(name: string, ModuleClass: new (ctx: Context) => object): this;
 
+  /**
+   * Installs a plugin on this editor instance.
+   * If called after create(), call `ctx.invoke('toolbar.rebuild')` to render new buttons.
+   */
+  use<T = unknown>(plugin: AsnPlugin<T>, options?: Record<string, unknown>): this;
+
+  /**
+   * Returns the public API returned by `plugin.install()`, or null.
+   * Cast to your plugin's return type: `ctx.getPlugin<MyPluginApi>('my-plugin')`.
+   */
+  getPlugin<T = unknown>(name: string): T | null;
+
   /** Completely removes the editor and restores the original element. */
   destroy(): void;
 }
@@ -475,6 +512,22 @@ export interface AutumnNoteStatic {
    * @param ModuleClass - Class with `initialize()` and optional `destroy()`
    */
   registerModule(name: string, ModuleClass: new (ctx: Context) => object): void;
+
+  /**
+   * Installs a plugin globally — applied to every future editor instance.
+   * Plugin `buttons` are registered immediately so Toolbar can resolve them by name.
+   * Plugin `install()` is called after all built-in modules have initialised.
+   */
+  use<T = unknown>(plugin: AsnPlugin<T>, options?: Record<string, unknown>): this;
+
+  /** Returns true if a plugin with the given name has been registered globally. */
+  hasPlugin(name: string): boolean;
+
+  /**
+   * Registers a single button in the global button registry so it can be
+   * referenced by string name in toolbar configuration.
+   */
+  registerButton(btnDef: ToolbarItemDef): this;
 
   /** Library version string. */
   readonly version: string;

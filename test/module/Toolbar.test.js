@@ -1,8 +1,16 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Toolbar } from '../../src/js/module/Toolbar.js';
 import { en } from '../../src/js/i18n/en.js';
 
+beforeEach(() => {
+  // Toolbar.refresh() is debounced via requestAnimationFrame.
+  // Replace rAF with a synchronous stub so assertions can check state immediately.
+  vi.stubGlobal('requestAnimationFrame', (cb) => { cb(); return 0; });
+  vi.stubGlobal('cancelAnimationFrame', () => {});
+});
+
 afterEach(() => {
+  vi.unstubAllGlobals();
   document.body.innerHTML = '';
 });
 

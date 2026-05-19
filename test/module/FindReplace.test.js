@@ -62,4 +62,44 @@ describe('FindReplace', () => {
 
     dialog.destroy();
   });
+
+  it('shows empty counter when query is blank', () => {
+    const context = makeContext('<p>Hello</p>');
+    const dialog = new FindReplace(context);
+    dialog.initialize();
+
+    // Trigger search with empty query
+    dialog._findInput.value = '';
+    dialog._onSearch();
+
+    expect(dialog._counterEl.textContent).toBe('');
+    dialog.destroy();
+  });
+
+  it('shows locale noResults string when no matches found', () => {
+    const context = makeContext('<p>Hello world</p>');
+    const dialog = new FindReplace(context);
+    dialog.initialize();
+
+    dialog._findInput.value = 'xyz_not_found';
+    dialog._onSearch();
+
+    // Should use locale.findReplace.noResults (English: 'No results')
+    expect(dialog._counterEl.textContent).toBe(context.locale.findReplace.noResults);
+    dialog.destroy();
+  });
+
+  it('resets currentIndex to 0 after filtering failed matches', () => {
+    const context = makeContext('<p>hello hello</p>');
+    const dialog = new FindReplace(context);
+    dialog.initialize();
+
+    dialog._findInput.value = 'hello';
+    dialog._onSearch();
+
+    // currentIndex is set after filtering — should always start at 0
+    expect(dialog._currentIndex).toBe(0);
+    expect(dialog._counterEl.textContent).toBe('1 / 2');
+    dialog.destroy();
+  });
 });

@@ -20,7 +20,12 @@
       "Bash(git stash *)",
       "Bash(node -e \"const fs = require\\('fs'\\); const c = fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\); console.log\\(JSON.stringify\\(c.slice\\(c.indexOf\\('replaceAllBtn'\\)-10, c.indexOf\\('replaceAllBtn'\\)+60\\)\\)\\)\")",
       "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);console.log\\(JSON.stringify\\(c.substring\\(i,i+80\\)\\)\\)\")",
-      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);const chunk=c.substring\\(i-5,i+90\\);for\\(let j=0;j<chunk.length;j++\\) process.stdout.write\\(chunk.charCodeAt\\(j\\)+':'+chunk[j]+' '\\);console.log\\(\\)\")"
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);const chunk=c.substring\\(i-5,i+90\\);for\\(let j=0;j<chunk.length;j++\\) process.stdout.write\\(chunk.charCodeAt\\(j\\)+':'+chunk[j]+' '\\);console.log\\(\\)\")",
+      "Bash(npx vitest *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e \"const { JSDOM } = require\\('jsdom'\\); const dom = new JSDOM\\('<div></div>'\\); const el = dom.window.document.querySelector\\('div'\\); el.innerText = 'hello world'; console.log\\('textContent:', JSON.stringify\\(el.textContent\\)\\); console.log\\('innerText:', JSON.stringify\\(el.innerText\\)\\);\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\doc\" -Force)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

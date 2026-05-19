@@ -52,6 +52,43 @@ function btn(name, icon, tooltip, action, isActive, isDisabled) {
 }
 
 // ---------------------------------------------------------------------------
+// Global button registry
+// ---------------------------------------------------------------------------
+
+/**
+ * Global registry for custom buttons registered via AutumnNote.registerButton()
+ * or via a plugin's `buttons` array. Toolbar resolves string names from here.
+ * @type {Map<string, object>}
+ */
+export const _buttonRegistry = new Map();
+
+/**
+ * Registers a button definition in the global registry so it can be referenced
+ * by string name in toolbar configuration: `toolbar: [['myBtn', boldBtn]]`.
+ * @param {object} btnDef - Any ToolbarItemDef-compatible object with a `name` string.
+ */
+export function registerButton(btnDef) {
+  if (!btnDef || typeof btnDef.name !== 'string') {
+    console.warn('[AutumnNote] registerButton: btnDef must have a string `name` property.');
+    return;
+  }
+  if (_buttonRegistry.has(btnDef.name)) {
+    console.warn(`[AutumnNote] registerButton: overwriting existing button "${btnDef.name}".`);
+  }
+  _buttonRegistry.set(btnDef.name, btnDef);
+}
+
+/**
+ * Looks up a button definition by name from the global registry.
+ * Returns undefined when not found.
+ * @param {string} name
+ * @returns {object|undefined}
+ */
+export function getButton(name) {
+  return _buttonRegistry.get(name);
+}
+
+// ---------------------------------------------------------------------------
 // Style buttons
 // ---------------------------------------------------------------------------
 
