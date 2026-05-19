@@ -25,18 +25,16 @@ const TRUSTED_IFRAME_HOSTS = new Set([
 ]);
 
 /**
- * Sanitises an HTML string by removing dangerous elements and attributes.
- * Uses DOMParser so the sanitisation follows normal browser parsing rules —
- * no regex shortcuts that can be bypassed by encoding tricks.
+ * Produce a sanitized HTML string with dangerous elements and attributes removed.
  *
- * - Strips PROHIBITED_TAGS (script, style, iframe, object, embed, form, button)
- * - Allows input[type="checkbox"] only inside ul.an-checklist li; removes all other <input>
- * - Removes all on* event-handler attributes
- * - Rejects javascript: and vbscript: URLs in URL attributes
- * - Rejects data: URIs everywhere except img[src] (base64 uploads)
+ * Removes disallowed tags and wrappers, strips event-handler attributes, rejects
+ * `javascript:`/`vbscript:` URLs and most `data:` URIs, restricts iframe `src`
+ * to trusted hosts when enabled, and permits only checklist checkboxes as inputs.
  *
- * @param {string} html
- * @returns {string}
+ * @param {string} html - HTML fragment to sanitize.
+ * @param {Object} [options]
+ * @param {boolean} [options.allowIframes=false] - If true, `iframe` elements are not removed but their `src` is restricted to trusted hosts and `srcdoc` is removed.
+ * @returns {string} The sanitized HTML fragment.
  */
 export function sanitiseHTML(html, { allowIframes = false } = {}) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');

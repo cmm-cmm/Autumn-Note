@@ -236,9 +236,15 @@ export function outdent() {
 }
 
 /**
- * G.5 helper: splits a checklist at checkLi, converts it to a <p>,
- * and keeps items before/after as separate checklists.
- * @param {HTMLElement} checkLi
+ * Convert a checklist <li> into a paragraph and move any following items into a new checklist.
+ *
+ * Preserves inline markup from the converted item, strips zero-width space anchors,
+ * and replaces empty content with a non‑breaking space. If there are list items
+ * after the converted item they are moved into a new <ul class="an-checklist">
+ * inserted immediately after the original list. The original <li> is removed and
+ * the original list is removed if it becomes empty. Attempts to place the caret
+ * at the start of the newly created <p>.
+ * @param {HTMLElement} checkLi - The checklist `<li>` element to convert to a `<p>`.
  */
 function _checklistItemToP(checkLi) {
   const checkUl = checkLi.closest('.an-checklist');
@@ -302,9 +308,12 @@ export const insertOrderedList = () => execCommand('insertOrderedList');
 // ---------------------------------------------------------------------------
 
 /**
- * Applies a line-height value to every block-level element that intersects
- * the current selection.
- * @param {string} value - unitless multiplier, e.g. '1.5'
+ * Set the line-height on every block-level element that intersects the current selection.
+ *
+ * If the selection is collapsed, the nearest enclosing block element receives the style.
+ * For a non-collapsed selection, all unique block ancestors of text nodes that intersect the range are updated;
+ * if none are found, the nearest block ancestor of the range's common ancestor is updated.
+ * @param {string} value - Line-height value to apply; typically a unitless multiplier (for example, "1.5").
  */
 export function lineHeight(value) {
   const sel = window.getSelection();
@@ -480,9 +489,18 @@ export function isInlineCode() {
 // ---------------------------------------------------------------------------
 
 /**
- * Toggles a task-list at the cursor.
- * If inside a checklist <li>, converts it (and any other selected items) back to <p> elements.
- * Otherwise inserts a new <ul class="an-checklist"> with one item per selected line.
+ * Toggle a checklist at the current selection or caret.
+ *
+ * When the selection is inside an existing checklist `<ul class="an-checklist">`,
+ * converts the selected `<li>` items back into `<p>` paragraphs and places the caret
+ * at the start of the first converted paragraph. Otherwise creates a checklist:
+ * - If the selection is collapsed, converts the nearest block-level ancestor (or inserts
+ *   a single checklist item at the editable root) into a checklist with one item containing
+ *   that block's text and places the caret inside the new item.
+ * - If the selection is a range, converts each intersecting block element into one checklist
+ *   item (preserving textual content) and places the caret at the end of the last item.
+ *
+ * Empty or whitespace-only selections do not create a checklist.
  */
 export function toggleChecklist() {
   const sel = window.getSelection();

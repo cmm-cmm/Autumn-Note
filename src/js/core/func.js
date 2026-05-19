@@ -29,10 +29,10 @@ export function debounce(fn, delay) {
 }
 
 /**
- * Throttle a function call.
- * @param {Function} fn
- * @param {number} limit - milliseconds
- * @returns {Function}
+ * Create a wrapper that limits how often `fn` can be invoked while ensuring the last call in a burst is executed.
+ * @param {Function} fn - Function to be throttled.
+ * @param {number} limit - Time window in milliseconds during which at most one call is allowed.
+ * @returns {Function} A wrapper function that invokes `fn` at most once per `limit` milliseconds; calls preserve `this` and original arguments and schedule a trailing invocation for the final call in a burst.
  */
 export function throttle(fn, limit) {
   let lastCall = -Infinity;

@@ -204,9 +204,11 @@ export function nodeValue(node) {
 }
 
 /**
- * Returns true if a node is empty (no visible content).
- * @param {Node} node
- * @returns {boolean}
+ * Determine whether a DOM node contains no visible content.
+ *
+ * Text nodes are considered empty when their `nodeValue` is empty. Void elements (e.g., `img`, `br`, `input`) are considered non-empty. An element with exactly one `<br>` child is treated as empty. For other elements, emptiness means trimmed `textContent` is empty and there are no descendant `img`, `video`, `hr`, or `table` elements.
+ * @param {Node} node - Node to inspect for visible content.
+ * @returns {boolean} `true` if the node has no visible content, `false` otherwise.
  */
 export function isEmpty(node) {
   if (isText(node)) return !node.nodeValue;

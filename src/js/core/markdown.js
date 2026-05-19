@@ -20,6 +20,17 @@ export function htmlToMarkdown(html) {
   return _domToMd(doc.body).replace(/\n{3,}/g, '\n\n').trim();
 }
 
+/**
+ * Convert a DOM node subtree into Markdown.
+ *
+ * Recursively produces a Markdown string representing the given DOM node and its descendants,
+ * handling common HTML constructs such as paragraphs, headings, lists (with nested indentation),
+ * blockquotes, fenced and inline code, links, images, tables, horizontal rules, and basic inline emphasis.
+ *
+ * @param {Node} node - The DOM node to convert.
+ * @param {number} [depth=0] - Current nesting depth used to indent nested list items.
+ * @returns {string} The Markdown representation of the node subtree.
+ */
 function _domToMd(node, depth = 0) {
   if (node.nodeType === 3) {
     return node.textContent.replace(/\s+/g, ' ');
@@ -110,9 +121,12 @@ function _domToMd(node, depth = 0) {
 }
 
 /**
- * Returns true if the text contains recognisable Markdown patterns.
- * @param {string} text
- * @returns {boolean}
+ * Detects whether a string likely contains Markdown syntax.
+ *
+ * Checks for common Markdown constructs such as ATX headings, unordered or
+ * ordered list items, blockquotes, fenced code blocks, and bold emphasis.
+ * @param {string} text - Input text to inspect for Markdown patterns.
+ * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
   return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|^```|^\*{2}.+?\*{2}/m.test(text);

@@ -10,11 +10,12 @@ import { createElement } from '../core/dom.js';
 // ---------------------------------------------------------------------------
 
 /**
- * Creates a table element with the specified dimensions.
- * @param {number} cols
- * @param {number} rows
- * @param {{ headerRow?: boolean }} [opts]
- * @returns {HTMLTableElement}
+ * Build an HTML table with the given number of columns and rows, optionally including a header row.
+ * @param {number} cols - Number of columns in each row.
+ * @param {number} rows - Total number of rows to create (including header when `headerRow` is true).
+ * @param {{ headerRow?: boolean }} [opts] - Options object.
+ * @param {boolean} [opts.headerRow=false] - When true and `rows > 0`, creates a header row (`<thead>`) plus body rows for the remainder.
+ * @returns {HTMLTableElement} The constructed `<table>` element with a `<tbody>` and optional `<thead>`; each cell contains a `<br>` placeholder.
  */
 export function createTable(cols, rows, opts = {}) {
   const { headerRow = false } = opts;
@@ -47,10 +48,11 @@ export function createTable(cols, rows, opts = {}) {
 }
 
 /**
- * Inserts a table at the current cursor position using DOM Range API.
- * @param {number} cols
- * @param {number} rows
- * @param {{ headerRow?: boolean }} [opts]
+ * Insert a table at the current selection and place the caret into its first cell.
+ * @param {number} cols - Number of columns for the new table.
+ * @param {number} rows - Number of rows for the new table.
+ * @param {{ headerRow?: boolean }} [opts] - Options for table creation.
+ * @param {boolean} [opts.headerRow=false] - If true, include a header row as the first row.
  */
 export function insertTable(cols, rows, opts = {}) {
   if (cols <= 0 || rows <= 0) return;
