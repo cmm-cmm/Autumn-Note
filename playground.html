@@ -323,7 +323,7 @@
           </div>
           <div class="cfg-row">
             <span class="cfg-label">Height (px)</span>
-            <input type="number" id="cfg-height" class="cfg-input" value="0" min="0" step="50" placeholder="auto" />
+            <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
           <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
         </div>
@@ -419,6 +419,15 @@
 
 <script type="module">
 import AutumnNote from '/src/js/index.js';
+
+// Same mention users as the Live Demo
+const MENTION_USERS = [
+  { id: 1, label: 'Minh Pham' },
+  { id: 2, label: 'An Nguyen' },
+  { id: 3, label: 'Linh Tran' },
+  { id: 4, label: 'Duc Le' },
+  { id: 5, label: 'Hoa Vo' },
+];
 
 // ── Snippets ──────────────────────────────────────────────
 const SNIPPETS = {
@@ -520,7 +529,7 @@ function buildConfig() {
     focusColor:        document.getElementById('cfg-color').value,
   };
   const h = parseInt(document.getElementById('cfg-height').value);
-  if (h > 0) cfg.height = h;
+  cfg.height = h > 0 ? h : 300;
   return cfg;
 }
 
@@ -539,6 +548,12 @@ function createEditor(html) {
     placeholder: 'Start typing…',
     codeHighlight: true,
     resizable: true,
+    mention: {
+      onSearch(query, callback) {
+        const q = query.toLowerCase();
+        callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
+      },
+    },
     onChange: updateOutput,
   });
   if (html) editor.setHTML(html);
