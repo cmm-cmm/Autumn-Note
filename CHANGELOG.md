@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-05-19
+
+### Added
+- **Touch support for image crop overlay** — crop handles and the crop-box drag area now respond to `touchstart`/`touchmove`/`touchend` events, enabling crop operations on mobile and tablet devices
+- **Enter key in `<pre>` / code blocks** — pressing Enter inside a `<pre>` block now inserts a literal `\n` instead of creating a new block element, preserving code block structure
+- **Configurable `tabSize` in code blocks** — Tab key inside a `<pre>` block inserts `' '.repeat(options.tabSize)` spaces (defaults to 4) so the indent width can be controlled per-instance
+- **Nested list support in Markdown conversion** — `htmlToMarkdown()` now passes a `depth` counter through `ul`/`ol` recursion, producing correctly indented nested lists (e.g. `  - child item`) instead of flat output
+- **`findReplace.noResults` i18n key** — the "No results" label in Find & Replace is now localised; all 8 language packs (`en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`) include the new key
+- **Non-blocking crop error banner** — cross-origin crop failure now shows a dismissible inline banner (auto-removes after 4 s) anchored to `document.body` instead of a blocking `window.alert()`
+
+### Changed
+- **`insertTable` rewritten with Range API** — replaces the deprecated `execCommand('insertHTML')` call; the new implementation inserts the table after the nearest block ancestor, removes the empty anchor paragraph, ensures a landing `<p>` follows the table, and places the cursor in the first cell
+- **Table cells initialised with `<br>`** — `<td>` and `<th>` cells are now created with a `<br>` placeholder instead of `&nbsp;`, making empty cells focusable via the caret without inserting non-breaking space characters into the content
+- **`button` elements unwrapped by sanitiser** — `<button>` tags are no longer outright removed; their child nodes are preserved by unwrapping (using `replaceWith(...childNodes)`), so button-wrapped text pasted from external sources is not silently discarded
+- **`removeFormat` in BubbleToolbar strips `style` attributes** — after `execCommand('removeFormat')` (which skips inline `style`), the handler now iterates all elements intersecting the selection and removes `style` attributes, producing a clean result consistent with the context menu
+- **`hiliteColor` fallback for Firefox** — BubbleToolbar `_applyColor()` falls back to `backColor` when `hiliteColor` fails, ensuring highlight colour works across all browsers
+- **`throttle` adds trailing-call guarantee** — the utility now schedules a trailing timeout for the final event in a burst, preventing the last event from being silently dropped; also switched from `Date.now()` to `performance.now()` for sub-millisecond accuracy
+- **`lineHeight` uses `TreeWalker` with range filter** — replaces `createNodeIterator` + manual `intersectsNode` check with a `TreeWalker` that filters inline, avoiding unnecessary node visits outside the selection
+- **`isEmpty()` treats lone-`<br>` nodes as empty** — a node containing only a single `<br>` child is now correctly classified as empty, fixing false-positive "non-empty" results that occurred after browser-inserted placeholder `<br>` elements
+- **`rect2bnd` returns raw DOMRect values** — removed `Math.round()` calls; sub-pixel precision is preserved for accurate element positioning (rounding at display time is the browser's responsibility)
+
+### Fixed
+- **Checklist → paragraph conversion preserves inline formatting** — `_checklistItemToP()` previously stripped all markup to plain text when outdenting a checklist item; it now clones child nodes (keeping `<strong>`, `<em>`, `<a>`, etc.) and only strips zero-width-space anchors
+- **FindReplace `_currentIndex` reset timing** — `_currentIndex` was reset to `0` before wrapping matches (while the array was still being built in reverse), potentially resolving an off-by-one highlight on re-search; reset now occurs after `_matches` is finalised and filtered
+- **History undo cursor fallback** — when restoring a snapshot whose range references detached nodes, the editor now falls back to placing the caret at the start of the editable area rather than silently failing
+
+---
+
 ## [1.2.2] - 2026-05-19
 
 ### Fixed
