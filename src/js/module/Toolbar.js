@@ -4,6 +4,10 @@
  */
 
 import { createElement, on } from '../core/dom.js';
+import { getButton } from './Buttons.js';
+
+/** Resolve a toolbar item: string → registry lookup, object → pass-through. */
+const _resolveBtn = (item) => (typeof item === 'string') ? getButton(item) : item;
 
 // Module-level cache for FontAwesome detection.
 // Evaluated once per page load so all Toolbar instances on the same page agree
@@ -129,7 +133,10 @@ export class Toolbar {
     // for every button rendered.
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
-    this._btnMap = new Map((this.options.toolbar || []).flat().map((b) => [b.name, b]));
+    this._btnMap = new Map(
+      (this.options.toolbar || []).flat()
+        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+    );
     return this;
   }
 
@@ -155,7 +162,12 @@ export class Toolbar {
     const fragment = document.createDocumentFragment();
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'an-btn-group' });
-      group.forEach((btnDef) => {
+      group.forEach((item) => {
+        const btnDef = _resolveBtn(item);
+        if (!btnDef) {
+          console.warn(`[AutumnNote] Toolbar: button "${item}" not found in registry. Skipped.`);
+          return;
+        }
         let el;
         if (btnDef.type === 'select') el = this._createSelect(btnDef);
         else if (btnDef.type === 'grid') el = this._createGridPicker(btnDef);
@@ -713,5 +725,24 @@ export class Toolbar {
    */
   hide() {
     if (this.el) this.el.style.display = 'none';
+  }
+
+  /**
+   * Tears down and re-renders the toolbar in-place.
+   * Call after registering new buttons post-create via context.use(plugin)
+   * or AutumnNote.registerButton() to make them appear in the toolbar.
+   */
+  rebuild() {
+    if (this._refreshRaf) { cancelAnimationFrame(this._refreshRaf); this._refreshRaf = null; }
+    this._disposers.forEach((d) => d());
+    this._disposers = [];
+    if (this.el) this.el.innerHTML = '';
+    this._faReady = this._detectFontAwesome();
+    this._buildButtons();
+    this._btnMap = new Map(
+      (this.options.toolbar || []).flat()
+        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+    );
+    this.refresh();
   }
 }

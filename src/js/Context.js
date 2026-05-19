@@ -5,6 +5,7 @@
  */
 
 import { mergeDeep } from './core/func.js';
+import { registerButton } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 import { resolveLocale } from './i18n/index.js';
 import { renderLayout } from './renderer.js';
@@ -42,6 +43,9 @@ import { Mention } from './module/Mention.js';
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
 
+/** Global plugin registry (populated via AutumnNote.use()). Applied to every new Context. */
+export const _globalPlugins = new Map();
+
 export class Context {
   /**
    * @param {HTMLElement} targetEl - The element to replace with the editor
@@ -62,6 +66,9 @@ export class Context {
 
     /** @type {Map<string, object>} */
     this._modules = new Map();
+
+    /** @type {Map<string, { plugin: object, publicApi: * }>} */
+    this._plugins = new Map();
 
     this._disposers = [];
     this._alive = false;
@@ -105,6 +112,9 @@ export class Context {
 
     // Initial toolbar sync so dropdowns show the correct font on load
     this.invoke('toolbar.refresh');
+
+    // Apply plugins registered globally via AutumnNote.use()
+    this._applyGlobalPlugins();
 
     if (typeof this.options.onInit === 'function') {
       this.options.onInit(this);
@@ -166,6 +176,53 @@ export class Context {
     instance.initialize();
     this._modules.set(name, instance);
     return this;
+  }
+
+  /**
+   * Installs a plugin on this editor instance.
+   * If called after create(), buttons are registered immediately but the toolbar
+   * must be rebuilt via ctx.invoke('toolbar.rebuild') to render new buttons.
+   * @param {object} plugin - { name, version?, buttons?, install?, uninstall? }
+   * @param {object} [options] - Forwarded to plugin.install(context, options)
+   * @returns {this}
+   */
+  use(plugin, options = {}) {
+    if (Array.isArray(plugin.buttons)) {
+      plugin.buttons.forEach((b) => registerButton(b));
+    }
+    this._installPlugin(plugin, options);
+    return this;
+  }
+
+  /**
+   * Returns the public API returned by plugin.install(), or null.
+   * @param {string} name
+   * @returns {*}
+   */
+  getPlugin(name) {
+    return this._plugins.get(name)?.publicApi ?? null;
+  }
+
+  _installPlugin(plugin, pluginOptions = {}) {
+    const { name } = plugin;
+    if (!name || typeof name !== 'string') {
+      console.warn('[AutumnNote] Plugin must have a string `name` property.');
+      return;
+    }
+    if (this._plugins.has(name)) {
+      console.warn(`[AutumnNote] Plugin "${name}" already installed on this instance. Skipping.`);
+      return;
+    }
+    const publicApi = (typeof plugin.install === 'function')
+      ? plugin.install(this, pluginOptions) ?? null
+      : null;
+    this._plugins.set(name, { plugin, publicApi });
+  }
+
+  _applyGlobalPlugins() {
+    for (const { plugin, options } of _globalPlugins.values()) {
+      this._installPlugin(plugin, options);
+    }
   }
 
   _bindEditorEvents(editable) {
@@ -486,6 +543,13 @@ export class Context {
       if (typeof module.destroy === 'function') module.destroy();
     });
     this._modules.clear();
+
+    for (const { plugin } of this._plugins.values()) {
+      if (typeof plugin.uninstall === 'function') {
+        try { plugin.uninstall(this); } catch (_) {}
+      }
+    }
+    this._plugins.clear();
 
     this._disposers.forEach((d) => d());
     this._disposers = [];

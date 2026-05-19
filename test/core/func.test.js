@@ -62,6 +62,38 @@ describe('throttle', () => {
     expect(fn).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
+
+  it('fires a trailing call so the last event in a burst is not dropped', () => {
+    vi.useFakeTimers();
+    const fn = vi.fn();
+    const throttled = throttle(fn, 100);
+
+    throttled(); // fires immediately
+    throttled(); // schedules trailing
+    throttled(); // re-schedules trailing
+
+    expect(fn).toHaveBeenCalledTimes(1); // only immediate call so far
+
+    vi.advanceTimersByTime(100); // trailing timer fires
+
+    expect(fn).toHaveBeenCalledTimes(2); // trailing call fired
+    vi.useRealTimers();
+  });
+
+  it('passes arguments to the trailing call', () => {
+    vi.useFakeTimers();
+    const fn = vi.fn();
+    const throttled = throttle(fn, 100);
+
+    throttled('a');
+    throttled('b'); // schedules trailing with 'b'
+
+    vi.advanceTimersByTime(100);
+
+    // trailing call should carry the last args ('b')
+    expect(fn).toHaveBeenLastCalledWith('b');
+    vi.useRealTimers();
+  });
 });
 
 describe('compose', () => {

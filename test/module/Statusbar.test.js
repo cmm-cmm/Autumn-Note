@@ -30,14 +30,16 @@ describe('Statusbar', () => {
     const status = new Statusbar(context);
     status.initialize();
 
-    context.layoutInfo.editable.innerText = 'one two three';
+    // update() reads textContent; use textContent setter (jsdom innerText setter
+    // does not update textContent — confirmed jsdom limitation).
+    context.layoutInfo.editable.textContent = 'one two three';
     status.update();
 
     expect(status._wordCountEl.textContent).toBe('Words: 3/3');
     expect(status._charCountEl.textContent).toContain('Chars:');
     expect(status._wordCountEl.classList.contains('an-count-warn')).toBe(true);
 
-    context.layoutInfo.editable.innerText = 'one two three four';
+    context.layoutInfo.editable.textContent = 'one two three four';
     status.update();
     expect(status._wordCountEl.classList.contains('an-count-exceeded')).toBe(true);
 

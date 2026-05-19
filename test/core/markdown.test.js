@@ -209,4 +209,46 @@ describe('htmlToMarkdown', () => {
   it('returns empty string for empty input', () => {
     expect(htmlToMarkdown('')).toBe('');
   });
+
+  it('indents nested <ul> lists correctly', () => {
+    const html = '<ul><li>parent<ul><li>child</li></ul></li></ul>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('- parent');
+    expect(md).toContain('  - child');
+  });
+
+  it('indents deeply nested lists (3 levels)', () => {
+    const html = '<ul><li>a<ul><li>b<ul><li>c</li></ul></li></ul></li></ul>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('- a');
+    expect(md).toContain('  - b');
+    expect(md).toContain('    - c');
+  });
+
+  it('indents nested <ol> lists correctly', () => {
+    const html = '<ol><li>first<ol><li>nested</li></ol></li></ol>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('1. first');
+    expect(md).toContain('  1. nested');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isMarkdown — false positive prevention
+// ---------------------------------------------------------------------------
+
+describe('isMarkdown — edge cases', () => {
+  it('does not false-positive on bold-like text in the middle of prose', () => {
+    // Bold in the middle of a sentence is NOT a markdown indicator on its own
+    const prose = 'The result was **significantly** better than expected in all cases.';
+    expect(isMarkdown(prose)).toBe(false);
+  });
+
+  it('detects bold (**text**) at the start of a line', () => {
+    expect(isMarkdown('**important note**')).toBe(true);
+  });
+
+  it('does not false-positive on email-style list items', () => {
+    expect(isMarkdown('Re: your inquiry about pricing')).toBe(false);
+  });
 });

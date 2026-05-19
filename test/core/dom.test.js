@@ -461,6 +461,29 @@ describe('isEmpty', () => {
   it('returns true for empty element with no content', () => {
     expect(isEmpty(document.createElement('p'))).toBe(true);
   });
+
+  it('returns true for <p><br></p> (browser empty paragraph convention)', () => {
+    const el = document.createElement('p');
+    el.appendChild(document.createElement('br'));
+    expect(isEmpty(el)).toBe(true);
+  });
+
+  it('returns true for <p><br><br></p> (two br, no text — still empty)', () => {
+    // Two <br> elements have no textContent, so isEmpty returns true.
+    // (Only the single-<br> case has a dedicated early return, but both
+    // cases fall through to the textContent check which gives the same result.)
+    const el = document.createElement('p');
+    el.appendChild(document.createElement('br'));
+    el.appendChild(document.createElement('br'));
+    expect(isEmpty(el)).toBe(true);
+  });
+
+  it('returns false for <p><br>text</p> (br plus text)', () => {
+    const el = document.createElement('p');
+    el.appendChild(document.createElement('br'));
+    el.appendChild(document.createTextNode('text'));
+    expect(isEmpty(el)).toBe(false);
+  });
 });
 
 describe('outerHtml', () => {

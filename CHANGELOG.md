@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-05-19
+
+### Added
+- **Plugin API** — first-class plugin system for packaging editor extensions:
+  - `AutumnNote.use(plugin, options?)` — installs a plugin globally; buttons declared in `plugin.buttons` are registered to the global button registry *immediately* (before any `create()` call), so they can be referenced by name string in `toolbar` config
+  - `AutumnNote.hasPlugin(name)` — checks if a plugin is registered globally
+  - `AutumnNote.registerButton(btnDef)` — registers a standalone button definition globally
+  - `context.use(plugin, options?)` — per-instance plugin installation (call `ctx.invoke('toolbar.rebuild')` to surface new buttons in an already-rendered toolbar)
+  - `context.getPlugin<T>(name)` — returns the typed public API object returned by `plugin.install()`
+  - `context.invoke('toolbar.rebuild')` — new `Toolbar` method that tears down and re-renders the toolbar in-place after post-create button registration
+  - `AsnPlugin<T>` TypeScript interface — fully typed plugin descriptor with `name`, `version?`, `buttons?`, `install?(ctx, opts): T`, and `uninstall?(ctx)` fields
+  - `toolbar` option now accepts string button names alongside `ButtonDef` objects — string names are resolved from the global button registry at build time
+- **`/docs.html`** — fully rendered API reference page with sticky sidebar navigation, section search filter, Prism.js syntax highlighting, copy-to-clipboard code blocks, and IntersectionObserver-driven active link tracking; covers all options, static methods, instance methods, events, toolbar configuration, Plugin API, i18n, and TypeScript
+- **`/playground.html`** — dedicated interactive playground with: live config panel (9 toggle-able options with Apply button), snippet library (6 presets: Article, Checklist, Table, Code, Formatting, Clear), HTML / Markdown / Stats output tabs, copy + download buttons, shareable URL (state encoded as base64 URL hash), and config persistence in `localStorage`
+- **Site navigation** — header nav on the landing page now includes direct links to **Docs** and **Playground**
+
+### Fixed
+- **Version strings synchronised** — `src/js/index.js` `version` field, all HTML brand badges, and built `dist/` files now all reflect the same version as `package.json`; version was previously inconsistent across files (ranging from `1.0.9` in old dist artifacts to `1.1.1` in source)
+
+### Tests
+- **2 pre-existing test failures resolved** — `Statusbar.test.js` used `innerText` setter (which jsdom does not propagate to `textContent`; fixed to use `textContent`) and `Toolbar.test.js` relied on synchronous `requestAnimationFrame` (fixed with `vi.stubGlobal` synchronous mock)
+- **25 new unit tests** across 7 test files covering: `sanitise.js` `<button>` unwrap and `<base>` strip, `markdown.js` nested list indentation (2–3 levels) and `isMarkdown` false-positive prevention, `dom.js` `isEmpty` with single-`<br>` child, `func.js` `throttle` trailing call, `FindReplace.js` locale `noResults` key and index reset, `Typing.js` Enter and Tab in `<pre>` blocks, `History.js` detached-node fallback in `_restoreSelection`
+
+---
+
 ## [1.3.0] - 2026-05-19
 
 ### Added
