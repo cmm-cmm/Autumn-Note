@@ -71,11 +71,16 @@
       background: #fff; border: 1px solid #e5e7eb;
       border-radius: 10px; overflow: hidden; min-width: 0;
     }
+    /* border-radius must always be 0 — the outer .panel-editor handles rounding.
+       Border/shadow are hidden only in the idle state so the focused focus ring
+       still shows through when the user clicks into the editor. */
     .panel-editor .an-container {
       flex: 1;
-      border: none !important;
       border-radius: 0 !important;
-      box-shadow: none !important;
+    }
+    .panel-editor .an-container:not(.an-focused) {
+      border: none;
+      box-shadow: none;
     }
     #editor-el { height: 100%; }
 
