@@ -140,7 +140,7 @@ const AutumnNote = {
   registerButton(btnDef) { registerButton(btnDef); return this; },
 
   /** Library version */
-  version: '1.4.0',
+  version: '1.4.1',
 };
 
 // ---------------------------------------------------------------------------

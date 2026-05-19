@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.1] - 2026-05-19
+
+### Fixed
+- **Playground — Apply Options crash** — `editor.destroy()` tears down the Context but does not remove the entry from AutumnNote's internal `WeakMap`; the subsequent `AutumnNote.create()` call returned the stale destroyed instance. Fixed by using `AutumnNote.destroy(targetEl)` which removes the entry before re-creating.
+- **Playground — editor panel corners missing border** — `.an-container` carries its own `border` and `border-radius` from `autumnnote.css`; inside `.panel-editor` (which has `border-radius: 10px; overflow: hidden`) the two borders overlapped and the outer panel border was visually covered at the corners. Fixed by suppressing `.an-container`'s border and radius inside the panel, letting `.panel-editor` own the visual boundary.
+- **Playground — layout shift on focus** — switching from `border: none` (0 px) to the focus border (1 px) on `.an-focused` caused a 1 px layout jump. Fixed by using `border-color: transparent` so border-width stays constant at 1 px in both states.
+- **Playground — focus ring clipped at corners** — `.an-container` has `border-radius: 0` inside the panel, so the orange focus ring appeared only on straight edges; corners remained gray because `overflow: hidden` on `.panel-editor` clipped the inner border. Fixed by fully suppressing `.an-container`'s border/shadow and propagating focus state to `.panel-editor` via `onFocus`/`onBlur` callbacks so the ring draws on the element that owns `border-radius: 10px`.
+- **Playground — `context.on('focus')` / `context.on('blur')` never fired** — `Context._bindEditorEvents()` invokes `options.onFocus` directly without calling `triggerEvent('focus')`, so `context.on()` listeners are never notified. Fixed by passing `onFocus`/`onBlur` as options in `AutumnNote.create()` instead.
+- **Playground — editor height and @mention misaligned with Live Demo** — editor defaulted to 200 px (library default) instead of 300 px; `@mention` autocomplete was absent. Both options now match the Live Demo configuration.
+- **Docs/Playground nav links — 404 on GitHub Pages** — nav `href` values used absolute paths (e.g. `/docs.html`) which resolve to `cmm-cmm.github.io/docs.html` instead of the correct `/Autumn-Note/docs.html` sub-path. Changed to relative paths (`docs.html`, `playground.html`, `./`).
+
+### Changed
+- **Project tagline** updated to *"Fast. Lightweight. Reliable. Efficient."* across all user-facing files (landing page hero, README, package.json description, demo site, user manual).
+- **Docs — Plugin API section expanded** with: descriptor field reference table, event-name list for `context.on()`, full `invoke()` path reference table (16 module methods), complete custom Module class example (`WordBadgeModule`), and expanded installation code samples.
+
+---
+
 ## [1.4.0] - 2026-05-19
 
 ### Added
