@@ -26,7 +26,9 @@
       "Bash(node -e \"const { JSDOM } = require\\('jsdom'\\); const dom = new JSDOM\\('<div></div>'\\); const el = dom.window.document.querySelector\\('div'\\); el.innerText = 'hello world'; console.log\\('textContent:', JSON.stringify\\(el.textContent\\)\\); console.log\\('innerText:', JSON.stringify\\(el.innerText\\)\\);\")",
       "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\doc\" -Force)",
       "Bash(Select-Object Name)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('current:',p.version\\)\")",
+      "Bash(git commit -m 'fix\\(playground\\): remove inner an-container border/radius to restore panel corners *)"
     ]
   }
 }
