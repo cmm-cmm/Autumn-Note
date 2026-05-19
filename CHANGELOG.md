@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.2] - 2026-05-19
+
+### Fixed
+- **Clipboard data-URL crash** — `_dataUrlToBlob()` called `.match()[1]` without guarding against a `null` result when passed a malformed data URL; now uses optional chaining with an `'image/png'` fallback to prevent `TypeError`
+- **Context menu table-picker label** — label showed `${cols} × ${rows}` (e.g. "3 × 5" for 5 rows × 3 cols) — reversed vs. the toolbar's `${rows} × ${cols}`; the actual `insertTable(cols, rows)` call was already correct, only the display was wrong
+- **BubbleToolbar colour apply crash** — `sel.addRange(_savedRange.cloneRange())` could throw `InvalidStateError` when the saved range referenced detached nodes (e.g. user deleted content while the colour picker was open); wrapped in `try/catch` with early return to avoid a silent crash
+
+### Performance
+- **Toolbar** — `refresh()` now schedules DOM updates via `requestAnimationFrame`; rapid back-to-back calls (e.g. `afterCommand` + button click in one frame) collapse into a single repaint
+- **History** — `_tokenizeImages()` fast-path skips the base64 regex scan when `innerHTML` contains no `data:` string (common case with no embedded images), eliminating a 400 ms typing pause on large documents
+- **BubbleToolbar** — button elements are cached after `_build()`; `_syncActive()` iterates the cache instead of calling `querySelectorAll` on every `selectionchange` event
+- **sanitise.js** — replaced 3 separate `querySelectorAll('*')` traversals with a single pass covering tag removal, attribute sanitisation, and input filtering; tag lookup switched to `Set` for O(1) access
+- **Statusbar** — word-count uses `textContent` instead of `innerText`, avoiding a forced layout flush on every debounced input event
+- **FindReplace** — `_findRawMatches()` caps the `TreeWalker` loop at 500 results to prevent main-thread blocking on very large documents
+- **Mention** — `_renderItems()` batches list items into a `DocumentFragment` for a single `appendChild`; `_buildDropdown()` uses delegated listeners on the container instead of per-item event registration
+- **ImageResizer** — overlay position is cached between scroll `rAF` frames; style writes are skipped when the position is unchanged, reducing paint work at 60 fps
+
+---
+
 ## [1.2.1] - 2026-05-18
 
 ### Fixed
