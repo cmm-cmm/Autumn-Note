@@ -115,6 +115,8 @@ export class Toolbar {
     this._disposers = [];
     /** @type {Array<() => void>} closers for all open color picker popups */
     this._colorPickerClosers = [];
+    /** @type {number|null} rAF handle for debounced refresh */
+    this._refreshRaf = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -132,6 +134,8 @@ export class Toolbar {
   }
 
   destroy() {
+    if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
+    this._refreshRaf = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this.el && this.el.parentNode) {
@@ -653,6 +657,16 @@ export class Toolbar {
   // ---------------------------------------------------------------------------
 
   refresh() {
+    // Debounce via rAF — multiple rapid calls (e.g. afterCommand + button click)
+    // collapse into a single update per animation frame.
+    if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
+    this._refreshRaf = requestAnimationFrame(() => {
+      this._refreshRaf = null;
+      this._doRefresh();
+    });
+  }
+
+  _doRefresh() {
     if (!this.el) return;
     const btnMap = this._btnMap || new Map();
 

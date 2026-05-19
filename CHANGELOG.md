@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-05-19
+
+### Added
+- **Touch support for image crop overlay** — crop handles and the crop-box drag area now respond to `touchstart`/`touchmove`/`touchend` events, enabling crop operations on mobile and tablet devices
+- **Enter key in `<pre>` / code blocks** — pressing Enter inside a `<pre>` block now inserts a literal `\n` instead of creating a new block element, preserving code block structure
+- **Configurable `tabSize` in code blocks** — Tab key inside a `<pre>` block inserts `' '.repeat(options.tabSize)` spaces (defaults to 4) so the indent width can be controlled per-instance
+- **Nested list support in Markdown conversion** — `htmlToMarkdown()` now passes a `depth` counter through `ul`/`ol` recursion, producing correctly indented nested lists (e.g. `  - child item`) instead of flat output
+- **`findReplace.noResults` i18n key** — the "No results" label in Find & Replace is now localised; all 8 language packs (`en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`) include the new key
+- **Non-blocking crop error banner** — cross-origin crop failure now shows a dismissible inline banner (auto-removes after 4 s) anchored to `document.body` instead of a blocking `window.alert()`
+
+### Changed
+- **`insertTable` rewritten with Range API** — replaces the deprecated `execCommand('insertHTML')` call; the new implementation inserts the table after the nearest block ancestor, removes the empty anchor paragraph, ensures a landing `<p>` follows the table, and places the cursor in the first cell
+- **Table cells initialised with `<br>`** — `<td>` and `<th>` cells are now created with a `<br>` placeholder instead of `&nbsp;`, making empty cells focusable via the caret without inserting non-breaking space characters into the content
+- **`button` elements unwrapped by sanitiser** — `<button>` tags are no longer outright removed; their child nodes are preserved by unwrapping (using `replaceWith(...childNodes)`), so button-wrapped text pasted from external sources is not silently discarded
+- **`removeFormat` in BubbleToolbar strips `style` attributes** — after `execCommand('removeFormat')` (which skips inline `style`), the handler now iterates all elements intersecting the selection and removes `style` attributes, producing a clean result consistent with the context menu
+- **`hiliteColor` fallback for Firefox** — BubbleToolbar `_applyColor()` falls back to `backColor` when `hiliteColor` fails, ensuring highlight colour works across all browsers
+- **`throttle` adds trailing-call guarantee** — the utility now schedules a trailing timeout for the final event in a burst, preventing the last event from being silently dropped; also switched from `Date.now()` to `performance.now()` for sub-millisecond accuracy
+- **`lineHeight` uses `TreeWalker` with range filter** — replaces `createNodeIterator` + manual `intersectsNode` check with a `TreeWalker` that filters inline, avoiding unnecessary node visits outside the selection
+- **`isEmpty()` treats lone-`<br>` nodes as empty** — a node containing only a single `<br>` child is now correctly classified as empty, fixing false-positive "non-empty" results that occurred after browser-inserted placeholder `<br>` elements
+- **`rect2bnd` returns raw DOMRect values** — removed `Math.round()` calls; sub-pixel precision is preserved for accurate element positioning (rounding at display time is the browser's responsibility)
+
+### Fixed
+- **Checklist → paragraph conversion preserves inline formatting** — `_checklistItemToP()` previously stripped all markup to plain text when outdenting a checklist item; it now clones child nodes (keeping `<strong>`, `<em>`, `<a>`, etc.) and only strips zero-width-space anchors
+- **FindReplace `_currentIndex` reset timing** — `_currentIndex` was reset to `0` before wrapping matches (while the array was still being built in reverse), potentially resolving an off-by-one highlight on re-search; reset now occurs after `_matches` is finalised and filtered
+- **History undo cursor fallback** — when restoring a snapshot whose range references detached nodes, the editor now falls back to placing the caret at the start of the editable area rather than silently failing
+
+---
+
+## [1.2.2] - 2026-05-19
+
+### Fixed
+- **Clipboard data-URL crash** — `_dataUrlToBlob()` called `.match()[1]` without guarding against a `null` result when passed a malformed data URL; now uses optional chaining with an `'image/png'` fallback to prevent `TypeError`
+- **Context menu table-picker label** — label showed `${cols} × ${rows}` (e.g. "3 × 5" for 5 rows × 3 cols) — reversed vs. the toolbar's `${rows} × ${cols}`; the actual `insertTable(cols, rows)` call was already correct, only the display was wrong
+- **BubbleToolbar colour apply crash** — `sel.addRange(_savedRange.cloneRange())` could throw `InvalidStateError` when the saved range referenced detached nodes (e.g. user deleted content while the colour picker was open); wrapped in `try/catch` with early return to avoid a silent crash
+
+### Performance
+- **Toolbar** — `refresh()` now schedules DOM updates via `requestAnimationFrame`; rapid back-to-back calls (e.g. `afterCommand` + button click in one frame) collapse into a single repaint
+- **History** — `_tokenizeImages()` fast-path skips the base64 regex scan when `innerHTML` contains no `data:` string (common case with no embedded images), eliminating a 400 ms typing pause on large documents
+- **BubbleToolbar** — button elements are cached after `_build()`; `_syncActive()` iterates the cache instead of calling `querySelectorAll` on every `selectionchange` event
+- **sanitise.js** — replaced 3 separate `querySelectorAll('*')` traversals with a single pass covering tag removal, attribute sanitisation, and input filtering; tag lookup switched to `Set` for O(1) access
+- **Statusbar** — word-count uses `textContent` instead of `innerText`, avoiding a forced layout flush on every debounced input event
+- **FindReplace** — `_findRawMatches()` caps the `TreeWalker` loop at 500 results to prevent main-thread blocking on very large documents
+- **Mention** — `_renderItems()` batches list items into a `DocumentFragment` for a single `appendChild`; `_buildDropdown()` uses delegated listeners on the container instead of per-item event registration
+- **ImageResizer** — overlay position is cached between scroll `rAF` frames; style writes are skipped when the position is unchanged, reducing paint work at 60 fps
+
+---
+
 ## [1.2.1] - 2026-05-18
 
 ### Fixed

@@ -156,6 +156,7 @@ export const es = {
     replacePlaceholder: 'Reemplazar con…',
     replaceAriaLabel:   'Reemplazar con',
     replaceBtn:         'Reemplazar',
+    noResults:          'Sin resultados',
     replaceAllBtn:      'Reemplazar todo',
     close:              '×',
   },

@@ -156,6 +156,7 @@ export const ko = {
     replacePlaceholder: '바꿀 내용…',
     replaceAriaLabel:   '바꿀 내용',
     replaceBtn:         '바꾸기',
+    noResults:          '결과 없음',
     replaceAllBtn:      '모두 바꾸기',
     close:              '×',
   },

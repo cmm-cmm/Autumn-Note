@@ -20,14 +20,25 @@ export function htmlToMarkdown(html) {
   return _domToMd(doc.body).replace(/\n{3,}/g, '\n\n').trim();
 }
 
-function _domToMd(node) {
+/**
+ * Convert a DOM node subtree into Markdown.
+ *
+ * Recursively produces a Markdown string representing the given DOM node and its descendants,
+ * handling common HTML constructs such as paragraphs, headings, lists (with nested indentation),
+ * blockquotes, fenced and inline code, links, images, tables, horizontal rules, and basic inline emphasis.
+ *
+ * @param {Node} node - The DOM node to convert.
+ * @param {number} [depth=0] - Current nesting depth used to indent nested list items.
+ * @returns {string} The Markdown representation of the node subtree.
+ */
+function _domToMd(node, depth = 0) {
   if (node.nodeType === 3) {
     return node.textContent.replace(/\s+/g, ' ');
   }
   if (node.nodeType !== 1) return '';
 
   const tag = node.nodeName.toLowerCase();
-  const inner = () => Array.from(node.childNodes).map(_domToMd).join('');
+  const inner = () => Array.from(node.childNodes).map(n => _domToMd(n, depth)).join('');
 
   switch (tag) {
     case 'p':
@@ -76,12 +87,16 @@ function _domToMd(node) {
     case 'ul': {
       const items = Array.from(node.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
-      return `\n\n${items.map((li) => `- ${_domToMd(li).trim()}`).join('\n')}\n\n`;
+      const indent = '  '.repeat(depth);
+      const lines = items.map((li) => `${indent}- ${_domToMd(li, depth + 1).trim()}`).join('\n');
+      return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'ol': {
       const items = Array.from(node.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
-      return `\n\n${items.map((li, i) => `${i + 1}. ${_domToMd(li).trim()}`).join('\n')}\n\n`;
+      const indent = '  '.repeat(depth);
+      const lines = items.map((li, i) => `${indent}${i + 1}. ${_domToMd(li, depth + 1).trim()}`).join('\n');
+      return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'li':  return inner();
     case 'hr':  return '\n\n---\n\n';
@@ -106,12 +121,15 @@ function _domToMd(node) {
 }
 
 /**
- * Returns true if the text contains recognisable Markdown patterns.
- * @param {string} text
- * @returns {boolean}
+ * Detects whether a string likely contains Markdown syntax.
+ *
+ * Checks for common Markdown constructs such as ATX headings, unordered or
+ * ordered list items, blockquotes, fenced code blocks, and bold emphasis.
+ * @param {string} text - Input text to inspect for Markdown patterns.
+ * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|\*{2}.+?\*{2}|^```/m.test(text);
+  return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|^```|^\*{2}.+?\*{2}/m.test(text);
 }
 
 /**

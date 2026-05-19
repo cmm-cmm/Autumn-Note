@@ -157,6 +157,7 @@ export const ja = {
     replacePlaceholder: '置換後\u2026',
     replaceAriaLabel:   '置換後のテキスト',
     replaceBtn:         '置換',
+    noResults:          '結果なし',
     replaceAllBtn:      'すべて置換',
     close:              '\u00d7',
   },

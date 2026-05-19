@@ -11,7 +11,16 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(mkdir public *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(Select-String -Pattern '\"version\"')",
+      "Bash(git show *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npm test *)",
+      "Bash(git stash *)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const c = fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\); console.log\\(JSON.stringify\\(c.slice\\(c.indexOf\\('replaceAllBtn'\\)-10, c.indexOf\\('replaceAllBtn'\\)+60\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);console.log\\(JSON.stringify\\(c.substring\\(i,i+80\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);const chunk=c.substring\\(i-5,i+90\\);for\\(let j=0;j<chunk.length;j++\\) process.stdout.write\\(chunk.charCodeAt\\(j\\)+':'+chunk[j]+' '\\);console.log\\(\\)\")"
     ]
   }
 }

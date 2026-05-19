@@ -157,6 +157,7 @@ export const fr = {
     replacePlaceholder: 'Remplacer par\u2026',
     replaceAriaLabel:   'Remplacer par',
     replaceBtn:         'Remplacer',
+    noResults:          'Aucun résultat',
     replaceAllBtn:      'Tout remplacer',
     close:              '\u00d7',
   },

@@ -214,7 +214,8 @@ export class Statusbar {
   update() {
     if (!this._wordCountEl || !this._charCountEl) return;
     const editable = this.context.layoutInfo.editable;
-    const text = editable.innerText || '';
+    // textContent is faster than innerText (no layout flush, no CSS visibility check)
+    const text = editable.textContent || '';
     const words = _countWords(text);
     const chars = text.replace(/\n/g, '').length;
     const maxWords = this.options.maxWords || 0;

@@ -271,8 +271,6 @@ export class FindReplace {
     const rawMatches = this._findRawMatches(query, editable);
     if (rawMatches.length === 0) return;
 
-    this._currentIndex = 0;
-
     // Wrap matches in reverse order so earlier text offsets stay valid when
     // later sections of the same text node are split by surroundContents().
     // Use push() instead of unshift() to avoid O(n²) shifting on every insert;
@@ -297,6 +295,7 @@ export class FindReplace {
 
     // Drop entries where wrapping failed so the counter and navigation are accurate
     this._matches = this._matches.filter((m) => m.mark);
+    this._currentIndex = 0;
     if (this._matches.length === 0) return;
 
     // Highlight the first (current) match
@@ -324,12 +323,14 @@ export class FindReplace {
     }
     const re = this._queryRegex;
 
+    // Cap results to prevent blocking the main thread on very large documents
+    const MAX_RESULTS = 500;
     const walker = document.createTreeWalker(root, 0x4 /* NodeFilter.SHOW_TEXT */);
     let node;
-    while ((node = walker.nextNode())) {
+    while ((node = walker.nextNode()) && results.length < MAX_RESULTS) {
       re.lastIndex = 0;
       let m;
-      while ((m = re.exec(node.textContent)) !== null) {
+      while ((m = re.exec(node.textContent)) !== null && results.length < MAX_RESULTS) {
         results.push({ node, start: m.index, end: m.index + m[0].length });
       }
     }
@@ -447,7 +448,7 @@ export class FindReplace {
     const total = this._matches.length;
     if (total === 0) {
       const query = this._findInput ? this._findInput.value : '';
-      this._counterEl.textContent = query ? 'No results' : '';
+      this._counterEl.textContent = query ? this.context.locale.findReplace.noResults : '';
     } else {
       this._counterEl.textContent = `${this._currentIndex + 1} / ${total}`;
     }

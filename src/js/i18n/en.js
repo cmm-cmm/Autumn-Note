@@ -159,6 +159,7 @@ export const en = {
     replaceAriaLabel:   'Replace with',
     replaceBtn:         'Replace',
     replaceAllBtn:      'Replace All',
+    noResults:          'No results',
     close:              '\u00d7',
   },
 
