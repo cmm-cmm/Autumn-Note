@@ -25,7 +25,8 @@
       "Bash(grep -v \"^$\")",
       "Bash(node -e \"const { JSDOM } = require\\('jsdom'\\); const dom = new JSDOM\\('<div></div>'\\); const el = dom.window.document.querySelector\\('div'\\); el.innerText = 'hello world'; console.log\\('textContent:', JSON.stringify\\(el.textContent\\)\\); console.log\\('innerText:', JSON.stringify\\(el.innerText\\)\\);\")",
       "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\doc\" -Force)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(npx vite *)"
     ]
   }
 }
