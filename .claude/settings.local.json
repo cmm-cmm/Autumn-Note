@@ -28,7 +28,8 @@
       "Bash(Select-Object Name)",
       "Bash(npx vite *)",
       "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('current:',p.version\\)\")",
-      "Bash(git commit -m 'fix\\(playground\\): remove inner an-container border/radius to restore panel corners *)"
+      "Bash(git commit -m 'fix\\(playground\\): remove inner an-container border/radius to restore panel corners *)",
+      "Bash(git commit -m 'fix\\(playground\\): restore focus ring while keeping panel corners *)"
     ]
   }
 }
