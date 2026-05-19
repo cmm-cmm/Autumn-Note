@@ -29,7 +29,12 @@
       "Bash(npx vite *)",
       "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('current:',p.version\\)\")",
       "Bash(git commit -m 'fix\\(playground\\): remove inner an-container border/radius to restore panel corners *)",
-      "Bash(git commit -m 'fix\\(playground\\): restore focus ring while keeping panel corners *)"
+      "Bash(git commit -m 'fix\\(playground\\): restore focus ring while keeping panel corners *)",
+      "Bash(git commit -m 'fix\\(playground\\): align editor behaviour with Live Demo *)",
+      "Bash(git commit -m 'fix\\(playground\\): prevent layout shift on editor focus *)",
+      "Bash(git commit -m 'fix\\(playground\\): focus ring follows panel border-radius via JS delegation *)",
+      "Bash(git commit -m 'fix\\(playground\\): use onFocus/onBlur options instead of context.on\\(\\) *)",
+      "Bash(grep -v \"//\")"
     ]
   }
 }
