@@ -518,14 +518,16 @@ export function toggleChecklist() {
     if (selectedLis.length > 0) {
       let firstP = null;
       selectedLis.forEach((li) => {
-        const text = Array.from(li.childNodes)
-          .filter((n) => !(n.nodeType === 1 && n.tagName === 'INPUT'))
-          .map((n) => n.textContent)
-          .join('')
-          .replace(/\u00a0/g, ' ')
-          .trim();
         const p = document.createElement('p');
-        p.textContent = text || '\u00a0';
+        for (const child of li.childNodes) {
+          if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+          p.appendChild(child.cloneNode(true));
+        }
+        p.innerHTML = p.innerHTML.replace(/\u200b/g, '');
+        if (!p.hasChildNodes() || !p.textContent.trim()) {
+          p.innerHTML = '';
+          p.appendChild(document.createTextNode('\u00a0'));
+        }
         ul.parentNode.insertBefore(p, ul);
         if (!firstP) firstP = p;
         ul.removeChild(li);
