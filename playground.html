@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote Playground — Try the Editor Live</title>
+  <title>AutumnNote Playground  ETry the Editor Live</title>
   <meta name="description" content="Interactive playground for AutumnNote WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="/src/styles/autumnnote.scss" />
@@ -74,7 +74,7 @@
     /* .an-container's own border/radius are suppressed entirely so the outer
        .panel-editor handles all visual boundaries including the focus ring.
        The ring is applied to .panel-editor via the .is-focused class toggled
-       from JS — this ensures the focus colour follows the panel's border-radius
+       from JS  Ethis ensures the focus colour follows the panel's border-radius
        instead of stopping flat at the corners where overflow:hidden clips it. */
     .panel-editor .an-container {
       flex: 1;
@@ -237,7 +237,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.4.2</span>
+      <span class="brand-version">v1.5.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -251,13 +251,13 @@
 
 <div class="pg-layout">
   <div class="pg-toolbar-bar">
-    <h1>Playground <span>— try the editor live</span></h1>
+    <h1>Playground <span> Etry the editor live</span></h1>
   </div>
 
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Welcome to the <strong>AutumnNote Playground</strong>! ✨</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
+      <textarea id="editor-el"><p>Welcome to the <strong>AutumnNote Playground</strong>! ✨</p><p>Try all the features here  Eformat text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -266,7 +266,7 @@
       <!-- Config card -->
       <div class="card">
         <div class="card-header" onclick="toggleCard(this)">
-          <span class="card-title">⚙ Options</span>
+          <span class="card-title">⚁EOptions</span>
           <span class="card-toggle open">▶</span>
         </div>
         <div class="card-body" id="cfg-body">
@@ -282,12 +282,12 @@
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
               <option value="vi">Tiếng Việt</option>
-              <option value="ja">日本語</option>
-              <option value="zh">中文</option>
+              <option value="ja">日本誁E/option>
+              <option value="zh">中斁E/option>
               <option value="fr">Français</option>
               <option value="de">Deutsch</option>
               <option value="es">Español</option>
-              <option value="ko">한국어</option>
+              <option value="ko">���국�E�</option>
             </select>
           </div>
           <div class="cfg-row">
@@ -346,7 +346,7 @@
               <span class="snippet-icon">📝</span>Article
             </button>
             <button class="snippet-btn" onclick="loadSnippet('checklist')">
-              <span class="snippet-icon">✅</span>Checklist
+              <span class="snippet-icon">✁E/span>Checklist
             </button>
             <button class="snippet-btn" onclick="loadSnippet('table')">
               <span class="snippet-icon">📊</span>Table
@@ -390,7 +390,7 @@
             📋 Copy
           </button>
           <button class="act-btn" onclick="downloadOutput()" title="Download file">
-            ⬇ Download
+            ⬁EDownload
           </button>
           <button class="act-btn primary" onclick="sharePlayground()" title="Share this configuration">
             🔗 Share
@@ -466,12 +466,12 @@ const SNIPPETS = {
   table: `<h2>Product Comparison</h2>
 <table class="an-table"><thead><tr><th>Feature</th><th>Free</th><th>Pro</th><th>Enterprise</th></tr></thead>
 <tbody>
-<tr><td>Rich text editing</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Rich text editing</td><td>✁E/td><td>✁E/td><td>✁E/td></tr>
 <tr><td>Image upload</td><td>5 MB</td><td>50 MB</td><td>Unlimited</td></tr>
-<tr><td>Collaboration</td><td>—</td><td>✓</td><td>✓</td></tr>
-<tr><td>Custom toolbar</td><td>—</td><td>✓</td><td>✓</td></tr>
-<tr><td>Plugin API</td><td>—</td><td>—</td><td>✓</td></tr>
-<tr><td>Priority support</td><td>—</td><td>—</td><td>✓</td></tr>
+<tr><td>Collaboration</td><td> E/td><td>✁E/td><td>✁E/td></tr>
+<tr><td>Custom toolbar</td><td> E/td><td>✁E/td><td>✁E/td></tr>
+<tr><td>Plugin API</td><td> E/td><td> E/td><td>✁E/td></tr>
+<tr><td>Priority support</td><td> E/td><td> E/td><td>✁E/td></tr>
 </tbody></table>
 <p>All plans include <strong>unlimited editors per page</strong> and <strong>TypeScript support</strong>.</p>`,
 
@@ -511,7 +511,7 @@ const editor = AutumnNote.create('#editor', {
 <h2>Text Colours</h2>
 <p><span style="color:#e11d48">Red text</span>, <span style="color:#2563eb">blue text</span>, <span style="background-color:#fef08a">highlighted text</span>.</p>
 <h2>Blockquote</h2>
-<blockquote>Design is not just what it looks like and feels like. Design is how it works. — Steve Jobs</blockquote>
+<blockquote>Design is not just what it looks like and feels like. Design is how it works.  ESteve Jobs</blockquote>
 <h2>Lists</h2>
 <ul><li>Unordered item one</li><li>Unordered item two</li><li>Unordered item three</li></ul>
 <ol><li>First ordered step</li><li>Second ordered step</li><li>Third ordered step</li></ol>`,
@@ -541,7 +541,7 @@ function buildConfig() {
 function createEditor(html) {
   if (editor) {
     html = html ?? editor.getHTML();
-    // Use AutumnNote.destroy() — not editor.destroy() directly — so the
+    // Use AutumnNote.destroy()  Enot editor.destroy() directly  Eso the
     // instance is also removed from the internal WeakMap cache; otherwise
     // AutumnNote.create() would return the stale destroyed instance again.
     AutumnNote.destroy(editor.targetEl);
@@ -571,7 +571,7 @@ function createEditor(html) {
         callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
       },
     },
-    // context.on('focus'/'blur') does NOT work — Context dispatches focus/blur
+    // context.on('focus'/'blur') does NOT work  EContext dispatches focus/blur
     // only via the onFocus/onBlur option callbacks, not through triggerEvent().
     onFocus: () => panel.classList.add('is-focused'),
     onBlur:  () => panel.classList.remove('is-focused'),
@@ -617,7 +617,7 @@ window.copyOutput = () => {
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector('.act-btn');
     const orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
+    btn.textContent = '✁ECopied!';
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }).catch(() => {});
 };
@@ -646,7 +646,7 @@ window.sharePlayground = () => {
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.querySelector('.act-btn.primary');
     const orig = btn.textContent;
-    btn.textContent = '✓ Link copied!';
+    btn.textContent = '✁ELink copied!';
     setTimeout(() => { btn.textContent = orig; }, 2000);
   }).catch(() => { prompt('Copy this URL:', url); });
 };
