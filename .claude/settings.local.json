@@ -74,7 +74,8 @@
       "Bash(grep -n \"^  [a-z_].*{$\\\\|initialize\\\\|destroy\\\\|class\\\\|_show\\\\|_hide\\\\|_copy\\\\|_select\" \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\src\\\\js\\\\module\\\\CodeTooltip.js\")",
       "Bash(grep -n \"^  [a-z_].*{$\\\\|function handleKeydown\\\\|export function\\\\|function.*Key\\\\|Tab\\\\|Enter\\\\|Backspace\\\\|Arrow\" \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\src\\\\js\\\\editing\\\\Typing.js\")",
       "Bash(awk -F'|' '{gsub\\(/\\\\s/,\"\",$5\\); if \\($5+0 > 0 && $5+0 < 80\\) print $0}')",
-      "Bash(sort -t'|' -k5 -rn)"
+      "Bash(sort -t'|' -k5 -rn)",
+      "Bash(sort -t '|' -k5 -n)"
     ]
   }
 }

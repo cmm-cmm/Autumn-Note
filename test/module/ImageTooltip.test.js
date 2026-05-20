@@ -246,6 +246,94 @@ describe('ImageTooltip._delete', () => {
   });
 });
 
+describe('ImageTooltip._resetSize', () => {
+  it('clears width and height styles on the active image', () => {
+    const ctx = makeContext('<p><img src="test.png" style="width:300px;height:200px"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._resetSize();
+    expect(img.style.width).toBe('');
+    expect(img.style.height).toBe('');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('does nothing when no activeImg', () => {
+    const { it2, ctx } = makeTooltip();
+    it2._activeImg = null;
+    expect(() => it2._resetSize()).not.toThrow();
+    expect(ctx.invoke).not.toHaveBeenCalled();
+  });
+});
+
+describe('ImageTooltip._rotate', () => {
+  it('sets rotate transform on the active image', () => {
+    const ctx = makeContext('<p><img src="test.png"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._rotate(90);
+    expect(img.style.transform).toContain('rotate(90deg)');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('accumulates rotation across multiple calls', () => {
+    const ctx = makeContext('<p><img src="test.png"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._rotate(90);
+    it2._rotate(90);
+    expect(img.style.transform).toContain('rotate(180deg)');
+  });
+
+  it('clears transform when rotation reaches 0 (360 mod 360)', () => {
+    const ctx = makeContext('<p><img src="test.png"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._rotate(90);
+    it2._rotate(90);
+    it2._rotate(90);
+    it2._rotate(90);
+    expect(img.style.transform).toBe('');
+  });
+
+  it('does nothing when no activeImg', () => {
+    const { it2, ctx } = makeTooltip();
+    it2._activeImg = null;
+    expect(() => it2._rotate(90)).not.toThrow();
+    expect(ctx.invoke).not.toHaveBeenCalled();
+  });
+});
+
+describe('ImageTooltip._delete (non-figure image)', () => {
+  it('removes img directly when not inside a figure', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._delete();
+    expect(ctx.layoutInfo.editable.querySelector('img')).toBeNull();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+});
+
 describe('ImageTooltip._crop', () => {
   it('invokes imageCropOverlay.open with the active image', () => {
     const { it2, ctx } = makeTooltip();
@@ -258,6 +346,66 @@ describe('ImageTooltip._crop', () => {
     const { it2, ctx } = makeTooltip();
     it2._activeImg = null;
     it2._crop();
+    expect(ctx.invoke).not.toHaveBeenCalled();
+  });
+});
+
+// ── _toggleCaption ────────────────────────────────────────────────────────────
+
+describe('ImageTooltip._toggleCaption', () => {
+  it('wraps a bare image in figure+figcaption', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._toggleCaption();
+    expect(ctx.layoutInfo.editable.querySelector('figure.an-figure')).not.toBeNull();
+    expect(ctx.layoutInfo.editable.querySelector('figcaption.an-figcaption')).not.toBeNull();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('transfers float style from img to figure when wrapping', () => {
+    const ctx = makeContext('<p><img src="test.png" style="float:left;margin-right:1em"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._toggleCaption();
+    const figure = ctx.layoutInfo.editable.querySelector('figure.an-figure');
+    expect(figure.style.float).toBe('left');
+    expect(img.style.float).toBe('');
+  });
+
+  it('transfers centered display style from img to figure when wrapping', () => {
+    const ctx = makeContext('<p><img src="test.png" style="display:block;margin-left:auto;margin-right:auto"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
+    it2._activeImg = img;
+    it2._show(img);
+    it2._toggleCaption();
+    const figure = ctx.layoutInfo.editable.querySelector('figure.an-figure');
+    expect(figure.style.marginLeft).toBe('auto');
+  });
+
+  it('focuses existing figcaption when image already inside figure', () => {
+    const { it2, ctx } = makeTooltip(); // default HTML has figure + figcaption
+    const img = showImg(it2, ctx);
+    it2._toggleCaption();
+    // Should not add another figure; existing one stays
+    expect(ctx.layoutInfo.editable.querySelectorAll('figure').length).toBe(1);
+  });
+
+  it('does nothing when no activeImg', () => {
+    const { it2, ctx } = makeTooltip();
+    it2._activeImg = null;
+    expect(() => it2._toggleCaption()).not.toThrow();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
 });

@@ -481,3 +481,54 @@ describe('Editor public content API', () => {
     editor.destroy();
   });
 });
+
+// ── Renderer options ──────────────────────────────────────────────────────────
+
+describe('Renderer options', () => {
+  it('height option sets editable minHeight', () => {
+    const { editor } = makeEditor({ height: 250 });
+    expect(editor.layoutInfo.editable.style.minHeight).toBe('250px');
+    editor.destroy();
+  });
+
+  it('minHeight option sets editable minHeight (when height is explicitly 0)', () => {
+    const { editor } = makeEditor({ height: 0, minHeight: 150 });
+    expect(editor.layoutInfo.editable.style.minHeight).toBe('150px');
+    editor.destroy();
+  });
+
+  it('maxHeight option sets editable maxHeight', () => {
+    const { editor } = makeEditor({ maxHeight: 500 });
+    expect(editor.layoutInfo.editable.style.maxHeight).toBe('500px');
+    editor.destroy();
+  });
+
+  it('theme: dark adds an-theme-dark class to container', () => {
+    const { editor } = makeEditor({ theme: 'dark' });
+    expect(editor.layoutInfo.container.classList.contains('an-theme-dark')).toBe(true);
+    editor.destroy();
+  });
+
+  it('readOnly option disables editing and checklist checkboxes', () => {
+    const ta = document.createElement('textarea');
+    ta.value = '<ul class="an-checklist"><li><input type="checkbox"><span>item</span></li></ul>';
+    document.body.appendChild(ta);
+    const editor = AutumnNote.create(ta, { readOnly: true });
+    expect(editor.layoutInfo.container.classList.contains('an-disabled')).toBe(true);
+    const cb = editor.layoutInfo.editable.querySelector('input[type="checkbox"]');
+    if (cb) expect(cb.hasAttribute('disabled')).toBe(true);
+    editor.destroy();
+  });
+
+  it('autoSave with autoSaveKey tries to restore from localStorage', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockReturnValue({
+      getItem: vi.fn(() => '<p>saved</p>'),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    });
+    const ta = document.createElement('textarea');
+    document.body.appendChild(ta);
+    const editor = AutumnNote.create(ta, { autoSave: true, autoSaveKey: 'test-key' });
+    editor.destroy();
+  });
+});

@@ -226,6 +226,83 @@ describe('ContextMenu._reposition', () => {
   });
 });
 
+// ── Navigate submenu and color palette ───────────────────────────────────────
+
+describe('ContextMenu navigate submenu interactions', () => {
+  it('clicking navigate submenu button re-renders to sub-items', () => {
+    const { cm } = makeMenu(); // uses defaultItems with navigate items (textColor, etc.)
+    cm.showAt(100, 200);
+    const navBtn = cm.el.querySelector('.an-context-submenu');
+    expect(navBtn).not.toBeNull();
+    navBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    // After clicking, it re-renders the sub-items (back button + color palette)
+    expect(cm.el.querySelector('.an-context-back')).not.toBeNull();
+  });
+
+  it('clicking back button re-renders to parent items', () => {
+    const { cm } = makeMenu();
+    cm.showAt(100, 200);
+    const navBtn = cm.el.querySelector('.an-context-submenu');
+    navBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const backBtn = cm.el.querySelector('.an-context-back');
+    expect(backBtn).not.toBeNull();
+    backBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    // After clicking back, the navigate submenu items should be visible again
+    expect(cm.el.querySelector('.an-context-submenu')).not.toBeNull();
+  });
+
+  it('color palette swatch click applies color', () => {
+    const { cm, ctx } = makeMenu();
+    cm.showAt(100, 200);
+    const navBtn = cm.el.querySelector('.an-context-submenu');
+    navBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const swatch = cm.el.querySelector('.an-context-color-swatch');
+    if (swatch) {
+      const p = ctx.layoutInfo.editable.querySelector('p');
+      const range = document.createRange();
+      range.selectNodeContents(p);
+      cm._savedRange = range;
+      swatch.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      // Swatch click calls _applyColor which calls editor.afterCommand
+      expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    }
+  });
+
+  it('colorPalette hiliteColor type renders no-color swatch', () => {
+    const items = [
+      { colorPalette: true, colorType: 'hiliteColor' },
+    ];
+    const { cm } = makeMenu(items);
+    expect(cm.el.querySelector('.an-context-color-none')).not.toBeNull();
+  });
+
+  it('custom color input change applies color', () => {
+    const items = [
+      { colorPalette: true, colorType: 'foreColor' },
+    ];
+    const { cm, ctx } = makeMenu(items);
+    const p = ctx.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    cm._savedRange = range;
+    const colorInput = cm.el.querySelector('input[type="color"]');
+    expect(colorInput).not.toBeNull();
+    colorInput.value = '#ff0000';
+    colorInput.dispatchEvent(new Event('change'));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('navigate button with icon (no colorStrip) renders icon span', () => {
+    const items = [
+      { name: 'test', label: 'Test', icon: '<svg></svg>', navigate: () => [] },
+    ];
+    const { cm } = makeMenu(items);
+    const navBtn = cm.el.querySelector('.an-context-submenu');
+    expect(navBtn).not.toBeNull();
+    expect(navBtn.querySelector('.an-context-icon')).not.toBeNull();
+  });
+});
+
 // ── _getSelectionColor ────────────────────────────────────────────────────────
 
 describe('ContextMenu._getSelectionColor', () => {

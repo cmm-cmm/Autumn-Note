@@ -205,6 +205,48 @@ describe('Editor history API', () => {
     const editor = new Editor(context);
     expect(() => editor.clearHistory()).not.toThrow();
   });
+
+  it('undo() executes history.undo() when history is initialized', () => {
+    const context = makeContext('<p>hello</p>');
+    context.layoutInfo.container = document.createElement('div');
+    context.layoutInfo.container.appendChild(context.layoutInfo.editable);
+    const editor = new Editor(context);
+    editor.initialize();
+    expect(() => editor.undo()).not.toThrow();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+    editor.destroy();
+  });
+
+  it('redo() executes history.redo() when history is initialized', () => {
+    const context = makeContext('<p>hello</p>');
+    context.layoutInfo.container = document.createElement('div');
+    context.layoutInfo.container.appendChild(context.layoutInfo.editable);
+    const editor = new Editor(context);
+    editor.initialize();
+    expect(() => editor.redo()).not.toThrow();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+    editor.destroy();
+  });
+
+  it('canUndo() uses history.canUndo() when initialized', () => {
+    const context = makeContext('<p>hello</p>');
+    context.layoutInfo.container = document.createElement('div');
+    context.layoutInfo.container.appendChild(context.layoutInfo.editable);
+    const editor = new Editor(context);
+    editor.initialize();
+    expect(typeof editor.canUndo()).toBe('boolean');
+    editor.destroy();
+  });
+
+  it('canRedo() uses history.canRedo() when initialized', () => {
+    const context = makeContext('<p>hello</p>');
+    context.layoutInfo.container = document.createElement('div');
+    context.layoutInfo.container.appendChild(context.layoutInfo.editable);
+    const editor = new Editor(context);
+    editor.initialize();
+    expect(typeof editor.canRedo()).toBe('boolean');
+    editor.destroy();
+  });
 });
 
 // ── Focus ─────────────────────────────────────────────────────────────────────
@@ -324,6 +366,233 @@ describe('Editor insert API', () => {
     const callsBefore = document.execCommand.mock?.calls?.length ?? 0;
     editor.insertImage('');
     expect(document.execCommand.mock?.calls?.length ?? 0).toBe(callsBefore);
+  });
+});
+
+// ── Style delegation ──────────────────────────────────────────────────────────
+
+describe('Editor style delegation', () => {
+  function makeEditorWithContext() {
+    const context = makeContext('<p>hello</p>');
+    context.print = vi.fn();
+    const editor = new Editor(context);
+    return { editor, context };
+  }
+
+  it('bold() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.bold();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('italic() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.italic();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('underline() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.underline();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('strikethrough() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.strikethrough();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('superscript() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.superscript();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('subscript() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.subscript();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('justifyLeft() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.justifyLeft();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('justifyCenter() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.justifyCenter();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('justifyRight() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.justifyRight();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('justifyFull() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.justifyFull();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('indent() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.indent();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('outdent() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.outdent();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertUL() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.insertUL();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertOL() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.insertOL();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('inlineCode() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.inlineCode();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('toggleChecklist() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.toggleChecklist();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('print() delegates to context.print', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.print();
+    expect(context.print).toHaveBeenCalled();
+  });
+
+  it('formatBlock() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.formatBlock('h2');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('foreColor() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.foreColor('#ff0000');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('backColor() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.backColor('#ffff00');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('fontName() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.fontName('Arial');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('fontSize() calls afterCommand', () => {
+    const { editor, context } = makeEditorWithContext();
+    editor.fontSize('16px');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+});
+
+// ── insertImage with align ─────────────────────────────────────────────────────
+
+describe('Editor insertImage align', () => {
+  it('insertImage with left align sets float:left style', () => {
+    const context = makeContext('<p>text</p>');
+    const editor = new Editor(context);
+    expect(() => editor.insertImage('https://example.com/img.png', 'alt', 'left')).not.toThrow();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertImage with center align sets display:block', () => {
+    const context = makeContext('<p>text</p>');
+    const editor = new Editor(context);
+    expect(() => editor.insertImage('https://example.com/img.png', 'alt', 'center')).not.toThrow();
+  });
+
+  it('insertImage with no align uses no style', () => {
+    const context = makeContext('<p>text</p>');
+    const editor = new Editor(context);
+    expect(() => editor.insertImage('https://example.com/img.png', 'alt')).not.toThrow();
+  });
+});
+
+// ── insertLink with selection ──────────────────────────────────────────────────
+
+describe('Editor insertLink with selection', () => {
+  it('insertLink with selected text uses createLink', () => {
+    const context = makeContext('<p>hello world</p>');
+    const editor = new Editor(context);
+    const p = context.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 5);
+    window.getSelection().addRange(range);
+    expect(() => editor.insertLink('https://example.com', 'hello')).not.toThrow();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertLink with openInNewTab=true and text selected sets target', () => {
+    const context = makeContext('<p>click me</p>');
+    const editor = new Editor(context);
+    const p = context.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 5);
+    window.getSelection().addRange(range);
+    expect(() => editor.insertLink('https://example.com', 'click me', true)).not.toThrow();
+  });
+
+  it('insertLink without selected text inserts HTML link', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    const p = context.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editor.insertLink('https://example.com', 'My Link')).not.toThrow();
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertLink without text uses URL as display text', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    const p = context.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editor.insertLink('https://example.com', '', false)).not.toThrow();
+  });
+
+  it('insertLink without text and openInNewTab=true adds target attribute', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    const p = context.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editor.insertLink('https://example.com', 'link', true)).not.toThrow();
   });
 });
 

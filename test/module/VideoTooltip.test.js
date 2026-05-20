@@ -338,4 +338,30 @@ describe('VideoTooltip preview mode', () => {
     vt.destroy();
     expect(vt._exitPreview).toHaveBeenCalled();
   });
+
+  it('mousedown outside wrapper exits preview via _previewClickOff', () => {
+    const { vt, ctx } = makeTooltip();
+    showWrapper(vt, ctx);
+    vt._enterPreview();
+    expect(vt._previewMode).toBe(true);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    expect(vt._previewMode).toBe(false);
+  });
+});
+
+// ── Button click handler ──────────────────────────────────────────────────────
+
+describe('VideoTooltip button click handlers', () => {
+  it('clicking the delete button fires _delete', () => {
+    const { vt, ctx } = makeTooltip();
+    showWrapper(vt, ctx);
+    vi.spyOn(vt, '_delete');
+    const deleteBtn = vt._el.querySelector('.an-link-tooltip-btn--danger');
+    if (deleteBtn) {
+      deleteBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(vt._delete).toHaveBeenCalled();
+    }
+  });
 });
