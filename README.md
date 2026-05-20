@@ -26,16 +26,17 @@ A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no
 
 1. [Features](#features)
 2. [Installation](#installation)
-3. [Quick Start](#quick-start)
-4. [Plugin API](#plugin-api)
-5. [API](#api)
-6. [Options](#options)
-7. [Toolbar Customisation](#toolbar-customisation)
-8. [Keyboard Shortcuts](#keyboard-shortcuts)
-9. [Mentions](#mentions)
-10. [Project Structure](#project-structure)
-11. [Comparison](#comparison)
-12. [License](#license)
+3. [Framework Wrappers](#framework-wrappers)
+4. [Quick Start](#quick-start)
+5. [Plugin API](#plugin-api)
+6. [API](#api)
+7. [Options](#options)
+8. [Toolbar Customisation](#toolbar-customisation)
+9. [Keyboard Shortcuts](#keyboard-shortcuts)
+10. [Mentions](#mentions)
+11. [Project Structure](#project-structure)
+12. [Comparison](#comparison)
+13. [License](#license)
 
 ---
 
@@ -163,6 +164,66 @@ import 'autumnnote/dist/autumnnote.css';
 > <!-- FontAwesome 6 Free (recommended) -->
 > <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 > ```
+
+---
+
+## Framework Wrappers
+
+Official React and Vue 3 wrappers are available as separate packages in this monorepo (managed with pnpm workspaces).
+
+### React
+
+```bash
+npm install autumnnote autumnnote-react
+import 'autumnnote/dist/autumnnote.css';
+```
+
+```jsx
+import { useRef } from 'react';
+import AutumnNoteEditor from 'autumnnote-react';
+
+function MyEditor() {
+  const editorRef = useRef(null);
+
+  return (
+    <AutumnNoteEditor
+      ref={editorRef}
+      options={{ placeholder: 'Start typing…', height: 300, bubbleToolbar: true }}
+    />
+  );
+}
+
+// Access the editor instance:
+editorRef.current.getHTML();
+editorRef.current.invoke('editor.setHTML', '<p>Hello!</p>');
+```
+
+The `ref` is forwarded to the underlying `Context` instance via `useImperativeHandle`. Pass a `key` prop to force remount when options change.
+
+### Vue 3
+
+```bash
+npm install autumnnote autumnnote-vue
+import 'autumnnote/dist/autumnnote.css';
+```
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import AutumnNoteEditor from 'autumnnote-vue';
+
+const editorRef = ref(null);
+</script>
+
+<template>
+  <AutumnNoteEditor
+    ref="editorRef"
+    :options="{ placeholder: 'Start typing…', height: 300 }"
+  />
+</template>
+```
+
+Access the editor instance via `editorRef.value.editor.value` (the `editor` reactive ref exposed by `defineExpose`).
 
 ---
 
@@ -641,16 +702,34 @@ src/
     └── autumnnote.scss       Main stylesheet
 ```
 
+### Monorepo structure
+
+This project uses **pnpm workspaces** to manage the core library alongside official framework wrappers:
+
+```
+autumn-note-ce/
+├── pnpm-workspace.yaml       # workspace root
+├── src/                      # core library source
+├── packages/
+│   ├── react/                # autumnnote-react
+│   │   └── src/index.jsx
+│   └── vue/                  # autumnnote-vue
+│       └── src/AutumnNote.vue
+└── test/                     # Vitest test suite
+```
+
 ### Development commands
 
 ```bash
-npm install          # install dependencies
-npm run dev          # start Vite dev server with HMR
-npm run build        # build ES + UMD + CSS to dist/
-npm test             # run Vitest test suite once
-npm run test:watch   # run tests in watch mode
-npm run lint         # ESLint
-npm run typecheck    # TypeScript type check (tsconfig.json)
+pnpm install                           # install all workspace packages
+npm run dev                            # start Vite dev server with HMR
+npm run build                          # build core ES + UMD + CSS to dist/
+pnpm --filter autumnnote-react build   # build React wrapper
+pnpm --filter autumnnote-vue build     # build Vue wrapper
+npm test                               # run Vitest test suite once
+npm run test:watch                     # run tests in watch mode
+npm run lint                           # ESLint
+npm run typecheck                      # TypeScript type check (tsconfig.json)
 ```
 
 Build output in `dist/`:

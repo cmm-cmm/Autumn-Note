@@ -39,7 +39,7 @@
     "operatingSystem": "Web Browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "1.2.1",
+    "softwareVersion": "1.5.0",
     "author": { "@type": "Person", "name": "Minh Pham" },
     "codeRepository": "https://github.com/cmm-cmm/Autumn-Note"
   }
@@ -358,7 +358,7 @@
       <a class="brand" href="https://cmm-cmm.github.io/Autumn-Note/" aria-label="AutumnNote home">
         <img src="/image/banner.png" width="30" height="30" alt="" />
         <span class="brand-name">AutumnNote</span>
-        <span class="brand-version">v1.4.2</span>
+        <span class="brand-version">v1.5.0</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
         <a class="nav-link" href="docs.html">Docs</a>
@@ -371,7 +371,7 @@
 
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.4.2</span>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.5.0</span>
     <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
@@ -409,6 +409,9 @@
       <span class="feat" role="listitem">✦ ~380 emoji picker</span>
       <span class="feat" role="listitem">✦ FontAwesome icon picker</span>
       <span class="feat" role="listitem">✦ Video embeds</span>
+      <span class="feat" role="listitem">✦ React wrapper</span>
+      <span class="feat" role="listitem">✦ Vue 3 wrapper</span>
+      <span class="feat" role="listitem">✦ pnpm monorepo</span>
       <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
       <span class="feat" aria-hidden="true">✦ Zero dependencies</span>
       <span class="feat" aria-hidden="true">✦ ES2022 + TypeScript</span>
@@ -424,6 +427,9 @@
       <span class="feat" aria-hidden="true">✦ ~380 emoji picker</span>
       <span class="feat" aria-hidden="true">✦ FontAwesome icon picker</span>
       <span class="feat" aria-hidden="true">✦ Video embeds</span>
+      <span class="feat" aria-hidden="true">✦ React wrapper</span>
+      <span class="feat" aria-hidden="true">✦ Vue 3 wrapper</span>
+      <span class="feat" aria-hidden="true">✦ pnpm monorepo</span>
     </div>
   </div>
 
@@ -516,6 +522,33 @@ const editor = AutumnNote.create('#my-editor', {
   bubbleToolbar: true,
   onChange(html) { console.log(html); },
 });</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">React — autumnnote-react</div>
+          <pre><code>npm install autumnnote autumnnote-react
+
+<span class="cm">// App.jsx</span>
+<span class="kw">import</span> { useRef } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-react'</span>;
+<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+
+<span class="kw">function</span> MyEditor() {
+  <span class="kw">const</span> ref = useRef(<span class="kw">null</span>);
+  <span class="kw">return</span> &lt;AutumnNoteEditor ref={ref} options={{ placeholder: <span class="str">'Start typing…'</span> }} /&gt;;
+}</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">Vue 3 — autumnnote-vue</div>
+          <pre><code>npm install autumnnote autumnnote-vue
+
+<span class="cm">&lt;!-- MyEditor.vue --&gt;</span>
+&lt;script setup&gt;
+<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-vue'</span>;
+<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+&lt;/script&gt;
+&lt;template&gt;
+  &lt;AutumnNoteEditor :options="<span class="str">{ placeholder: 'Start typing…' }</span>" /&gt;
+&lt;/template&gt;</code></pre>
         </div>
         <div class="code-block">
           <div class="code-label">CDN — jsDelivr (no install needed)</div>

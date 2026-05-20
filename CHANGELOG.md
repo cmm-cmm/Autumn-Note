@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-05-20
+
+### Added
+- **pnpm workspace monorepo** — project restructured as a pnpm workspace (`pnpm-workspace.yaml`); `packages/react/` and `packages/vue/` are managed alongside the core library under a single `pnpm install`
+- **`autumnnote-react`** — official React wrapper package (`packages/react/`); exposes the `Context` instance via `forwardRef` + `useImperativeHandle`; accepts `options`, `className`, and `style` props; mount-once lifecycle (use `key` prop to remount on options change)
+- **`autumnnote-vue`** — official Vue 3 wrapper package (`packages/vue/`); `<AutumnNote.vue>` SFC using `<script setup>`, `defineProps`, `onMounted`/`onUnmounted`, and `defineExpose({ editor })`; access instance via `ref.value.editor.value`
+- **`exports` field in `package.json`** — added `"exports"` map (`"."` → ESM/CJS, `"./dist/autumnnote.css"`) alongside existing `main`/`module` fields for better bundler compatibility
+- **Docs — Framework Wrappers section** — new `docs.html` section covering React and Vue installation, lifecycle, props table, and access patterns
+- **Live Demo / README** — updated to document React and Vue wrappers with installation commands and usage examples; feature strip now highlights React wrapper, Vue 3 wrapper, and pnpm monorepo
+
+---
+
 ## [1.4.2] - 2026-05-20
 
 ### Fixed

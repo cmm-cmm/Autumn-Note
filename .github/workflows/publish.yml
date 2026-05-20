@@ -12,31 +12,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Check version
-        id: version_check
-        run: |
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          NPM_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "0.0.0")
-          echo "local=$LOCAL_VERSION" >> $GITHUB_OUTPUT
-          echo "npm=$NPM_VERSION" >> $GITHUB_OUTPUT
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
-            echo "should_publish=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_publish=false" >> $GITHUB_OUTPUT
-          fi
+        run: pnpm install
 
       - name: Verify npm auth
-        if: steps.version_check.outputs.should_publish == 'true'
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
             echo "::error::NPM_TOKEN secret is not set. Go to GitHub → Settings → Secrets → Actions and add NPM_TOKEN with a valid npm access token."
@@ -46,16 +36,89 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Build
-        if: steps.version_check.outputs.should_publish == 'true'
+      # ── Build core first (wrapper builds mark autumnnote as external but
+      #    npm run build ensures dist/ is fresh for any non-external consumers) ──
+      - name: Build core library
         run: npm run build
 
-      - name: Publish to npm
-        if: steps.version_check.outputs.should_publish == 'true'
+      # ──────────────────────────────────────────────────────────────
+      # autumnnote (core)
+      # ──────────────────────────────────────────────────────────────
+      - name: Check autumnnote version
+        id: core_check
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          NPM=$(npm view autumnnote version 2>/dev/null || echo "0.0.0")
+          echo "local=$LOCAL" >> $GITHUB_OUTPUT
+          echo "npm=$NPM" >> $GITHUB_OUTPUT
+          if [ "$LOCAL" != "$NPM" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish autumnnote
+        if: steps.core_check.outputs.should_publish == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Skip publish
-        if: steps.version_check.outputs.should_publish == 'false'
-        run: echo "Version ${{ steps.version_check.outputs.local }} already published on npm. Skipping."
+      - name: Skip autumnnote
+        if: steps.core_check.outputs.should_publish == 'false'
+        run: echo "autumnnote ${{ steps.core_check.outputs.local }} already published on npm. Skipping."
+
+      # ──────────────────────────────────────────────────────────────
+      # autumnnote-react
+      # ──────────────────────────────────────────────────────────────
+      - name: Check autumnnote-react version
+        id: react_check
+        run: |
+          LOCAL=$(node -p "require('./packages/react/package.json').version")
+          NPM=$(npm view autumnnote-react version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL" != "$NPM" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build autumnnote-react
+        if: steps.react_check.outputs.should_publish == 'true'
+        run: pnpm --filter autumnnote-react build
+
+      - name: Publish autumnnote-react
+        if: steps.react_check.outputs.should_publish == 'true'
+        run: pnpm --filter autumnnote-react publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip autumnnote-react
+        if: steps.react_check.outputs.should_publish == 'false'
+        run: echo "autumnnote-react already at current version on npm. Skipping."
+
+      # ──────────────────────────────────────────────────────────────
+      # autumnnote-vue
+      # ──────────────────────────────────────────────────────────────
+      - name: Check autumnnote-vue version
+        id: vue_check
+        run: |
+          LOCAL=$(node -p "require('./packages/vue/package.json').version")
+          NPM=$(npm view autumnnote-vue version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL" != "$NPM" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build autumnnote-vue
+        if: steps.vue_check.outputs.should_publish == 'true'
+        run: pnpm --filter autumnnote-vue build
+
+      - name: Publish autumnnote-vue
+        if: steps.vue_check.outputs.should_publish == 'true'
+        run: pnpm --filter autumnnote-vue publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip autumnnote-vue
+        if: steps.vue_check.outputs.should_publish == 'false'
+        run: echo "autumnnote-vue already at current version on npm. Skipping."

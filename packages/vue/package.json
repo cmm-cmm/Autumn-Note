@@ -1,0 +1,29 @@
+{
+  "name": "autumnnote-vue",
+  "version": "1.5.0",
+  "description": "Vue 3 wrapper for Autumn Note WYSIWYG editor",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "autumnnote": ">=1.4.0",
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "autumnnote": "workspace:*",
+    "vite": "^6.0.0",
+    "vue": "^3.4.0"
+  }
+}
