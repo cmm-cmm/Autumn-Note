@@ -70,7 +70,22 @@
       background: #fff; border: 1px solid #e5e7eb;
       border-radius: 10px; overflow: hidden; min-width: 0;
     }
-    .panel-editor .an-container { flex: 1; }
+    /* .an-container's own border/radius are suppressed entirely so the outer
+       .panel-editor handles all visual boundaries including the focus ring.
+       The ring is applied to .panel-editor via the .is-focused class toggled
+       from JS — this ensures the focus colour follows the panel's border-radius
+       instead of stopping flat at the corners where overflow:hidden clips it. */
+    .panel-editor .an-container {
+      flex: 1;
+      border-radius: 0 !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .panel-editor.is-focused {
+      border-color: var(--pg-focus-color, #e8751a);
+      box-shadow: 0 0 0 3px var(--pg-focus-shadow, rgba(232,117,26,.2));
+      transition: border-color .15s, box-shadow .15s;
+    }
     #editor-el { height: 100%; }
 
     /* ── Right panel ── */
@@ -213,23 +228,23 @@
       .panel-editor { min-height: 400px; }
     }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/playground-dGCrdcoS.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-BAgs7FzB.js">
+  <script type="module" crossorigin src="/Autumn-Note/assets/playground-Cp2VrKd9.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-pM6MIoKl.js">
   <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-Bf7aAQVC.css">
 </head>
 <body>
 
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" href="/index.html" aria-label="AutumnNote home">
+    <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/Autumn-Note/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.3.0</span>
+      <span class="brand-version">v1.5.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
-      <a class="nav-link" href="/index.html">Home</a>
-      <a class="nav-link" href="/docs.html">Docs</a>
-      <a class="nav-link active" href="/playground.html" aria-current="page">Playground</a>
+      <a class="nav-link" href="./">Home</a>
+      <a class="nav-link" href="docs.html">Docs</a>
+      <a class="nav-link active" href="playground.html" aria-current="page">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
     </nav>
@@ -315,7 +330,7 @@
           </div>
           <div class="cfg-row">
             <span class="cfg-label">Height (px)</span>
-            <input type="number" id="cfg-height" class="cfg-input" value="0" min="0" step="50" placeholder="auto" />
+            <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
           <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
         </div>
@@ -394,7 +409,7 @@
     <span>MIT License · © 2026 Minh Pham</span>
     <nav class="footer-links">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="/docs.html">Docs</a>
+      <a href="docs.html">Docs</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note/issues" target="_blank" rel="noopener noreferrer">Issues</a>
     </nav>
   </div>

@@ -6,7 +6,7 @@
 
   <!-- SEO -->
   <title>AutumnNote — WYSIWYG Editor | Vanilla JS, Zero Dependencies</title>
-  <meta name="description" content="AutumnNote is a modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). Zero runtime dependencies, no jQuery. Features: bubble toolbar, @mention autocomplete, markdown shortcuts, dark mode, 8 languages (i18n), image crop, find &amp; replace, and bundled TypeScript definitions." />
+  <meta name="description" content="AutumnNote — Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). Zero runtime dependencies, no jQuery. Bubble toolbar, @mention, markdown shortcuts, dark mode, 8 languages, image crop, find &amp; replace, TypeScript definitions." />
   <meta name="keywords" content="wysiwyg editor, rich text editor, vanilla javascript editor, no jquery editor, summernote alternative, quill alternative, tinymce alternative, lightweight wysiwyg, contenteditable editor, markdown editor, mention editor" />
   <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/" />
 
@@ -33,13 +33,13 @@
     "@type": "SoftwareApplication",
     "name": "AutumnNote",
     "applicationCategory": "DeveloperApplication",
-    "description": "A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, zero runtime dependencies.",
+    "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, zero runtime dependencies.",
     "url": "https://cmm-cmm.github.io/Autumn-Note/",
     "downloadUrl": "https://www.npmjs.com/package/autumnnote",
     "operatingSystem": "Web Browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "1.2.1",
+    "softwareVersion": "1.5.0",
     "author": { "@type": "Person", "name": "Minh Pham" },
     "codeRepository": "https://github.com/cmm-cmm/Autumn-Note"
   }
@@ -348,8 +348,8 @@
       .demo-section { padding: 36px 16px 40px; }
     }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/main-6sIKPTzK.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-BAgs7FzB.js">
+  <script type="module" crossorigin src="/Autumn-Note/assets/main-Go2BbAl1.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-pM6MIoKl.js">
   <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-Bf7aAQVC.css">
 </head>
 <body>
@@ -361,11 +361,11 @@
       <a class="brand" href="https://cmm-cmm.github.io/Autumn-Note/" aria-label="AutumnNote home">
         <img src="/Autumn-Note/image/banner.png" width="30" height="30" alt="" />
         <span class="brand-name">AutumnNote</span>
-        <span class="brand-version">v1.3.0</span>
+        <span class="brand-version">v1.5.0</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
-        <a class="nav-link" href="/docs.html">Docs</a>
-        <a class="nav-link" href="/playground.html">Playground</a>
+        <a class="nav-link" href="docs.html">Docs</a>
+        <a class="nav-link" href="playground.html">Playground</a>
         <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
       </nav>
@@ -374,8 +374,8 @@
 
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.3.0</span>
-    <h1 class="hero-title">Write rich text.<br>No dependencies. No drama.</h1>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.5.0</span>
+    <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
       no jQuery, zero runtime dependencies, full TypeScript support out of the box.
@@ -412,6 +412,9 @@
       <span class="feat" role="listitem">✦ ~380 emoji picker</span>
       <span class="feat" role="listitem">✦ FontAwesome icon picker</span>
       <span class="feat" role="listitem">✦ Video embeds</span>
+      <span class="feat" role="listitem">✦ React wrapper</span>
+      <span class="feat" role="listitem">✦ Vue 3 wrapper</span>
+      <span class="feat" role="listitem">✦ pnpm monorepo</span>
       <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
       <span class="feat" aria-hidden="true">✦ Zero dependencies</span>
       <span class="feat" aria-hidden="true">✦ ES2022 + TypeScript</span>
@@ -427,6 +430,9 @@
       <span class="feat" aria-hidden="true">✦ ~380 emoji picker</span>
       <span class="feat" aria-hidden="true">✦ FontAwesome icon picker</span>
       <span class="feat" aria-hidden="true">✦ Video embeds</span>
+      <span class="feat" aria-hidden="true">✦ React wrapper</span>
+      <span class="feat" aria-hidden="true">✦ Vue 3 wrapper</span>
+      <span class="feat" aria-hidden="true">✦ pnpm monorepo</span>
     </div>
   </div>
 
@@ -519,6 +525,33 @@ const editor = AutumnNote.create('#my-editor', {
   bubbleToolbar: true,
   onChange(html) { console.log(html); },
 });</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">React — autumnnote-react</div>
+          <pre><code>npm install autumnnote autumnnote-react
+
+<span class="cm">// App.jsx</span>
+<span class="kw">import</span> { useRef } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-react'</span>;
+<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+
+<span class="kw">function</span> MyEditor() {
+  <span class="kw">const</span> ref = useRef(<span class="kw">null</span>);
+  <span class="kw">return</span> &lt;AutumnNoteEditor ref={ref} options={{ placeholder: <span class="str">'Start typing…'</span> }} /&gt;;
+}</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">Vue 3 — autumnnote-vue</div>
+          <pre><code>npm install autumnnote autumnnote-vue
+
+<span class="cm">&lt;!-- MyEditor.vue --&gt;</span>
+&lt;script setup&gt;
+<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-vue'</span>;
+<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+&lt;/script&gt;
+&lt;template&gt;
+  &lt;AutumnNoteEditor :options="<span class="str">{ placeholder: 'Start typing…' }</span>" /&gt;
+&lt;/template&gt;</code></pre>
         </div>
         <div class="code-block">
           <div class="code-label">CDN — jsDelivr (no install needed)</div>
