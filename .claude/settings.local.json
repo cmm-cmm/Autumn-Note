@@ -36,7 +36,12 @@
       "Bash(git commit -m 'fix\\(playground\\): use onFocus/onBlur options instead of context.on\\(\\) *)",
       "Bash(grep -v \"//\")",
       "Bash(Test-Path pnpm-workspace.yaml)",
-      "Bash(git merge dev --no-ff -m ' *)"
+      "Bash(git merge dev --no-ff -m ' *)",
+      "WebSearch",
+      "WebFetch(domain:pnpm.io)",
+      "WebFetch(domain:corebts.com)",
+      "WebFetch(domain:dev.com)",
+      "Bash(pnpm --version)"
     ]
   }
 }
