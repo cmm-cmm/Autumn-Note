@@ -4,6 +4,10 @@
  */
 
 import { createElement, on } from '../core/dom.js';
+import { getButton } from './Buttons.js';
+
+/** Resolve a toolbar item: string → registry lookup, object → pass-through. */
+const _resolveBtn = (item) => (typeof item === 'string') ? getButton(item) : item;
 
 // Module-level cache for FontAwesome detection.
 // Evaluated once per page load so all Toolbar instances on the same page agree
@@ -115,6 +119,8 @@ export class Toolbar {
     this._disposers = [];
     /** @type {Array<() => void>} closers for all open color picker popups */
     this._colorPickerClosers = [];
+    /** @type {number|null} rAF handle for debounced refresh */
+    this._refreshRaf = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -127,11 +133,16 @@ export class Toolbar {
     // for every button rendered.
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
-    this._btnMap = new Map((this.options.toolbar || []).flat().map((b) => [b.name, b]));
+    this._btnMap = new Map(
+      (this.options.toolbar || []).flat()
+        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+    );
     return this;
   }
 
   destroy() {
+    if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
+    this._refreshRaf = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this.el && this.el.parentNode) {
@@ -151,7 +162,12 @@ export class Toolbar {
     const fragment = document.createDocumentFragment();
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'an-btn-group' });
-      group.forEach((btnDef) => {
+      group.forEach((item) => {
+        const btnDef = _resolveBtn(item);
+        if (!btnDef) {
+          console.warn(`[AutumnNote] Toolbar: button "${item}" not found in registry. Skipped.`);
+          return;
+        }
         let el;
         if (btnDef.type === 'select') el = this._createSelect(btnDef);
         else if (btnDef.type === 'grid') el = this._createGridPicker(btnDef);
@@ -237,7 +253,23 @@ export class Toolbar {
 
     const openPopup = () => {
       isOpen = true;
+      const rect = btn.getBoundingClientRect();
+
+      // Measure popup dimensions while invisible so we can set the correct
+      // position before the browser paints (matches the color-picker pattern).
+      popup.style.visibility = 'hidden';
       popup.style.display = 'block';
+      const pw = popup.offsetWidth;
+      const ph = popup.offsetHeight;
+
+      let left = rect.left;
+      let top  = rect.bottom + 4;
+      if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
+      if (top  + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
+
+      popup.style.left = `${left}px`;
+      popup.style.top  = `${top}px`;
+      popup.style.visibility = '';
       btn.setAttribute('aria-expanded', 'true');
     };
 
@@ -273,10 +305,14 @@ export class Toolbar {
 
     const d5 = on(document, 'click', () => { if (isOpen) closePopup(); });
 
-    this._disposers.push(d1, d2, d3, d4, d5);
+    // Append popup to body so position:fixed is truly viewport-relative,
+    // unaffected by any ancestor transform / filter (same pattern as color picker).
+    this._disposers.push(d1, d2, d3, d4, d5, () => {
+      if (popup.parentNode) popup.parentNode.removeChild(popup);
+    });
 
     wrap.appendChild(btn);
-    wrap.appendChild(popup);
+    document.body.appendChild(popup);
     return wrap;
   }
 
@@ -633,6 +669,16 @@ export class Toolbar {
   // ---------------------------------------------------------------------------
 
   refresh() {
+    // Debounce via rAF — multiple rapid calls (e.g. afterCommand + button click)
+    // collapse into a single update per animation frame.
+    if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
+    this._refreshRaf = requestAnimationFrame(() => {
+      this._refreshRaf = null;
+      this._doRefresh();
+    });
+  }
+
+  _doRefresh() {
     if (!this.el) return;
     const btnMap = this._btnMap || new Map();
 
@@ -679,5 +725,24 @@ export class Toolbar {
    */
   hide() {
     if (this.el) this.el.style.display = 'none';
+  }
+
+  /**
+   * Tears down and re-renders the toolbar in-place.
+   * Call after registering new buttons post-create via context.use(plugin)
+   * or AutumnNote.registerButton() to make them appear in the toolbar.
+   */
+  rebuild() {
+    if (this._refreshRaf) { cancelAnimationFrame(this._refreshRaf); this._refreshRaf = null; }
+    this._disposers.forEach((d) => d());
+    this._disposers = [];
+    if (this.el) this.el.innerHTML = '';
+    this._faReady = this._detectFontAwesome();
+    this._buildButtons();
+    this._btnMap = new Map(
+      (this.options.toolbar || []).flat()
+        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+    );
+    this.refresh();
   }
 }

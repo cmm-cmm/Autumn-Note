@@ -1,6 +1,6 @@
 # Autumn Note
 
-<p align="center"><img src="image/banner.png" width="120" alt="AutumnNote Banner"/></p>
+<p align="center"><img src="public/image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
 [![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
@@ -12,11 +12,11 @@
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
 
-A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
+A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
 
-> Write rich text. No dependencies. No drama.
+> **Fast. Lightweight. Reliable. Efficient.**
 
-[Live Demo](https://cmm-cmm.github.io/Autumn-Note/)
+[Live Demo](https://cmm-cmm.github.io/Autumn-Note/) · [Docs](https://cmm-cmm.github.io/Autumn-Note/docs.html) · [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
 
 <p align="center"><img src="demo/Screenshot.png" alt="AutumnNote Screenshot"/></p>
 
@@ -27,14 +27,15 @@ A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES
 1. [Features](#features)
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
-4. [API](#api)
-5. [Options](#options)
-6. [Toolbar Customisation](#toolbar-customisation)
-7. [Keyboard Shortcuts](#keyboard-shortcuts)
-8. [Mentions](#mentions)
-9. [Project Structure](#project-structure)
-10. [Comparison](#comparison)
-11. [License](#license)
+4. [Plugin API](#plugin-api)
+5. [API](#api)
+6. [Options](#options)
+7. [Toolbar Customisation](#toolbar-customisation)
+8. [Keyboard Shortcuts](#keyboard-shortcuts)
+9. [Mentions](#mentions)
+10. [Project Structure](#project-structure)
+11. [Comparison](#comparison)
+12. [License](#license)
 
 ---
 
@@ -88,7 +89,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Auto-fallback** — unknown codes or missing keys fall back to English
 
 ### UI
-- **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; FontAwesome icons with built-in SVG fallback
+- **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
 - **Dark / light theme** — `theme: 'dark'` or `theme: 'light'` (default); full SCSS variable coverage
 - **Image resizer** — drag handle on selected image to resize proportionally
@@ -100,7 +101,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Read-only mode** — `readOnly: true` renders a non-editable preview with toolbar hidden; toggle at runtime via `editor.setDisabled()`
 - **Auto-save** — `autoSave: true` persists content to `localStorage` on every change; key configurable via `autoSaveKey`
 - **Auto-save restore** — when `autoSave` and `autoSaveRestore` are both `true`, a dismissible banner prompts the user to restore or discard a previously saved draft on load; configurable age window via `autoSaveRestoreTimeout`
-- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text with quick-access buttons (bold, italic, underline, strikethrough, link, text colour, remove format, inline code); button set configurable via `bubbleToolbarItems`
+- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text; default buttons: bold, italic, underline, strikethrough, link, **text colour**, **highlight colour**, remove format, inline code; each colour button displays a live colour-strip indicator and opens an inline colour palette (matching the context menu); button set configurable via `bubbleToolbarItems`
 - **Markdown shortcuts** — `markdownShortcuts: true` (default) converts Markdown syntax typed in the editor into HTML in real time: `# ` → H1–H3, `> ` → blockquote, `- ` / `* ` → unordered list, `1. ` → ordered list, `[ ] ` → checklist, `---` → HR, ` ``` ` → code block; inline: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``
 - **Custom focus ring** — `focusColor` accepts any CSS colour string to override the default blue focus ring
 - **Spellcheck** — browser spellcheck enabled by default (`spellcheck: true`)
@@ -109,7 +110,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **No jQuery** — pure vanilla ES2022, zero runtime dependencies
 - **Bootstrap friendly** — optional Bootstrap 4/5 styling (`useBootstrap: true`)
 - **FontAwesome ready** — auto-detects FA on the page; falls back to built-in SVG icons
-- **Plugin-ready** — register custom modules via `AutumnNote.defaults`
+- **Plugin API** — first-class plugin system: `AutumnNote.use(plugin)`, `context.getPlugin(name)`, global button registry (`registerButton`), per-instance installation, `AsnPlugin<T>` TypeScript interface
 - **Tree-shakeable** — ES module build; all core utilities individually exported
 - **TypeScript definitions** — bundled `types/index.d.ts` with full JSDoc coverage
 - **@mention autocomplete** — type `@` (or any custom trigger) to open a floating dropdown backed by a user-supplied `onSearch` function; inserts a non-editable mention chip; customisable chip HTML via `onInsert`
@@ -266,6 +267,61 @@ const editor = AutumnNote.create('#my-editor', {
   },
 });
 ```
+
+---
+
+## Plugin API
+
+Plugins package editor extensions — custom modules, toolbar buttons, and event handlers — into a reusable, distributable object.
+
+```js
+import AutumnNote from 'autumnnote';
+
+const WordCountPlugin = {
+  name: 'word-count',
+  version: '1.0.0',
+  // Buttons registered BEFORE create() — usable by name in toolbar config
+  buttons: [{
+    name: 'wordCountBtn',
+    icon: 'hashtag',
+    tooltip: 'Word count',
+    action: (ctx) => alert(`${ctx.getWordCount()} words`),
+  }],
+  // Called after all built-in modules initialise
+  install(ctx, options) {
+    ctx.on('change', () => console.log('words:', ctx.getWordCount()));
+    return { getMax: () => options.maxWords };
+  },
+  uninstall(ctx) { /* cleanup */ },
+};
+
+// Global — applied to every future editor instance
+AutumnNote.use(WordCountPlugin, { maxWords: 500 });
+
+const editor = AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'wordCountBtn']], // 'wordCountBtn' resolved from registry
+});
+
+editor.getPlugin('word-count').getMax(); // → 500
+```
+
+**Per-instance installation:**
+
+```js
+const editor = AutumnNote.create('#editor');
+editor.use(WordCountPlugin, { maxWords: 200 });
+editor.invoke('toolbar.rebuild'); // re-render toolbar with new buttons
+```
+
+| Method | Description |
+|---|---|
+| `AutumnNote.use(plugin, opts?)` | Install globally. Buttons registered immediately; `install()` called after modules init. |
+| `AutumnNote.hasPlugin(name)` | Returns `true` if plugin registered globally. |
+| `AutumnNote.registerButton(def)` | Register a single button globally by name. |
+| `context.use(plugin, opts?)` | Install on this instance only. |
+| `context.getPlugin<T>(name)` | Returns the public API from `plugin.install()`. |
+
+See the [full Plugin API docs →](https://cmm-cmm.github.io/Autumn-Note/docs.html#plugin-api)
 
 ---
 

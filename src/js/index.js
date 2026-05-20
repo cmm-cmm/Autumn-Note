@@ -10,7 +10,8 @@
  */
 
 import '../styles/autumnnote.scss';
-import { Context, _customModules } from './Context.js';
+import { Context, _customModules, _globalPlugins } from './Context.js';
+import { registerButton } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 
 // Snapshot of factory defaults taken at module-load time (before any setDefaults() calls)
@@ -99,8 +100,47 @@ const AutumnNote = {
    */
   registerModule(name, ModuleClass) { _customModules.set(name, ModuleClass); },
 
+  /**
+   * Installs a plugin globally — applied to every future editor instance.
+   * Plugin `buttons` are registered to the global button registry immediately
+   * so they are available when Toolbar initialises inside create().
+   * Plugin `install()` is called after all built-in modules have initialised.
+   * @param {object} plugin - { name, version?, buttons?, install?, uninstall? }
+   * @param {object} [options] - Forwarded to plugin.install(context, options)
+   * @returns {typeof AutumnNote}
+   */
+  use(plugin, options = {}) {
+    if (!plugin || typeof plugin.name !== 'string') {
+      throw new TypeError('[AutumnNote] AutumnNote.use: plugin must have a string `name` property.');
+    }
+    if (_globalPlugins.has(plugin.name)) {
+      console.warn(`[AutumnNote] Plugin "${plugin.name}" already registered globally. Skipping.`);
+      return this;
+    }
+    if (Array.isArray(plugin.buttons)) {
+      plugin.buttons.forEach((b) => registerButton(b));
+    }
+    _globalPlugins.set(plugin.name, { plugin, options });
+    return this;
+  },
+
+  /**
+   * Returns true if a plugin with the given name has been registered globally.
+   * @param {string} name
+   * @returns {boolean}
+   */
+  hasPlugin(name) { return _globalPlugins.has(name); },
+
+  /**
+   * Registers a single button definition in the global button registry.
+   * After create(), call ctx.invoke('toolbar.rebuild') to render new buttons.
+   * @param {object} btnDef - ButtonDef-compatible object with a `name` string
+   * @returns {typeof AutumnNote}
+   */
+  registerButton(btnDef) { registerButton(btnDef); return this; },
+
   /** Library version */
-  version: '1.1.1',
+  version: '1.4.1',
 };
 
 // ---------------------------------------------------------------------------

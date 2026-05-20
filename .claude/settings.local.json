@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc -l)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)",
+      "Bash(node -e ' *)",
+      "Bash(node -p \"require\\('./package.json'\\).version\")",
+      "Bash(npm version *)",
+      "Bash(powershell -Command \"\\(Get-Content index.html\\) -replace 'v1\\\\.1\\\\.1', 'v1.2.0' | Set-Content index.html\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(mkdir public *)",
+      "Bash(git mv *)",
+      "Bash(Select-String -Pattern '\"version\"')",
+      "Bash(git show *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npm test *)",
+      "Bash(git stash *)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const c = fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\); console.log\\(JSON.stringify\\(c.slice\\(c.indexOf\\('replaceAllBtn'\\)-10, c.indexOf\\('replaceAllBtn'\\)+60\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);console.log\\(JSON.stringify\\(c.substring\\(i,i+80\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const c=fs.readFileSync\\('src/js/i18n/zh.js','utf8'\\);const i=c.indexOf\\('replaceAllBtn'\\);const chunk=c.substring\\(i-5,i+90\\);for\\(let j=0;j<chunk.length;j++\\) process.stdout.write\\(chunk.charCodeAt\\(j\\)+':'+chunk[j]+' '\\);console.log\\(\\)\")",
+      "Bash(npx vitest *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e \"const { JSDOM } = require\\('jsdom'\\); const dom = new JSDOM\\('<div></div>'\\); const el = dom.window.document.querySelector\\('div'\\); el.innerText = 'hello world'; console.log\\('textContent:', JSON.stringify\\(el.textContent\\)\\); console.log\\('innerText:', JSON.stringify\\(el.innerText\\)\\);\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\doc\" -Force)",
+      "Bash(Select-Object Name)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('current:',p.version\\)\")",
+      "Bash(git commit -m 'fix\\(playground\\): remove inner an-container border/radius to restore panel corners *)",
+      "Bash(git commit -m 'fix\\(playground\\): restore focus ring while keeping panel corners *)",
+      "Bash(git commit -m 'fix\\(playground\\): align editor behaviour with Live Demo *)",
+      "Bash(git commit -m 'fix\\(playground\\): prevent layout shift on editor focus *)",
+      "Bash(git commit -m 'fix\\(playground\\): focus ring follows panel border-radius via JS delegation *)",
+      "Bash(git commit -m 'fix\\(playground\\): use onFocus/onBlur options instead of context.on\\(\\) *)",
+      "Bash(grep -v \"//\")"
+    ]
+  }
+}

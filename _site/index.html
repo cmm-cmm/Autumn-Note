@@ -6,7 +6,7 @@
 
   <!-- SEO -->
   <title>AutumnNote — WYSIWYG Editor | Vanilla JS, Zero Dependencies</title>
-  <meta name="description" content="AutumnNote — Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). Zero runtime dependencies, no jQuery. Bubble toolbar, @mention, markdown shortcuts, dark mode, 8 languages, image crop, find &amp; replace, TypeScript definitions." />
+  <meta name="description" content="AutumnNote is a modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). Zero runtime dependencies, no jQuery. Features: bubble toolbar, @mention autocomplete, markdown shortcuts, dark mode, 8 languages (i18n), image crop, find &amp; replace, and bundled TypeScript definitions." />
   <meta name="keywords" content="wysiwyg editor, rich text editor, vanilla javascript editor, no jquery editor, summernote alternative, quill alternative, tinymce alternative, lightweight wysiwyg, contenteditable editor, markdown editor, mention editor" />
   <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/" />
 
@@ -33,7 +33,7 @@
     "@type": "SoftwareApplication",
     "name": "AutumnNote",
     "applicationCategory": "DeveloperApplication",
-    "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, zero runtime dependencies.",
+    "description": "A modern, lightweight WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, zero runtime dependencies.",
     "url": "https://cmm-cmm.github.io/Autumn-Note/",
     "downloadUrl": "https://www.npmjs.com/package/autumnnote",
     "operatingSystem": "Web Browser",
@@ -45,7 +45,7 @@
   }
   </script>
 
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/Autumn-Note/image/favicon.ico" type="image/x-icon" />
 
   <style>
     /* === Reset & base === */
@@ -348,6 +348,9 @@
       .demo-section { padding: 36px 16px 40px; }
     }
   </style>
+  <script type="module" crossorigin src="/Autumn-Note/assets/main-6sIKPTzK.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-BAgs7FzB.js">
+  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-Bf7aAQVC.css">
 </head>
 <body>
   <a class="skip-link" href="#demo">Skip to demo</a>
@@ -356,13 +359,13 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="https://cmm-cmm.github.io/Autumn-Note/" aria-label="AutumnNote home">
-        <img src="/image/banner.png" width="30" height="30" alt="" />
+        <img src="/Autumn-Note/image/banner.png" width="30" height="30" alt="" />
         <span class="brand-name">AutumnNote</span>
-        <span class="brand-version">v1.4.1</span>
+        <span class="brand-version">v1.3.0</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
-        <a class="nav-link" href="docs.html">Docs</a>
-        <a class="nav-link" href="playground.html">Playground</a>
+        <a class="nav-link" href="/docs.html">Docs</a>
+        <a class="nav-link" href="/playground.html">Playground</a>
         <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
       </nav>
@@ -371,8 +374,8 @@
 
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.4.1</span>
-    <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.3.0</span>
+    <h1 class="hero-title">Write rich text.<br>No dependencies. No drama.</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
       no jQuery, zero runtime dependencies, full TypeScript support out of the box.
@@ -556,127 +559,5 @@ const editor = AutumnNote.create('#my-editor', {
   </script>
 
   <!-- Editor initialisation -->
-  <script type="module">
-    import AutumnNote from '/src/js/index.js';
-
-    const langSelect = document.getElementById('lang-select');
-    const themeBtn   = document.getElementById('theme-btn');
-    const themeLabel = document.getElementById('theme-label');
-    const demoOuter  = document.getElementById('demo-outer');
-
-    // SVG paths for sun and moon icons
-    const SUN_PATHS = `<circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
-    const MOON_PATHS = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
-
-    let isDark = false;
-
-    function applyTheme(editorCtx, editorROCtx) {
-      // Toggle an-theme-dark on both editor containers
-      [editorCtx, editorROCtx].forEach((ctx) => {
-        if (!ctx) return;
-        ctx.layoutInfo.container.classList.toggle('an-theme-dark', isDark);
-      });
-      // Toggle demo outer wrapper dark styling
-      demoOuter.classList.toggle('is-dark', isDark);
-      // Update button
-      themeBtn.classList.toggle('is-dark', isDark);
-      themeBtn.setAttribute('aria-pressed', String(isDark));
-      themeBtn.querySelector('svg').innerHTML = isDark ? MOON_PATHS : SUN_PATHS;
-      themeLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
-    }
-
-    themeBtn.addEventListener('click', () => {
-      isDark = !isDark;
-      applyTheme(window.editor, window.editorRO);
-    });
-
-    const MENTION_USERS = [
-      { id: 1, label: 'Minh Pham' },
-      { id: 2, label: 'An Nguyen' },
-      { id: 3, label: 'Linh Tran' },
-      { id: 4, label: 'Duc Le' },
-      { id: 5, label: 'Hoa Vo' },
-    ];
-
-    const sharedOptions = () => ({
-      height: 300,
-      codeHighlight: true,
-      lang: langSelect.value,
-    });
-
-    let editor = AutumnNote.create('#editor', {
-      ...sharedOptions(),
-      placeholder: 'Start typing here…',
-      focusColor: '#e8751a',
-      bubbleToolbar: true,
-      mention: {
-        onSearch(query, callback) {
-          const q = query.toLowerCase();
-          callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
-        },
-      },
-      onChange(html) {
-        document.getElementById('output').textContent = html;
-        if (window.editorRO) window.editorRO.setHTML(html);
-      },
-    });
-
-    let editorRO = AutumnNote.create('#editor-readonly', {
-      ...sharedOptions(),
-      readOnly: true,
-    });
-    editorRO.setHTML(editor.getHTML());
-
-    langSelect.addEventListener('change', () => {
-      const html = editor.getHTML();
-      const editorEl = editor.targetEl;
-      const editorROEl = editorRO.targetEl;
-
-      AutumnNote.destroy(editorEl);
-      AutumnNote.destroy(editorROEl);
-      window.editorRO = null;
-
-      editor = AutumnNote.create(editorEl, {
-        ...sharedOptions(),
-        placeholder: 'Start typing here…',
-        focusColor: '#e8751a',
-        bubbleToolbar: true,
-        mention: {
-          onSearch(query, callback) {
-            const q = query.toLowerCase();
-            callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
-          },
-        },
-        onChange(h) {
-          document.getElementById('output').textContent = h;
-          if (window.editorRO) window.editorRO.setHTML(h);
-        },
-      });
-
-      editorRO = AutumnNote.create(editorROEl, {
-        ...sharedOptions(),
-        readOnly: true,
-      });
-
-      window.editor = editor;
-      window.editorRO = editorRO;
-
-      editor.setHTML(html);
-      document.getElementById('output').textContent = html;
-
-      // Re-apply current theme to newly created editors
-      applyTheme(editor, editorRO);
-    });
-
-    window.editor = editor;
-    window.editorRO = editorRO;
-    document.getElementById('output').textContent = editor.getHTML();
-  </script>
 </body>
 </html>

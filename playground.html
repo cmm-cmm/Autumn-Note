@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutumnNote Playground — Try the Editor Live</title>
+  <meta name="description" content="Interactive playground for AutumnNote WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
+  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="/src/styles/autumnnote.scss" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f3f4f6; color: #111827;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    code, pre { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; }
+
+    /* ── Header ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: #1c1917; border-bottom: 1px solid rgba(255,255,255,.07);
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      max-width: 1400px; margin: 0 auto;
+      padding: 0 20px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; color: #fff; }
+    .brand img { width: 26px; height: 26px; border-radius: 6px; }
+    .brand-name { font-size: 16px; font-weight: 700; }
+    .brand-version {
+      font-size: 11px; font-weight: 600; padding: 2px 7px;
+      background: rgba(232,117,26,.2); color: #fb923c;
+      border-radius: 999px; border: 1px solid rgba(232,117,26,.35);
+    }
+    .header-nav { display: flex; gap: 2px; align-items: center; }
+    .nav-link {
+      color: #a8a29e; font-size: 13px; font-weight: 500;
+      padding: 5px 11px; border-radius: 6px; transition: background .15s, color .15s;
+    }
+    .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-link.active { color: #fb923c; background: rgba(232,117,26,.15); }
+
+    /* ── Layout ── */
+    .pg-layout {
+      flex: 1; display: flex; flex-direction: column;
+      max-width: 1400px; width: 100%; margin: 0 auto;
+      padding: 16px 16px 0;
+    }
+    .pg-toolbar-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .pg-toolbar-bar h1 {
+      font-size: 15px; font-weight: 700; color: #111827;
+      margin-right: auto;
+    }
+    .pg-toolbar-bar h1 span { color: #e8751a; }
+    .pg-panels {
+      flex: 1; display: flex; gap: 12px; min-height: 0;
+      padding-bottom: 16px;
+    }
+
+    /* ── Editor panel ── */
+    .panel-editor {
+      flex: 1; display: flex; flex-direction: column;
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 10px; overflow: hidden; min-width: 0;
+    }
+    /* .an-container's own border/radius are suppressed entirely so the outer
+       .panel-editor handles all visual boundaries including the focus ring.
+       The ring is applied to .panel-editor via the .is-focused class toggled
+       from JS — this ensures the focus colour follows the panel's border-radius
+       instead of stopping flat at the corners where overflow:hidden clips it. */
+    .panel-editor .an-container {
+      flex: 1;
+      border-radius: 0 !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .panel-editor.is-focused {
+      border-color: var(--pg-focus-color, #e8751a);
+      box-shadow: 0 0 0 3px var(--pg-focus-shadow, rgba(232,117,26,.2));
+      transition: border-color .15s, box-shadow .15s;
+    }
+    #editor-el { height: 100%; }
+
+    /* ── Right panel ── */
+    .panel-right {
+      width: 300px; flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    /* ── Config card ── */
+    .card {
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 10px; overflow: hidden;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; cursor: pointer; user-select: none;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .card-header:hover { background: #fafafa; }
+    .card-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; color: #6b7280;
+    }
+    .card-toggle { color: #9ca3af; font-size: 14px; transition: transform .2s; }
+    .card-toggle.open { transform: rotate(90deg); }
+    .card-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .card-body.hidden { display: none; }
+
+    /* ── Form controls ── */
+    .cfg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .cfg-label { font-size: 12px; color: #374151; font-weight: 500; flex: 1; }
+    .cfg-select, .cfg-input {
+      font-size: 12px; padding: 4px 8px; border: 1px solid #d1d5db;
+      border-radius: 6px; background: #fff; color: #111827;
+      outline: none; transition: border-color .15s;
+    }
+    .cfg-select:focus, .cfg-input:focus { border-color: #e8751a; }
+    .cfg-input[type="number"] { width: 70px; }
+    .cfg-input[type="color"] { width: 40px; height: 26px; padding: 2px; cursor: pointer; }
+    .cfg-toggle {
+      position: relative; width: 34px; height: 18px; flex-shrink: 0;
+    }
+    .cfg-toggle input { opacity: 0; width: 0; height: 0; }
+    .cfg-track {
+      position: absolute; inset: 0; background: #d1d5db;
+      border-radius: 999px; cursor: pointer; transition: background .2s;
+    }
+    .cfg-track::after {
+      content: ''; position: absolute; width: 13px; height: 13px;
+      background: #fff; border-radius: 50%; top: 2.5px; left: 2.5px;
+      transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .cfg-toggle input:checked + .cfg-track { background: #e8751a; }
+    .cfg-toggle input:checked + .cfg-track::after { transform: translateX(16px); }
+
+    /* ── Snippet loader ── */
+    .snippet-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .snippet-btn {
+      font-size: 11px; font-weight: 500; color: #374151;
+      background: #f9fafb; border: 1px solid #e5e7eb;
+      border-radius: 6px; padding: 6px 8px; cursor: pointer;
+      text-align: left; transition: background .15s, border-color .15s;
+      line-height: 1.3;
+    }
+    .snippet-btn:hover { background: #fff3e8; border-color: #e8751a; color: #e8751a; }
+    .snippet-icon { font-size: 14px; display: block; margin-bottom: 2px; }
+
+    /* ── Output panel ── */
+    .output-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .output-tabs {
+      display: flex; gap: 2px; padding: 8px 8px 0; border-bottom: 1px solid #f3f4f6;
+    }
+    .output-tab {
+      font-size: 11px; font-weight: 600; padding: 4px 10px;
+      border-radius: 5px 5px 0 0; cursor: pointer; color: #6b7280;
+      border: 1px solid transparent; border-bottom: none;
+      background: transparent; transition: color .15s, background .15s;
+    }
+    .output-tab.active {
+      color: #e8751a; background: #fff;
+      border-color: #e5e7eb; border-bottom-color: #fff;
+      margin-bottom: -1px;
+    }
+    .output-body {
+      flex: 1; overflow-y: auto; padding: 10px 12px;
+      font-size: 11.5px; line-height: 1.6; color: #374151;
+    }
+    .output-pane { display: none; }
+    .output-pane.active { display: block; }
+    .output-html { white-space: pre-wrap; word-break: break-all; }
+    .stats-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+    .stats-row:last-child { border-bottom: none; }
+    .stats-key { font-weight: 600; color: #6b7280; }
+    .stats-val { font-weight: 700; color: #e8751a; }
+
+    /* ── Action buttons ── */
+    .action-row {
+      display: flex; gap: 6px; padding: 8px 10px;
+      border-top: 1px solid #f3f4f6; flex-wrap: wrap;
+    }
+    .act-btn {
+      flex: 1; font-size: 11px; font-weight: 600;
+      padding: 5px 8px; border-radius: 6px; cursor: pointer;
+      border: 1px solid #e5e7eb; background: #f9fafb; color: #374151;
+      transition: background .15s, border-color .15s, color .15s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .act-btn:hover { background: #fff3e8; border-color: #e8751a; color: #e8751a; }
+    .act-btn.primary { background: #e8751a; color: #fff; border-color: #e8751a; }
+    .act-btn.primary:hover { background: #d4611a; }
+
+    /* ── Apply btn ── */
+    .apply-btn {
+      width: 100%; font-size: 12px; font-weight: 700;
+      padding: 8px; border-radius: 7px; cursor: pointer;
+      background: #e8751a; color: #fff; border: none;
+      transition: background .15s, transform .1s;
+    }
+    .apply-btn:hover { background: #d4611a; transform: translateY(-1px); }
+
+    /* ── Footer ── */
+    .site-footer {
+      background: #1c1917; color: #78716c;
+      padding: 14px 20px; font-size: 12px;
+    }
+    .footer-inner {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { color: #78716c; transition: color .15s; }
+    .footer-links a:hover { color: #d6d3d1; }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .pg-panels { flex-direction: column; }
+      .panel-right { width: 100%; }
+      .panel-editor { min-height: 400px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="./" aria-label="AutumnNote home">
+      <img src="/image/banner.png" width="26" height="26" alt="" />
+      <span class="brand-name">AutumnNote</span>
+      <span class="brand-version">v1.4.1</span>
+    </a>
+    <nav class="header-nav" aria-label="Site links">
+      <a class="nav-link" href="./">Home</a>
+      <a class="nav-link" href="docs.html">Docs</a>
+      <a class="nav-link active" href="playground.html" aria-current="page">Playground</a>
+      <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+    </nav>
+  </div>
+</header>
+
+<div class="pg-layout">
+  <div class="pg-toolbar-bar">
+    <h1>Playground <span>— try the editor live</span></h1>
+  </div>
+
+  <div class="pg-panels">
+    <!-- Left: Editor -->
+    <div class="panel-editor" id="editor-panel">
+      <textarea id="editor-el"><p>Welcome to the <strong>AutumnNote Playground</strong>! ✨</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
+    </div>
+
+    <!-- Right: Config + Snippets + Output -->
+    <div class="panel-right">
+
+      <!-- Config card -->
+      <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <span class="card-title">⚙ Options</span>
+          <span class="card-toggle open">▶</span>
+        </div>
+        <div class="card-body" id="cfg-body">
+          <div class="cfg-row">
+            <span class="cfg-label">Theme</span>
+            <select id="cfg-theme" class="cfg-select">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Language</span>
+            <select id="cfg-lang" class="cfg-select">
+              <option value="en">English</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="ja">日本語</option>
+              <option value="zh">中文</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+              <option value="ko">한국어</option>
+            </select>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Bubble toolbar</span>
+            <label class="cfg-toggle">
+              <input type="checkbox" id="cfg-bubble" checked />
+              <span class="cfg-track"></span>
+            </label>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Markdown shortcuts</span>
+            <label class="cfg-toggle">
+              <input type="checkbox" id="cfg-markdown" checked />
+              <span class="cfg-track"></span>
+            </label>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Sticky toolbar</span>
+            <label class="cfg-toggle">
+              <input type="checkbox" id="cfg-sticky" />
+              <span class="cfg-track"></span>
+            </label>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Read only</span>
+            <label class="cfg-toggle">
+              <input type="checkbox" id="cfg-readonly" />
+              <span class="cfg-track"></span>
+            </label>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Max chars</span>
+            <input type="number" id="cfg-maxchars" class="cfg-input" value="0" min="0" step="100" />
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Focus color</span>
+            <input type="color" id="cfg-color" class="cfg-input" value="#e8751a" />
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-label">Height (px)</span>
+            <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
+          </div>
+          <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
+        </div>
+      </div>
+
+      <!-- Snippet card -->
+      <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+          <span class="card-title">📄 Load Snippet</span>
+          <span class="card-toggle open">▶</span>
+        </div>
+        <div class="card-body" id="snip-body">
+          <div class="snippet-grid">
+            <button class="snippet-btn" onclick="loadSnippet('article')">
+              <span class="snippet-icon">📝</span>Article
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('checklist')">
+              <span class="snippet-icon">✅</span>Checklist
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('table')">
+              <span class="snippet-icon">📊</span>Table
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('code')">
+              <span class="snippet-icon">💻</span>Code block
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('formatting')">
+              <span class="snippet-icon">🎨</span>Formatting
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('empty')">
+              <span class="snippet-icon">🗑</span>Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output card -->
+      <div class="card output-card">
+        <div class="output-tabs">
+          <button class="output-tab active" data-tab="html" onclick="switchTab('html')">HTML</button>
+          <button class="output-tab" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
+          <button class="output-tab" data-tab="stats" onclick="switchTab('stats')">Stats</button>
+        </div>
+        <div class="output-body">
+          <div class="output-pane active" id="tab-html">
+            <code class="output-html" id="out-html"></code>
+          </div>
+          <div class="output-pane" id="tab-markdown">
+            <code class="output-html" id="out-markdown"></code>
+          </div>
+          <div class="output-pane" id="tab-stats" id="tab-stats">
+            <div class="stats-row"><span class="stats-key">Words</span><span class="stats-val" id="stat-words">0</span></div>
+            <div class="stats-row"><span class="stats-key">Characters</span><span class="stats-val" id="stat-chars">0</span></div>
+            <div class="stats-row"><span class="stats-key">Reading time</span><span class="stats-val" id="stat-read">0 min</span></div>
+            <div class="stats-row"><span class="stats-key">Paragraphs</span><span class="stats-val" id="stat-para">0</span></div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="act-btn" onclick="copyOutput()" title="Copy output to clipboard">
+            📋 Copy
+          </button>
+          <button class="act-btn" onclick="downloadOutput()" title="Download file">
+            ⬇ Download
+          </button>
+          <button class="act-btn primary" onclick="sharePlayground()" title="Share this configuration">
+            🔗 Share
+          </button>
+        </div>
+      </div>
+
+    </div><!-- .panel-right -->
+  </div><!-- .pg-panels -->
+</div><!-- .pg-layout -->
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>MIT License · © 2026 Minh Pham</span>
+    <nav class="footer-links">
+      <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="docs.html">Docs</a>
+      <a href="https://github.com/cmm-cmm/Autumn-Note/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  function toggleCard(header) {
+    const body = header.nextElementSibling;
+    const icon = header.querySelector('.card-toggle');
+    body.classList.toggle('hidden');
+    icon.classList.toggle('open');
+  }
+</script>
+
+<script type="module">
+import AutumnNote from '/src/js/index.js';
+
+// Same mention users as the Live Demo
+const MENTION_USERS = [
+  { id: 1, label: 'Minh Pham' },
+  { id: 2, label: 'An Nguyen' },
+  { id: 3, label: 'Linh Tran' },
+  { id: 4, label: 'Duc Le' },
+  { id: 5, label: 'Hoa Vo' },
+];
+
+// ── Snippets ──────────────────────────────────────────────
+const SNIPPETS = {
+  empty: '',
+  article: `<h1>Getting Started with AutumnNote</h1>
+<p>AutumnNote is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
+<pre><code class="language-bash">npm install autumnnote</code></pre>
+<h2>Basic Setup</h2>
+<p>Add a <em>textarea</em> or <em>div</em> to your HTML, then call <code>AutumnNote.create()</code>:</p>
+<pre><code class="language-js">const editor = AutumnNote.create('#editor', {
+  placeholder: 'Start writing…',
+  height: 300,
+  bubbleToolbar: true,
+  onChange(html) { console.log(html); },
+});</code></pre>
+<h2>Key Features</h2>
+<ul><li>Rich formatting: bold, italic, underline, strikethrough</li><li>Tables with merge/split support</li><li>Image upload with drag-and-drop</li><li>@mention autocomplete</li><li>Find &amp; Replace</li><li>8 built-in languages</li></ul>`,
+
+  checklist: `<h2>My Project Checklist</h2>
+<ul class="an-checklist">
+  <li><input type="checkbox" contenteditable="false" checked>Set up project repository</li>
+  <li><input type="checkbox" contenteditable="false" checked>Install dependencies</li>
+  <li><input type="checkbox" contenteditable="false">Configure linting &amp; formatting</li>
+  <li><input type="checkbox" contenteditable="false">Write unit tests</li>
+  <li><input type="checkbox" contenteditable="false">Set up CI pipeline</li>
+  <li><input type="checkbox" contenteditable="false">Deploy to staging</li>
+  <li><input type="checkbox" contenteditable="false">Code review &amp; sign-off</li>
+</ul>
+<p>Progress: <strong>2 / 7</strong> tasks completed</p>`,
+
+  table: `<h2>Product Comparison</h2>
+<table class="an-table"><thead><tr><th>Feature</th><th>Free</th><th>Pro</th><th>Enterprise</th></tr></thead>
+<tbody>
+<tr><td>Rich text editing</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Image upload</td><td>5 MB</td><td>50 MB</td><td>Unlimited</td></tr>
+<tr><td>Collaboration</td><td>—</td><td>✓</td><td>✓</td></tr>
+<tr><td>Custom toolbar</td><td>—</td><td>✓</td><td>✓</td></tr>
+<tr><td>Plugin API</td><td>—</td><td>—</td><td>✓</td></tr>
+<tr><td>Priority support</td><td>—</td><td>—</td><td>✓</td></tr>
+</tbody></table>
+<p>All plans include <strong>unlimited editors per page</strong> and <strong>TypeScript support</strong>.</p>`,
+
+  code: `<h2>Code Example</h2>
+<p>Here is a JavaScript example showing the Plugin API:</p>
+<pre><code class="language-js">// Define a plugin
+const WordCountPlugin = {
+  name: 'word-count',
+  version: '1.0.0',
+  buttons: [{
+    name: 'wordCountBtn',
+    icon: 'hashtag',
+    tooltip: 'Show word count',
+    action: (ctx) => {
+      const n = ctx.getWordCount();
+      alert(\`Document has \${n} words.\`);
+    },
+  }],
+  install(ctx, opts) {
+    ctx.on('change', () => {
+      console.log('words:', ctx.getWordCount());
+    });
+    return { getMax: () => opts.maxWords };
+  },
+};
+
+// Install globally
+AutumnNote.use(WordCountPlugin, { maxWords: 500 });
+
+const editor = AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'wordCountBtn']],
+});</code></pre>`,
+
+  formatting: `<h1>Rich Formatting Demo</h1>
+<p>AutumnNote supports <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>, and <code>inline code</code>.</p>
+<p>You can also use <sup>superscript</sup> and <sub>subscript</sub>.</p>
+<h2>Text Colours</h2>
+<p><span style="color:#e11d48">Red text</span>, <span style="color:#2563eb">blue text</span>, <span style="background-color:#fef08a">highlighted text</span>.</p>
+<h2>Blockquote</h2>
+<blockquote>Design is not just what it looks like and feels like. Design is how it works. — Steve Jobs</blockquote>
+<h2>Lists</h2>
+<ul><li>Unordered item one</li><li>Unordered item two</li><li>Unordered item three</li></ul>
+<ol><li>First ordered step</li><li>Second ordered step</li><li>Third ordered step</li></ol>`,
+};
+
+// ── State ─────────────────────────────────────────────────
+let editor = null;
+let currentTab = 'html';
+
+// ── Init ──────────────────────────────────────────────────
+function buildConfig() {
+  const cfg = {
+    theme:             document.getElementById('cfg-theme').value,
+    lang:              document.getElementById('cfg-lang').value,
+    bubbleToolbar:     document.getElementById('cfg-bubble').checked,
+    markdownShortcuts: document.getElementById('cfg-markdown').checked,
+    stickyToolbar:     document.getElementById('cfg-sticky').checked,
+    readOnly:          document.getElementById('cfg-readonly').checked,
+    maxChars:          parseInt(document.getElementById('cfg-maxchars').value) || 0,
+    focusColor:        document.getElementById('cfg-color').value,
+  };
+  const h = parseInt(document.getElementById('cfg-height').value);
+  cfg.height = h > 0 ? h : 300;
+  return cfg;
+}
+
+function createEditor(html) {
+  if (editor) {
+    html = html ?? editor.getHTML();
+    // Use AutumnNote.destroy() — not editor.destroy() directly — so the
+    // instance is also removed from the internal WeakMap cache; otherwise
+    // AutumnNote.create() would return the stale destroyed instance again.
+    AutumnNote.destroy(editor.targetEl);
+    editor = null;
+  }
+  const cfg = buildConfig();
+
+  // Set CSS variables on the panel before create() so they're ready on first focus
+  const panel = document.getElementById('editor-panel');
+  const fc = cfg.focusColor || '#e8751a';
+  panel.style.setProperty('--pg-focus-color', fc);
+  if (/^#[0-9a-f]{6}$/i.test(fc)) {
+    const r = parseInt(fc.slice(1, 3), 16);
+    const g = parseInt(fc.slice(3, 5), 16);
+    const b = parseInt(fc.slice(5, 7), 16);
+    panel.style.setProperty('--pg-focus-shadow', `rgba(${r},${g},${b},.2)`);
+  }
+
+  editor = AutumnNote.create('#editor-el', {
+    ...cfg,
+    placeholder: 'Start typing…',
+    codeHighlight: true,
+    resizable: true,
+    mention: {
+      onSearch(query, callback) {
+        const q = query.toLowerCase();
+        callback(q ? MENTION_USERS.filter(u => u.label.toLowerCase().includes(q)) : MENTION_USERS);
+      },
+    },
+    // context.on('focus'/'blur') does NOT work — Context dispatches focus/blur
+    // only via the onFocus/onBlur option callbacks, not through triggerEvent().
+    onFocus: () => panel.classList.add('is-focused'),
+    onBlur:  () => panel.classList.remove('is-focused'),
+    onChange: updateOutput,
+  });
+
+  if (html) editor.setHTML(html);
+  updateOutput();
+  saveState();
+}
+
+function updateOutput() {
+  if (!editor) return;
+  document.getElementById('out-html').textContent = editor.getHTML();
+  document.getElementById('out-markdown').textContent = editor.getMarkdown();
+  // Stats
+  const words = editor.getWordCount();
+  const chars  = editor.getCharCount();
+  const html   = editor.getHTML();
+  const paras  = (html.match(/<p[\s>]/gi) || []).length;
+  const readMin = Math.max(1, Math.round(words / 200));
+  document.getElementById('stat-words').textContent = words;
+  document.getElementById('stat-chars').textContent = chars;
+  document.getElementById('stat-read').textContent  = readMin + ' min';
+  document.getElementById('stat-para').textContent  = paras;
+}
+
+// ── Public helpers (called from inline onclick) ────────────
+window.applyConfig = () => createEditor();
+window.loadSnippet = (key) => {
+  if (editor) editor.setHTML(SNIPPETS[key] || '');
+  updateOutput();
+};
+window.switchTab = (tab) => {
+  currentTab = tab;
+  document.querySelectorAll('.output-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.output-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+};
+window.copyOutput = () => {
+  const text = currentTab === 'html'     ? (editor?.getHTML() || '')
+              : currentTab === 'markdown' ? (editor?.getMarkdown() || '')
+              : '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.act-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }).catch(() => {});
+};
+window.downloadOutput = () => {
+  if (!editor) return;
+  let content, filename, mime;
+  if (currentTab === 'markdown') {
+    content = editor.getMarkdown(); filename = 'document.md'; mime = 'text/markdown';
+  } else {
+    content = editor.getHTML(); filename = 'document.html'; mime = 'text/html';
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+window.sharePlayground = () => {
+  if (!editor) return;
+  const state = {
+    cfg: buildConfig(),
+    html: editor.getHTML(),
+  };
+  const hash = btoa(encodeURIComponent(JSON.stringify(state)));
+  const url = location.origin + location.pathname + '#' + hash;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.act-btn.primary');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Link copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => { prompt('Copy this URL:', url); });
+};
+
+// ── Restore from URL hash ──────────────────────────────────
+function loadFromHash() {
+  try {
+    if (!location.hash) return null;
+    const state = JSON.parse(decodeURIComponent(atob(location.hash.slice(1))));
+    if (state.cfg) {
+      const c = state.cfg;
+      if (c.theme)   document.getElementById('cfg-theme').value = c.theme;
+      if (c.lang)    document.getElementById('cfg-lang').value  = c.lang;
+      document.getElementById('cfg-bubble').checked    = !!c.bubbleToolbar;
+      document.getElementById('cfg-markdown').checked  = !!c.markdownShortcuts;
+      document.getElementById('cfg-sticky').checked    = !!c.stickyToolbar;
+      document.getElementById('cfg-readonly').checked  = !!c.readOnly;
+      if (c.maxChars)   document.getElementById('cfg-maxchars').value = c.maxChars;
+      if (c.focusColor) document.getElementById('cfg-color').value    = c.focusColor;
+      if (c.height)     document.getElementById('cfg-height').value   = c.height;
+    }
+    return state.html || null;
+  } catch (_) { return null; }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('an-playground-cfg', JSON.stringify(buildConfig()));
+  } catch (_) {}
+}
+
+function loadSavedConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('an-playground-cfg') || 'null');
+    if (!saved) return;
+    if (saved.theme)   document.getElementById('cfg-theme').value = saved.theme;
+    if (saved.lang)    document.getElementById('cfg-lang').value  = saved.lang;
+    document.getElementById('cfg-bubble').checked    = !!saved.bubbleToolbar;
+    document.getElementById('cfg-markdown').checked  = saved.markdownShortcuts !== false;
+    document.getElementById('cfg-sticky').checked    = !!saved.stickyToolbar;
+    document.getElementById('cfg-readonly').checked  = !!saved.readOnly;
+    if (saved.maxChars)   document.getElementById('cfg-maxchars').value = saved.maxChars;
+    if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
+    if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
+  } catch (_) {}
+}
+
+// ── Bootstrap ─────────────────────────────────────────────
+const hashHtml = loadFromHash();
+if (!hashHtml) loadSavedConfig();
+createEditor(hashHtml || undefined);
+</script>
+</body>
+</html>

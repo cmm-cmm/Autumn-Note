@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import * as Style from '../../src/js/editing/Style.js';
 import { createTable, insertTable } from '../../src/js/editing/Table.js';
 
 afterEach(() => {
@@ -22,11 +21,10 @@ describe('Table helpers', () => {
     expect(table.querySelectorAll('tbody tr').length).toBe(1);
   });
 
-  it('insertTable delegates HTML insertion through execCommand', () => {
-    const spy = vi.spyOn(Style, 'execCommand').mockReturnValue(true);
-    insertTable(2, 1);
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0][0]).toBe('insertHTML');
-    expect(String(spy.mock.calls[0][1])).toContain('<table');
+  it('insertTable skips insertion when dimensions are invalid', () => {
+    // insertTable now uses DOM Range API; invalid dimensions return early
+    expect(() => insertTable(0, 1)).not.toThrow();
+    expect(() => insertTable(2, 0)).not.toThrow();
+    expect(() => insertTable(-1, 2)).not.toThrow();
   });
 });

@@ -151,6 +151,7 @@ export class ImageResizer {
       this._activeImg.classList.remove('an-image-selected');
     }
     this._activeImg = img;
+    this._lastOverlayPos = null; // invalidate position cache on new selection
     img.classList.add('an-image-selected');
     this._updateOverlayPosition();
     this._overlay.style.display = 'block';
@@ -177,6 +178,12 @@ export class ImageResizer {
     const offsetParent = this._overlay.offsetParent || this._container;
     const containerRect = offsetParent.getBoundingClientRect();
     const rect = this._activeImg.getBoundingClientRect();
+
+    // Skip DOM writes when position hasn't changed (common during non-scroll rAF ticks)
+    const p = this._lastOverlayPos;
+    if (p && p.l === rect.left && p.t === rect.top && p.w === rect.width && p.h === rect.height) return;
+    this._lastOverlayPos = { l: rect.left, t: rect.top, w: rect.width, h: rect.height };
+
     const left = rect.left - containerRect.left + offsetParent.scrollLeft;
     const top = rect.top - containerRect.top + offsetParent.scrollTop;
     this._overlay.style.left   = `${left}px`;

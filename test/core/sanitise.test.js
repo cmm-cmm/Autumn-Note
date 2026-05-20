@@ -27,9 +27,26 @@ describe('sanitiseHTML', () => {
     expect(sanitiseHTML('<embed src="x.swf">')).not.toContain('<embed');
   });
 
-  it('strips <form>, <input>, <button> tags', () => {
+  it('strips <form> and <input> tags', () => {
     expect(sanitiseHTML('<form action="/hack"><input name="q"></form>')).not.toContain('<form');
-    expect(sanitiseHTML('<button onclick="evil()">Click</button>')).not.toContain('<button');
+  });
+
+  it('unwraps <button>: removes the tag but preserves text content', () => {
+    const result = sanitiseHTML('<button onclick="evil()">Click me</button>');
+    expect(result).not.toContain('<button');
+    expect(result).toContain('Click me');
+  });
+
+  it('unwraps <button> with inline formatting: preserves child elements', () => {
+    const result = sanitiseHTML('<button><strong>Bold CTA</strong></button>');
+    expect(result).not.toContain('<button');
+    expect(result).toContain('<strong>Bold CTA</strong>');
+  });
+
+  it('strips <base> tag (prevents relative URL hijacking)', () => {
+    const result = sanitiseHTML('<base href="https://evil.com"><p>content</p>');
+    expect(result).not.toContain('<base');
+    expect(result).toContain('<p>content</p>');
   });
 
   it('strips <style> tags and their content', () => {

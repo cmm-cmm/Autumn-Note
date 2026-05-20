@@ -236,9 +236,15 @@ export function outdent() {
 }
 
 /**
- * G.5 helper: splits a checklist at checkLi, converts it to a <p>,
- * and keeps items before/after as separate checklists.
- * @param {HTMLElement} checkLi
+ * Convert a checklist <li> into a paragraph and move any following items into a new checklist.
+ *
+ * Preserves inline markup from the converted item, strips zero-width space anchors,
+ * and replaces empty content with a non‑breaking space. If there are list items
+ * after the converted item they are moved into a new <ul class="an-checklist">
+ * inserted immediately after the original list. The original <li> is removed and
+ * the original list is removed if it becomes empty. Attempts to place the caret
+ * at the start of the newly created <p>.
+ * @param {HTMLElement} checkLi - The checklist `<li>` element to convert to a `<p>`.
  */
 function _checklistItemToP(checkLi) {
   const checkUl = checkLi.closest('.an-checklist');
@@ -248,12 +254,18 @@ function _checklistItemToP(checkLi) {
   const liIndex = allLis.indexOf(checkLi);
   const afterLis = allLis.slice(liIndex + 1);
 
-  // Build <p> from the item's text (skip the checkbox INPUT)
+  // Build <p> preserving inline formatting (bold/italic/links) from the item's content
   const p = document.createElement('p');
-  const text = Array.from(checkLi.childNodes)
-    .filter(n => !(n.nodeType === 1 && n.tagName === 'INPUT'))
-    .map(n => n.textContent).join('').replace(/\u200B/g, '').trim();
-  p.textContent = text || '\u00a0';
+  for (const child of checkLi.childNodes) {
+    if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+    p.appendChild(child.cloneNode(true));
+  }
+  // Strip ZWS anchors left over from checklist markup
+  p.innerHTML = p.innerHTML.replace(/\u200B/g, '');
+  if (!p.hasChildNodes() || !p.textContent.trim()) {
+    p.innerHTML = '';
+    p.appendChild(document.createTextNode('\u00a0'));
+  }
 
   // Move items after the current li into a new checklist
   if (afterLis.length > 0) {
@@ -296,9 +308,12 @@ export const insertOrderedList = () => execCommand('insertOrderedList');
 // ---------------------------------------------------------------------------
 
 /**
- * Applies a line-height value to every block-level element that intersects
- * the current selection.
- * @param {string} value - unitless multiplier, e.g. '1.5'
+ * Set the line-height on every block-level element that intersects the current selection.
+ *
+ * If the selection is collapsed, the nearest enclosing block element receives the style.
+ * For a non-collapsed selection, all unique block ancestors of text nodes that intersect the range are updated;
+ * if none are found, the nearest block ancestor of the range's common ancestor is updated.
+ * @param {string} value - Line-height value to apply; typically a unitless multiplier (for example, "1.5").
  */
 export function lineHeight(value) {
   const sel = window.getSelection();
@@ -324,13 +339,15 @@ export function lineHeight(value) {
 
   // For a range selection, collect all unique block ancestors of text nodes
   const blocks = new Set();
-  const iter = document.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, null);
+  const iter = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_TEXT,
+    { acceptNode: (node) => range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP },
+  );
   let textNode;
   while ((textNode = iter.nextNode())) {
-    if (range.intersectsNode(textNode)) {
-      const block = nearestBlock(textNode);
-      if (block) blocks.add(block);
-    }
+    const block = nearestBlock(textNode);
+    if (block) blocks.add(block);
   }
   if (blocks.size === 0) {
     const block = nearestBlock(range.commonAncestorContainer);
@@ -472,9 +489,18 @@ export function isInlineCode() {
 // ---------------------------------------------------------------------------
 
 /**
- * Toggles a task-list at the cursor.
- * If inside a checklist <li>, converts it (and any other selected items) back to <p> elements.
- * Otherwise inserts a new <ul class="an-checklist"> with one item per selected line.
+ * Toggle a checklist at the current selection or caret.
+ *
+ * When the selection is inside an existing checklist `<ul class="an-checklist">`,
+ * converts the selected `<li>` items back into `<p>` paragraphs and places the caret
+ * at the start of the first converted paragraph. Otherwise creates a checklist:
+ * - If the selection is collapsed, converts the nearest block-level ancestor (or inserts
+ *   a single checklist item at the editable root) into a checklist with one item containing
+ *   that block's text and places the caret inside the new item.
+ * - If the selection is a range, converts each intersecting block element into one checklist
+ *   item (preserving textual content) and places the caret at the end of the last item.
+ *
+ * Empty or whitespace-only selections do not create a checklist.
  */
 export function toggleChecklist() {
   const sel = window.getSelection();
@@ -549,8 +575,10 @@ export function toggleChecklist() {
     if (block && BLOCK_TAGS.has(block.tagName)) {
       block.parentNode.replaceChild(ul, block);
     } else {
-      document.execCommand('insertHTML', false, ul.outerHTML);
-      return;
+      // Cursor directly in editable root — insert via Range API
+      const nativeRange = sel.getRangeAt(0);
+      nativeRange.deleteContents();
+      nativeRange.insertNode(ul);
     }
 
     // Move caret to the text node inside the new <li>

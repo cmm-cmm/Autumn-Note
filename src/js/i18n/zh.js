@@ -157,6 +157,7 @@ export const zh = {
     replacePlaceholder: '替换为\u2026',
     replaceAriaLabel:   '替换为',
     replaceBtn:         '替换',
+    noResults:          '没有结果',
     replaceAllBtn:      '全部替换',
     close:              '\u00d7',
   },

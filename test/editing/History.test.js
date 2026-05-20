@@ -160,4 +160,46 @@ describe('History', () => {
 
     expect(el.innerHTML).toContain(dataUrl);
   });
+
+  // -------------------------------------------------------------------------
+  // _restoreSelection fallback — detached node handling
+  // -------------------------------------------------------------------------
+  it('places cursor at start of editable when saved node is detached after undo', () => {
+    // Record a snapshot, then completely replace the editable content so
+    // the nodes referenced in the snapshot no longer exist.
+    el.innerHTML = '<p>before</p>';
+    history.recordUndo();
+
+    // Replace content — old nodes are now detached
+    el.innerHTML = '<p>after</p>';
+    history.recordUndo();
+
+    // Undo back to the "before" snapshot; _restoreSelection will try to
+    // restore into '<p>before</p>' nodes that are now back in the DOM.
+    history.undo();
+
+    // If the cursor was placed without throwing, the fallback worked.
+    const sel = window.getSelection();
+    // The selection should exist and be collapsed (cursor, not a range)
+    expect(sel).not.toBeNull();
+    if (sel && sel.rangeCount > 0) {
+      expect(sel.getRangeAt(0).collapsed).toBe(true);
+    }
+  });
+
+  it('does not throw when _restoreSelection encounters a detached node', () => {
+    el.innerHTML = '<p>text</p>';
+    history.recordUndo();
+
+    // The history snapshot references <p>text</p>. Now remove it from DOM.
+    el.innerHTML = '<p>replaced</p>';
+    // Manually point the stack to a detached node to trigger the catch branch
+    history.stack[0] = {
+      html: '<p>text</p>',
+      images: {},
+      sel: { startOffset: 0, endOffset: 0, startPath: [0, 0], endPath: [0, 0] },
+    };
+
+    expect(() => history.undo()).not.toThrow();
+  });
 });

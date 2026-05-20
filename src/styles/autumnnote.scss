@@ -108,6 +108,8 @@
   background: $an-bg-toolbar;
   border-bottom: 1px solid $an-border;
   user-select: none;
+  // Round the top corners to match the container border-radius
+  border-radius: $an-radius $an-radius 0 0;
 }
 
 .an-btn-group {
@@ -193,9 +195,7 @@
 
 .an-table-picker-popup {
   display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed; // top/left set dynamically by JS — escapes overflow-clipping ancestors
   background: $an-bg;
   border: 1px solid $an-border;
   border-radius: 6px;
@@ -761,6 +761,13 @@
   font-size: 11px;
   color: $an-muted;
   user-select: none;
+  // Round the bottom corners to match the container border-radius
+  border-radius: 0 0 $an-radius $an-radius;
+}
+
+// When there is no statusbar, the editable area is the last child — round its bottom corners
+.an-container > .an-editable:last-child {
+  border-radius: 0 0 $an-radius $an-radius;
 }
 
 .an-status-info {
@@ -1891,6 +1898,37 @@ $an-video-accent: #8b5cf6; // violet-500
 }
 
 // =============================================================================
+// Responsive — mobile / small-viewport toolbar
+// =============================================================================
+//
+// On screens ≤ 640 px the default flex-wrap:wrap behaviour creates a multi-row
+// toolbar that pushes the editable area too far down.  We switch automatically
+// to a single horizontally-scrollable row (same as toolbarOverflow:'scroll'),
+// hide the scrollbar track, and compact the dropdown selects.
+
+@media (max-width: 640px) {
+  .an-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    // Hide scrollbar visually — users swipe naturally on touch devices
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  // Compact dropdown selects to save horizontal real-estate on small screens
+  .an-select {
+    min-width: 72px;
+    max-width: 90px;
+    font-size: 11px;
+  }
+
+  .an-select-style  { min-width: 62px; max-width: 76px; }
+  .an-select-narrow { min-width: 50px; max-width: 66px; }
+}
+
+// =============================================================================
 // RTL support
 // =============================================================================
 
@@ -2117,6 +2155,30 @@ $an-video-accent: #8b5cf6; // violet-500
     color: $an-primary;
   }
 
+  // Color variant: SVG stacked above a thin color-indicator strip
+  &.an-bubble-btn--color {
+    flex-direction: column;
+    gap: 1px;
+    padding: 4px 0 3px;
+
+    .an-bubble-btn-svg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+
+      svg { display: block; }
+    }
+
+    .an-bubble-color-strip {
+      display: block;
+      width: 14px;
+      height: 3px;
+      border-radius: 1px;
+      pointer-events: none;
+    }
+  }
+
   .an-theme-dark & {
     color: #cdd6f4;
 
@@ -2128,6 +2190,23 @@ $an-video-accent: #8b5cf6; // violet-500
       background: #1e3a5f;
       color: #93c5fd;
     }
+  }
+}
+
+// Bubble toolbar — color picker popup
+.an-bubble-color-picker {
+  position: fixed;
+  z-index: 10041;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  padding: 4px 0;
+  min-width: 160px;
+
+  .an-theme-dark & {
+    background: #24273a;
+    border-color: #3f3f5f;
   }
 }
 

@@ -100,7 +100,16 @@ export class History {
       const sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-    } catch (_) { /* detached node — ignore */ }
+    } catch (_) {
+      // Detached node — fall back to placing cursor at start of editable
+      try {
+        const fb = document.createRange();
+        fb.setStart(this.editable, 0);
+        fb.collapse(true);
+        const s = window.getSelection();
+        if (s) { s.removeAllRanges(); s.addRange(fb); }
+      } catch (_2) { /* fully give up */ }
+    }
   }
 
   _savePoint() {
@@ -138,6 +147,8 @@ export class History {
    * @returns {{ html: string, images: Object<string,string> }}
    */
   _tokenizeImages(html) {
+    // Fast-path: skip regex entirely when there are no data URIs (common case)
+    if (!html.includes('data:')) return { html, images: {} };
     const images = {};
     let index = 0;
     const tokenized = html.replace(/data:[^;]+;base64,[^"' >]*/g, (match) => {
