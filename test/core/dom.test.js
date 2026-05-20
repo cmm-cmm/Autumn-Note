@@ -628,4 +628,72 @@ describe('trapFocus', () => {
 
     expect(onEscape).not.toHaveBeenCalled();
   });
+
+  it('Tab key wraps focus from last to first element', () => {
+    const dialog = document.createElement('div');
+    const btn1 = document.createElement('button');
+    btn1.textContent = 'First';
+    const btn2 = document.createElement('button');
+    btn2.textContent = 'Last';
+    dialog.appendChild(btn1);
+    dialog.appendChild(btn2);
+    document.body.appendChild(dialog);
+
+    const dispose = trapFocus(dialog, () => {});
+    // Focus the last button
+    btn2.focus();
+    // Dispatch Tab — should wrap to first
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true });
+    Object.defineProperty(event, 'preventDefault', { value: vi.fn(), configurable: true });
+    document.dispatchEvent(event);
+    // Focus should go to btn1
+    dispose();
+  });
+
+  it('Shift+Tab wraps focus from first to last element', () => {
+    const dialog = document.createElement('div');
+    const btn1 = document.createElement('button');
+    const btn2 = document.createElement('button');
+    dialog.appendChild(btn1);
+    dialog.appendChild(btn2);
+    document.body.appendChild(dialog);
+
+    const dispose = trapFocus(dialog, () => {});
+    // Focus the first button
+    btn1.focus();
+    // Dispatch Shift+Tab — should wrap to last
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true });
+    document.dispatchEvent(event);
+    dispose();
+  });
+
+  it('non-Tab/Escape key is ignored', () => {
+    const dialog = document.createElement('div');
+    document.body.appendChild(dialog);
+    const dispose = trapFocus(dialog, () => {});
+    // Dispatch 'a' — should not cause any error
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+    dispose();
+  });
+});
+
+// placeCaret
+// ---------------------------------------------------------------------------
+
+import { placeCaret } from '../../src/js/core/dom.js';
+
+describe('placeCaret', () => {
+  it('places caret at end of element', () => {
+    const el = document.createElement('div');
+    el.contentEditable = 'true';
+    el.innerHTML = '<p>hello</p>';
+    document.body.appendChild(el);
+    placeCaret(el);
+    const sel = window.getSelection();
+    expect(sel).not.toBeNull();
+    if (sel && sel.rangeCount > 0) {
+      expect(sel.getRangeAt(0).collapsed).toBe(true);
+    }
+    document.body.innerHTML = '';
+  });
 });

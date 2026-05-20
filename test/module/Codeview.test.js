@@ -38,4 +38,51 @@ describe('Codeview', () => {
     expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
     expect(context.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
+
+  it('toggle() activates when not active', () => {
+    const context = makeContext('<p>Hello</p>');
+    const cv = new Codeview(context);
+    expect(cv.isActive()).toBe(false);
+    cv.toggle();
+    expect(cv.isActive()).toBe(true);
+    cv.deactivate();
+  });
+
+  it('toggle() deactivates when active', () => {
+    const context = makeContext('<p>Hello</p>');
+    const cv = new Codeview(context);
+    cv.activate();
+    expect(cv.isActive()).toBe(true);
+    cv.toggle();
+    expect(cv.isActive()).toBe(false);
+  });
+
+  it('_prettyPrint adds indentation to block HTML', () => {
+    const context = makeContext();
+    const cv = new Codeview(context);
+    const input = '<div><p>hello</p></div>';
+    const result = cv._prettyPrint(input);
+    // Should contain newlines and indentation
+    expect(result).toContain('\n');
+    expect(result).toContain('  '); // 2-space indent
+  });
+
+  it('_prettyPrint keeps inline elements on same line', () => {
+    const context = makeContext();
+    const cv = new Codeview(context);
+    const input = '<p><strong>bold</strong></p>';
+    const result = cv._prettyPrint(input);
+    // <strong> is inline, should stay on same line as <p>
+    expect(result).not.toContain('\n<strong');
+  });
+
+  it('destroy removes textarea if active', () => {
+    const context = makeContext('<p>Hi</p>');
+    const cv = new Codeview(context);
+    cv.initialize();
+    cv.activate();
+    expect(document.querySelector('textarea.an-codeview')).not.toBeNull();
+    cv.destroy();
+    expect(document.querySelector('textarea.an-codeview')).toBeNull();
+  });
 });

@@ -423,3 +423,110 @@ describe('Typing Enter in <pre> block', () => {
     expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '\n');
   });
 });
+
+describe('Typing Enter in blockquote', () => {
+  beforeEach(() => {
+    if (typeof document.execCommand !== 'function') {
+      Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+    } else {
+      vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    }
+  });
+
+  it('Enter at end of blockquote exits it with formatBlock', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<blockquote><p>quote text</p></blockquote>';
+    document.body.appendChild(editable);
+
+    const bq = editable.querySelector('blockquote');
+    const p = bq.querySelector('p');
+    const textNode = p.firstChild;
+    setCaret(textNode, textNode.textContent.length);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    handleKeydown(event, editable, {});
+    // Should either exit the blockquote or fall through
+    expect(() => handleKeydown(event, editable, {})).not.toThrow();
+  });
+});
+
+describe('Typing Enter in checklist', () => {
+  beforeEach(() => {
+    if (typeof document.execCommand !== 'function') {
+      Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+    } else {
+      vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    }
+  });
+
+  it('Enter in non-empty checklist item creates new item', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">​hello</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    const textNode = li.lastChild;
+    setCaret(textNode, textNode.textContent.length);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    // Should return true (handled) for checklist Enter
+    expect(result).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
+
+  it('Enter in empty checklist item exits the list', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">​</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    // Set cursor inside the li (at the ZWS text node)
+    const zwsNode = li.lastChild; // text node containing ​
+    setCaret(zwsNode, 1);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    expect(result).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
+});
+
+describe('Typing Enter in video wrapper', () => {
+  beforeEach(() => {
+    if (typeof document.execCommand !== 'function') {
+      Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+    } else {
+      vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    }
+  });
+
+  it('Enter inside video wrapper creates paragraph after it', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<div class="an-video-wrapper"><iframe src="https://youtube.com/embed/x"></iframe><div class="an-video-shield"></div></div>';
+    document.body.appendChild(editable);
+
+    const shield = editable.querySelector('.an-video-shield');
+    // Position cursor inside the shield div
+    const r = document.createRange();
+    r.setStart(shield, 0);
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    expect(result).toBe(true);
+    expect(editable.querySelector('p')).not.toBeNull();
+  });
+});

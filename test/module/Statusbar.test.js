@@ -57,4 +57,68 @@ describe('Statusbar', () => {
 
     status.destroy();
   });
+
+  it('initialize creates .an-statusbar element', () => {
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+    expect(status.el).not.toBeNull();
+    expect(status.el.classList.contains('an-statusbar')).toBe(true);
+    status.destroy();
+  });
+
+  it('initialize with resizable=true adds resize handle', () => {
+    const context = makeContext({ resizable: true });
+    const status = new Statusbar(context);
+    status.initialize();
+    expect(status.el.querySelector('.an-resize-handle')).not.toBeNull();
+    status.destroy();
+  });
+
+  it('initialize with resizable=false has no resize handle', () => {
+    const context = makeContext({ resizable: false });
+    const status = new Statusbar(context);
+    status.initialize();
+    expect(status.el.querySelector('.an-resize-handle')).toBeNull();
+    status.destroy();
+  });
+
+  it('destroy removes statusbar element and clears disposers', () => {
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+    const el = status.el;
+    document.body.appendChild(el);
+    status.destroy();
+    expect(status.el).toBeNull();
+    expect(status._disposers.length).toBe(0);
+  });
+
+  it('update with no limits shows count without slash', () => {
+    const context = makeContext({ maxWords: 0, maxChars: 0 });
+    const status = new Statusbar(context);
+    status.initialize();
+    context.layoutInfo.editable.textContent = 'hello world';
+    status.update();
+    expect(status._wordCountEl.textContent).not.toContain('/');
+    status.destroy();
+  });
+
+  it('resize handle mousedown triggers container height resize', () => {
+    const context = makeContext({ resizable: true });
+    const container = context.layoutInfo.container;
+    container.style.height = '300px';
+    // jsdom does not have layout, so offsetHeight = 0 by default
+    // Simulate via Object.defineProperty
+    Object.defineProperty(container, 'offsetHeight', { value: 300, configurable: true });
+    const status = new Statusbar(context);
+    status.initialize();
+    const handle = status.el.querySelector('.an-resize-handle');
+    handle.dispatchEvent(new MouseEvent('mousedown', { clientY: 0, bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientY: 50, bubbles: true }));
+    // Container height should increase by 50px
+    expect(parseFloat(container.style.height)).toBeGreaterThan(300);
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    status.destroy();
+  });
 });
