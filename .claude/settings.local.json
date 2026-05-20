@@ -41,7 +41,18 @@
       "WebFetch(domain:pnpm.io)",
       "WebFetch(domain:corebts.com)",
       "WebFetch(domain:dev.com)",
-      "Bash(pnpm --version)"
+      "Bash(pnpm --version)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm --filter autumnnote-react build)",
+      "Bash(pnpm --filter autumnnote-vue build)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm list *)",
+      "Bash(node -e \"import\\('packages/react/dist/index.js'\\).then\\(m => console.log\\('React exports:', Object.keys\\(m\\)\\)\\)\")",
+      "Bash(node -e \"import\\('packages/vue/dist/index.js'\\).then\\(m => console.log\\('Vue exports:', Object.keys\\(m\\)\\)\\)\")",
+      "Bash(node -e \"import\\('./packages/react/dist/index.js'\\).then\\(m => console.log\\('React exports:', Object.keys\\(m\\)\\)\\)\")",
+      "Bash(node -e \"import\\('./packages/vue/dist/index.js'\\).then\\(m => console.log\\('Vue exports:', Object.keys\\(m\\)\\)\\)\")",
+      "Bash(powershell -Command \"\\(Get-Content 'd:\\\\03 Project_demo\\\\autumn-note-ce\\\\docs.html'\\) -replace 'v1\\\\.4\\\\.2', 'v1.5.0' | Set-Content 'd:\\\\03 Project_demo\\\\autumn-note-ce\\\\docs.html'\")",
+      "Bash(powershell -Command \"\\(Get-Content 'd:\\\\03 Project_demo\\\\autumn-note-ce\\\\playground.html'\\) -replace 'v1\\\\.4\\\\.2', 'v1.5.0' | Set-Content 'd:\\\\03 Project_demo\\\\autumn-note-ce\\\\playground.html'\")"
     ]
   }
 }
