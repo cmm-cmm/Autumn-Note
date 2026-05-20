@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.2] - 2026-05-20
+
+### Fixed
+- **Markdown inline regex — cross-line and over-greedy matches** — bold (`**`/`__`), bold-italic (`***`/`___`), and strikethrough (`~~`) patterns used `.+?` which matched across newlines and through delimiter characters, causing false positives on multi-line content or adjacent markers. Replaced with character-class negation (`[^*\n]+?`, `[^_\n]+?`, `[^\n]+?`) so each pattern is constrained to a single line and cannot consume its own delimiter
+- **Checklist → paragraph conversion preserves inline formatting (toggle path)** — `toggleChecklist()` unchecked the same stripping bug as `_checklistItemToP()`: converting list items back to `<p>` discarded all inline markup (bold, italic, links, etc.) by reading `.textContent`. Fixed by cloning child nodes (skipping the checkbox `<INPUT>`) and stripping only zero-width-space anchors, consistent with the `_checklistItemToP()` fix in v1.3.0
+
+---
+
 ## [1.4.1] - 2026-05-19
 
 ### Fixed
