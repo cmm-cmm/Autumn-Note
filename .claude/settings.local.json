@@ -34,7 +34,9 @@
       "Bash(git commit -m 'fix\\(playground\\): prevent layout shift on editor focus *)",
       "Bash(git commit -m 'fix\\(playground\\): focus ring follows panel border-radius via JS delegation *)",
       "Bash(git commit -m 'fix\\(playground\\): use onFocus/onBlur options instead of context.on\\(\\) *)",
-      "Bash(grep -v \"//\")"
+      "Bash(grep -v \"//\")",
+      "Bash(Test-Path pnpm-workspace.yaml)",
+      "Bash(git merge dev --no-ff -m ' *)"
     ]
   }
 }
