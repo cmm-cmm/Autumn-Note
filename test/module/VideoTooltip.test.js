@@ -365,3 +365,67 @@ describe('VideoTooltip button click handlers', () => {
     }
   });
 });
+
+// ── DOM event handlers (mouseover / mouseout / click / tooltip hover) ─────────
+
+describe('VideoTooltip DOM event handlers', () => {
+  it('mouseover video wrapper schedules show', () => {
+    const { vt, ctx } = makeTooltip();
+    vi.spyOn(vt, '_scheduleShow');
+    const wrapper = ctx.layoutInfo.editable.querySelector('.an-video-wrapper');
+    const shield = wrapper.querySelector('.an-video-shield');
+    const e = new MouseEvent('mouseover', { bubbles: true });
+    Object.defineProperty(e, 'target', { value: shield, configurable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(vt._scheduleShow).toHaveBeenCalled();
+  });
+
+  it('mouseover skips when container is disabled', () => {
+    const { vt, ctx } = makeTooltip();
+    vi.spyOn(vt, '_scheduleShow');
+    ctx.layoutInfo.container.classList.add('an-disabled');
+    const wrapper = ctx.layoutInfo.editable.querySelector('.an-video-wrapper');
+    const e = new MouseEvent('mouseover', { bubbles: true });
+    Object.defineProperty(e, 'target', { value: wrapper, configurable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(vt._scheduleShow).not.toHaveBeenCalled();
+    ctx.layoutInfo.container.classList.remove('an-disabled');
+  });
+
+  it('mouseout schedules hide when leaving editable', () => {
+    const { vt, ctx } = makeTooltip();
+    vi.spyOn(vt, '_scheduleHide');
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    const e = new MouseEvent('mouseout', { bubbles: true, relatedTarget: outside });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(vt._scheduleHide).toHaveBeenCalled();
+  });
+
+  it('document click outside wrapper hides tooltip', () => {
+    const { vt, ctx } = makeTooltip();
+    showWrapper(vt, ctx);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(vt._activeWrapper).toBeNull();
+  });
+
+  it('tooltip mouseenter clears timers', () => {
+    vi.useFakeTimers();
+    const { vt } = makeTooltip();
+    vt._showTimer = setTimeout(() => {}, 500);
+    vt._hideTimer = setTimeout(() => {}, 500);
+    vt._el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    expect(vt._showTimer).toBeNull();
+    expect(vt._hideTimer).toBeNull();
+  });
+
+  it('tooltip mouseleave schedules hide', () => {
+    const { vt, ctx } = makeTooltip();
+    showWrapper(vt, ctx);
+    vi.spyOn(vt, '_scheduleHide');
+    vt._el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    expect(vt._scheduleHide).toHaveBeenCalled();
+  });
+});

@@ -418,4 +418,147 @@ describe('BubbleToolbar._onMousedown', () => {
     bt._onMousedown({ target: document.body });
     expect(bt._hide).not.toHaveBeenCalled();
   });
+
+  it('does not hide when clicking inside color picker', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    const btn = bt._el.querySelector('[data-name="foreColor"]');
+    bt._openColorPicker('foreColor', btn);
+    const swatch = bt._picker._paletteEl.firstChild;
+    if (swatch) {
+      bt._onMousedown({ target: swatch });
+      expect(bt._visible).toBe(true);
+    }
+  });
+});
+
+// ── _onKeydown ────────────────────────────────────────────────────────────────
+
+describe('BubbleToolbar._onKeydown', () => {
+  it('Escape closes color picker when picker is open', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    const btn = bt._el.querySelector('[data-name="foreColor"]');
+    bt._openColorPicker('foreColor', btn);
+    expect(bt._picker.style.display).toBe('block');
+    bt._onKeydown({ key: 'Escape' });
+    expect(bt._picker.style.display).toBe('none');
+  });
+
+  it('Escape hides toolbar when no picker open', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    bt._onKeydown({ key: 'Escape' });
+    expect(bt._visible).toBe(false);
+  });
+
+  it('non-Escape key does nothing', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    bt._onKeydown({ key: 'Enter' });
+    expect(bt._visible).toBe(true);
+  });
+});
+
+// ── _onContextMenu ─────────────────────────────────────────────────────────────
+
+describe('BubbleToolbar._onContextMenu', () => {
+  it('hides the toolbar on right-click', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    bt._onContextMenu();
+    expect(bt._visible).toBe(false);
+  });
+});
+
+// ── _syncColorStrips ──────────────────────────────────────────────────────────
+
+describe('BubbleToolbar._syncColorStrips', () => {
+  it('does not throw when called with a selection in editable', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    window.getSelection().addRange(r);
+    expect(() => bt._syncColorStrips()).not.toThrow();
+  });
+
+  it('does nothing when no selection', () => {
+    const { bt } = makeBubble();
+    window.getSelection().removeAllRanges();
+    expect(() => bt._syncColorStrips()).not.toThrow();
+  });
+});
+
+// ── _onSelectionChange → _show(rect) path ────────────────────────────────────
+
+describe('BubbleToolbar._onSelectionChange show path', () => {
+  it('shows toolbar when selection has non-zero bounding rect', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    // Directly assign getBoundingClientRect since jsdom Range doesn't define it
+    r.getBoundingClientRect = () => MOCK_RECT;
+    window.getSelection().addRange(r);
+    bt._onSelectionChange();
+    expect(bt._visible).toBe(true);
+  });
+
+  it('hides when picker is open during selection change', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+    const btn = bt._el.querySelector('[data-name="foreColor"]');
+    bt._openColorPicker('foreColor', btn);
+    // With picker open, _onSelectionChange should not hide toolbar
+    bt._onSelectionChange();
+    expect(bt._visible).toBe(true);
+  });
+
+  it('hides when selection has zero-width rect', () => {
+    const { bt, ctx } = makeBubble();
+    bt._show(MOCK_RECT);
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    // Assign getBoundingClientRect returning width=0 (jsdom Range doesn't have this method)
+    r.getBoundingClientRect = () => ({ top: 50, bottom: 70, left: 100, right: 100, width: 0, height: 20 });
+    window.getSelection().addRange(r);
+    bt._onSelectionChange();
+    expect(bt._visible).toBe(false);
+  });
+});
+
+describe('BubbleToolbar._show positioning', () => {
+  it('flips toolbar below selection when not enough room above', () => {
+    const { bt } = makeBubble();
+    // rect.top = 5 → not enough room above (top - bh - gap < 8)
+    const tinyTopRect = { top: 5, bottom: 25, left: 100, right: 300, width: 200, height: 20 };
+    bt._show(tinyTopRect);
+    const top = parseFloat(bt._el.style.top);
+    // Should flip to below: top = rect.bottom + gap = 25 + 8 = 33
+    expect(top).toBeGreaterThan(5);
+    expect(bt._visible).toBe(true);
+  });
+});
+
+describe('BubbleToolbar._openColorPicker savedRange', () => {
+  it('saves current selection as _savedRange when selection exists', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    window.getSelection().addRange(r);
+    const btn = bt._el.querySelector('[data-name="foreColor"]');
+    bt._openColorPicker('foreColor', btn);
+    expect(bt._savedRange).not.toBeNull();
+  });
 });

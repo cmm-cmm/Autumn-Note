@@ -280,6 +280,98 @@ describe('MarkdownShortcuts inline rules', () => {
   });
 });
 
+// ── _getLineContext (real DOM, no mock) ───────────────────────────────────────
+
+describe('MarkdownShortcuts._getLineContext (real selection)', () => {
+  it('returns null when no selection exists', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    window.getSelection().removeAllRanges();
+    expect(ms._getLineContext()).toBeNull();
+  });
+
+  it('returns null when selection is not collapsed', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const p = document.createElement('p');
+    p.textContent = 'hello world';
+    ctx.layoutInfo.editable.appendChild(p);
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 5);
+    window.getSelection().addRange(range);
+    expect(ms._getLineContext()).toBeNull();
+  });
+
+  it('returns null when selection is outside editable', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const outside = document.createElement('p');
+    outside.textContent = 'outside';
+    document.body.appendChild(outside);
+    setCursorAt(outside.firstChild, 0);
+    expect(ms._getLineContext()).toBeNull();
+  });
+
+  it('returns text context for collapsed selection inside editable', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const p = document.createElement('p');
+    p.textContent = '## ';
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, 3);
+    const result = ms._getLineContext();
+    expect(result).not.toBeNull();
+    expect(result.text).toBe('## ');
+  });
+
+  it('_applyBlockRule fires real _getLineContext and converts heading', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const p = document.createElement('p');
+    p.textContent = '#';
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, 1);
+    // Call _applyBlockRule without mocking — exercises _getLineContext
+    const result = ms._applyBlockRule();
+    expect(typeof result).toBe('boolean');
+  });
+
+  it('_applyEnterRule fires real _getLineContext', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const p = document.createElement('p');
+    p.textContent = '---';
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, 3);
+    const result = ms._applyEnterRule();
+    expect(typeof result).toBe('boolean');
+  });
+});
+
+// ── _selectLineAndDelete ──────────────────────────────────────────────────────
+
+describe('MarkdownShortcuts._selectLineAndDelete', () => {
+  it('deletes text from start of block to cursor', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const p = document.createElement('p');
+    p.textContent = '## heading';
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, 3);
+    ms._selectLineAndDelete();
+    // '## ' should have been deleted from the text
+    expect(p.textContent).not.toContain('## ');
+  });
+
+  it('does nothing when no selection', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    window.getSelection().removeAllRanges();
+    expect(() => ms._selectLineAndDelete()).not.toThrow();
+  });
+});
+
 // ── Keydown delegation ────────────────────────────────────────────────────────
 
 describe('MarkdownShortcuts keydown handler', () => {

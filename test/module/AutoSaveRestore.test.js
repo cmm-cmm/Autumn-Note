@@ -151,4 +151,17 @@ describe('AutoSaveRestore', () => {
     // JSON.parse of bad meta defaults to {} — should still show banner
     expect(() => new AutoSaveRestore(ctx).initialize()).not.toThrow();
   });
+
+  it('shows banner with generic label when meta has no savedAt timestamp', () => {
+    localStorage.setItem(DRAFT_KEY, DRAFT_HTML);
+    // Meta with no savedAt — uses fallback label text (line 77)
+    // Use autoSaveRestoreTimeout:0 to skip age check (savedAt=0 would fail 7-day check)
+    localStorage.setItem(META_KEY, JSON.stringify({ version: '1.0' }));
+    const ctx = makeContext({ autoSaveRestoreTimeout: 0 });
+    new AutoSaveRestore(ctx).initialize();
+    const banner = ctx.layoutInfo.container.querySelector('.an-asr-banner');
+    expect(banner).not.toBeNull();
+    const msg = banner.querySelector('.an-asr-msg');
+    expect(msg.textContent.length).toBeGreaterThan(0);
+  });
 });

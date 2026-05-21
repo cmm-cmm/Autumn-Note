@@ -246,6 +246,105 @@ describe('ImageTooltip._delete', () => {
   });
 });
 
+// ── Editable DOM event handlers (mouseover / mouseout / click) ────────────────
+
+describe('ImageTooltip editable event handlers', () => {
+  it('mouseover image schedules show', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    vi.spyOn(it2, '_scheduleShow');
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    const e = new MouseEvent('mouseover', { bubbles: true });
+    Object.defineProperty(e, 'target', { value: img, configurable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(it2._scheduleShow).toHaveBeenCalledWith(img);
+  });
+
+  it('mouseover skips when container is disabled', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    vi.spyOn(it2, '_scheduleShow');
+    ctx.layoutInfo.container.classList.add('an-disabled');
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    const e = new MouseEvent('mouseover', { bubbles: true });
+    Object.defineProperty(e, 'target', { value: img, configurable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(it2._scheduleShow).not.toHaveBeenCalled();
+    ctx.layoutInfo.container.classList.remove('an-disabled');
+  });
+
+  it('mouseover skips image inside a link', () => {
+    const ctx = makeContext('<p><a href="#"><img src="test.png" alt="test"></a></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    vi.spyOn(it2, '_scheduleShow');
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    const e = new MouseEvent('mouseover', { bubbles: true });
+    Object.defineProperty(e, 'target', { value: img, configurable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(it2._scheduleShow).not.toHaveBeenCalled();
+  });
+
+  it('mouseout schedules hide when leaving editable', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    vi.spyOn(it2, '_scheduleHide');
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    const e = new MouseEvent('mouseout', { bubbles: true, relatedTarget: outside });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(it2._scheduleHide).toHaveBeenCalled();
+  });
+
+  it('document click outside active image hides tooltip', () => {
+    const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
+    const it2 = new ImageTooltip(ctx);
+    it2.initialize();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 0, left: 0, width: 100, height: 100, bottom: 100, right: 100 });
+    it2._activeImg = img;
+    it2._show(img);
+    const outside = document.createElement('div');
+    document.body.appendChild(outside);
+    outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(it2._activeImg).toBeNull();
+  });
+});
+
+// ── Tooltip hover and button click handlers ───────────────────────────────────
+
+describe('ImageTooltip tooltip hover handlers', () => {
+  it('mouseenter on tooltip clears timers', () => {
+    vi.useFakeTimers();
+    const { it2 } = makeTooltip();
+    it2._showTimer = setTimeout(() => {}, 500);
+    it2._hideTimer = setTimeout(() => {}, 500);
+    it2._el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    expect(it2._showTimer).toBeNull();
+    expect(it2._hideTimer).toBeNull();
+  });
+
+  it('mouseleave on tooltip schedules hide', () => {
+    const { it2, ctx } = makeTooltip();
+    showImg(it2, ctx);
+    vi.spyOn(it2, '_scheduleHide');
+    it2._el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    expect(it2._scheduleHide).toHaveBeenCalled();
+  });
+
+  it('clicking a tooltip button fires its handler via click event', () => {
+    const { it2, ctx } = makeTooltip();
+    showImg(it2, ctx);
+    vi.spyOn(it2, '_delete');
+    const deleteBtn = it2._el.querySelector('.an-link-tooltip-btn--danger');
+    deleteBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(it2._delete).toHaveBeenCalled();
+  });
+});
+
 describe('ImageTooltip._resetSize', () => {
   it('clears width and height styles on the active image', () => {
     const ctx = makeContext('<p><img src="test.png" style="width:300px;height:200px"></p>');

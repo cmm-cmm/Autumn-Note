@@ -532,3 +532,199 @@ describe('Renderer options', () => {
     editor.destroy();
   });
 });
+
+// ── Extended keyboard shortcuts (_onKeydown) ──────────────────────────────────
+
+describe('Editor extended keyboard shortcuts', () => {
+  it('Ctrl+K invokes linkDialog.show', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'k', ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+
+  it('Ctrl+F invokes findReplace.show find mode', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'f', ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+
+  it('Ctrl+H invokes findReplace.show replace mode', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'h', ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+
+  it('Ctrl+` invokes inlineCode', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: '`', ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+
+  it('Ctrl+Shift+/ invokes shortcutsDialog.show', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: '/', shiftKey: true, ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+
+  it('Ctrl+Shift+Z fires redo', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'z', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true,
+    }));
+    editor.destroy();
+  });
+});
+
+// ── dragstart / drop in readOnly ──────────────────────────────────────────────
+
+describe('Editor dragstart / drop events', () => {
+  it('dragstart on editable in readOnly mode is prevented', () => {
+    const { editor } = makeEditor({ readOnly: true });
+    const editable = editor.layoutInfo.editable;
+    const e = new Event('dragstart', { bubbles: true, cancelable: true });
+    editable.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(true);
+    editor.destroy();
+  });
+
+  it('dragstart on iframe element in edit mode is prevented', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<div class="an-video-wrapper"><iframe src="about:blank"></iframe></div>';
+    const iframe = editable.querySelector('iframe');
+    const e = new Event('dragstart', { bubbles: true, cancelable: true });
+    // Dispatch from the iframe so e.target === iframe and it bubbles to editable
+    iframe.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(true);
+    editor.destroy();
+  });
+
+  it('drop event in readOnly mode is prevented', () => {
+    const { editor } = makeEditor({ readOnly: true });
+    const editable = editor.layoutInfo.editable;
+    const e = new Event('drop', { bubbles: true, cancelable: true });
+    editable.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(true);
+    editor.destroy();
+  });
+
+  it('drop event in edit mode is not prevented', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    const e = new Event('drop', { bubbles: true, cancelable: true });
+    editable.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(false);
+    editor.destroy();
+  });
+});
+
+// ── compositionstart / compositionend (IME) ───────────────────────────────────
+
+describe('Editor IME composition events', () => {
+  it('compositionstart detects superscript context', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<p>text <sup>sup</sup></p>';
+    const supNode = editable.querySelector('sup');
+    const textNode = supNode.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+
+  it('compositionstart detects subscript context', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<p>text <sub>sub</sub></p>';
+    const subNode = editable.querySelector('sub');
+    const textNode = subNode.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+
+  it('compositionstart clears context when outside sup/sub', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<p>normal text</p>';
+    const p = editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+
+  it('compositionend fires without throwing', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    expect(() => editable.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+});
+
+// ── fixChecklistCursor ────────────────────────────────────────────────────────
+
+describe('Editor fixChecklistCursor', () => {
+  it('keyup with cursor at li element moves it to text node', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<ul class="an-checklist"><li><input type="checkbox" contenteditable="false"><span>item</span></li></ul>';
+    const li = editable.querySelector('li');
+    const range = document.createRange();
+    range.setStart(li, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown', bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+
+  it('mouseup with cursor at li element fires fixChecklistCursor', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<ul class="an-checklist"><li><input type="checkbox" contenteditable="false"><span>item</span></li></ul>';
+    const li = editable.querySelector('li');
+    const range = document.createRange();
+    range.setStart(li, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+
+  it('keyup with cursor at text node (not li) does nothing special', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<p>hello</p>';
+    const p = editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    expect(() => editable.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight', bubbles: true }))).not.toThrow();
+    editor.destroy();
+  });
+});

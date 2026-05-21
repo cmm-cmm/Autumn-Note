@@ -607,4 +607,62 @@ describe('TableTooltip sizePopover', () => {
     expect(() => tt._openSizePopover('col')).not.toThrow();
     expect(tt._sizePopover.style.display).toBe('none');
   });
+
+  it('real border _sizeApply sets borderWidth and borderStyle on all cells', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._openSizePopover('border');
+    tt._sizeInputEl.value = '2';
+    // Click apply — uses real _sizeApply (not mocked)
+    const applyBtn = tt._sizePopover.querySelector('.an-btn-primary');
+    applyBtn.click();
+    const firstCell = table.querySelector('td');
+    expect(firstCell.style.borderWidth).toBe('2px');
+    expect(firstCell.style.borderStyle).toBe('solid');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('real col _sizeApply sets width on cells in column', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._openSizePopover('col');
+    tt._sizeInputEl.value = '120';
+    const applyBtn = tt._sizePopover.querySelector('.an-btn-primary');
+    applyBtn.click();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('real row _sizeApply sets height on cells in row', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._openSizePopover('row');
+    tt._sizeInputEl.value = '50';
+    const applyBtn = tt._sizePopover.querySelector('.an-btn-primary');
+    applyBtn.click();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('Enter key in size input triggers apply', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+    tt._openSizePopover('border');
+    tt._sizeInputEl.value = '3';
+    tt._sizeInputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
 });

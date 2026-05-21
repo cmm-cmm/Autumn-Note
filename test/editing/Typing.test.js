@@ -480,6 +480,28 @@ describe('Typing Enter in checklist', () => {
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
+  it('Enter in middle of checklist item splits content to new item (line 335)', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">hello world</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    const textNode = li.lastChild; // text node "hello world"
+    // Place cursor in the MIDDLE: after "hello " (offset 6)
+    setCaret(textNode, 6);
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    expect(result).toBe(true);
+    // The content after cursor ("world") should be in a new li
+    const items = editable.querySelectorAll('li');
+    expect(items.length).toBe(2);
+  });
+
   it('Enter in empty checklist item exits the list', () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';
@@ -494,6 +516,70 @@ describe('Typing Enter in checklist', () => {
     const zwsNode = li.lastChild; // text node containing ​
     setCaret(zwsNode, 1);
 
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    expect(result).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
+});
+
+describe('Typing Enter at end of blockquote exits it', () => {
+  beforeEach(() => {
+    if (typeof document.execCommand !== 'function') {
+      Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+    } else {
+      vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    }
+  });
+
+  it('Enter at end of empty blockquote exits to paragraph', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<blockquote></blockquote>';
+    document.body.appendChild(editable);
+    const bq = editable.querySelector('blockquote');
+    // Collapsed cursor at the very end of the (empty) blockquote
+    const r = document.createRange();
+    r.setStart(bq, 0);
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+    // Should consume the event to exit blockquote
+    expect(result).toBe(true);
+  });
+
+  it('Enter in middle of blockquote does NOT exit (falls through)', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<blockquote>hello world</blockquote>';
+    document.body.appendChild(editable);
+    const bq = editable.querySelector('blockquote');
+    const textNode = bq.firstChild;
+    const r = document.createRange();
+    r.setStart(textNode, 5); // middle of text
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    // Does NOT consume — not at end of blockquote
+    const result = handleKeydown(event, editable, {});
+    expect(result).toBe(false);
+  });
+
+  it('Enter inside pre block inserts literal newline', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = '<pre><code>hello</code></pre>';
+    document.body.appendChild(editable);
+    const pre = editable.querySelector('pre');
+    const codeNode = pre.querySelector('code').firstChild;
+    const r = document.createRange();
+    r.setStart(codeNode, 3);
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
     const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
     const result = handleKeydown(event, editable, {});
     expect(result).toBe(true);
