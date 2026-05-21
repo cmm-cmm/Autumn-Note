@@ -75,7 +75,10 @@
       "Bash(grep -n \"^  [a-z_].*{$\\\\|function handleKeydown\\\\|export function\\\\|function.*Key\\\\|Tab\\\\|Enter\\\\|Backspace\\\\|Arrow\" \"d:\\\\03 Project_demo\\\\autumn-note-ce\\\\src\\\\js\\\\editing\\\\Typing.js\")",
       "Bash(awk -F'|' '{gsub\\(/\\\\s/,\"\",$5\\); if \\($5+0 > 0 && $5+0 < 80\\) print $0}')",
       "Bash(sort -t'|' -k5 -rn)",
-      "Bash(sort -t '|' -k5 -n)"
+      "Bash(sort -t '|' -k5 -n)",
+      "Bash(awk -F'|' '{gsub\\(/ /,\"\",$5\\); if \\($5+0 < 88\\) print $0}')",
+      "Bash(awk -F'|' 'NF>5 {gsub\\(/ /,\"\",$6\\); if \\($6+0 < 88 && $6+0 > 0\\) print $1, $5, $6, $7}')",
+      "Bash(sort -k3 -rn)"
     ]
   }
 }

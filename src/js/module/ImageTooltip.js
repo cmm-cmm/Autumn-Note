@@ -181,7 +181,7 @@ export class ImageTooltip {
     this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
   }
 
-  _show(img) {
+  _show(_img) {
     this._el.style.display = 'flex';
     // Defer positioning: offsetWidth on a newly-visible element forces layout
     requestAnimationFrame(() => {

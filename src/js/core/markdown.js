@@ -57,8 +57,8 @@ function _domToMd(node, depth = 0) {
     case 'del':
     case 's':
     case 'strike':   return `~~${inner()}~~`;
-    case 'sup':      return `^${inner()}`;
-    case 'sub':      return `~${inner()}`;
+    case 'sup':      return `^${inner()}^`;
+    case 'sub':      return `~${inner()}~`;
     case 'code': {
       // Inside <pre> we emit raw text; outside we wrap in backticks
       if (node.closest('pre')) return inner();

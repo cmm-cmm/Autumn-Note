@@ -103,4 +103,25 @@ describe('AutumnNote integration', () => {
 
     editor.destroy();
   });
+
+  it('AutumnNote.defaults getter returns a copy of default options', () => {
+    const defaults = AutumnNote.defaults;
+    expect(typeof defaults).toBe('object');
+    expect(defaults).toHaveProperty('height');
+    // It's a copy, modifying it should not affect originals
+    defaults.height = 9999;
+    expect(AutumnNote.defaults.height).not.toBe(9999);
+  });
+
+  it('AutumnNote.create with NodeList creates multiple editors', () => {
+    const div1 = document.createElement('div');
+    const div2 = document.createElement('div');
+    document.body.appendChild(div1);
+    document.body.appendChild(div2);
+
+    const editors = AutumnNote.create(document.querySelectorAll('div:not([class])'));
+    const arr = Array.isArray(editors) ? editors : [editors];
+    expect(arr.length).toBeGreaterThan(0);
+    arr.forEach((e) => e.destroy());
+  });
 });

@@ -144,9 +144,9 @@ export class ContextMenu {
   }
 
   destroy() {
-    this._menuDisposers.forEach((d) => { try { d(); } catch (e) {} });
+    this._menuDisposers.forEach((d) => { try { d(); } catch (_e) {} });
     this._menuDisposers = [];
-    this._disposers.forEach((d) => { try { d(); } catch (e) {} });
+    this._disposers.forEach((d) => { try { d(); } catch (_e) {} });
     this._disposers = [];
     if (this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
     this.el = null;
@@ -386,7 +386,7 @@ export class ContextMenu {
     // Only apply when there is a real (non-collapsed) selection — a collapsed range
     // (cursor only) also has height > 0, which would misplace the menu relative
     // to the actual click point.
-    let openX = event.clientX;
+    const openX = event.clientX;
     let openY = event.clientY;
     if (this._savedRange && !this._savedRange.collapsed) {
       try {

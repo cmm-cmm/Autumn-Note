@@ -404,7 +404,7 @@ export function currentStyle(editable) {
  * cursor is already inside a <code> that is not inside a <pre>.
  * @param {HTMLElement} [editable]
  */
-export function toggleInlineCode(editable) {
+export function toggleInlineCode(_editable) {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return;
   const range = sel.getRangeAt(0);

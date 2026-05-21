@@ -596,6 +596,95 @@ describe('Editor insertLink with selection', () => {
   });
 });
 
+// ── insertHTML / insertText / setMarkdown / getMarkdown ──────────────────────
+
+describe('Editor insertHTML and insertText', () => {
+  it('insertHTML calls afterCommand (toolbar.refresh) with non-empty html', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.insertHTML('<strong>bold</strong>');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertHTML does nothing when html is empty', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    const callsBefore = context.invoke.mock.calls.length;
+    editor.insertHTML('');
+    expect(context.invoke.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('insertText calls afterCommand (toolbar.refresh) with non-empty text', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.insertText('world');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertText does nothing when text is empty', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    const callsBefore = context.invoke.mock.calls.length;
+    editor.insertText('');
+    expect(context.invoke.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('insertVideo calls afterCommand with non-empty html', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.insertVideo('<div class="an-video-wrapper"></div>');
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+
+  it('insertVideo does nothing when html is empty', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    const callsBefore = context.invoke.mock.calls.length;
+    editor.insertVideo('');
+    expect(context.invoke.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('insertTable calls afterCommand', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.insertTable(3, 2);
+    expect(context.invoke).toHaveBeenCalledWith('toolbar.refresh');
+  });
+});
+
+describe('Editor setMarkdown / getMarkdown', () => {
+  it('setMarkdown converts markdown to HTML', () => {
+    const context = makeContext('<p>initial</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.setMarkdown('# Hello');
+    expect(context.layoutInfo.editable.innerHTML).toContain('h1');
+  });
+
+  it('setMarkdown with empty string clears content', () => {
+    const context = makeContext('<p>initial</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    expect(() => editor.setMarkdown('')).not.toThrow();
+  });
+
+  it('getMarkdown returns string containing the content', () => {
+    const context = makeContext('<h1>Hello</h1>');
+    const editor = new Editor(context);
+    editor.initialize();
+    const md = editor.getMarkdown();
+    expect(typeof md).toBe('string');
+    expect(md).toContain('Hello');
+  });
+});
+
 // ── _getClosestAnchor ─────────────────────────────────────────────────────────
 
 describe('Editor._getClosestAnchor', () => {

@@ -368,3 +368,106 @@ describe('CodeTooltip._onLangChange', () => {
     expect(() => ct._onLangChange()).not.toThrow();
   });
 });
+
+// ── _copyCode clipboard fallback ───────────────────────────────────────────────
+
+describe('CodeTooltip._copyCode clipboard fallback', () => {
+  it('uses execCommand copy when navigator.clipboard is not available', () => {
+    const origClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    if (typeof document.execCommand !== 'function') {
+      Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+    }
+
+    const { ctx, ct } = makeTooltip();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    ct._activePre = pre;
+
+    expect(() => ct._copyCode()).not.toThrow();
+
+    Object.defineProperty(navigator, 'clipboard', { value: origClipboard, configurable: true });
+  });
+
+  it('calls _flashCopied after execCommand fallback succeeds', () => {
+    const origClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+
+    const { ctx, ct } = makeTooltip();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    ct._activePre = pre;
+    const flashSpy = vi.spyOn(ct, '_flashCopied');
+
+    ct._copyCode();
+
+    expect(flashSpy).toHaveBeenCalled();
+    Object.defineProperty(navigator, 'clipboard', { value: origClipboard, configurable: true });
+  });
+});
+
+// ── _flashCopied timer path ────────────────────────────────────────────────────
+
+describe('CodeTooltip._flashCopied timer', () => {
+  it('restores original button content after timeout', () => {
+    vi.useFakeTimers();
+    const { ct } = makeTooltip();
+    const btn = ct._copyBtn;
+    if (!btn) return;
+    const originalHTML = btn.innerHTML;
+
+    ct._flashCopied();
+    expect(btn.innerHTML).not.toBe(originalHTML); // temporarily changed
+
+    vi.advanceTimersByTime(1500);
+    expect(btn.innerHTML).toBe(originalHTML); // restored
+    vi.useRealTimers();
+  });
+
+  it('does nothing when copyBtn is null after timeout fires', () => {
+    vi.useFakeTimers();
+    const { ct } = makeTooltip();
+    ct._flashCopied();
+    ct._copyBtn = null; // simulate destroyed tooltip
+    expect(() => vi.advanceTimersByTime(1500)).not.toThrow();
+    vi.useRealTimers();
+  });
+});
+
+// ── _loadPrismComponent ────────────────────────────────────────────────────────
+
+describe('CodeTooltip._loadPrismComponent', () => {
+  it('appends a script element to document.head when grammar not already loaded', () => {
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlightCDN = 'https://cdn.example.com/prism';
+    const cb = vi.fn();
+    ct._loadPrismComponent('python', cb);
+    const script = document.head.querySelector('script[src*="prism-python"]');
+    expect(script).not.toBeNull();
+    // simulate load event
+    script.dispatchEvent(new Event('load'));
+    expect(cb).toHaveBeenCalled();
+    script.parentNode.removeChild(script);
+  });
+
+  it('polls when script already in DOM', () => {
+    vi.useFakeTimers();
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlightCDN = 'https://cdn.example.com/prism';
+
+    // Pre-inject the script so the "already in DOM" path is taken
+    const existing = document.createElement('script');
+    existing.src = 'https://cdn.example.com/prism/components/prism-ruby.min.js';
+    document.head.appendChild(existing);
+
+    const cb = vi.fn();
+    ct._loadPrismComponent('ruby', cb);
+
+    // The component sets up a poll interval; simulate Prism becoming available
+    vi.stubGlobal('Prism', { languages: { ruby: {} } });
+    vi.advanceTimersByTime(100);
+    expect(cb).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+    existing.parentNode.removeChild(existing);
+  });
+});

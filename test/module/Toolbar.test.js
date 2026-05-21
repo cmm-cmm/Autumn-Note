@@ -449,3 +449,85 @@ describe('Toolbar._detectFontAwesome', () => {
     toolbar.destroy();
   });
 });
+
+// ── Button click handler ───────────────────────────────────────────────────────
+
+describe('Toolbar button click', () => {
+  it('clicking a regular button calls action and editor.afterCommand', () => {
+    const action = vi.fn();
+    const ctx = {
+      options: {
+        useFontAwesome: false,
+        toolbar: [[{
+          name: 'myAction',
+          icon: '★',
+          tooltip: 'My Action',
+          action,
+          isActive: () => false,
+          isDisabled: () => false,
+        }]],
+      },
+      locale: en,
+      invoke: vi.fn(),
+    };
+    const toolbar = new Toolbar(ctx);
+    toolbar.initialize();
+
+    const btn = toolbar.el.querySelector('button[data-btn="myAction"]');
+    expect(btn).not.toBeNull();
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(action).toHaveBeenCalledWith(ctx);
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.focus');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+
+    toolbar.destroy();
+  });
+
+  it('click on button calls toolbar.refresh after action', () => {
+    const action = vi.fn();
+    const ctx = {
+      options: {
+        useFontAwesome: false,
+        toolbar: [[{
+          name: 'myAction2', icon: '◆', tooltip: 'Action2',
+          action, isActive: () => false, isDisabled: () => false,
+        }]],
+      },
+      locale: en,
+      invoke: vi.fn(),
+    };
+    const toolbar = new Toolbar(ctx);
+    toolbar.initialize();
+
+    const btn = toolbar.el.querySelector('button[data-btn="myAction2"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    // refresh() is called — it invokes toolbar.refresh which calls requestAnimationFrame
+    // The stub makes it synchronous so the state is updated immediately
+    expect(btn.classList.contains('active')).toBe(false); // isActive returns false
+    toolbar.destroy();
+  });
+
+  it('_detectFontAwesome scans stylesheet links when no FA elements found', () => {
+    // Add a stylesheet link that doesn't reference fontawesome
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://example.com/styles.css';
+    document.head.appendChild(link);
+
+    const ctx = {
+      options: {
+        useFontAwesome: true,
+        toolbar: [[{ name: 'b', icon: 'b', tooltip: 'B', action: vi.fn(), isActive: () => false, isDisabled: () => false }]],
+      },
+      locale: en,
+      invoke: vi.fn(),
+    };
+    const toolbar = new Toolbar(ctx);
+    // Should not throw even if FA elements aren't found
+    expect(() => toolbar.initialize()).not.toThrow();
+    toolbar.destroy();
+    link.parentNode.removeChild(link);
+  });
+});

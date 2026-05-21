@@ -111,10 +111,10 @@ export class VideoResizer {
   _findWrapper(el) {
     if (!el || !(el instanceof Element)) return null;
     // Direct hit on wrapper
-    if (el.classList && el.classList.contains('an-video-wrapper')) return el;
+    if (el.classList && el.classList.contains('an-video-wrapper')) return /** @type {HTMLElement} */ (el);
     // Child element (iframe, video, or nested)
     const w = el.closest('.an-video-wrapper');
-    if (w) return w;
+    if (w) return /** @type {HTMLElement} */ (w);
     return null;
   }
 
@@ -200,7 +200,7 @@ export class VideoResizer {
     const wrapper = this._activeWrapper;
     if (!wrapper) return;
 
-    const embed = wrapper.querySelector('iframe, video');
+    const embed = /** @type {HTMLElement|null} */ (wrapper.querySelector('iframe, video'));
     const startX = e.clientX;
     const startY = e.clientY;
     const startW = wrapper.offsetWidth  || 560;

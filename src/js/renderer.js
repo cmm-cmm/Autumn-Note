@@ -40,7 +40,7 @@ export function renderLayout(targetEl, options) {
   }
   if (!initialContent) {
     initialContent = targetEl.tagName === 'TEXTAREA'
-      ? (targetEl.value || '').trim()
+      ? ((/** @type {HTMLTextAreaElement} */ (targetEl)).value || '').trim()
       : (targetEl.innerHTML || '').trim();
   }
   editable.innerHTML = sanitiseHTML(initialContent, { allowIframes: true });

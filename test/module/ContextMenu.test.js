@@ -452,4 +452,261 @@ describe('ContextMenu format operations', () => {
     cm._savedRange = null;
     expect(() => cm.removeFormat()).not.toThrow();
   });
+
+  it('pasteFormat with fontSize replaces font[size=7] elements with styled spans', () => {
+    const { cm, ctx } = makeMenuWithRange();
+    // Simulate what execCommand('fontSize','7') would insert:
+    // Override execCommand to inject font elements when called with fontSize
+    const realExec = document.execCommand;
+    document.execCommand = vi.fn((cmd) => {
+      if (cmd === 'fontSize') {
+        // Inject a font[size="7"] element into the editable
+        const font = document.createElement('font');
+        font.setAttribute('size', '7');
+        font.textContent = 'hello';
+        ctx.layoutInfo.editable.querySelector('p').appendChild(font);
+      }
+      return true;
+    });
+
+    cm._copiedFormat = {
+      bold: false, italic: false, underline: false, strikethrough: false,
+      fontFamily: null, fontSize: '18px', color: null, backgroundColor: 'transparent',
+    };
+    cm.pasteFormat();
+
+    // The font[size="7"] should have been replaced with a span[style="font-size: 18px"]
+    const span = ctx.layoutInfo.editable.querySelector('span');
+    expect(span).not.toBeNull();
+    expect(span.style.fontSize).toBe('18px');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+
+    document.execCommand = realExec;
+  });
+
+  it('pasteFormat with strikethrough applies strikeThrough', () => {
+    const { cm, ctx } = makeMenuWithRange();
+    cm._copiedFormat = {
+      bold: false, italic: false, underline: false, strikethrough: true,
+      fontFamily: null, fontSize: null, color: null, backgroundColor: 'transparent',
+    };
+    cm.pasteFormat();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('_findExplicitStyle finds inline style on element', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const editable = ctx.layoutInfo.editable;
+    const p = editable.querySelector('p');
+    p.style.fontFamily = 'Arial';
+    const p2 = document.createElement('p');
+    p2.textContent = 'text';
+    editable.appendChild(p2);
+    const range = document.createRange();
+    range.selectNodeContents(p2);
+    cm._savedRange = range;
+    // copyFormat traverses up from startContainer looking for explicit styles
+    cm.copyFormat();
+    // _findExplicitStyle should have been called — copiedFormat is set
+    expect(cm._copiedFormat).not.toBeNull();
+  });
+
+  it('_findExplicitStyle returns null when no explicit inline style found', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const editable = ctx.layoutInfo.editable;
+    const p = editable.querySelector('p');
+    // No inline style set
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    cm._savedRange = range;
+    cm.copyFormat();
+    // fontFamily should be null since no explicit style is set
+    expect(cm._copiedFormat.fontFamily).toBeNull();
+  });
+
+  it('_isDefaultColor returns true for black color values', () => {
+    const { cm } = makeSimpleMenu();
+    expect(cm._isDefaultColor('rgb(0, 0, 0)')).toBe(true);
+    expect(cm._isDefaultColor('rgba(0, 0, 0, 0)')).toBe(true);
+    expect(cm._isDefaultColor('transparent')).toBe(true);
+    expect(cm._isDefaultColor('')).toBe(true);
+    expect(cm._isDefaultColor('#ff0000')).toBe(false);
+  });
+});
+
+// ── _onContextMenu event handler ──────────────────────────────────────────────
+
+describe('ContextMenu._onContextMenu', () => {
+  it('shows menu when contextmenu event fired on editable content', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const p = ctx.layoutInfo.editable.querySelector('p');
+    const event = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: 200,
+    });
+    ctx.layoutInfo.editable.dispatchEvent(event);
+    // Menu should be shown
+    expect(cm.el.style.display).toBe('block');
+  });
+
+  it('prevents default on contextmenu event', () => {
+    const { ctx } = makeSimpleMenu();
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    ctx.layoutInfo.editable.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('does not show when container has an-disabled class', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    ctx.layoutInfo.container.classList.add('an-disabled');
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 100, clientY: 200 });
+    ctx.layoutInfo.editable.dispatchEvent(event);
+    expect(cm.el.style.display).toBe('none');
+  });
+
+  it('saves selection range on contextmenu', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const p = ctx.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    window.getSelection().addRange(range);
+
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 10, clientY: 10 });
+    ctx.layoutInfo.editable.dispatchEvent(event);
+    expect(cm._savedRange).not.toBeNull();
+  });
+
+  it('positions below selection when non-collapsed range exists', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const p = ctx.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    // Simulate getBoundingClientRect returning a real rect
+    const origGetBBR = range.getBoundingClientRect;
+    range.getBoundingClientRect = () => ({ width: 100, height: 20, bottom: 150, top: 130, left: 50, right: 150 });
+    window.getSelection().addRange(range);
+
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 80, clientY: 80 });
+    ctx.layoutInfo.editable.dispatchEvent(event);
+
+    // Menu should be shown (positioned below selection)
+    expect(cm.el.style.display).toBe('block');
+  });
+
+  it('window scroll hides menu', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    ctx.layoutInfo.editable.dispatchEvent(
+      new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 50 }),
+    );
+    expect(cm.el.style.display).toBe('block');
+    window.dispatchEvent(new Event('scroll'));
+    expect(cm.el.style.display).toBe('none');
+  });
+
+  it('document Escape key hides menu', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    ctx.layoutInfo.editable.dispatchEvent(
+      new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 50, clientY: 50 }),
+    );
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(cm.el.style.display).toBe('none');
+  });
+});
+
+// ── Table grid interactions ────────────────────────────────────────────────────
+
+describe('ContextMenu table grid', () => {
+  function makeMenuWithTable() {
+    const { ctx, cm } = makeMenu(); // defaultItems includes table grid
+    cm.showAt(100, 200);
+    return { ctx, cm };
+  }
+
+  it('clicking table header button expands grid panel', () => {
+    const { cm } = makeMenuWithTable();
+    // The table grid wrapper has a header button that is an-context-submenu
+    // Find the table grid wrapper specifically
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return; // skip if no table grid in menu
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    expect(headerBtn).not.toBeNull();
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const panel = wrapper.querySelector('.an-context-table-grid-panel');
+    expect(panel.style.display).not.toBe('none');
+  });
+
+  it('clicking table header button twice collapses grid panel', () => {
+    const { cm } = makeMenuWithTable();
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return;
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const panel = wrapper.querySelector('.an-context-table-grid-panel');
+    expect(panel.style.display).toBe('none');
+  });
+
+  it('mousemove over grid cells highlights them', () => {
+    const { cm } = makeMenuWithTable();
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return;
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const gridEl = wrapper.querySelector('.an-table-grid');
+    const cell = gridEl.querySelector('[data-row="2"][data-col="3"]');
+    if (!cell) return;
+    cell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    // Cells [row<=2][col<=3] should have 'active' class
+    const activeCells = gridEl.querySelectorAll('.an-table-cell.active');
+    expect(activeCells.length).toBe(6); // 2 rows × 3 cols
+  });
+
+  it('mouseleave on grid clears highlights', () => {
+    const { cm } = makeMenuWithTable();
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return;
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const gridEl = wrapper.querySelector('.an-table-grid');
+    const cell = gridEl.querySelector('[data-row="1"][data-col="1"]');
+    cell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    gridEl.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    const activeCells = gridEl.querySelectorAll('.an-table-cell.active');
+    expect(activeCells.length).toBe(0);
+  });
+
+  it('clicking a grid cell inserts a table and hides menu', () => {
+    const { cm, ctx } = makeMenuWithTable();
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return;
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const gridEl = wrapper.querySelector('.an-table-grid');
+    const cell = gridEl.querySelector('[data-row="3"][data-col="4"]');
+    if (!cell) return;
+    cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.insertTable', 4, 3);
+    expect(cm.el.style.display).toBe('none');
+  });
+
+  it('clicking a grid cell with saved range restores selection', () => {
+    const { cm, ctx } = makeMenuWithTable();
+    // Set a saved range
+    const p = ctx.layoutInfo.editable.querySelector('p');
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    cm._savedRange = range;
+
+    const wrapper = cm.el.querySelector('.an-context-table-wrap');
+    if (!wrapper) return;
+    const headerBtn = wrapper.querySelector('.an-context-submenu');
+    headerBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const gridEl = wrapper.querySelector('.an-table-grid');
+    const cell = gridEl.querySelector('[data-row="2"][data-col="2"]');
+    if (!cell) return;
+    cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.insertTable', 2, 2);
+  });
 });

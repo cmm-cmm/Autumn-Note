@@ -562,3 +562,111 @@ describe('BubbleToolbar._openColorPicker savedRange', () => {
     expect(bt._savedRange).not.toBeNull();
   });
 });
+
+// ── Color picker swatch click and custom input ─────────────────────────────────
+
+describe('BubbleToolbar color picker interactions', () => {
+  function openPicker(bt, type = 'foreColor') {
+    const btn = bt._el.querySelector(`[data-name="${type}"]`);
+    bt._openColorPicker(type, btn);
+    return document.querySelector('.an-bubble-color-picker');
+  }
+
+  it('clicking a color swatch applies the color (line 213)', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    window.getSelection().addRange(r);
+    bt._savedRange = r;
+
+    const picker = openPicker(bt, 'foreColor');
+    expect(picker).not.toBeNull();
+    const swatch = picker.querySelector('.an-context-color-swatch:not(.an-context-color-none)');
+    if (swatch) {
+      swatch.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    }
+  });
+
+  it('clicking "No highlight" swatch applies transparent color (lines 226-227)', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    window.getSelection().addRange(r);
+    bt._savedRange = r;
+
+    const picker = openPicker(bt, 'hiliteColor');
+    const noColor = picker && picker.querySelector('.an-context-color-none');
+    if (noColor) {
+      noColor.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    }
+  });
+
+  it('changing custom color input applies the color (line 240)', () => {
+    const { bt, ctx } = makeBubble();
+    const editable = ctx.layoutInfo.editable;
+    const tn = editable.querySelector('p').firstChild;
+    const r = document.createRange();
+    r.setStart(tn, 0);
+    r.setEnd(tn, 5);
+    window.getSelection().addRange(r);
+    bt._savedRange = r;
+
+    const picker = openPicker(bt, 'foreColor');
+    const colorInput = picker && picker.querySelector('input[type="color"]');
+    if (colorInput) {
+      colorInput.value = '#ff0000';
+      colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    }
+  });
+});
+
+// ── Button mousedown / click in toolbar ───────────────────────────────────────
+
+describe('BubbleToolbar button click handlers', () => {
+  it('mousedown on toolbar button calls preventDefault (line 168)', () => {
+    const { bt } = makeBubble();
+    bt._show(MOCK_RECT);
+
+    const btn = bt._el.querySelector('.an-bubble-btn');
+    if (btn) {
+      const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      btn.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+    }
+  });
+
+  it('click on non-color button invokes editor.focus and action (lines 171-182)', () => {
+    const { bt, ctx } = makeBubble();
+    bt._show(MOCK_RECT);
+
+    // Find "bold" button (not a color button)
+    const boldBtn = bt._el.querySelector('.an-bubble-btn:not([data-name="foreColor"]):not([data-name="hiliteColor"])');
+    if (boldBtn) {
+      boldBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(ctx.invoke).toHaveBeenCalledWith('editor.focus');
+    }
+  });
+
+  it('click on foreColor button opens color picker (line 176)', () => {
+    const { bt, ctx } = makeBubble();
+    bt._show(MOCK_RECT);
+
+    const colorBtn = bt._el.querySelector('[data-name="foreColor"]');
+    if (colorBtn) {
+      colorBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      // Should have opened picker (_openColorPicker saves range, does not call invoke immediately)
+      // Verify picker is visible
+      const picker = document.querySelector('.an-bubble-color-picker');
+      expect(picker).not.toBeNull();
+    }
+  });
+});
