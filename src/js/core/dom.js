@@ -29,7 +29,7 @@ export const isInline = (node) =>
   isElement(node) &&
   /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(node.nodeName);
 /** @param {Node} node */
-export const isEditable = (node) => isElement(node) && node.isContentEditable;
+export const isEditable = (node) => isElement(node) && /** @type {HTMLElement} */ (node).isContentEditable;
 /** @param {Node} node */
 export const isAnchor = (node) => isElement(node) && node.nodeName.toUpperCase() === 'A';
 /** @param {Node} node */
@@ -100,7 +100,7 @@ export function prevElement(node) {
   while (sibling && !isElement(sibling)) {
     sibling = sibling.previousSibling;
   }
-  return sibling;
+  return /** @type {Element|null} */ (sibling);
 }
 
 /**
@@ -113,7 +113,7 @@ export function nextElement(node) {
   while (sibling && !isElement(sibling)) {
     sibling = sibling.nextSibling;
   }
-  return sibling;
+  return /** @type {Element|null} */ (sibling);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,7 +214,7 @@ export function isEmpty(node) {
   if (isText(node)) return !node.nodeValue;
   if (isVoid(node)) return false;
   if (node.childNodes.length === 1 && node.firstChild?.nodeName === 'BR') return true;
-  return !node.textContent.trim() && !node.querySelector('img, video, hr, table');
+  return !node.textContent.trim() && !/** @type {Element} */ (node).querySelector('img, video, hr, table');
 }
 
 /**
@@ -303,12 +303,12 @@ export function trapFocus(container, onEscape) {
     if (e.shiftKey) {
       if (document.activeElement === first) {
         e.preventDefault();
-        last.focus();
+        /** @type {HTMLElement} */ (last).focus();
       }
     } else {
       if (document.activeElement === last) {
         e.preventDefault();
-        first.focus();
+        /** @type {HTMLElement} */ (first).focus();
       }
     }
   };

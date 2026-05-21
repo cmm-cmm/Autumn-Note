@@ -710,3 +710,32 @@ describe('ContextMenu table grid', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.insertTable', 2, 2);
   });
 });
+
+// ── _findExplicitStyle FONT element handling ──────────────────────────────────
+
+describe('ContextMenu._findExplicitStyle FONT element', () => {
+  it('returns face attribute from <font face="Arial"> element', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const editable = ctx.layoutInfo.editable;
+    // Create a <font> element with face attribute inside editable
+    const fontEl = document.createElement('font');
+    fontEl.setAttribute('face', 'Arial');
+    fontEl.textContent = 'styled text';
+    editable.appendChild(fontEl);
+
+    const result = cm._findExplicitStyle(fontEl, editable, 'fontFamily');
+    expect(result).toBe('Arial');
+  });
+
+  it('returns null for fontSize from <font size="3"> element (attribute sizes not usable)', () => {
+    const { cm, ctx } = makeSimpleMenu();
+    const editable = ctx.layoutInfo.editable;
+    const fontEl = document.createElement('font');
+    fontEl.setAttribute('size', '3');
+    fontEl.textContent = 'sized text';
+    editable.appendChild(fontEl);
+
+    const result = cm._findExplicitStyle(fontEl, editable, 'fontSize');
+    expect(result).toBeNull();
+  });
+});

@@ -136,7 +136,7 @@ export class Statusbar {
       const MIN_EDITABLE = 40;
       const fixedH = Array.from(containerEl.children)
         .filter(child => !child.classList.contains('an-editable'))
-        .reduce((sum, child) => sum + child.offsetHeight, 0);
+        .reduce((sum, child) => sum + /** @type {HTMLElement} */ (child).offsetHeight, 0);
       const trueMin = Math.max(this.options.minHeight || 100, fixedH + MIN_EDITABLE);
       containerEl.style.height = `${Math.max(trueMin, startH + delta)}px`;
     };
@@ -207,7 +207,7 @@ export class Statusbar {
   _bindContentEvents() {
     const editable = this.context.layoutInfo.editable;
     const updateDebounced = debounce(() => this.update(), 200);
-    const d = on(editable, 'input', updateDebounced);
+    const d = on(editable, 'input', /** @type {EventListener} */ (updateDebounced));
     this._disposers.push(d);
   }
 

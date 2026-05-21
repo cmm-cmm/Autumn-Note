@@ -93,7 +93,8 @@ export class Editor {
       // Only act when cursor is at the <li> element node itself (not inside
       // a text node — the browser already placed it correctly in that case).
       if (sc.nodeType !== Node.ELEMENT_NODE) return;
-      const li = sc.matches && sc.matches('.an-checklist li') ? sc : null;
+      const scEl = /** @type {Element} */ (sc);
+      const li = scEl.matches('.an-checklist li') ? scEl : null;
       if (!li) return;
       const cb = li.querySelector('input[type="checkbox"]');
       if (!cb) return;
@@ -160,9 +161,9 @@ export class Editor {
       // the mouse and moving outside the wrapper before releasing.
       on(editable, 'dragstart', (e) => {
         if (isReadOnly()) { e.preventDefault(); return; }
-        const target = e.target;
+        const target = /** @type {Element} */ (e.target);
         if (target && (target.nodeName === 'IFRAME' ||
-            (target.closest && target.closest('.an-video-wrapper')))) {
+            target.closest('.an-video-wrapper'))) {
           e.preventDefault();
         }
       }),
@@ -182,9 +183,10 @@ export class Editor {
       if (!sel || !sel.rangeCount) { _compositionSupSub = null; return; }
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-      if (node && node.closest) {
-        if (node.closest('sup')) _compositionSupSub = 'superscript';
-        else if (node.closest('sub')) _compositionSupSub = 'subscript';
+      if (node) {
+        const el = /** @type {Element} */ (node);
+        if (el.closest('sup')) _compositionSupSub = 'superscript';
+        else if (el.closest('sub')) _compositionSupSub = 'subscript';
         else _compositionSupSub = null;
       }
     };
@@ -196,8 +198,9 @@ export class Editor {
       if (!sel || !sel.rangeCount) return;
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-      const inContext = node && node.closest &&
-        (tag === 'superscript' ? node.closest('sup') : node.closest('sub'));
+      const el = /** @type {Element} */ (node);
+      const inContext = el &&
+        (tag === 'superscript' ? el.closest('sup') : el.closest('sub'));
       if (!inContext) {
         // The composed character escaped the sup/sub — re-apply the format.
         document.execCommand(tag);
@@ -580,8 +583,8 @@ export class Editor {
       if (openInNewTab) {
         const link = this._getClosestAnchor();
         if (link) {
-          link.setAttribute('target', '_blank');
-          link.setAttribute('rel', 'noopener noreferrer');
+          /** @type {Element} */ (link).setAttribute('target', '_blank');
+          /** @type {Element} */ (link).setAttribute('rel', 'noopener noreferrer');
         }
       }
     }

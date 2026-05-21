@@ -120,8 +120,8 @@ export class FindReplace {
     const title = this._dialog.querySelector('.an-dialog-title');
 
     const isReplace = this._mode === 'replace';
-    if (replaceRow) replaceRow.style.display = isReplace ? '' : 'none';
-    if (replaceActions) replaceActions.style.display = isReplace ? '' : 'none';
+    if (replaceRow) /** @type {HTMLElement} */ (replaceRow).style.display = isReplace ? '' : 'none';
+    if (replaceActions) /** @type {HTMLElement} */ (replaceActions).style.display = isReplace ? '' : 'none';
     if (title) title.textContent = isReplace ? this.context.locale.findReplace.findReplaceTitle : this.context.locale.findReplace.findTitle;
   }
 
@@ -155,12 +155,12 @@ export class FindReplace {
 
     // ---- Find row ----
     const findRow = createElement('div', { class: 'an-fr-find-row' });
-    const findInput = createElement('input', {
+    const findInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
       class: 'an-input',
       placeholder: L.findPlaceholder,
       'aria-label': L.searchAriaLabel,
-    });
+    }));
     this._findInput = findInput;
     findRow.appendChild(findInput);
     box.appendChild(findRow);
@@ -168,10 +168,10 @@ export class FindReplace {
     // ---- Options row (case-sensitive toggle + match counter) ----
     const optRow = createElement('div', { class: 'an-fr-options-row' });
     const caseLabel = createElement('label', { class: 'an-label an-label-inline' });
-    const caseCheckbox = createElement('input', {
+    const caseCheckbox = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'checkbox',
       'aria-label': 'Case sensitive',
-    });
+    }));
     this._caseCheckbox = caseCheckbox;
     caseLabel.append(caseCheckbox, document.createTextNode(L.caseSensitive));
     const counter = createElement('span', { class: 'an-fr-counter' });
@@ -191,12 +191,12 @@ export class FindReplace {
     // ---- Replace row (hidden by default) ----
     const replaceRow = createElement('div', { class: 'an-fr-replace-row' });
     replaceRow.style.display = 'none';
-    const replaceInput = createElement('input', {
+    const replaceInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
       class: 'an-input',
       placeholder: L.replacePlaceholder,
       'aria-label': L.replaceAriaLabel,
-    });
+    }));
     this._replaceInput = replaceInput;
     replaceRow.appendChild(replaceInput);
     box.appendChild(replaceRow);
@@ -226,13 +226,14 @@ export class FindReplace {
     const d7 = on(replaceBtn, 'click', () => this._replace());
     const d8 = on(replaceAllBtn, 'click', () => this._replaceAll());
     const d9 = on(findInput, 'keydown', (e) => {
-      if (e.key === 'Enter') {
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Enter') {
         e.preventDefault();
-        e.shiftKey ? this._prev() : this._next();
+        ke.shiftKey ? this._prev() : this._next();
       }
     });
     const d10 = on(replaceInput, 'keydown', (e) => {
-      if (e.key === 'Enter') {
+      if (/** @type {KeyboardEvent} */ (e).key === 'Enter') {
         e.preventDefault();
         this._replace();
       }
@@ -331,7 +332,7 @@ export class FindReplace {
       re.lastIndex = 0;
       let m;
       while ((m = re.exec(node.textContent)) !== null && results.length < MAX_RESULTS) {
-        results.push({ node, start: m.index, end: m.index + m[0].length });
+        results.push({ node: /** @type {Text} */ (node), start: m.index, end: m.index + m[0].length });
       }
     }
     return results;

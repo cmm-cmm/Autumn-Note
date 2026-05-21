@@ -51,7 +51,7 @@ export class ImageResizer {
       // Also select on right-click so the highlight shows before the context menu
       on(editable, 'contextmenu', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
-        const img = e.target.closest('img');
+        const img = /** @type {Element} */ (e.target)?.closest('img');
         if (img) this._select(img);
       }),
       on(document, 'click', (e) => this._onDocClick(e)),

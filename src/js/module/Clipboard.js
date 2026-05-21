@@ -65,11 +65,11 @@ export class Clipboard {
    */
   _revokeRemovedBlobs(node) {
     if (!this._blobRegistry || !this._blobRegistry.size) return;
-    const imgs = [];
+    const imgs = /** @type {Element[]} */ ([]);
     if (node.nodeName === 'IMG') {
-      imgs.push(node);
-    } else if (node.querySelectorAll) {
-      imgs.push(...node.querySelectorAll('img'));
+      imgs.push(/** @type {Element} */ (node));
+    } else if (/** @type {Element} */ (node).querySelectorAll) {
+      imgs.push(.../** @type {Element} */ (node).querySelectorAll('img'));
     }
     imgs.forEach((img) => {
       const src = img.getAttribute('src') || '';
@@ -180,7 +180,7 @@ export class Clipboard {
   }
 
   _onPaste(event) {
-    const clipboardData = event.clipboardData || window.clipboardData;
+    const clipboardData = event.clipboardData || /** @type {any} */ (window).clipboardData;
     if (!clipboardData) return;
 
     // Consume and reset the one-shot plain-paste flag

@@ -286,7 +286,7 @@ export class Toolbar {
     });
 
     const d2 = on(grid, 'mouseover', (e) => {
-      const cell = e.target.closest('.an-table-cell');
+      const cell = /** @type {Element} */ (e.target)?.closest('.an-table-cell');
       if (!cell) return;
       setHighlight(+cell.getAttribute('data-row'), +cell.getAttribute('data-col'));
     });
@@ -294,7 +294,7 @@ export class Toolbar {
     const d3 = on(grid, 'mouseleave', () => setHighlight(0, 0));
 
     const d4 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.an-table-cell');
+      const cell = /** @type {Element} */ (e.target)?.closest('.an-table-cell');
       if (!cell) return;
       const rows = +cell.getAttribute('data-row');
       const cols = +cell.getAttribute('data-col');
@@ -313,7 +313,7 @@ export class Toolbar {
 
     wrap.appendChild(btn);
     document.body.appendChild(popup);
-    return wrap;
+    return /** @type {HTMLDivElement} */ (wrap);
   }
 
   /**
@@ -384,7 +384,7 @@ export class Toolbar {
     });
 
     const customRow = createElement('div', { class: 'an-color-custom' });
-    const colorInput = createElement('input', { type: 'color', value: currentColor, title: this.context.locale.toolbar.customColor || 'Custom color' });
+    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', value: currentColor, title: this.context.locale.toolbar.customColor || 'Custom color' }));
     const customLabel = createElement('span', {}, [this.context.locale.toolbar.customColor || 'Custom color']);
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
@@ -472,17 +472,17 @@ export class Toolbar {
     });
 
     const d3b = on(swatches, 'click', (e) => {
-      const sw = e.target.closest('.an-color-swatch');
-      if (sw) applyColor(sw.dataset.color);
+      const sw = /** @type {Element} */ (e.target)?.closest('.an-color-swatch');
+      if (sw) applyColor(/** @type {HTMLElement} */ (sw).dataset.color);
     });
 
     const d4 = on(colorInput, 'change', (e) => {
-      applyColor(e.target.value);
+      applyColor(/** @type {HTMLInputElement} */ (e.target).value);
     });
 
     const d5 = on(document, 'click', (e) => {
       // popup is in document.body, not inside wrap — check both
-      if (isOpen && !wrap.contains(e.target) && !popup.contains(e.target)) closePopup();
+      if (isOpen && !wrap.contains(/** @type {Node} */ (e.target)) && !popup.contains(/** @type {Node} */ (e.target))) closePopup();
     });
 
     const d6 = on(popup, 'click', (e) => e.stopPropagation());
@@ -513,7 +513,7 @@ export class Toolbar {
     wrap.appendChild(applyBtn);
     wrap.appendChild(arrowBtn);
     document.body.appendChild(popup);
-    return wrap;
+    return /** @type {HTMLDivElement} */ (wrap);
   }
 
   /**
@@ -583,7 +583,7 @@ export class Toolbar {
     });
 
     this._disposers.push(dMousedown, disposer);
-    return select;
+    return /** @type {HTMLSelectElement} */ (select);
   }
 
   /**
@@ -638,7 +638,7 @@ export class Toolbar {
     });
 
     this._disposers.push(disposer);
-    return btn;
+    return /** @type {HTMLButtonElement} */ (btn);
   }
 
   // ---------------------------------------------------------------------------
@@ -659,7 +659,7 @@ export class Toolbar {
     // count as "the host page loaded FA" for toolbar icon rendering purposes.
     const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
       .filter((l) => l.id !== 'an-fontawesome-css')
-      .map((l) => l.href || '').join(' ');
+      .map((l) => /** @type {HTMLLinkElement} */ (l).href || '').join(' ');
     _faPageLevelReady = /fontawesome|font-awesome|use\.fontawesome|all\.css/.test(links);
     return _faPageLevelReady;
   }
@@ -689,7 +689,7 @@ export class Toolbar {
         btn.classList.toggle('active', !!def.isActive(this.context));
       }
       if (def && typeof def.isDisabled === 'function') {
-        btn.disabled = !!def.isDisabled(this.context);
+        /** @type {HTMLButtonElement} */ (btn).disabled = !!def.isDisabled(this.context);
       }
     });
 
@@ -706,10 +706,11 @@ export class Toolbar {
           || '';
       }
       // Try to match against available options (case-insensitive)
-      const matched = Array.from(select.options).find(
+      const sel = /** @type {HTMLSelectElement} */ (select);
+      const matched = Array.from(sel.options).find(
         (opt) => opt.value && opt.value.toLowerCase() === raw.toLowerCase()
       );
-      select.value = matched ? matched.value : '';
+      sel.value = matched ? matched.value : '';
     });
   }
 

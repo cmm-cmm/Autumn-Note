@@ -58,7 +58,7 @@ function getCellAfterVisualCol(row, visualIdx) {
     if (vIdx > visualIdx) {
       // next cell after the one that starts at / spans visualIdx
       const next = c.nextElementSibling;
-      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? next : null;
+      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? /** @type {HTMLTableCellElement} */ (next) : null;
     }
   }
   return null;
@@ -182,16 +182,16 @@ export class TableTooltip {
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
-        const table = e.target.closest('table');
+        const table = /** @type {Element} */ (e.target)?.closest('table');
         if (table && editable.contains(table)) {
-          const cell = e.target.closest('td, th');
+          const cell = /** @type {Element} */ (e.target)?.closest('td, th');
           if (cell) this._activeCell = cell;
           this._scheduleShow(table);
         }
       }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         if (this._selectMode) return; // keep tooltip alive during cell selection
-        const to = e.relatedTarget;
+        const to = /** @type {Node|null} */ (/** @type {MouseEvent} */ (e).relatedTarget);
         if (!to || (
           !editable.contains(to) &&
           !this._el.contains(to) &&
@@ -201,11 +201,12 @@ export class TableTooltip {
         }
       }, { passive: true }),
       on(document, 'click', (e) => {
-        if (this._selectMode && this._activeTable && this._activeTable.contains(e.target)) return;
+        const et = /** @type {Node} */ (e.target);
+        if (this._selectMode && this._activeTable && this._activeTable.contains(et)) return;
         if (this._activeTable &&
-          !this._activeTable.contains(e.target) &&
-          !this._el.contains(e.target) &&
-          !(this._sizePopover && this._sizePopover.contains(e.target))) {
+          !this._activeTable.contains(et) &&
+          !this._el.contains(et) &&
+          !(this._sizePopover && this._sizePopover.contains(et))) {
           this._hide();
         }
       }),
@@ -551,7 +552,7 @@ export class TableTooltip {
     if (sel && sel.rangeCount) {
       let container = sel.getRangeAt(0).commonAncestorContainer;
       if (container.nodeType === 3) container = container.parentElement;
-      const cellFromSel = container && container.closest && container.closest('td, th');
+      const cellFromSel = container && /** @type {Element} */ (container).closest('td, th');
       if (cellFromSel && this._activeTable && this._activeTable.contains(cellFromSel)) {
         return cellFromSel;
       }
@@ -901,9 +902,9 @@ export class TableTooltip {
 
     const titleEl = createElement('div', { class: 'an-size-popover-title' });
     const body    = createElement('div', { class: 'an-size-popover-body' });
-    const inputEl = createElement('input', {
+    const inputEl = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'number', class: 'an-size-input', min: '1', max: '2000', step: '1',
-    });
+    }));
     const unitEl = createElement('span', { class: 'an-size-unit' }, ['px']);
     body.appendChild(inputEl);
     body.appendChild(unitEl);
@@ -931,14 +932,16 @@ export class TableTooltip {
     });
     const d2 = on(cancelBtn, 'click', () => this._hideSizePopover());
     const d3 = on(inputEl, 'keydown', (e) => {
-      if (e.key === 'Enter')  { e.preventDefault(); applyBtn.click(); }
-      if (e.key === 'Escape') this._hideSizePopover();
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Enter')  { e.preventDefault(); applyBtn.click(); }
+      if (ke.key === 'Escape') this._hideSizePopover();
     });
     const d4 = on(document, 'click', (e) => {
+      const et = /** @type {Node} */ (e.target);
       if (this._sizePopover &&
           this._sizePopover.style.display !== 'none' &&
-          !this._sizePopover.contains(e.target) &&
-          !this._el.contains(e.target)) {
+          !this._sizePopover.contains(et) &&
+          !this._el.contains(et)) {
         this._hideSizePopover();
       }
     });
@@ -964,7 +967,7 @@ export class TableTooltip {
       this._sizeTitleEl.textContent = this.context.locale.tooltips.table.tableBorderWidthPx;
       this._sizeInputEl.min   = '0';
       this._sizeInputEl.max   = '10';
-      this._sizeInputEl.value = currentPx;
+      this._sizeInputEl.value = String(currentPx);
       this._sizeApply = (val) => {
         const cells = Array.from(table.querySelectorAll('td, th'));
         if (val === 0) {

@@ -13,8 +13,7 @@ import { createElement } from '../core/dom.js';
  * Build an HTML table with the given number of columns and rows, optionally including a header row.
  * @param {number} cols - Number of columns in each row.
  * @param {number} rows - Total number of rows to create (including header when `headerRow` is true).
- * @param {{ headerRow?: boolean }} [opts] - Options object.
- * @param {boolean} [opts.headerRow=false] - When true and `rows > 0`, creates a header row (`<thead>`) plus body rows for the remainder.
+ * @param {{ headerRow?: boolean }} [opts] - Options: `headerRow` creates a `<thead>` when true.
  * @returns {HTMLTableElement} The constructed `<table>` element with a `<tbody>` and optional `<thead>`; each cell contains a `<br>` placeholder.
  */
 export function createTable(cols, rows, opts = {}) {
@@ -44,7 +43,7 @@ export function createTable(cols, rows, opts = {}) {
     }
     tbody.appendChild(tr);
   }
-  return table;
+  return /** @type {HTMLTableElement} */ (table);
 }
 
 /**
@@ -52,7 +51,6 @@ export function createTable(cols, rows, opts = {}) {
  * @param {number} cols - Number of columns for the new table.
  * @param {number} rows - Number of rows for the new table.
  * @param {{ headerRow?: boolean }} [opts] - Options for table creation.
- * @param {boolean} [opts.headerRow=false] - If true, include a header row as the first row.
  */
 export function insertTable(cols, rows, opts = {}) {
   if (cols <= 0 || rows <= 0) return;
@@ -65,8 +63,8 @@ export function insertTable(cols, rows, opts = {}) {
 
   // Walk up to find the nearest block-level ancestor to insert after
   const BLOCK = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI', 'PRE']);
-  let anchor = range.startContainer;
-  if (anchor.nodeType === 3) anchor = anchor.parentElement;
+  let anchor = /** @type {Element|null} */ (range.startContainer);
+  if (anchor && anchor.nodeType === 3) anchor = anchor.parentElement;
   while (anchor && !BLOCK.has(anchor.tagName?.toUpperCase()) && anchor.parentElement) {
     anchor = anchor.parentElement;
   }

@@ -573,12 +573,12 @@ export class EmojiDialog {
     titleRow.append(title, closeBtn);
 
     // Search
-    const searchInput = createElement('input', {
+    const searchInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'search',
       class: 'an-input an-icon-search',
       placeholder: L.searchPlaceholder,
       autocomplete: 'off',
-    });
+    }));
     this._searchInput = searchInput;
 
     // Category tabs
@@ -624,7 +624,7 @@ export class EmojiDialog {
     const d3 = on(overlay,     'click',  (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(searchInput, 'input',  () => this._filterEmojis(searchInput.value, this._activeCat));
     const d5 = on(catBar,      'click',  (e) => {
-      const tab = e.target.closest('[data-cat]');
+      const tab = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('[data-cat]'));
       if (tab) {
         this._activeCat = tab.dataset.cat;
         this._updateCatTabs();
@@ -632,7 +632,7 @@ export class EmojiDialog {
       }
     });
     const d6 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.an-emoji-cell');
+      const cell = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('.an-emoji-cell'));
       if (cell) this._onEmojiClick(cell.dataset.char);
     });
     this._disposers.push(d1, d2, d3, d4, d5, d6);
@@ -645,7 +645,7 @@ export class EmojiDialog {
 
   _updateCatTabs() {
     this._catBar.querySelectorAll('.an-icon-cat').forEach((tab) => {
-      tab.classList.toggle('active', tab.dataset.cat === this._activeCat);
+      tab.classList.toggle('active', /** @type {HTMLElement} */ (tab).dataset.cat === this._activeCat);
     });
   }
 
@@ -653,10 +653,11 @@ export class EmojiDialog {
     const q = (query || '').trim().toLowerCase();
     let count = 0;
     this._grid.querySelectorAll('.an-emoji-cell').forEach((cell) => {
-      const matchCat   = !cat || cat === 'all' || cell.dataset.cat === cat;
-      const matchQuery = !q || cell.dataset.keywords.includes(q) || cell.dataset.char === q;
+      const hCell = /** @type {HTMLElement} */ (cell);
+      const matchCat   = !cat || cat === 'all' || hCell.dataset.cat === cat;
+      const matchQuery = !q || hCell.dataset.keywords.includes(q) || hCell.dataset.char === q;
       const visible = matchCat && matchQuery;
-      cell.style.display = visible ? '' : 'none';
+      hCell.style.display = visible ? '' : 'none';
       if (visible) count++;
     });
     let empty = this._grid.querySelector('.an-icon-empty');
@@ -665,7 +666,7 @@ export class EmojiDialog {
       empty.textContent = 'No emojis found';
       this._grid.appendChild(empty);
     }
-    empty.style.display = count > 0 ? 'none' : '';
+    /** @type {HTMLElement} */ (empty).style.display = count > 0 ? 'none' : '';
   }
 
   // ---------------------------------------------------------------------------
@@ -694,8 +695,8 @@ export class EmojiDialog {
     // deleteContents() can drift the range endpoint outside the cell in some
     // browsers.  Save the cell reference first and re-anchor after deletion.
     const _sc = range.startContainer;
-    const _tdAnchor = (_sc.nodeType === 1 ? _sc : _sc.parentElement)
-      ?.closest?.('td, th');
+    const _tdAnchor = /** @type {Element|null} */ (_sc.nodeType === 1 ? _sc : _sc.parentElement)
+      ?.closest('td, th');
     range.deleteContents();
     if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
       range.setStart(_tdAnchor, 0);

@@ -124,3 +124,106 @@ describe('ImageDialog — unsupported format rejection in file input', () => {
     dialog.destroy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// C3: show / open / close lifecycle
+// ---------------------------------------------------------------------------
+
+describe('ImageDialog — show / open / close', () => {
+  it('show() opens the dialog with display:flex', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    dialog.show();
+    expect(dialog._dialog.style.display).toBe('flex');
+
+    dialog.destroy();
+  });
+
+  it('show() resets URL and alt inputs', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    dialog._urlInput.value = 'https://old.com/img.png';
+    dialog._altInput.value = 'old alt';
+
+    dialog.show();
+
+    expect(dialog._urlInput.value).toBe('');
+    expect(dialog._altInput.value).toBe('');
+
+    dialog.destroy();
+  });
+
+  it('_close() hides the dialog', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    dialog._open();
+    expect(dialog._dialog.style.display).toBe('flex');
+
+    dialog._close();
+    expect(dialog._dialog.style.display).toBe('none');
+
+    dialog.destroy();
+  });
+
+  it('_close() clears savedRange', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    dialog._savedRange = { select: vi.fn() };
+    dialog._close();
+    expect(dialog._savedRange).toBeNull();
+
+    dialog.destroy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// C4: file size rejection
+// ---------------------------------------------------------------------------
+
+describe('ImageDialog — file size validation', () => {
+  it('rejects files larger than 5 MB (default) with imageError event', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    const bigFile = new File(['x'.repeat(6 * 1024 * 1024)], 'huge.png', { type: 'image/png' });
+    Object.defineProperty(dialog._fileInput, 'files', { value: [bigFile], configurable: true });
+
+    dialog._onFileChange();
+
+    expect(dialog._fileHint.textContent).not.toBe('');
+    expect(context.triggerEvent).toHaveBeenCalledWith(
+      'imageError',
+      expect.objectContaining({ file: bigFile }),
+    );
+
+    dialog.destroy();
+  });
+
+  it('rejects files larger than custom maxImageSize option', () => {
+    const context = makeContext();
+    context.options.maxImageSize = 1;
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    const bigFile = new File(['x'.repeat(2 * 1024 * 1024)], 'large.png', { type: 'image/png' });
+    Object.defineProperty(dialog._fileInput, 'files', { value: [bigFile], configurable: true });
+
+    dialog._onFileChange();
+
+    expect(context.triggerEvent).toHaveBeenCalledWith(
+      'imageError',
+      expect.objectContaining({ file: bigFile }),
+    );
+
+    dialog.destroy();
+  });
+});

@@ -137,7 +137,7 @@ export class ContextMenu {
     }
 
     this._disposers.push(on(document, 'click', (e) => this._maybeHide(e)));
-    this._disposers.push(on(document, 'keydown', (e) => { if (e.key === 'Escape') this.hide(); }));
+    this._disposers.push(on(document, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Escape') this.hide(); }));
     this._disposers.push(on(window, 'scroll', () => this.hide(), { passive: true }));
 
     return this;
@@ -253,12 +253,12 @@ export class ContextMenu {
 
         // Custom color row
         const customRow = createElement('div', { class: 'an-context-color-custom' });
-        const colorInput = createElement('input', {
+        const colorInput = /** @type {HTMLInputElement} */ (createElement('input', {
           type: 'color',
           value: it.colorType === 'foreColor' ? '#000000' : '#ffff00',
           title: this.context.locale.contextMenu.customColor || 'Custom color',
           'aria-label': this.context.locale.contextMenu.customColor || 'Custom color',
-        });
+        }));
         const customLabel = createElement('span', {}, [this.context.locale.contextMenu.customColorLabel || 'Custom…']);
         const offCustom = on(colorInput, 'change', () => this._applyColor(it.colorType, colorInput.value));
         this._menuDisposers.push(offCustom);
@@ -324,13 +324,13 @@ export class ContextMenu {
         this._menuDisposers.push(offHeader);
 
         const offMove = on(gridEl, 'mousemove', (e) => {
-          const cell = e.target.closest('[data-row]');
+          const cell = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('[data-row]'));
           if (!cell) return;
           setHighlight(+cell.dataset.row, +cell.dataset.col);
         });
         const offLeave = on(gridEl, 'mouseleave', () => setHighlight(0, 0));
         const offClick = on(gridEl, 'click', (e) => {
-          const cell = e.target.closest('[data-row]');
+          const cell = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('[data-row]'));
           if (!cell) return;
           const rows = +cell.dataset.row;
           const cols = +cell.dataset.col;
@@ -354,7 +354,7 @@ export class ContextMenu {
 
       // Regular item
       const btn = createElement('button', { type: 'button', class: 'an-context-item', 'data-name': it.name || '' });
-      if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) btn.disabled = true;
+      if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) /** @type {HTMLButtonElement} */ (btn).disabled = true;
       if (it.icon) {
         const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
         iconSpan.innerHTML = it.icon;
@@ -454,7 +454,7 @@ export class ContextMenu {
     let node = range.startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node) return type === 'foreColor' ? '#000000' : 'transparent';
-    const cs = window.getComputedStyle(node);
+    const cs = window.getComputedStyle(/** @type {Element} */ (node));
     if (type === 'foreColor') {
       return cs.color || '#000000';
     }
@@ -488,7 +488,7 @@ export class ContextMenu {
     if (!node || !editable || !editable.contains(node)) return;
 
     // Walk up to collect explicitly-set inline properties from the nearest styled ancestor
-    const cs = window.getComputedStyle(node);
+    const cs = window.getComputedStyle(/** @type {Element} */ (node));
 
     // Detect if an explicit font-family / font-size is set on an element (not just inherited)
     const explicitFontFamily = this._findExplicitStyle(node, editable, 'fontFamily');
@@ -609,7 +609,7 @@ export class ContextMenu {
     let el;
     while ((el = iter.nextNode())) {
       if (!editable.contains(el) || el === editable) continue;
-      try { if (range.intersectsNode(el)) el.removeAttribute('style'); } catch { /* ignore */ }
+      try { if (range.intersectsNode(el)) /** @type {Element} */ (el).removeAttribute('style'); } catch { /* ignore */ }
     }
 
     this.context.invoke('editor.afterCommand');

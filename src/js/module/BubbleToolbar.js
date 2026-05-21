@@ -53,7 +53,7 @@ const _ACTIONS = {
     if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
       const range = sel.getRangeAt(0);
       const ancestor = range.commonAncestorContainer;
-      const root = ancestor.nodeType === 1 ? ancestor : ancestor.parentElement;
+      const root = /** @type {Element|null} */ (ancestor.nodeType === 1 ? ancestor : ancestor.parentElement);
       if (root) {
         const candidates = [root, ...root.querySelectorAll('[style]')];
         for (const el of candidates) {
@@ -249,9 +249,10 @@ export class BubbleToolbar {
     document.body.appendChild(picker);
 
     this._picker = picker;
-    this._picker._paletteEl = palette;
-    this._picker._noColorBtn = noColorBtn;
-    this._picker._colorInput = colorInput;
+    const pickerAny = /** @type {any} */ (picker);
+    pickerAny._paletteEl = palette;
+    pickerAny._noColorBtn = noColorBtn;
+    pickerAny._colorInput = colorInput;
   }
 
   _openColorPicker(type, anchorBtn) {
@@ -264,8 +265,9 @@ export class BubbleToolbar {
     this._pickerType = type;
 
     // Toggle "No highlight" swatch based on type
-    const palette = this._picker._paletteEl;
-    const noColorBtn = this._picker._noColorBtn;
+    const pickerAny = /** @type {any} */ (this._picker);
+    const palette = pickerAny._paletteEl;
+    const noColorBtn = pickerAny._noColorBtn;
     if (type === 'hiliteColor') {
       if (!palette.contains(noColorBtn)) palette.appendChild(noColorBtn);
     } else {
@@ -273,7 +275,7 @@ export class BubbleToolbar {
     }
 
     // Seed the custom color input
-    this._picker._colorInput.value = type === 'foreColor' ? '#000000' : '#ffff00';
+    /** @type {any} */ (this._picker)._colorInput.value = type === 'foreColor' ? '#000000' : '#ffff00';
 
     // Position the picker above the bubble toolbar (not blocking the content below it).
     // Fall back to below the toolbar if there's not enough room above.
@@ -320,7 +322,7 @@ export class BubbleToolbar {
     const name = type === 'hiliteColor' ? 'hiliteColor' : 'foreColor';
     const btn = this._el && this._el.querySelector(`[data-name="${name}"]`);
     const strip = btn && btn.querySelector('.an-bubble-color-strip');
-    if (strip) strip.style.background = color === 'transparent' ? 'transparent' : color;
+    if (strip) /** @type {HTMLElement} */ (strip).style.background = color === 'transparent' ? 'transparent' : color;
 
     this._closeColorPicker();
     this._syncActive();
@@ -371,7 +373,7 @@ export class BubbleToolbar {
   _syncActive() {
     if (!this._btnCache) return;
     this._btnCache.forEach((btn) => {
-      const activeFn = _ACTIVE[btn.dataset.name];
+      const activeFn = _ACTIVE[/** @type {HTMLElement} */ (btn).dataset.name];
       btn.classList.toggle('an-active', !!(activeFn && activeFn()));
     });
   }
@@ -384,17 +386,17 @@ export class BubbleToolbar {
     let node = sel.getRangeAt(0).startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node) return;
-    const cs = window.getComputedStyle(node);
+    const cs = window.getComputedStyle(/** @type {Element} */ (node));
 
     const foreBtn = this._el.querySelector('[data-name="foreColor"]');
     const foreStrip = foreBtn && foreBtn.querySelector('.an-bubble-color-strip');
-    if (foreStrip) foreStrip.style.background = cs.color || '#000000';
+    if (foreStrip) /** @type {HTMLElement} */ (foreStrip).style.background = cs.color || '#000000';
 
     const hiliteBtn = this._el.querySelector('[data-name="hiliteColor"]');
     const hiliteStrip = hiliteBtn && hiliteBtn.querySelector('.an-bubble-color-strip');
     if (hiliteStrip) {
       const bg = cs.backgroundColor;
-      hiliteStrip.style.background = (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') ? 'transparent' : bg;
+      /** @type {HTMLElement} */ (hiliteStrip).style.background = (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') ? 'transparent' : bg;
     }
   }
 

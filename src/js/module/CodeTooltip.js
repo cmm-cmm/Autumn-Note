@@ -40,21 +40,22 @@ export class CodeTooltip {
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
-        const pre = e.target.closest('pre');
+        const pre = /** @type {Element} */ (e.target)?.closest('pre');
         if (pre && editable.contains(pre)) {
           this._scheduleShow(pre);
         }
       }),
       on(editable, 'mouseout', (e) => {
-        const to = e.relatedTarget;
+        const to = /** @type {Node|null} */ (/** @type {MouseEvent} */ (e).relatedTarget);
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }
       }),
       on(document, 'click', (e) => {
+        const et = /** @type {Node} */ (e.target);
         if (this._activePre &&
-          !this._activePre.contains(e.target) &&
-          !this._el.contains(e.target)) {
+          !this._activePre.contains(et) &&
+          !this._el.contains(et)) {
           this._hide();
         }
       }),
@@ -92,11 +93,11 @@ export class CodeTooltip {
     el.appendChild(this._sep());
 
     // Language selector
-    this._langSelect = createElement('select', {
+    this._langSelect = /** @type {HTMLSelectElement} */ (createElement('select', {
       class: 'an-code-lang-select',
       title: L.syntaxLanguage,
       'aria-label': L.syntaxAriaLabel,
-    });
+    }));
     const LANGUAGES = [
       ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
       ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['json', 'JSON'],
@@ -304,6 +305,7 @@ export class CodeTooltip {
     const pre = this._activePre;
     if (!pre) return;
     const lang = this._langSelect.value;
+    const _w = /** @type {any} */ (window);
 
     // Ensure a <code> child exists (Prism targets <pre><code class="language-xxx">)
     let codeEl = pre.querySelector('code');
@@ -328,14 +330,14 @@ export class CodeTooltip {
     // which drops <br> entirely, collapsing all lines into one. Convert first.
     const applyPrism = () => {
       codeEl.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
-      window.Prism.highlightElement(codeEl);
+      _w.Prism.highlightElement(codeEl);
       this.context.invoke('editor.afterCommand');
     };
 
     if (lang) {
-      if (typeof window.Prism !== 'undefined') {
+      if (typeof _w.Prism !== 'undefined') {
         // Grammar already loaded — highlight immediately
-        if (window.Prism.languages[lang]) {
+        if (_w.Prism.languages[lang]) {
           applyPrism();
           return;
         }
@@ -345,7 +347,7 @@ export class CodeTooltip {
       } else if (this._prismScript) {
         // Prism core is still loading — highlight once it arrives, then load grammar if needed
         this._prismScript.addEventListener('load', () => {
-          if (window.Prism.languages[lang]) {
+          if (_w.Prism.languages[lang]) {
             applyPrism();
           } else {
             this._loadPrismComponent(lang, applyPrism);
@@ -363,7 +365,8 @@ export class CodeTooltip {
    * Called once at initialize time. Fire-and-forget; errors are silent.
    */
   _ensurePrism() {
-    if (!this.context.options.codeHighlight || window.Prism) return;
+    const _w = /** @type {any} */ (window);
+    if (!this.context.options.codeHighlight || _w.Prism) return;
     const cdn = this.context.options.codeHighlightCDN;
     const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
     const scriptSrc = `${cdn}/prism.min.js`;
@@ -377,7 +380,7 @@ export class CodeTooltip {
 
     const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
     if (existingScript) {
-      this._prismScript = window.Prism ? null : existingScript;
+      this._prismScript = _w.Prism ? null : existingScript;
       return;
     }
 
@@ -397,13 +400,14 @@ export class CodeTooltip {
    * @param {Function} cb  – called once the grammar is ready
    */
   _loadPrismComponent(lang, cb) {
+    const _w = /** @type {any} */ (window);
     const cdn = this.context.options.codeHighlightCDN;
     const src = `${cdn}/components/prism-${lang}.min.js`;
     // Avoid loading the same component twice
     if (document.querySelector(`script[src="${src}"]`)) {
       // Already in DOM — might still be loading; poll briefly then call cb
       const poll = setInterval(() => {
-        if (window.Prism && window.Prism.languages[lang]) {
+        if (_w.Prism && _w.Prism.languages[lang]) {
           clearInterval(poll);
           cb();
         }
@@ -413,7 +417,7 @@ export class CodeTooltip {
     }
     const s = document.createElement('script');
     s.src = src;
-    s.addEventListener('load', cb, { once: true });
+    s.addEventListener('load', /** @type {EventListener} */ (cb), { once: true });
     document.head.appendChild(s);
   }
 

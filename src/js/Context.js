@@ -59,7 +59,7 @@ export class Context {
     this.locale = resolveLocale(this.options.lang);
 
     /** @type {{ container: HTMLElement, editable: HTMLElement, toolbar?: HTMLElement, statusbar?: HTMLElement }} */
-    this.layoutInfo = {};
+    this.layoutInfo = /** @type {any} */ ({});
 
     /** @type {Map<string, Function[]>} */
     this._listeners = new Map();
@@ -167,7 +167,7 @@ export class Context {
   /**
    * Registers and initialises a custom module on this instance.
    * @param {string} name
-   * @param {Function} ModuleClass
+   * @param {new (ctx: this) => any} ModuleClass
    * @returns {this}
    */
   registerModule(name, ModuleClass) {
@@ -578,7 +578,7 @@ export class Context {
    */
   _syncToTarget() {
     if (this.targetEl.tagName === 'TEXTAREA' || this.targetEl.tagName === 'INPUT') {
-      this.targetEl.value = this.getHTML();
+      /** @type {HTMLInputElement} */ (this.targetEl).value = this.getHTML();
     }
   }
 }

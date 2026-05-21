@@ -9,6 +9,7 @@
  *   const editor = AutumnNote.create('#my-editor');
  */
 
+// @ts-ignore
 import '../styles/autumnnote.scss';
 import { Context, _customModules, _globalPlugins } from './Context.js';
 import { registerButton } from './module/Buttons.js';
@@ -49,7 +50,7 @@ const AutumnNote = {
     const elements = resolveElements(selector);
     const ctxs = elements.map((el) => {
       if (instances.has(el)) return instances.get(el);
-      const ctx = new Context(el, options);
+      const ctx = new Context(/** @type {HTMLElement} */ (el), options);
       ctx.initialize();
       instances.set(el, ctx);
       return ctx;
@@ -159,7 +160,7 @@ function resolveElements(selector) {
     return [selector];
   }
   if (selector instanceof NodeList || Array.isArray(selector)) {
-    return Array.from(selector);
+    return /** @type {Element[]} */ (Array.from(selector));
   }
   return [];
 }

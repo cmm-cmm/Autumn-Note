@@ -61,4 +61,15 @@ describe('Fullscreen', () => {
     fs.toggle();
     expect(fs.isActive()).toBe(false);
   });
+
+  it('destroy() calls deactivate when active', () => {
+    const context = makeContext();
+    const fs = new Fullscreen(context);
+    fs.initialize();
+    fs.activate();
+    expect(fs.isActive()).toBe(true);
+    fs.destroy();
+    expect(fs.isActive()).toBe(false);
+    expect(context.layoutInfo.container.classList.contains('an-fullscreen')).toBe(false);
+  });
 });

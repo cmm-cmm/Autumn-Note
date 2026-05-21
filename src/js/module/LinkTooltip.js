@@ -33,14 +33,14 @@ export class LinkTooltip {
     this._disposers.push(
       // Detect when pointer enters a link
       on(editable, 'mouseover', (e) => {
-        const anchor = e.target.closest('a[href]');
+        const anchor = /** @type {Element} */ (e.target)?.closest('a[href]');
         if (anchor && editable.contains(anchor)) {
           this._scheduleShow(anchor);
         }
       }),
       // Detect when pointer leaves the editable area entirely
       on(editable, 'mouseout', (e) => {
-        const to = e.relatedTarget;
+        const to = /** @type {Node|null} */ (/** @type {MouseEvent} */ (e).relatedTarget);
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }

@@ -39,21 +39,22 @@ export class ImageTooltip {
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
-        const img = e.target.closest('img');
+        const img = /** @type {Element} */ (e.target)?.closest('img');
         // Skip when the image is inside a link — LinkTooltip takes priority there
         if (img && editable.contains(img) && !img.closest('a[href]')) {
           this._scheduleShow(img);
         }
       }, { passive: true }),
       on(editable, 'mouseout', (e) => {
-        const to = e.relatedTarget;
+        const to = /** @type {Node|null} */ (/** @type {MouseEvent} */ (e).relatedTarget);
         if (!to || (!editable.contains(to) && !this._el.contains(to))) {
           this._scheduleHide();
         }
       }, { passive: true }),
       // Hide when image is deselected by clicking elsewhere
       on(document, 'click', (e) => {
-        if (this._activeImg && !this._activeImg.contains(e.target) && !this._el.contains(e.target)) {
+        const et = /** @type {Node} */ (e.target);
+        if (this._activeImg && !this._activeImg.contains(et) && !this._el.contains(et)) {
           this._hide();
         }
       }),

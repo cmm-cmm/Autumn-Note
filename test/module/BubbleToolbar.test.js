@@ -670,3 +670,50 @@ describe('BubbleToolbar button click handlers', () => {
     }
   });
 });
+
+// ── contextMenu event integration ─────────────────────────────────────────────
+
+describe('BubbleToolbar contextMenu event handlers', () => {
+  it('contextMenu:show event hides toolbar and sets _contextMenuOpen', () => {
+    const { bt, ctx } = makeBubble();
+    bt._show(MOCK_RECT);
+    expect(bt._visible).toBe(true);
+
+    // Find and invoke the contextMenu:show callback registered via context.on
+    const showCall = ctx.on.mock.calls.find(([ev]) => ev === 'contextMenu:show');
+    expect(showCall).toBeTruthy();
+    showCall[1](); // call the callback
+
+    expect(bt._contextMenuOpen).toBe(true);
+    expect(bt._visible).toBe(false);
+  });
+
+  it('contextMenu:hide event clears _contextMenuOpen flag', () => {
+    const { bt, ctx } = makeBubble();
+    bt._contextMenuOpen = true;
+
+    const hideCall = ctx.on.mock.calls.find(([ev]) => ev === 'contextMenu:hide');
+    expect(hideCall).toBeTruthy();
+    hideCall[1](); // call the callback
+
+    expect(bt._contextMenuOpen).toBe(false);
+  });
+
+  it('_syncActive covers strikethrough active state', () => {
+    const { bt } = makeBubble();
+    Object.defineProperty(document, 'queryCommandState', {
+      value: (cmd) => cmd === 'strikeThrough',
+      configurable: true,
+      writable: true,
+    });
+
+    bt._show(MOCK_RECT);
+    bt._syncActive();
+
+    Object.defineProperty(document, 'queryCommandState', {
+      value: () => false,
+      configurable: true,
+      writable: true,
+    });
+  });
+});

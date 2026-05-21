@@ -37,8 +37,9 @@ function _domToMd(node, depth = 0) {
   }
   if (node.nodeType !== 1) return '';
 
-  const tag = node.nodeName.toLowerCase();
-  const inner = () => Array.from(node.childNodes).map(n => _domToMd(n, depth)).join('');
+  const el = /** @type {Element} */ (node);
+  const tag = el.nodeName.toLowerCase();
+  const inner = () => Array.from(el.childNodes).map(n => _domToMd(n, depth)).join('');
 
   switch (tag) {
     case 'p':
@@ -61,14 +62,14 @@ function _domToMd(node, depth = 0) {
     case 'sub':      return `~${inner()}~`;
     case 'code': {
       // Inside <pre> we emit raw text; outside we wrap in backticks
-      if (node.closest('pre')) return inner();
+      if (el.closest('pre')) return inner();
       return `\`${inner()}\``;
     }
     case 'pre': {
-      const codeEl = node.querySelector('code');
+      const codeEl = el.querySelector('code');
       const langMatch = ((codeEl && codeEl.className) || '').match(/language-(\S+)/);
       const lang = langMatch ? langMatch[1] : '';
-      const content = (codeEl || node).textContent || '';
+      const content = (codeEl || el).textContent || '';
       return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
     }
     case 'blockquote': {
@@ -76,23 +77,23 @@ function _domToMd(node, depth = 0) {
       return `\n\n${lines.map((l) => `> ${l}`).join('\n')}\n\n`;
     }
     case 'a': {
-      const href = node.getAttribute('href') || '';
+      const href = el.getAttribute('href') || '';
       return `[${inner()}](${href})`;
     }
     case 'img': {
-      const src = node.getAttribute('src') || '';
-      const alt = node.getAttribute('alt') || '';
+      const src = el.getAttribute('src') || '';
+      const alt = el.getAttribute('alt') || '';
       return `![${alt}](${src})`;
     }
     case 'ul': {
-      const items = Array.from(node.querySelectorAll(':scope > li'));
+      const items = Array.from(el.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
       const lines = items.map((li) => `${indent}- ${_domToMd(li, depth + 1).trim()}`).join('\n');
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'ol': {
-      const items = Array.from(node.querySelectorAll(':scope > li'));
+      const items = Array.from(el.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
       const lines = items.map((li, i) => `${indent}${i + 1}. ${_domToMd(li, depth + 1).trim()}`).join('\n');
@@ -101,7 +102,7 @@ function _domToMd(node, depth = 0) {
     case 'li':  return inner();
     case 'hr':  return '\n\n---\n\n';
     case 'table': {
-      const rows = Array.from(node.querySelectorAll('tr'));
+      const rows = Array.from(el.querySelectorAll('tr'));
       if (!rows.length) return inner();
       const cellTexts = rows.map((tr) =>
         Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replace(/\|/g, '\\|')),

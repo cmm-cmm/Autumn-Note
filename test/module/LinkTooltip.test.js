@@ -333,4 +333,52 @@ describe('LinkTooltip._copyLink', () => {
     lt._copyLink();
     expect(writeText).not.toHaveBeenCalled();
   });
+
+  it('uses execCommand fallback when clipboard API rejects', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const { lt, ctx } = makeTooltip();
+    showAnchor(lt, ctx);
+
+    lt._copyLink();
+    // Flush the microtask so .catch() runs
+    await Promise.resolve();
+
+    // A textarea should have been created, had execCommand called, and been removed
+    expect(document.querySelector('textarea')).toBeNull();
+  });
+});
+
+describe('LinkTooltip positioning overflow', () => {
+  it('positions above anchor when no room below', () => {
+    const { lt, ctx } = makeTooltip();
+    const anchor = ctx.layoutInfo.editable.querySelector('a');
+    // Simulate anchor near bottom of viewport
+    anchor.getBoundingClientRect = () => ({ top: 750, bottom: 770, left: 100, right: 200, width: 100, height: 20 });
+
+    vi.stubGlobal('innerHeight', 780);
+    lt._show(anchor);
+
+    // top should be less than 770 (positioned above)
+    const topVal = parseFloat(lt._el.style.top);
+    expect(topVal).toBeLessThan(770);
+
+    vi.unstubAllGlobals();
+  });
+
+  it('shifts left when tooltip would overflow right edge', () => {
+    const { lt, ctx } = makeTooltip();
+    const anchor = ctx.layoutInfo.editable.querySelector('a');
+    // Anchor near right edge
+    anchor.getBoundingClientRect = () => ({ top: 50, bottom: 70, left: 900, right: 1000, width: 100, height: 20 });
+
+    vi.stubGlobal('innerWidth', 1000);
+    lt._show(anchor);
+
+    const leftVal = parseFloat(lt._el.style.left);
+    // With tipW=260 and innerWidth=1000, left should be shifted left from 900
+    expect(leftVal).toBeLessThan(900);
+
+    vi.unstubAllGlobals();
+  });
 });

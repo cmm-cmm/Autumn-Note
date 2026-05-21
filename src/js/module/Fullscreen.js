@@ -21,7 +21,7 @@ export class Fullscreen {
   initialize() {
     // Press Escape to exit fullscreen
     const d = on(document, 'keydown', (event) => {
-      if (this._active && isKey(event, key.ESCAPE)) {
+      if (this._active && isKey(/** @type {KeyboardEvent} */ (event), key.ESCAPE)) {
         this.deactivate();
       }
     });

@@ -69,36 +69,36 @@ export class LinkDialog {
     // URL field
     const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = L.url;
-    const urlInput = createElement('input', {
+    const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'url',
       class: 'an-input',
       placeholder: L.urlPlaceholder,
       id: 'an-link-url',
       name: 'url',
       autocomplete: 'off',
-    });
+    }));
     this._urlInput = urlInput;
 
     // Text field
     const textLabel = createElement('label', { class: 'an-label' });
     textLabel.textContent = L.displayText;
-    const textInput = createElement('input', {
+    const textInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
       class: 'an-input',
       placeholder: L.textPlaceholder,
       id: 'an-link-text',
       name: 'linkText',
       autocomplete: 'off',
-    });
+    }));
     this._textInput = textInput;
 
     // Open in new tab
     const tabLabel = createElement('label', { class: 'an-label an-label-inline' });
-    const tabCheckbox = createElement('input', {
+    const tabCheckbox = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'checkbox',
       id: 'an-link-newtab',
       name: 'openInNewTab',
-    });
+    }));
     this._tabCheckbox = tabCheckbox;
     tabLabel.appendChild(tabCheckbox);
     tabLabel.appendChild(document.createTextNode(' ' + L.openInNewTab));
@@ -119,8 +119,8 @@ export class LinkDialog {
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    const d4 = on(urlInput,  'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    const d5 = on(textInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d4 = on(urlInput,  'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d5 = on(textInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     this._disposers.push(d1, d2, d3, d4, d5);
 
     return overlay;
@@ -142,9 +142,9 @@ export class LinkDialog {
       }
     }
     if (anchor) {
-      this._urlInput.value = anchor.getAttribute('href') || '';
+      this._urlInput.value = /** @type {Element} */ (anchor).getAttribute('href') || '';
       this._textInput.value = anchor.textContent || '';
-      this._tabCheckbox.checked = anchor.getAttribute('target') === '_blank';
+      this._tabCheckbox.checked = /** @type {Element} */ (anchor).getAttribute('target') === '_blank';
     } else {
       this._urlInput.value = '';
       this._textInput.value = sel ? sel.toString() : '';

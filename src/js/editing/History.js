@@ -11,7 +11,7 @@ export class History {
   constructor(editable, limit = 100) {
     this.editable = editable;
     this._limit = limit;
-    /** @type {Array<{html: string, range: {sc: string, so: number, ec: string, eo: number}|null}>} */
+    /** @type {Array<{html: string, images?: Record<string,string>, sel: {start: number, end: number}|null}>} */
     this.stack = [];
     this.stackOffset = -1;
     this._savePoint();
@@ -54,7 +54,7 @@ export class History {
     let cur;
     while ((cur = walker.nextNode())) {
       if (cur === node) return count + offset;
-      count += cur.length;
+      count += /** @type {Text} */ (cur).length;
     }
     return 0;
   }
@@ -71,7 +71,7 @@ export class History {
     const walker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
     let cur;
     while ((cur = walker.nextNode())) {
-      const len = cur.length;
+      const len = /** @type {Text} */ (cur).length;
       if (!startNode && count + len >= saved.start) {
         startNode = cur;
         startOff = saved.start - count;
@@ -88,7 +88,7 @@ export class History {
       const lastWalker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
       let lastNode = null;
       while ((lastNode = lastWalker.nextNode())) { startNode = lastNode; }
-      startOff = startNode ? startNode.length : 0;
+      startOff = startNode ? /** @type {Text} */ (startNode).length : 0;
       endNode = startNode;
       endOff = startOff;
     }
@@ -148,8 +148,8 @@ export class History {
    */
   _tokenizeImages(html) {
     // Fast-path: skip regex entirely when there are no data URIs (common case)
-    if (!html.includes('data:')) return { html, images: {} };
-    const images = {};
+    if (!html.includes('data:')) return { html, images: /** @type {Record<string,string>} */ ({}) };
+    const images = /** @type {Record<string,string>} */ ({});
     let index = 0;
     const tokenized = html.replace(/data:[^;]+;base64,[^"' >]*/g, (match) => {
       const token = `__asn_img_${index}__`;
