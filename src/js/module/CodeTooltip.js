@@ -100,8 +100,8 @@ export class CodeTooltip {
     }));
     const LANGUAGES = [
       ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
-      ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['json', 'JSON'],
-      ['xml', 'XML'], ['bash', 'Bash / Shell'], ['sql', 'SQL'],
+      ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['scss', 'SCSS'],
+      ['json', 'JSON'], ['xml', 'XML'], ['bash', 'Bash / Shell'], ['sql', 'SQL'],
       ['java', 'Java'], ['csharp', 'C#'], ['php', 'PHP'], ['ruby', 'Ruby'],
       ['go', 'Go'], ['rust', 'Rust'], ['cpp', 'C++'], ['c', 'C'],
       ['kotlin', 'Kotlin'], ['swift', 'Swift'],
@@ -299,6 +299,28 @@ export class CodeTooltip {
     this._syncWrapBtn();
     this.context.invoke('editor.afterCommand');
     this._positionNear(pre);
+  }
+
+  /**
+   * Applies a language to a given <pre> element: sets classes, data-language,
+   * and triggers Prism highlighting. Called by the auto-detect flow.
+   * @param {HTMLElement} pre
+   * @param {string} lang - Prism language identifier, e.g. 'javascript'
+   */
+  applyLanguage(pre, lang) {
+    if (!pre || !lang) return;
+    // Temporarily set activePre so _onLangChange can target it
+    const savedPre    = this._activePre;
+    const savedSelect = this._langSelect ? this._langSelect.value : '';
+    this._activePre = pre;
+    if (this._langSelect) this._langSelect.value = lang;
+    this._onLangChange();
+    // Update the select to reflect the detected language when tooltip is shown
+    if (this._langSelect) this._langSelect.value = lang;
+    this._activePre = savedPre || pre;
+    // Don't restore savedPre if it was null — keep `pre` as activePre so that
+    // the tooltip select is correct the first time the user hovers over it.
+    void savedSelect;
   }
 
   _onLangChange() {

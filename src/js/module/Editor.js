@@ -12,6 +12,7 @@ import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
+import { detectLang } from '../core/detectLang.js';
 
 export class Editor {
   /**
@@ -548,9 +549,35 @@ export class Editor {
   print()           { this.context.print(); }
 
   /**
-   * @param {string} tagName - e.g. 'h1', 'p', 'blockquote'
+   * @param {string} tagName - e.g. 'h1', 'p', 'blockquote', 'pre'
    */
-  formatBlock(tagName) { Style.formatBlock(tagName); this.afterCommand(); }
+  formatBlock(tagName) {
+    Style.formatBlock(tagName);
+
+    // Auto-detect the programming language when the user formats a code block.
+    // Only runs when converting TO <pre> and the block has no language yet.
+    if (tagName === 'pre') {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const container = sel.getRangeAt(0).commonAncestorContainer;
+        const pre = /** @type {Element|null} */ (
+          container.nodeType === 1
+            ? /** @type {Element} */ (container).closest('pre')
+            : (/** @type {Element|null} */ (container.parentElement))?.closest('pre')
+        );
+        if (pre && !pre.getAttribute('data-language')) {
+          const code = pre.textContent || '';
+          const lang = detectLang(code);
+          if (lang) {
+            this.context.invoke('codeTooltip.applyLanguage', pre, lang);
+            return; // applyLanguage already calls afterCommand internally
+          }
+        }
+      }
+    }
+
+    this.afterCommand();
+  }
 
   /**
    * @param {string} color
