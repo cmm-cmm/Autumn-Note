@@ -79,7 +79,12 @@
       "Bash(awk -F'|' '{gsub\\(/ /,\"\",$5\\); if \\($5+0 < 88\\) print $0}')",
       "Bash(awk -F'|' 'NF>5 {gsub\\(/ /,\"\",$6\\); if \\($6+0 < 88 && $6+0 > 0\\) print $1, $5, $6, $7}')",
       "Bash(sort -k3 -rn)",
-      "Bash(awk '/\\\\.an-theme-dark/,/^}/' src/styles/autumnnote.scss)"
+      "Bash(awk '/\\\\.an-theme-dark/,/^}/' src/styles/autumnnote.scss)",
+      "Bash(ls demo/)",
+      "Bash(ls docs/)",
+      "Bash(powershell -Command \"\\(Get-Content index.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' -replace '\\\\\"softwareVersion\\\\\": \\\\\"1\\\\.5\\\\.0\\\\\"', '\\\\\"softwareVersion\\\\\": \\\\\"1.6.0\\\\\"' | Set-Content index.html -Encoding UTF8\")",
+      "Bash(powershell -Command \"\\(Get-Content docs.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' -replace 'AutumnNote v1\\\\.5\\\\.0', 'AutumnNote v1.6.0' | Set-Content docs.html -Encoding UTF8\")",
+      "Bash(powershell -Command \"\\(Get-Content playground.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' | Set-Content playground.html -Encoding UTF8\")"
     ]
   }
 }
