@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Clipboard } from '../../src/js/module/Clipboard.js';
 
+if (typeof document.execCommand !== 'function') {
+  Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+}
+
 afterEach(() => {
   document.body.innerHTML = '';
   vi.restoreAllMocks();
@@ -365,5 +369,234 @@ describe('Clipboard._onDrop', () => {
   it('returns early when no dataTransfer', () => {
     const { cb } = makeClipboard();
     expect(() => cb._onDrop({ dataTransfer: null })).not.toThrow();
+  });
+
+  it('returns early when no image files in drop', () => {
+    const { cb } = makeClipboard();
+    const textFile = new File(['txt'], 'doc.txt', { type: 'text/plain' });
+    const event = {
+      dataTransfer: { files: [textFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    cb._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('calls _insertImageFiles when image file is dropped', () => {
+    const onImageUpload = vi.fn();
+    const { cb } = makeClipboard({ onImageUpload });
+    const imgFile = new File(['data'], 'photo.png', { type: 'image/png' });
+    const event = {
+      dataTransfer: { files: [imgFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(onImageUpload).toHaveBeenCalledWith([imgFile]);
+  });
+});
+
+// ── _onPaste ──────────────────────────────────────────────────────────────────
+
+describe('Clipboard._onPaste', () => {
+  beforeEach(() => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+  });
+
+  function makePasteEvent(types, dataMap = {}) {
+    return {
+      clipboardData: {
+        items: [],
+        types,
+        getData: (t) => dataMap[t] || '',
+        includes: (t) => types.includes(t),
+      },
+      preventDefault: vi.fn(),
+    };
+  }
+
+  it('returns early when no clipboardData', () => {
+    const { cb } = makeClipboard();
+    expect(() => cb._onPaste({ clipboardData: null })).not.toThrow();
+    expect(document.execCommand).not.toHaveBeenCalled();
+  });
+
+  it('pastes as plain text when forcePlain is true', () => {
+    const { cb } = makeClipboard();
+    cb._forcePlain = true;
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'Hello World' });
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('Hello World'));
+    expect(cb._forcePlain).toBe(false);
+  });
+
+  it('pastes as plain text when pasteAsPlainText option is true', () => {
+    const { cb } = makeClipboard({ pasteAsPlainText: true });
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'Plain only' });
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.any(String));
+  });
+
+  it('converts multi-line plain text to paragraphs', () => {
+    const { cb } = makeClipboard({ pasteAsPlainText: true });
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'Line 1\nLine 2' });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.find(([cmd]) => cmd === 'insertHTML');
+    expect(call[2]).toContain('<p>');
+  });
+
+  it('converts markdown to HTML when no text/html in clipboard', () => {
+    const { cb } = makeClipboard();
+    const event = makePasteEvent(['text/plain'], { 'text/plain': '# Heading\n\nParagraph' });
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('h1'));
+  });
+
+  it('sanitises HTML when text/html is in clipboard (pasteCleanHTML default)', () => {
+    const { cb } = makeClipboard();
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<p>Hello <strong>world</strong></p>',
+      'text/plain': 'Hello world',
+    });
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('Hello'));
+  });
+
+  it('calls _cleanWordHtml for Word content', () => {
+    const { cb } = makeClipboard();
+    const cleanSpy = vi.spyOn(cb, '_cleanWordHtml').mockReturnValue('<p>clean</p>');
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<p class="MsoNormal">Word content</p>',
+      'text/plain': 'Word content',
+    });
+    cb._onPaste(event);
+    expect(cleanSpy).toHaveBeenCalled();
+  });
+
+  it('calls _cleanSocialHtml for social media content', () => {
+    const { cb } = makeClipboard();
+    const cleanSpy = vi.spyOn(cb, '_cleanSocialHtml').mockReturnValue('<p>clean</p>');
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<span class="x1n2onr6">Social content</span>',
+      'text/plain': 'Social content',
+    });
+    cb._onPaste(event);
+    expect(cleanSpy).toHaveBeenCalled();
+  });
+
+  it('calls _stripAttributes when pasteStripAttributes is true', () => {
+    const { cb } = makeClipboard({ pasteStripAttributes: true });
+    const stripSpy = vi.spyOn(cb, '_stripAttributes').mockReturnValue('<p>stripped</p>');
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<p class="foo">Content</p>',
+      'text/plain': 'Content',
+    });
+    cb._onPaste(event);
+    expect(stripSpy).toHaveBeenCalled();
+  });
+
+  it('calls onPaste hook when provided', () => {
+    const onPaste = vi.fn();
+    const { cb } = makeClipboard({ onPaste });
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'text' });
+    cb._onPaste(event);
+    expect(onPaste).toHaveBeenCalledWith(expect.objectContaining({ text: 'text' }));
+  });
+
+  it('handles image item in clipboard', () => {
+    const onImageUpload = vi.fn();
+    const { cb } = makeClipboard({ onImageUpload });
+    const imgFile = new File(['data'], 'photo.png', { type: 'image/png' });
+    const event = {
+      clipboardData: {
+        items: [{ kind: 'file', type: 'image/png', getAsFile: () => imgFile }],
+        types: ['Files'],
+        getData: () => '',
+      },
+      preventDefault: vi.fn(),
+    };
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(onImageUpload).toHaveBeenCalledWith([imgFile]);
+  });
+});
+
+// ── _insertImageFiles — compress path ─────────────────────────────────────────
+
+describe('Clipboard._insertImageFiles compress path', () => {
+  it('inserts image via blob URL after successful compression', async () => {
+    const { cb } = makeClipboard();
+    const fakeDataUrl = 'data:image/png;base64,abc123';
+    vi.spyOn(cb, '_compressImage').mockResolvedValue(fakeDataUrl);
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake-url');
+    const file = new File(['data'], 'photo.png', { type: 'image/png' });
+    cb._insertImageFiles([file]);
+    await Promise.resolve();
+    expect(cb.context.invoke).toHaveBeenCalledWith('editor.insertImage', 'blob:fake-url', 'photo');
+    URL.createObjectURL.mockRestore?.();
+  });
+
+  it('triggers imageError event when compression fails', async () => {
+    const { cb } = makeClipboard();
+    vi.spyOn(cb, '_compressImage').mockRejectedValue(new Error('canvas error'));
+    const file = new File(['data'], 'photo.png', { type: 'image/png' });
+    cb._insertImageFiles([file]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(cb.context.triggerEvent).toHaveBeenCalledWith(
+      'imageError',
+      expect.objectContaining({ file }),
+    );
+  });
+});
+
+// ── _placeCaretAtPoint ────────────────────────────────────────────────────────
+
+describe('Clipboard._placeCaretAtPoint', () => {
+  it('does not throw when caretRangeFromPoint is unavailable', () => {
+    const { cb } = makeClipboard();
+    const orig = document.caretRangeFromPoint;
+    delete document.caretRangeFromPoint;
+    expect(() => cb._placeCaretAtPoint(100, 100)).not.toThrow();
+    if (orig) document.caretRangeFromPoint = orig;
+  });
+
+  it('sets selection when caretRangeFromPoint returns a range', () => {
+    const { cb } = makeClipboard();
+    const editable = cb.context.layoutInfo.editable;
+    editable.innerHTML = '<p>text</p>';
+    const fakeRange = document.createRange();
+    fakeRange.setStart(editable.querySelector('p').firstChild, 0);
+    const origFn = document.caretRangeFromPoint;
+    document.caretRangeFromPoint = () => fakeRange;
+    expect(() => cb._placeCaretAtPoint(50, 50)).not.toThrow();
+    if (origFn) document.caretRangeFromPoint = origFn;
+    else delete document.caretRangeFromPoint;
+  });
+
+  it('uses caretPositionFromPoint when caretRangeFromPoint is not available', () => {
+    const { cb } = makeClipboard();
+    const editable = cb.context.layoutInfo.editable;
+    editable.innerHTML = '<p>text</p>';
+    const textNode = editable.querySelector('p').firstChild;
+
+    const origCRFP = document.caretRangeFromPoint;
+    delete document.caretRangeFromPoint;
+    document.caretPositionFromPoint = () => ({ offsetNode: textNode, offset: 0 });
+
+    expect(() => cb._placeCaretAtPoint(50, 50)).not.toThrow();
+
+    delete document.caretPositionFromPoint;
+    if (origCRFP) document.caretRangeFromPoint = origCRFP;
   });
 });

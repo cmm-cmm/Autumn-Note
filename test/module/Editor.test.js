@@ -123,6 +123,13 @@ describe('Editor content API', () => {
     expect(context.layoutInfo.editable.innerHTML).toContain('ok');
   });
 
+  it('getText returns a string (innerText or empty)', () => {
+    const context = makeContext('<p>hello</p>');
+    const editor = new Editor(context);
+    const text = editor.getText();
+    expect(typeof text).toBe('string');
+  });
+
   it('setText sets plain text content', () => {
     const context = makeContext('<p>old</p>');
     const editor = new Editor(context);
@@ -593,6 +600,21 @@ describe('Editor insertLink with selection', () => {
     range.collapse(true);
     window.getSelection().addRange(range);
     expect(() => editor.insertLink('https://example.com', 'link', true)).not.toThrow();
+  });
+
+  it('insertLink with openInNewTab=true sets target/rel on found anchor', () => {
+    // Put an <a> in the DOM so _getClosestAnchor() can find it via DOM traversal
+    const context = makeContext('<p><a href="https://old.com">click me</a></p>');
+    const editor = new Editor(context);
+    const a = context.layoutInfo.editable.querySelector('a');
+    const range = document.createRange();
+    range.setStart(a.firstChild, 0);
+    range.setEnd(a.firstChild, 5); // select "click"
+    window.getSelection().addRange(range);
+    editor.insertLink('https://example.com', 'click me', true);
+    // _getClosestAnchor walks up from the text node and finds <a>
+    expect(a.getAttribute('target')).toBe('_blank');
+    expect(a.getAttribute('rel')).toBe('noopener noreferrer');
   });
 });
 

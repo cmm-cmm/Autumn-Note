@@ -711,6 +711,109 @@ describe('ContextMenu table grid', () => {
   });
 });
 
+// ── Default item action function bodies ───────────────────────────────────────
+
+describe('ContextMenu default item actions', () => {
+  function clickItem(cm, name) {
+    const btn = cm.el.querySelector(`button[data-name="${name}"]`);
+    if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    return btn;
+  }
+
+  it('clicking cut item calls document.execCommand cut', () => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    const { cm } = makeMenu();
+    clickItem(cm, 'cut');
+    expect(document.execCommand).toHaveBeenCalledWith('cut');
+  });
+
+  it('clicking copy item calls document.execCommand copy', () => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    const { cm } = makeMenu();
+    clickItem(cm, 'copy');
+    expect(document.execCommand).toHaveBeenCalledWith('copy');
+  });
+
+  it('clicking bold item invokes editor.bold', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'bold');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.bold');
+  });
+
+  it('clicking italic item invokes editor.italic', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'italic');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.italic');
+  });
+
+  it('clicking underline item invokes editor.underline', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'underline');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.underline');
+  });
+
+  it('clicking copyFormat item invokes contextMenu.copyFormat', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'copyFormat');
+    expect(ctx.invoke).toHaveBeenCalledWith('contextMenu.copyFormat');
+  });
+
+  it('clicking removeFormat item invokes contextMenu.removeFormat', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'removeFormat');
+    expect(ctx.invoke).toHaveBeenCalledWith('contextMenu.removeFormat');
+  });
+
+  it('clicking link item invokes linkDialog.show', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'link');
+    expect(ctx.invoke).toHaveBeenCalledWith('linkDialog.show');
+  });
+
+  it('clicking image item invokes imageDialog.show', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'image');
+    expect(ctx.invoke).toHaveBeenCalledWith('imageDialog.show');
+  });
+
+  it('clicking video item invokes videoDialog.show', () => {
+    const { cm, ctx } = makeMenu();
+    clickItem(cm, 'video');
+    expect(ctx.invoke).toHaveBeenCalledWith('videoDialog.show');
+  });
+
+  it('pasteFormat item is disabled when hasCopiedFormat returns false', () => {
+    const { cm } = makeMenu();
+    const btn = cm.el.querySelector('button[data-name="pasteFormat"]');
+    expect(btn).not.toBeNull();
+    expect(btn.disabled).toBe(true);
+  });
+
+  it('_onContextMenu adjusts openY below selection rect when non-zero (line 396)', () => {
+    // jsdom does not implement getBoundingClientRect on Range — add it temporarily
+    Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+      value: () => ({ width: 100, height: 20, bottom: 200, top: 180, left: 100, right: 200 }),
+      configurable: true,
+      writable: true,
+    });
+
+    const { cm, ctx } = makeMenu();
+    const editable = ctx.layoutInfo.editable;
+    const p = editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 0);
+    range.setEnd(p.firstChild, 5);
+    window.getSelection().addRange(range);
+
+    cm._onContextMenu({ target: editable, clientX: 150, clientY: 100, preventDefault: vi.fn() });
+
+    delete Range.prototype.getBoundingClientRect;
+
+    // openY should be selRect.bottom + 4 = 200 + 4 = 204
+    expect(cm._lastY).toBe(204);
+  });
+});
+
 // ── _findExplicitStyle FONT element handling ──────────────────────────────────
 
 describe('ContextMenu._findExplicitStyle FONT element', () => {

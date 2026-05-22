@@ -608,4 +608,62 @@ describe('toggleChecklist cursor in non-standard block', () => {
     // The <p> should have been replaced by a checklist
     expect(editable.querySelector('ul.an-checklist')).not.toBeNull();
   });
+
+  it('inserts checklist via Range API when cursor is in non-block editable root (lines 581-583)', () => {
+    // Use <article> as editable — 'ARTICLE' is not in BLOCK_TAGS so the traversal
+    // reaches null, triggering the else branch that uses Range.insertNode().
+    const editable = document.createElement('article');
+    editable.contentEditable = 'true';
+    editable.textContent = 'Direct text';
+    document.body.appendChild(editable);
+
+    const textNode = editable.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+      removeAllRanges: vi.fn(),
+      addRange: vi.fn(),
+      toString: () => '',
+    }));
+
+    toggleChecklist();
+    vi.unstubAllGlobals();
+
+    // A <ul class="an-checklist"> should have been inserted into the article
+    expect(editable.querySelector('ul.an-checklist')).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toggleChecklist — text inside inline element (line 624)
+// ---------------------------------------------------------------------------
+
+describe('toggleChecklist — text inside inline element', () => {
+  beforeEach(() => {
+    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => false), configurable: true, writable: true });
+  });
+
+  it('converts <p><strong>text</strong></p> to checklist (line 624 traversal)', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<strong>Hello World</strong>';
+    document.body.appendChild(p);
+
+    const strong = p.querySelector('strong');
+    const range = document.createRange();
+    range.setStart(strong.firstChild, 0);
+    range.setEnd(strong.firstChild, strong.textContent.length);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    // The <p> should have been replaced by a checklist
+    const ul = document.body.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    expect(ul.querySelector('li').textContent).toContain('Hello World');
+  });
 });

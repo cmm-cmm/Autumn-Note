@@ -717,3 +717,108 @@ describe('BubbleToolbar contextMenu event handlers', () => {
     });
   });
 });
+
+// ── _ACTIONS function bodies ──────────────────────────────────────────────────
+
+describe('BubbleToolbar _ACTIONS — action function bodies', () => {
+  it('clicking italic button invokes editor.italic', () => {
+    const ctx = makeContext({ bubbleToolbarItems: ['italic'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const btn = bt._el.querySelector('[data-name="italic"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.italic');
+    bt.destroy();
+  });
+
+  it('clicking underline button invokes editor.underline', () => {
+    const ctx = makeContext({ bubbleToolbarItems: ['underline'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const btn = bt._el.querySelector('[data-name="underline"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.underline');
+    bt.destroy();
+  });
+
+  it('clicking strikethrough button invokes editor.strikethrough', () => {
+    const ctx = makeContext({ bubbleToolbarItems: ['strikethrough'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const btn = bt._el.querySelector('[data-name="strikethrough"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.strikethrough');
+    bt.destroy();
+  });
+
+  it('clicking link button invokes linkDialog.show', () => {
+    const ctx = makeContext({ bubbleToolbarItems: ['link'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const btn = bt._el.querySelector('[data-name="link"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('linkDialog.show');
+    bt.destroy();
+  });
+
+  it('clicking inlineCode button invokes editor.inlineCode', () => {
+    const ctx = makeContext({ bubbleToolbarItems: ['inlineCode'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const btn = bt._el.querySelector('[data-name="inlineCode"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.inlineCode');
+    bt.destroy();
+  });
+
+  it('clicking removeFormat button calls execCommand removeFormat and afterCommand', () => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    const ctx = makeContext({ bubbleToolbarItems: ['removeFormat'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+
+    // Set up a real selection so the removeFormat logic can use it
+    const editable = ctx.layoutInfo.editable;
+    const textNode = editable.querySelector('p').firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, 5);
+    window.getSelection().addRange(range);
+
+    const btn = bt._el.querySelector('[data-name="removeFormat"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(document.execCommand).toHaveBeenCalledWith('removeFormat');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    bt.destroy();
+  });
+
+  it('_syncActive calls strikeThrough queryCommandState when button is in toolbar', () => {
+    vi.spyOn(document, 'queryCommandState').mockImplementation((cmd) => cmd === 'strikeThrough');
+    const ctx = makeContext({ bubbleToolbarItems: ['strikethrough'] });
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    bt._syncActive();
+    expect(document.queryCommandState).toHaveBeenCalledWith('strikeThrough');
+    bt.destroy();
+  });
+
+  it('removeFormat removes inline style attribute from styled elements in selection (line 61)', () => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    const ctx = makeContext({ bubbleToolbarItems: ['removeFormat'] });
+    // Put a styled span in the editable so the removeFormat loop covers line 61
+    ctx.layoutInfo.editable.innerHTML = '<p><span style="color:red">Hello world</span></p>';
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+
+    const span = ctx.layoutInfo.editable.querySelector('span');
+    const range = document.createRange();
+    range.setStart(span.firstChild, 0);
+    range.setEnd(span.firstChild, 5);
+    window.getSelection().addRange(range);
+
+    const btn = bt._el.querySelector('[data-name="removeFormat"]');
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    expect(span.hasAttribute('style')).toBe(false);
+    bt.destroy();
+  });
+});

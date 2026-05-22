@@ -382,3 +382,62 @@ describe('LinkTooltip positioning overflow', () => {
     vi.unstubAllGlobals();
   });
 });
+
+// ── mouseover / mouseout event listeners ─────────────────────────────────────
+
+describe('LinkTooltip mouseover/mouseout event listeners', () => {
+  it('mouseover on anchor triggers scheduleShow', () => {
+    vi.useFakeTimers();
+    const { lt, ctx } = makeTooltip();
+    const anchor = ctx.layoutInfo.editable.querySelector('a');
+    anchor.getBoundingClientRect = () => ({ top: 50, bottom: 70, left: 100, right: 200, width: 100, height: 20 });
+
+    anchor.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    vi.advanceTimersByTime(120);
+    expect(lt._el.style.display).toBe('flex');
+    lt.destroy();
+  });
+
+  it('mouseout when relatedTarget is outside editable and tooltip schedules hide', () => {
+    vi.useFakeTimers();
+    const { lt, ctx } = makeTooltip();
+    const anchor = ctx.layoutInfo.editable.querySelector('a');
+    anchor.getBoundingClientRect = () => ({ top: 50, bottom: 70, left: 100, right: 200, width: 100, height: 20 });
+    // First show the tooltip
+    lt._activeAnchor = anchor;
+    lt._show(anchor);
+    expect(lt._el.style.display).toBe('flex');
+
+    // Mouseout with relatedTarget outside editable and tooltip
+    ctx.layoutInfo.editable.dispatchEvent(
+      new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }),
+    );
+    vi.advanceTimersByTime(200);
+    expect(lt._el.style.display).toBe('none');
+    lt.destroy();
+  });
+
+  it('mouseenter on tooltip clears hide timer', () => {
+    vi.useFakeTimers();
+    const { lt, ctx } = makeTooltip();
+    showAnchor(lt, ctx);
+    lt._scheduleHide();
+    expect(lt._hideTimer).not.toBeNull();
+
+    lt._el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    expect(lt._hideTimer).toBeNull();
+    lt.destroy();
+  });
+
+  it('mouseleave from tooltip schedules hide', () => {
+    vi.useFakeTimers();
+    const { lt, ctx } = makeTooltip();
+    showAnchor(lt, ctx);
+    expect(lt._el.style.display).toBe('flex');
+
+    lt._el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    vi.advanceTimersByTime(200);
+    expect(lt._el.style.display).toBe('none');
+    lt.destroy();
+  });
+});

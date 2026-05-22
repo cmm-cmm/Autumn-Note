@@ -90,6 +90,21 @@ describe('Context utilities', () => {
     ctx._syncToTarget();
     expect(ctx.targetEl.value).toBe('<p>fresh</p>');
   });
+
+  it('setDisabled disables checklist checkboxes when set to true', () => {
+    const ctx = makeContext();
+    const editable = document.createElement('div');
+    editable.innerHTML = '<ul class="an-checklist"><li><input type="checkbox"><span>item</span></li></ul>';
+    const container = document.createElement('div');
+    ctx.layoutInfo.editable = editable;
+    ctx.layoutInfo.container = container;
+
+    ctx.setDisabled(true);
+    expect(editable.querySelector('input[type="checkbox"]').hasAttribute('disabled')).toBe(true);
+
+    ctx.setDisabled(false);
+    expect(editable.querySelector('input[type="checkbox"]').hasAttribute('disabled')).toBe(false);
+  });
 });
 
 // ── invoke() ─────────────────────────────────────────────────────────────────

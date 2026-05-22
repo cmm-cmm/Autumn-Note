@@ -124,4 +124,34 @@ describe('AutumnNote integration', () => {
     expect(arr.length).toBeGreaterThan(0);
     arr.forEach((e) => e.destroy());
   });
+
+  it('options.focus:true focuses the editable after initialization', () => {
+    const ta = document.createElement('textarea');
+    ta.id = 'focus-test-editor';
+    document.body.appendChild(ta);
+
+    const focused = [];
+    const origFocus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function () { focused.push(this); };
+
+    const editor = AutumnNote.create('#focus-test-editor', { focus: true });
+    HTMLElement.prototype.focus = origFocus;
+
+    const editable = editor.layoutInfo.editable;
+    expect(focused).toContain(editable);
+    editor.destroy();
+  });
+
+  it('options.onDestroy callback is called when editor is destroyed', () => {
+    const ta = document.createElement('textarea');
+    ta.id = 'ondestroy-test-editor';
+    document.body.appendChild(ta);
+
+    const onDestroy = vi.fn();
+    const editor = AutumnNote.create('#ondestroy-test-editor', { onDestroy });
+    editor.destroy();
+
+    expect(onDestroy).toHaveBeenCalledTimes(1);
+    expect(onDestroy).toHaveBeenCalledWith(editor);
+  });
 });
