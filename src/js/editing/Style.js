@@ -45,7 +45,7 @@ export function underline() {
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
   // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
-  const uEl = container && container.closest && container.closest('u');
+  const uEl = container && /** @type {Element} */ (container).closest('u');
   const nativeState = document.queryCommandState('underline');
   if (uEl && !nativeState) {
     // Browser doesn't recognise the underline state (e.g. inside <code>).
@@ -71,7 +71,7 @@ export function strikethrough() {
   // when the selection spans across nested inline elements.
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
-  const sEl = sc && sc.closest && (sc.closest('s') || sc.closest('strike'));
+  const sEl = sc && (/** @type {Element} */ (sc).closest('s') || /** @type {Element} */ (sc).closest('strike'));
   const nativeState = document.queryCommandState('strikeThrough');
   if (sEl && !nativeState) {
     // Browser doesn’t recognise the strikethrough state (e.g. inside <code>
@@ -116,7 +116,7 @@ export const fontName = (name) => execCommand('fontName', name);
  * Sets the font size (in pt or with unit) for the selection.
  * Uses a span-based approach to set px sizes precisely.
  * @param {string} size - e.g. '14px'
- * @param {HTMLElement} [editable] - scoping element to avoid touching nodes outside this editor
+ * @param {HTMLElement|Document} [editable] - scoping element to avoid touching nodes outside this editor
  */
 export function fontSize(size, editable = document) {
   const sel = window.getSelection();
@@ -226,9 +226,9 @@ export function outdent() {
   if (sel && sel.rangeCount) {
     let container = sel.getRangeAt(0).commonAncestorContainer;
     if (container.nodeType === 3) container = container.parentElement;
-    const checkLi = container && container.closest && container.closest('.an-checklist li');
+    const checkLi = container && /** @type {Element} */ (container).closest('.an-checklist li');
     if (checkLi) {
-      _checklistItemToP(checkLi);
+      _checklistItemToP(/** @type {HTMLElement} */ (checkLi));
       return;
     }
   }
@@ -257,7 +257,7 @@ function _checklistItemToP(checkLi) {
   // Build <p> preserving inline formatting (bold/italic/links) from the item's content
   const p = document.createElement('p');
   for (const child of checkLi.childNodes) {
-    if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+    if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
     p.appendChild(child.cloneNode(true));
   }
   // Strip ZWS anchors left over from checklist markup
@@ -373,7 +373,7 @@ export function currentStyle(editable) {
     ? range.sc
     : range.commonAncestor();
 
-  const el = isElement(container) ? container : container.parentElement;
+  const el = /** @type {Element|null} */ (isElement(container) ? container : container.parentElement);
   if (!el) return {};
 
   const computed = window.getComputedStyle(el);
@@ -402,15 +402,15 @@ export function currentStyle(editable) {
 /**
  * Wraps the selection in an inline <code> element, or unwraps it if the
  * cursor is already inside a <code> that is not inside a <pre>.
- * @param {HTMLElement} [editable]
+ * @param {HTMLElement} [_editable]
  */
-export function toggleInlineCode(editable) {
+export function toggleInlineCode(_editable) {
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return;
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  const codeEl = container && container.closest ? container.closest('code') : null;
+  const codeEl = container && /** @type {Element} */ (container).closest('code');
   if (codeEl && !codeEl.closest('pre')) {
     // Unwrap — save range endpoints relative to surrounding text so we can
     // restore the selection after normalize() merges adjacent text nodes.
@@ -480,7 +480,7 @@ export function isInlineCode() {
   if (!sel || !sel.rangeCount) return false;
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
-  const code = sc && sc.closest ? sc.closest('code') : null;
+  const code = sc && /** @type {Element} */ (sc).closest('code');
   return !!(code && !code.closest('pre'));
 }
 
@@ -509,18 +509,18 @@ export function toggleChecklist() {
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
 
-  const ul = container.closest && container.closest('.an-checklist');
+  const ul = container && /** @type {Element} */ (container).closest('.an-checklist');
   if (ul) {
     // If selection covers multiple <li>, convert them all
     const selectedLis = Array.from(ul.querySelectorAll('li')).filter((li) =>
       sel.containsNode(li, true),
     );
     if (selectedLis.length > 0) {
-      let firstP = null;
+      /** @type {HTMLElement|null} */ let firstP = null;
       selectedLis.forEach((li) => {
         const p = document.createElement('p');
         for (const child of li.childNodes) {
-          if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+          if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
           p.appendChild(child.cloneNode(true));
         }
         p.innerHTML = p.innerHTML.replace(/\u200b/g, '');
@@ -551,9 +551,9 @@ export function toggleChecklist() {
     // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote, etc.)
     // and convert it into a single checklist item.
     const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
-    let block = container;
+    let block = /** @type {Element|null} */ (container);
     while (block && block.parentNode && !BLOCK_TAGS.has(block.tagName)) {
-      block = block.parentNode;
+      block = /** @type {Element|null} */ (block.parentNode);
     }
     // Fallback: if no block element found (e.g. cursor directly in editable root), use the
     // insertion approach with a zero-width-space item so the cursor ends up inside.
@@ -619,7 +619,7 @@ export function toggleChecklist() {
   let node;
   while ((node = iter.nextNode())) {
     if (!range.intersectsNode(node)) continue;
-    let block = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    let block = /** @type {Element|null} */ (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
     while (block && !BLOCK_TAGS_MULTI.has(block.tagName)) {
       block = block.parentElement;
     }
@@ -634,7 +634,7 @@ export function toggleChecklist() {
   // Build checklist and replace collected blocks.
   const newUl = document.createElement('ul');
   newUl.className = 'an-checklist';
-  let lastTextNode = null;
+  /** @type {Text|null} */ let lastTextNode = null;
   blocks.forEach((block) => {
     const li = document.createElement('li');
     const cb = document.createElement('input');
@@ -677,5 +677,5 @@ export function isInChecklist() {
   if (!sel || !sel.rangeCount) return false;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  return !!(container && container.closest && container.closest('.an-checklist li'));
+  return !!(container && /** @type {Element} */ (container).closest('.an-checklist li'));
 }

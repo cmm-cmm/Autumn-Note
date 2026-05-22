@@ -58,7 +58,7 @@ function getCellAfterVisualCol(row, visualIdx) {
     if (vIdx > visualIdx) {
       // next cell after the one that starts at / spans visualIdx
       const next = c.nextElementSibling;
-      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? next : null;
+      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? /** @type {HTMLTableCellElement} */ (next) : null;
     }
   }
   return null;
@@ -115,7 +115,14 @@ const ICONS = {
   tableBorder: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="13" x2="21" y2="13" stroke-width="2"/><line x1="3" y1="20" x2="21" y2="20" stroke-width="3"/></svg>`,
   deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
   selectCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z" fill="currentColor" opacity="0.15"/><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z"/></svg>`,
+  cellShade:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11L8.93 3.36a1 1 0 0 0-1.29.08L3.22 7.8a1 1 0 0 0-.07 1.29L11 20"/><path d="m5 14 5-5"/><path d="M22 22a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2c0-1.5 2.5-5 3.5-5s3.5 3.5 3.5 5z"/></svg>`,
 };
+
+const SHADE_PRESETS = [
+  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
+  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
+  '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
+];
 
 export class TableTooltip {
   /** @param {import('../Context.js').Context} context */
@@ -131,6 +138,10 @@ export class TableTooltip {
     this._sizeApply = null;
     this._sizeTitleEl = null;
     this._sizeInputEl = null;
+    // Cell shade popover
+    this._shadePopover = null;
+    this._shadeTitleEl = null;
+    this._shadeColorStrip = null;
     // Cell selection
     this._selectMode = false;
     this._selectedCells = [];
@@ -146,6 +157,9 @@ export class TableTooltip {
 
     this._sizePopover = this._buildSizePopover();
     document.body.appendChild(this._sizePopover);
+
+    this._shadePopover = this._buildCellShadePopover();
+    document.body.appendChild(this._shadePopover);
 
     const editable = this.context.layoutInfo.editable;
     this._editable = editable;
@@ -182,16 +196,19 @@ export class TableTooltip {
     this._disposers.push(
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
-        const table = e.target.closest('table');
+        const table = /** @type {Element} */ (e.target)?.closest('table');
         if (table && editable.contains(table)) {
-          const cell = e.target.closest('td, th');
-          if (cell) this._activeCell = cell;
+          const cell = /** @type {Element} */ (e.target)?.closest('td, th');
+          if (cell) {
+            this._activeCell = cell;
+            this._syncShadeStrip();
+          }
           this._scheduleShow(table);
         }
       }, { passive: true }),
       on(editable, 'mouseout', (e) => {
         if (this._selectMode) return; // keep tooltip alive during cell selection
-        const to = e.relatedTarget;
+        const to = /** @type {Node|null} */ (/** @type {MouseEvent} */ (e).relatedTarget);
         if (!to || (
           !editable.contains(to) &&
           !this._el.contains(to) &&
@@ -201,14 +218,20 @@ export class TableTooltip {
         }
       }, { passive: true }),
       on(document, 'click', (e) => {
-        if (this._selectMode && this._activeTable && this._activeTable.contains(e.target)) return;
+        const et = /** @type {Node} */ (e.target);
+        if (this._selectMode && this._activeTable && this._activeTable.contains(et)) return;
         if (this._activeTable &&
-          !this._activeTable.contains(e.target) &&
-          !this._el.contains(e.target) &&
-          !(this._sizePopover && this._sizePopover.contains(e.target))) {
+          !this._activeTable.contains(et) &&
+          !this._el.contains(et) &&
+          !(this._sizePopover && this._sizePopover.contains(et))) {
           this._hide();
         }
       }),
+      // Sync shade strip whenever selection moves to a different cell
+      on(document, 'selectionchange', () => this._syncShadeStrip()),
+      // Hide when the page scrolls or resizes — the tooltip position becomes stale
+      on(window, 'scroll',  () => this._hide(), { passive: true }),
+      on(window, 'resize',  () => this._hide(), { passive: true }),
     );
 
     this._initResize();
@@ -369,6 +392,10 @@ export class TableTooltip {
       this._sizePopover.parentNode.removeChild(this._sizePopover);
     }
     this._sizePopover = null;
+    if (this._shadePopover && this._shadePopover.parentNode) {
+      this._shadePopover.parentNode.removeChild(this._shadePopover);
+    }
+    this._shadePopover = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -417,6 +444,27 @@ export class TableTooltip {
 
     el.appendChild(this._sep());
 
+    // Cell background shading — uses color-strip variant like foreColor/hiliteColor buttons
+    const shadeBtn = createElement('button', {
+      type: 'button',
+      class: 'an-link-tooltip-btn an-link-tooltip-btn--shade',
+      title: L.cellBackground,
+    });
+    const shadeSvgWrap = createElement('span', { class: 'an-bubble-btn-svg' });
+    shadeSvgWrap.innerHTML = ICONS.cellShade;
+    const shadeStrip = createElement('span', { class: 'an-link-tooltip-color-strip' });
+    shadeBtn.appendChild(shadeSvgWrap);
+    shadeBtn.appendChild(shadeStrip);
+    this._shadeColorStrip = shadeStrip;
+    this._disposers.push(on(shadeBtn, 'click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._openCellShadePopover();
+    }));
+    el.appendChild(shadeBtn);
+
+    el.appendChild(this._sep());
+
     // Resize
     el.appendChild(this._makeBtn(ICONS.colWidth,   L.columnWidth,      () => this._openSizePopover('col')));
     el.appendChild(this._makeBtn(ICONS.rowHeight,  L.rowHeight,        () => this._openSizePopover('row')));
@@ -434,7 +482,8 @@ export class TableTooltip {
       on(el, 'mouseenter', () => this._clearTimers()),
       on(el, 'mouseleave', () => {
         if (this._selectMode) return; // keep tooltip alive during cell selection
-        if (this._sizePopover && this._sizePopover.style.display !== 'none') return;
+        if (this._sizePopover  && this._sizePopover.style.display  !== 'none') return;
+        if (this._shadePopover && this._shadePopover.style.display !== 'none') return;
         this._scheduleHide();
       }),
     );
@@ -494,10 +543,17 @@ export class TableTooltip {
   _show() {
     if (!this._activeTable) return;
     this._el.style.display = 'flex';
+    this._syncShadeStrip();
     // Defer: offsetWidth on a newly-visible element forces layout synchronously
     requestAnimationFrame(() => {
       if (this._activeTable) this._positionNear(this._activeTable);
     });
+  }
+
+  _syncShadeStrip() {
+    if (!this._shadeColorStrip || !this._el || this._el.style.display === 'none') return;
+    const cell = this._getCell();
+    this._shadeColorStrip.style.background = (cell && cell.style.backgroundColor) || 'transparent';
   }
 
   _hide() {
@@ -551,7 +607,7 @@ export class TableTooltip {
     if (sel && sel.rangeCount) {
       let container = sel.getRangeAt(0).commonAncestorContainer;
       if (container.nodeType === 3) container = container.parentElement;
-      const cellFromSel = container && container.closest && container.closest('td, th');
+      const cellFromSel = container && /** @type {Element} */ (container).closest('td, th');
       if (cellFromSel && this._activeTable && this._activeTable.contains(cellFromSel)) {
         return cellFromSel;
       }
@@ -901,9 +957,9 @@ export class TableTooltip {
 
     const titleEl = createElement('div', { class: 'an-size-popover-title' });
     const body    = createElement('div', { class: 'an-size-popover-body' });
-    const inputEl = createElement('input', {
+    const inputEl = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'number', class: 'an-size-input', min: '1', max: '2000', step: '1',
-    });
+    }));
     const unitEl = createElement('span', { class: 'an-size-unit' }, ['px']);
     body.appendChild(inputEl);
     body.appendChild(unitEl);
@@ -931,14 +987,16 @@ export class TableTooltip {
     });
     const d2 = on(cancelBtn, 'click', () => this._hideSizePopover());
     const d3 = on(inputEl, 'keydown', (e) => {
-      if (e.key === 'Enter')  { e.preventDefault(); applyBtn.click(); }
-      if (e.key === 'Escape') this._hideSizePopover();
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Enter')  { e.preventDefault(); applyBtn.click(); }
+      if (ke.key === 'Escape') this._hideSizePopover();
     });
     const d4 = on(document, 'click', (e) => {
+      const et = /** @type {Node} */ (e.target);
       if (this._sizePopover &&
           this._sizePopover.style.display !== 'none' &&
-          !this._sizePopover.contains(e.target) &&
-          !this._el.contains(e.target)) {
+          !this._sizePopover.contains(et) &&
+          !this._el.contains(et)) {
         this._hideSizePopover();
       }
     });
@@ -964,7 +1022,7 @@ export class TableTooltip {
       this._sizeTitleEl.textContent = this.context.locale.tooltips.table.tableBorderWidthPx;
       this._sizeInputEl.min   = '0';
       this._sizeInputEl.max   = '10';
-      this._sizeInputEl.value = currentPx;
+      this._sizeInputEl.value = String(currentPx);
       this._sizeApply = (val) => {
         const cells = Array.from(table.querySelectorAll('td, th'));
         if (val === 0) {
@@ -1032,5 +1090,109 @@ export class TableTooltip {
   _hideSizePopover() {
     if (this._sizePopover) this._sizePopover.style.display = 'none';
     this._sizeApply = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cell background shade popover
+  // ---------------------------------------------------------------------------
+
+  _buildCellShadePopover() {
+    const pop = createElement('div', { class: 'an-cell-shade-popover' });
+    pop.style.display = 'none';
+
+    const title = createElement('div', { class: 'an-size-popover-title' });
+    pop.appendChild(title);
+    this._shadeTitleEl = title;
+
+    // 24-color palette — reuse existing CSS classes
+    const palette = createElement('div', { class: 'an-context-color-palette' });
+    SHADE_PRESETS.forEach((color) => {
+      const sw = createElement('div', { class: 'an-context-color-swatch', title: color });
+      sw.style.background = color;
+      this._disposers.push(on(sw, 'click', (e) => {
+        e.stopPropagation();
+        this._applyCellShade(color);
+      }));
+      palette.appendChild(sw);
+    });
+    pop.appendChild(palette);
+
+    // "No shading" row — clears background color
+    const noShadeRow = createElement('div', { class: 'an-context-color-custom' });
+    const noShadeBtn = createElement('button', { type: 'button', class: 'an-shade-no-color' });
+    this._disposers.push(on(noShadeBtn, 'click', () => this._applyCellShade('')));
+    noShadeRow.appendChild(noShadeBtn);
+    pop.appendChild(noShadeRow);
+    this._shadeNoBtn = noShadeBtn;
+
+    // Custom color input
+    const customRow = createElement('div', { class: 'an-context-color-custom' });
+    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#ffffff' }));
+    const customLabel = createElement('span');
+    customLabel.textContent = 'Custom…';
+    this._disposers.push(on(colorInput, 'change', () => this._applyCellShade(colorInput.value)));
+    customRow.appendChild(colorInput);
+    customRow.appendChild(customLabel);
+    pop.appendChild(customRow);
+
+    // Prevent mousedown from collapsing editor selection
+    this._disposers.push(on(pop, 'mousedown', (e) => e.preventDefault()));
+
+    // Keep tooltip alive while hovering popover
+    this._disposers.push(
+      on(pop, 'mouseenter', () => this._clearTimers()),
+      on(pop, 'mouseleave', () => this._scheduleHide()),
+    );
+
+    // Close on outside click
+    this._disposers.push(on(document, 'click', (e) => {
+      const et = /** @type {Node} */ (e.target);
+      if (this._shadePopover &&
+          this._shadePopover.style.display !== 'none' &&
+          !this._shadePopover.contains(et) &&
+          !(this._el && this._el.contains(et))) {
+        this._hideCellShadePopover();
+      }
+    }));
+
+    return pop;
+  }
+
+  _openCellShadePopover() {
+    if (!this._shadePopover) return;
+    const L = this.context.locale.tooltips.table;
+    if (this._shadeTitleEl) this._shadeTitleEl.textContent = L.cellBackground;
+    if (this._shadeNoBtn)   this._shadeNoBtn.textContent  = L.noShading;
+
+    this._shadePopover.style.display = 'block';
+    requestAnimationFrame(() => {
+      if (!this._shadePopover || !this._el) return;
+      const pw = this._shadePopover.offsetWidth  || 170;
+      const ph = this._shadePopover.offsetHeight || 120;
+      const tipRect = this._el.getBoundingClientRect();
+      let left = tipRect.left;
+      let top  = tipRect.bottom + 6;
+      if (left + pw > window.innerWidth  - 8) left = window.innerWidth  - pw - 8;
+      if (top  + ph > window.innerHeight - 8) top  = tipRect.top - ph - 6;
+      this._shadePopover.style.left = `${Math.max(8, left)}px`;
+      this._shadePopover.style.top  = `${Math.max(8, top)}px`;
+    });
+  }
+
+  _hideCellShadePopover() {
+    if (this._shadePopover) this._shadePopover.style.display = 'none';
+  }
+
+  _applyCellShade(color) {
+    const cells = this._selectMode ? this._selectedCells : [this._getCell()];
+    cells.forEach((cell) => {
+      if (cell) cell.style.backgroundColor = color;
+    });
+    // Update the color strip on the shade button to reflect the applied color
+    if (this._shadeColorStrip) {
+      this._shadeColorStrip.style.background = color || 'transparent';
+    }
+    this._hideCellShadePopover();
+    this.context.invoke('editor.afterCommand');
   }
 }

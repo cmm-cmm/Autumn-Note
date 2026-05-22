@@ -7,7 +7,7 @@
  *   • Direct video URLs   → <video> element (.mp4 / .webm / .ogg)
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class VideoDialog {
@@ -68,8 +68,13 @@ export class VideoDialog {
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
+    const header = createElement('div', { class: 'an-dialog-header' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    header.appendChild(iconEl);
+    header.appendChild(title);
 
     // URL input
     const urlLabel = createElement('label', { class: 'an-label' });
@@ -108,8 +113,9 @@ export class VideoDialog {
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
-    box.append(title, urlLabel, urlInput, hintEl, widthLabel, widthInput, btnRow);
+    box.append(header, urlLabel, urlInput, hintEl, widthLabel, widthInput, btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     // Live URL hint
     const d0 = on(urlInput, 'input', () => {

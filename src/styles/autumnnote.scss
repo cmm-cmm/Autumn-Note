@@ -652,6 +652,31 @@
   letter-spacing: 0.02em;
 }
 
+// Color-strip variant for the cell shade button (mirrors .an-bubble-btn--color)
+.an-link-tooltip-btn--shade {
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 0 3px;
+  height: auto;
+
+  .an-bubble-btn-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    svg { display: block; }
+  }
+
+  .an-link-tooltip-color-strip {
+    display: block;
+    width: 13px;
+    height: 3px;
+    border-radius: 1px;
+    pointer-events: none;
+    background: transparent;
+  }
+}
+
 // Active state for toggle buttons in tooltips (e.g. Select Cells)
 .an-link-tooltip-btn--active {
   background: rgba(#3b82f6, 0.12) !important;
@@ -723,6 +748,58 @@
     display: flex;
     justify-content: flex-end;
     gap: 6px;
+  }
+}
+
+// =============================================================================
+// Cell shade popover
+
+.an-cell-shade-popover {
+  position: fixed;
+  z-index: 1200;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  padding: 10px 10px 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 166px;
+
+  .an-size-popover-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: $an-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .an-shade-no-color {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    font-size: 12px;
+    color: $an-muted;
+    background: transparent;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      background: $an-bg-btn-hover;
+      color: $an-text;
+    }
+  }
+
+  .an-shade-color-input {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
+    cursor: pointer;
+    background: transparent;
   }
 }
 
@@ -819,8 +896,29 @@
   gap: 10px;
 }
 
+.an-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.an-dialog-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba($an-primary, 0.1);
+  color: $an-primary;
+
+  svg { display: block; stroke: currentColor; }
+}
+
 .an-dialog-title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: $an-text;
@@ -870,6 +968,114 @@
     cursor: pointer;
   }
 }
+
+// =============================================================================
+// Find & Replace — floating panel
+// =============================================================================
+
+.an-fr-dialog {
+  // Override centered-modal defaults: floating panel, no backdrop
+  background: transparent;
+  pointer-events: none;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 56px 16px 0 0;
+
+  .an-fr-box {
+    pointer-events: auto;
+    width: 360px;
+    padding: 14px 16px 16px;
+    gap: 8px;
+  }
+}
+
+.an-fr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+
+  .an-dialog-title { margin: 0; font-size: 14px; }
+}
+
+// Compact search bar: input + toggle buttons + counter in one row
+.an-fr-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .an-fr-input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+
+// Replace row
+.an-fr-replace-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .an-fr-input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .an-fr-replace-btn {
+    flex-shrink: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+// Icon buttons (Aa, ↑, ↓)
+.an-fr-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid transparent;
+  border-radius: $an-radius-sm;
+  background: transparent;
+  color: $an-muted;
+  cursor: pointer;
+
+  svg { display: block; stroke: currentColor; }
+
+  &:hover {
+    background: $an-bg-btn-hover;
+    color: $an-text;
+    border-color: $an-border;
+  }
+
+  &.an-fr-icon-btn--active {
+    background: rgba($an-primary, 0.1);
+    color: $an-primary;
+    border-color: rgba($an-primary, 0.3);
+  }
+}
+
+.an-fr-counter {
+  font-size: 11px;
+  color: $an-muted;
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+// =============================================================================
 
 .an-input {
   width: 100%;
@@ -1240,6 +1446,28 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-dialog-title {
     margin: 0;
   }
+}
+
+// Icon + title grouped together (used in emoji/icon/find dialogs)
+.an-dialog-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// Small icon variant for dialogs with title-row layout
+.an-dialog-icon--sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba($an-primary, 0.1);
+  color: $an-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg { display: block; stroke: currentColor; }
 }
 
 .an-icon-close {
@@ -1759,6 +1987,20 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-dialog-title { color: #cdd6f4; }
 
+  .an-dialog-icon,
+  .an-dialog-icon--sm {
+    background: rgba(#818cf8, 0.15);
+    color: #818cf8;
+  }
+
+  .an-fr-icon-btn {
+    color: #a6adc8;
+    &:hover { background: #313244; color: #cdd6f4; border-color: #45475a; }
+    &.an-fr-icon-btn--active { background: rgba(#818cf8, 0.15); color: #818cf8; border-color: rgba(#818cf8, 0.3); }
+  }
+
+  .an-fr-counter { color: #6c7086; }
+
   .an-label { color: #cdd6f4; }
 
   .an-input {
@@ -1794,10 +2036,21 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-color-popup,
   .an-table-picker-popup,
-  .an-size-popover {
+  .an-size-popover,
+  .an-cell-shade-popover {
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
+  }
+
+  .an-cell-shade-popover .an-shade-no-color {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+
+    &:hover {
+      background: #313244;
+      color: #cdd6f4;
+    }
   }
 
   .an-link-tooltip-btn--active {
@@ -1820,6 +2073,17 @@ $an-video-accent: #8b5cf6; // violet-500
       border-color: #6366f1;
     }
   }
+
+  // Color popup children
+  .an-color-custom {
+    border-top-color: #3f3f5f;
+    color: #cdd6f4;
+  }
+
+  .an-color-arrow:hover { border-left-color: #45475a; }
+
+  .an-table-label { color: #6c7086; }
+  .an-context-table-grid-panel { border-top-color: #3f3f5f; }
 
   .an-context-item { color: #cdd6f4; }
   .an-context-sep { background: #3f3f5f; }
@@ -1857,9 +2121,18 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 
   .an-icon-cell {
-    color: #cdd6f4;
+    color: #a6adc8;
 
-    &:hover { background: #2a2a3e; }
+    i { color: #cdd6f4; }
+
+    &:hover { background: #2a2a3e; border-color: #45475a; }
+
+    &.active {
+      background: rgba(#818cf8, 0.15);
+      border-color: #818cf8;
+      color: #818cf8;
+      i { color: #818cf8; }
+    }
   }
 
   .an-icon-close {
@@ -1870,6 +2143,61 @@ $an-video-accent: #8b5cf6; // violet-500
       color: #cdd6f4;
     }
   }
+
+  // Emoji dialog
+  .an-emoji-box { background: #1e1e2e; border-color: #45475a; }
+
+  .an-emoji-cell {
+    color: inherit;
+    &:hover { background: #313244; }
+  }
+
+  .an-emoji-grid {
+    scrollbar-color: #45475a transparent;
+  }
+
+  // Icon dialog
+  .an-icon-box { background: #1e1e2e; border-color: #45475a; }
+
+  .an-icon-grid { background: #181825; border-color: #45475a; }
+
+  .an-icon-options {
+    background: #181825;
+    border-color: #45475a;
+  }
+
+  .an-icon-preview {
+    background: #181825;
+    border-color: #45475a;
+    color: #cdd6f4;
+
+    .an-icon-preview-empty { color: #6c7086; }
+  }
+
+  .an-icon-option-select {
+    background: #313244;
+    border-color: #45475a;
+    color: #cdd6f4;
+  }
+
+  .an-icon-empty { color: #6c7086; }
+
+  // Bubble toolbar color picker
+  .an-bubble-color-picker {
+    background: #24273a;
+    border-color: #3f3f5f;
+
+    .an-context-color-custom {
+      border-color: #3f3f5f;
+      color: #a6adc8;
+    }
+  }
+
+  // Table tooltip (extends link-tooltip dark rules)
+  .an-table-tooltip { background: #24273a; border-color: #3f3f5f; }
+
+  // Find & Replace floating panel box
+  .an-fr-box { background: #1e1e2e; border-color: #45475a; }
 }
 
 

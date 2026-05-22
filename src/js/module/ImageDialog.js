@@ -3,7 +3,7 @@
  * Inspired by Summernote's ImageDialog — rewritten without jQuery
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class ImageDialog {
@@ -66,32 +66,37 @@ export class ImageDialog {
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
+    const header = createElement('div', { class: 'an-dialog-header' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    header.appendChild(iconEl);
+    header.appendChild(title);
 
     // URL tab
     const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = L.imageUrl;
-    const urlInput = createElement('input', {
+    const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'url',
       class: 'an-input',
       placeholder: L.urlPlaceholder,
       autocomplete: 'off',
-    });
+    }));
     this._urlInput = urlInput;
 
     // Alt text
     const altLabel = createElement('label', { class: 'an-label' });
     altLabel.textContent = L.altText;
-    const altInput = createElement('input', {
+    const altInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
       class: 'an-input',
       placeholder: L.altPlaceholder,
       autocomplete: 'off',
-    });
+    }));
     this._altInput = altInput;
 
-    box.append(title, urlLabel, urlInput, altLabel, altInput);
+    box.append(header, urlLabel, urlInput, altLabel, altInput);
 
     // Alignment
     const alignLabel = createElement('label', { class: 'an-label' });
@@ -105,7 +110,7 @@ export class ImageDialog {
     ];
     alignOptions.forEach(({ value, label }) => {
       const radioId = `an-align-${value || 'none'}`;
-      const radio = createElement('input', { type: 'radio', name: 'an-img-align', id: radioId, value });
+      const radio = /** @type {HTMLInputElement} */ (createElement('input', { type: 'radio', name: 'an-img-align', id: radioId, value }));
       if (value === '') radio.checked = true;
       const lbl = createElement('label', { for: radioId, class: 'an-align-label' });
       lbl.textContent = label;
@@ -116,11 +121,11 @@ export class ImageDialog {
     if (this.options.allowImageUpload !== false) {
       const fileLabel = createElement('label', { class: 'an-label' });
       fileLabel.textContent = L.uploadLabel;
-      const fileInput = createElement('input', {
+      const fileInput = /** @type {HTMLInputElement} */ (createElement('input', {
         type: 'file',
         class: 'an-input',
         accept: 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/avif',
-      });
+      }));
       this._fileInput = fileInput;
       // Hint line shown below the file input for format errors
       const fileHint = createElement('p', { class: 'an-dialog-hint' });
@@ -141,12 +146,13 @@ export class ImageDialog {
 
     box.append(btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    const d4 = on(urlInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    const d5 = on(altInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d4 = on(urlInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d5 = on(altInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     this._disposers.push(d1, d2, d3, d4, d5);
 
     return overlay;
@@ -197,7 +203,7 @@ export class ImageDialog {
     const src = this._urlInput.value.trim();
     const alt = this._altInput.value.trim();
     const alignRadio = this._alignRow && this._alignRow.querySelector('input[name="an-img-align"]:checked');
-    const align = alignRadio ? alignRadio.value : '';
+    const align = alignRadio ? /** @type {HTMLInputElement} */ (alignRadio).value : '';
 
     if (!src) {
       this._urlInput.focus();

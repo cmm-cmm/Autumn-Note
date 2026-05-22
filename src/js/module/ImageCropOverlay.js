@@ -230,7 +230,7 @@ export class ImageCropOverlay {
         on(h, 'touchstart', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          this._startHandleDrag({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }, id);
+          const te = /** @type {TouchEvent} */ (e); this._startHandleDrag({ clientX: te.touches[0].clientX, clientY: te.touches[0].clientY }, id);
         }, { passive: false }),
       );
       this._handles[id] = h;
@@ -240,18 +240,18 @@ export class ImageCropOverlay {
     /* ---- crop move drag ---- */
     this._disposers.push(
       on(cropBox, 'mousedown', (e) => {
-        if (e.target.classList.contains('an-crop-handle')) return;
+        if (/** @type {Element} */ (e.target).classList.contains('an-crop-handle')) return;
         if (e.target !== cropBox && e.target !== grid) return;
         e.preventDefault();
         e.stopPropagation();
         this._startBoxMove(e);
       }),
       on(cropBox, 'touchstart', (e) => {
-        if (e.target.classList.contains('an-crop-handle')) return;
+        if (/** @type {Element} */ (e.target).classList.contains('an-crop-handle')) return;
         if (e.target !== cropBox && e.target !== grid) return;
         e.preventDefault();
         e.stopPropagation();
-        this._startBoxMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+        const te2 = /** @type {TouchEvent} */ (e); this._startBoxMove({ clientX: te2.touches[0].clientX, clientY: te2.touches[0].clientY });
       }, { passive: false }),
     );
 
@@ -444,7 +444,7 @@ export class ImageCropOverlay {
   _attachDocDrag(onMove) {
     const onTouchMove = (e) => {
       e.preventDefault();
-      onMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+      const te3 = /** @type {TouchEvent} */ (e); onMove(/** @type {MouseEvent} */ (/** @type {unknown} */ ({ clientX: te3.touches[0].clientX, clientY: te3.touches[0].clientY })));
     };
     const cleanup = () => {
       document.removeEventListener('mousemove', onMove);
@@ -500,7 +500,7 @@ export class ImageCropOverlay {
     const outW = w;
     const outH = h;
 
-    const naturalRect = { x: natX, y: natY, width: natW, height: natH };
+    const naturalRect = /** @type {DOMRect} */ (/** @type {unknown} */ ({ x: natX, y: natY, width: natW, height: natH }));
     const canvas = await drawCropToCanvas(img, naturalRect, outW, outH);
 
     if (!canvas) {

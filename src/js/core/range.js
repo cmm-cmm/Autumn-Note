@@ -57,7 +57,7 @@ export class WrappedRange {
   commonAncestor() {
     const native = this.toNativeRange();
     const ancestor = native.commonAncestorContainer;
-    return isElement(ancestor) ? ancestor : ancestor.parentElement;
+    return /** @type {Element|null} */ (isElement(ancestor) ? ancestor : ancestor.parentElement);
   }
 
   /**
@@ -66,7 +66,7 @@ export class WrappedRange {
    * @returns {Element|null}
    */
   blockNode(editable) {
-    return closest(this.sc, (n) => isElement(n) && n !== editable, editable);
+    return /** @type {Element|null} */ (closest(this.sc, (n) => isElement(n) && n !== editable, editable));
   }
 
   /**

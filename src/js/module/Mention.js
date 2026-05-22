@@ -96,11 +96,11 @@ export class Mention {
     // Event delegation: single listeners on the container instead of per-item
     el.addEventListener('mousedown', (e) => e.preventDefault());
     el.addEventListener('click', (e) => {
-      const item = e.target.closest('.an-mention-item');
+      const item = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('.an-mention-item'));
       if (item) this._select(+item.dataset.index);
     });
     el.addEventListener('mousemove', (e) => {
-      const item = e.target.closest('.an-mention-item');
+      const item = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('.an-mention-item'));
       if (item) this._highlightItem(+item.dataset.index);
     });
 
@@ -119,7 +119,7 @@ export class Mention {
       const li = document.createElement('div');
       li.className = 'an-mention-item';
       li.setAttribute('role', 'option');
-      li.dataset.index = i;
+      li.dataset.index = String(i);
       if (item.avatar) {
         const img = document.createElement('img');
         img.src = item.avatar;

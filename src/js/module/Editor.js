@@ -12,6 +12,7 @@ import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
+import { detectLang } from '../core/detectLang.js';
 
 export class Editor {
   /**
@@ -93,7 +94,8 @@ export class Editor {
       // Only act when cursor is at the <li> element node itself (not inside
       // a text node — the browser already placed it correctly in that case).
       if (sc.nodeType !== Node.ELEMENT_NODE) return;
-      const li = sc.matches && sc.matches('.an-checklist li') ? sc : null;
+      const scEl = /** @type {Element} */ (sc);
+      const li = scEl.matches('.an-checklist li') ? scEl : null;
       if (!li) return;
       const cb = li.querySelector('input[type="checkbox"]');
       if (!cb) return;
@@ -160,9 +162,9 @@ export class Editor {
       // the mouse and moving outside the wrapper before releasing.
       on(editable, 'dragstart', (e) => {
         if (isReadOnly()) { e.preventDefault(); return; }
-        const target = e.target;
+        const target = /** @type {Element} */ (e.target);
         if (target && (target.nodeName === 'IFRAME' ||
-            (target.closest && target.closest('.an-video-wrapper')))) {
+            target.closest('.an-video-wrapper'))) {
           e.preventDefault();
         }
       }),
@@ -182,9 +184,10 @@ export class Editor {
       if (!sel || !sel.rangeCount) { _compositionSupSub = null; return; }
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-      if (node && node.closest) {
-        if (node.closest('sup')) _compositionSupSub = 'superscript';
-        else if (node.closest('sub')) _compositionSupSub = 'subscript';
+      if (node) {
+        const el = /** @type {Element} */ (node);
+        if (el.closest('sup')) _compositionSupSub = 'superscript';
+        else if (el.closest('sub')) _compositionSupSub = 'subscript';
         else _compositionSupSub = null;
       }
     };
@@ -196,8 +199,9 @@ export class Editor {
       if (!sel || !sel.rangeCount) return;
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-      const inContext = node && node.closest &&
-        (tag === 'superscript' ? node.closest('sup') : node.closest('sub'));
+      const el = /** @type {Element} */ (node);
+      const inContext = el &&
+        (tag === 'superscript' ? el.closest('sup') : el.closest('sub'));
       if (!inContext) {
         // The composed character escaped the sup/sub — re-apply the format.
         document.execCommand(tag);
@@ -314,6 +318,9 @@ export class Editor {
     // C4: Remove figure.an-figure elements whose <img> has been deleted so
     // orphaned figcaptions do not accumulate in the DOM.
     this._cleanOrphanedFigures();
+    // Ensure the editable always ends with a paragraph so the user can click
+    // and type after block elements that trap the cursor (pre, table, etc.).
+    this._ensureTrailingParagraph();
     // Immediate: keep toolbar and statusbar in sync on every mutation.
     this.context.invoke('toolbar.refresh');
     this.context.invoke('statusbar.update');
@@ -349,6 +356,25 @@ export class Editor {
         fig.parentNode.removeChild(fig);
       }
     });
+  }
+
+  /**
+   * Ensures the editable always ends with a plain paragraph so the cursor can
+   * be placed after block elements that do not naturally allow it
+   * (pre, blockquote, table, figure, ul, ol, hr).
+   * Without this, clicking below the last such element does nothing.
+   */
+  _ensureTrailingParagraph() {
+    const editable = this.context.layoutInfo.editable;
+    if (!editable) return;
+    const last = editable.lastElementChild;
+    if (!last) return;
+    const TRAPPING = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
+    if (TRAPPING.has(last.nodeName)) {
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      editable.appendChild(p);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -523,9 +549,35 @@ export class Editor {
   print()           { this.context.print(); }
 
   /**
-   * @param {string} tagName - e.g. 'h1', 'p', 'blockquote'
+   * @param {string} tagName - e.g. 'h1', 'p', 'blockquote', 'pre'
    */
-  formatBlock(tagName) { Style.formatBlock(tagName); this.afterCommand(); }
+  formatBlock(tagName) {
+    Style.formatBlock(tagName);
+
+    // Auto-detect the programming language when the user formats a code block.
+    // Only runs when converting TO <pre> and the block has no language yet.
+    if (tagName === 'pre') {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const container = sel.getRangeAt(0).commonAncestorContainer;
+        const pre = /** @type {Element|null} */ (
+          container.nodeType === 1
+            ? /** @type {Element} */ (container).closest('pre')
+            : (/** @type {Element|null} */ (container.parentElement))?.closest('pre')
+        );
+        if (pre && !pre.getAttribute('data-language')) {
+          const code = pre.textContent || '';
+          const lang = detectLang(code);
+          if (lang) {
+            this.context.invoke('codeTooltip.applyLanguage', pre, lang);
+            return; // applyLanguage already calls afterCommand internally
+          }
+        }
+      }
+    }
+
+    this.afterCommand();
+  }
 
   /**
    * @param {string} color
@@ -580,8 +632,8 @@ export class Editor {
       if (openInNewTab) {
         const link = this._getClosestAnchor();
         if (link) {
-          link.setAttribute('target', '_blank');
-          link.setAttribute('rel', 'noopener noreferrer');
+          /** @type {Element} */ (link).setAttribute('target', '_blank');
+          /** @type {Element} */ (link).setAttribute('rel', 'noopener noreferrer');
         }
       }
     }

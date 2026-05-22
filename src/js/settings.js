@@ -7,48 +7,65 @@ import { defaultToolbar } from './module/Buttons.js';
 
 /**
  * @typedef {object} AsnOptions
- * @property {string}   [placeholder]       - Placeholder text when editor is empty
- * @property {number}   [height]            - Editor height in px (min)
- * @property {number}   [minHeight]         - Minimum height in px
- * @property {number}   [maxHeight]         - Maximum height in px (0 = unlimited)
- * @property {boolean}  [focus]             - Auto-focus on init
- * @property {boolean}  [resizable]         - Show resize handle
- * @property {Array}    [toolbar]           - Toolbar button group config
- * @property {boolean}  [pasteAsPlainText]  - Force plain-text paste
- * @property {boolean}  [pasteCleanHTML]    - Sanitise HTML on paste
+ * @property {string}   [placeholder]          - Placeholder text when editor is empty
+ * @property {number}   [height]               - Editor height in px (min)
+ * @property {number}   [minHeight]            - Minimum height in px
+ * @property {number}   [maxHeight]            - Maximum height in px (0 = unlimited)
+ * @property {boolean}  [focus]                - Auto-focus on init
+ * @property {boolean}  [resizable]            - Show resize handle
+ * @property {Array}    [toolbar]              - Toolbar button group config
+ * @property {boolean}  [useBootstrap]         - Use Bootstrap button classes on toolbar buttons
+ * @property {string}   [toolbarButtonClass]   - CSS classes for Bootstrap toolbar buttons
+ * @property {boolean}  [useFontAwesome]       - Use Font Awesome icons (default: true)
+ * @property {string}   [fontAwesomeClass]     - Font Awesome prefix class, e.g. 'fas' or 'fa-solid'
+ * @property {boolean}  [pasteAsPlainText]     - Force plain-text paste
+ * @property {boolean}  [pasteCleanHTML]       - Sanitise HTML on paste
  * @property {boolean}  [pasteStripAttributes] - Strip class/style/data-* from pasted HTML (default: false)
- * @property {boolean}  [allowImageUpload]  - Allow file upload in image dialog
- * @property {number}   [maxImageSize]      - Max upload size in MB
- * @property {number}   [tabSize]           - Spaces per tab in non-list context
- * @property {Function} [onChange]          - Callback on content change
- * @property {Function} [onFocus]           - Callback on focus
- * @property {Function} [onBlur]            - Callback on blur
- * @property {Function} [onImageUpload]     - Custom upload handler: (files) => void
- * @property {boolean}  [stickyToolbar]     - Stick the toolbar to the viewport top when scrolling
- * @property {number}   [stickyToolbarOffset] - Top offset in px for sticky toolbar (e.g. fixed nav height)
- * @property {string}   [theme]             - 'light' (default) | 'dark'
- * @property {boolean}  [codeHighlight]     - Auto-load Prism.js for syntax highlighting of code blocks
- * @property {string}   [codeHighlightCDN]  - CDN base URL for Prism assets (defaults to cdnjs)
- * @property {boolean}  [markdownPaste]     - Convert pasted Markdown text to HTML (default: true)
- * @property {boolean}  [readOnly]          - Start editor in read-only / non-editable mode
- * @property {boolean}  [spellcheck]        - Enable browser spellcheck in the editable area (default: true)
- * @property {string}   [direction]         - Text direction: 'ltr' (default) | 'rtl'
- * @property {string}   [toolbarOverflow]   - Toolbar overflow strategy: 'wrap' (default) | 'scroll'
- * @property {boolean}  [autoSave]          - Auto-save content to localStorage on change
- * @property {string}   [autoSaveKey]       - localStorage key used for auto-save (default: 'autumnnote-autosave')
- * @property {number}   [maxChars]          - Maximum character count (0 = unlimited). Shows warning in statusbar.
- * @property {number}   [maxWords]          - Maximum word count (0 = unlimited). Shows warning in statusbar.
- * @property {boolean}  [tableHeaderRow]    - Insert a header row (<thead><th>) when creating tables
- * @property {Function} [onPaste]           - Callback fired on every paste: ({ text, html }) => void
- * @property {Function} [onSelectionChange]   - Callback fired on cursor/selection change: (context) => void
- * @property {string[]}  [colorSwatches]       - Custom brand colour swatches prepended to the colour-picker palette
+ * @property {boolean}  [allowImageUpload]     - Allow file upload in image dialog
+ * @property {number}   [maxImageSize]         - Max upload size in MB
+ * @property {number}   [tabSize]              - Spaces per tab in non-list context
+ * @property {number}   [historyLimit]         - Maximum undo/redo history steps
+ * @property {string}   [defaultFontFamily]    - Default font family applied to the editable area on init
+ * @property {string}   [defaultFontSize]      - Default font size applied to the editable area on init (e.g. '14px')
+ * @property {string[]} [fontFamilies]         - Font families shown in the font-family toolbar dropdown
+ * @property {Function} [onChange]             - Callback on content change
+ * @property {Function} [onFocus]              - Callback on focus
+ * @property {Function} [onBlur]               - Callback on blur
+ * @property {Function} [onInit]               - Callback after the editor has initialised
+ * @property {Function} [onImageUpload]        - Custom upload handler: (files) => void
+ * @property {Function} [onImageError]         - Callback when an image upload error occurs
+ * @property {boolean}  [stickyToolbar]        - Stick the toolbar to the viewport top when scrolling
+ * @property {number}   [stickyToolbarOffset]  - Top offset in px for sticky toolbar (e.g. fixed nav height)
+ * @property {string}   [theme]                - 'light' (default) | 'dark'
+ * @property {boolean}  [codeHighlight]        - Auto-load Prism.js for syntax highlighting of code blocks
+ * @property {string}   [codeHighlightCDN]     - CDN base URL for Prism assets (defaults to cdnjs)
+ * @property {boolean}  [markdownPaste]        - Convert pasted Markdown text to HTML (default: true)
+ * @property {boolean}  [readOnly]             - Start editor in read-only / non-editable mode
+ * @property {boolean}  [spellcheck]           - Enable browser spellcheck in the editable area (default: true)
+ * @property {string}   [direction]            - Text direction: 'ltr' (default) | 'rtl'
+ * @property {string}   [toolbarOverflow]      - Toolbar overflow strategy: 'wrap' (default) | 'scroll'
+ * @property {boolean}  [autoSave]             - Auto-save content to localStorage on change
+ * @property {string}   [autoSaveKey]          - localStorage key used for auto-save (default: 'autumnnote-autosave')
+ * @property {number}   [maxChars]             - Maximum character count (0 = unlimited). Shows warning in statusbar.
+ * @property {number}   [maxWords]             - Maximum word count (0 = unlimited). Shows warning in statusbar.
+ * @property {boolean}  [tableHeaderRow]       - Insert a header row (<thead><th>) when creating tables
+ * @property {Function} [onPaste]              - Callback fired on every paste: ({ text, html }) => void
+ * @property {Function} [onSelectionChange]    - Callback fired on cursor/selection change: (context) => void
+ * @property {string[]} [colorSwatches]        - Custom brand colour swatches prepended to the colour-picker palette
  * @property {Function} [onDestroy]            - Callback fired when the editor is destroyed: (context) => void
  * @property {Function} [onCharLimitReached]   - Callback fired when the character limit is hit: (context) => void
  * @property {Function} [onWordLimitReached]   - Callback fired when the word limit is hit: (context) => void
- * @property {string}   [focusColor]            - Custom focus ring colour, e.g. '#f97316'. Overrides the default blue.
+ * @property {string}   [focusColor]           - Custom focus ring colour, e.g. '#f97316'. Overrides the default blue.
+ * @property {boolean}  [autoSaveRestore]      - Show a restore banner when a previously auto-saved draft exists
+ * @property {number}   [autoSaveRestoreTimeout] - Maximum age in days for a draft to be offered for restore (0 = no expiry)
+ * @property {Function} [onAutoSaveRestore]    - Callback fired after the user chooses to restore a draft
+ * @property {boolean}  [markdownShortcuts]    - Convert markdown syntax typed inline to HTML
+ * @property {boolean}  [bubbleToolbar]        - Show a mini floating toolbar above text selections
+ * @property {string[]} [bubbleToolbarItems]   - Button names for the bubble toolbar
+ * @property {object|null} [mention]            - @mention configuration (onSearch, minChars, ...)
+ * @property {string}   [lang]                 - Display language or partial locale object override
  */
 
-/** @type {AsnOptions} */
 export const defaultOptions = {
   placeholder: '',
   height: 200,

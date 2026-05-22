@@ -252,3 +252,68 @@ describe('isMarkdown — edge cases', () => {
     expect(isMarkdown('Re: your inquiry about pricing')).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — uncovered element types (sub, table, image)
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — additional elements', () => {
+  it('converts <br> to double-space newline', () => {
+    const md = htmlToMarkdown('<p>line1<br>line2</p>');
+    expect(md).toContain('  \n');
+  });
+
+  it('converts <h3> to ### heading', () => {
+    expect(htmlToMarkdown('<h3>Section</h3>')).toContain('###');
+  });
+
+  it('converts <h4> to #### heading', () => {
+    expect(htmlToMarkdown('<h4>Section</h4>')).toContain('####');
+  });
+
+  it('converts <h5> to ##### heading', () => {
+    expect(htmlToMarkdown('<h5>Section</h5>')).toContain('#####');
+  });
+
+  it('converts <h6> to ###### heading', () => {
+    expect(htmlToMarkdown('<h6>Section</h6>')).toContain('######');
+  });
+
+  it('converts <sub> to ~text~', () => {
+    expect(htmlToMarkdown('<sub>2</sub>')).toBe('~2~');
+  });
+
+  it('converts <sup> to ^text^', () => {
+    expect(htmlToMarkdown('<sup>2</sup>')).toBe('^2^');
+  });
+
+  it('converts <strike> to ~~text~~', () => {
+    expect(htmlToMarkdown('<strike>old</strike>')).toBe('~~old~~');
+  });
+
+  it('converts a simple HTML table to GFM markdown table', () => {
+    const html = '<table><tr><th>Name</th><th>Age</th></tr><tr><td>Alice</td><td>30</td></tr></table>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('| Name | Age |');
+    expect(md).toContain('| --- | --- |');
+    expect(md).toContain('| Alice | 30 |');
+  });
+
+  it('converts table with pipe characters in cells (escaped)', () => {
+    const html = '<table><tr><th>A|B</th></tr><tr><td>C</td></tr></table>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('\\|');
+  });
+
+  it('handles empty table gracefully', () => {
+    const md = htmlToMarkdown('<table></table>');
+    expect(typeof md).toBe('string');
+  });
+
+  it('converts markdown image syntax to HTML img tag', () => {
+    const html = markdownToHTML('![alt text](https://example.com/img.png)');
+    expect(html).toContain('<img');
+    expect(html).toContain('alt="alt text"');
+    expect(html).toContain('src="https://example.com/img.png"');
+  });
+});

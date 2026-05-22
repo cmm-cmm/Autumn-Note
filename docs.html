@@ -214,7 +214,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.5.0</span>
+      <span class="brand-version">v1.6.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -258,6 +258,7 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Features</div>
+        <a class="sidebar-link" href="#whats-new">What's New v1.6.0</a>
         <a class="sidebar-link" href="#events">Callbacks &amp; Events</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
         <a class="sidebar-link" href="#plugin-api">Plugin API</a>
@@ -280,7 +281,7 @@
   <main class="docs-main" id="docs-main">
 
     <h1 class="page-title">API Reference</h1>
-    <p class="page-sub">AutumnNote v1.5.0  EFast. Lightweight. Reliable. Efficient.</p>
+    <p class="page-sub">AutumnNote v1.6.0  EFast. Lightweight. Reliable. Efficient.</p>
 
     <!-- ── Installation ── -->
     <section class="docs-section" id="installation">
@@ -300,7 +301,7 @@
 
     <!-- ── Framework Wrappers ── -->
     <section class="docs-section" id="framework-wrappers">
-      <h2 class="section-h">Framework Wrappers <span class="badge">v1.5.0</span></h2>
+      <h2 class="section-h">Framework Wrappers <span class="badge">v1.6.0</span></h2>
       <p class="docs-p">
         Official React and Vue 3 wrappers ship as separate packages in the same pnpm workspace.
         Each wrapper is a thin lifecycle bridge — it mounts an editor instance on the host element and
@@ -753,6 +754,31 @@ const editor = AutumnNote.create('#editor', {
       </table></div>
     </section>
 
+    <!-- ── What's New v1.6.0 ── -->
+    <section class="docs-section" id="whats-new">
+      <h2 class="section-h">What's New <span class="badge">v1.6.0</span></h2>
+      <p class="docs-p">Version 1.6.0 adds several user-facing features and UX improvements.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Cell Background Shading</h3>
+      <p class="docs-p">The Table Tooltip now includes a <strong>paint-bucket button</strong> to set the background colour of individual or multi-selected cells. The button displays a colour-strip indicator showing the current cell's colour, and syncs automatically as the cursor moves between cells. 24 colour presets, a custom colour input, and a "No Shading" option are provided.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Auto Language Detection for Code Blocks</h3>
+      <p class="docs-p">When selected text is formatted as a <code>&lt;pre&gt;</code> code block, the editor automatically analyses the content and applies the matching Prism.js language class — no manual selection needed. Supported languages:</p>
+      <p class="docs-p" style="font-family:monospace;font-size:13px;background:#f3f4f6;padding:10px 14px;border-radius:6px;line-height:1.8">
+        JavaScript · TypeScript · Python · HTML · CSS · <strong>SCSS</strong> · JSON · SQL · Bash/Shell · Java · C# · PHP · Ruby · Go · Rust · C++ · C · Kotlin · Swift · XML
+      </p>
+      <p class="docs-p">SCSS is detected separately from CSS using SCSS-specific markers: <code>//</code> line comments, <code>&amp;</code> nesting, <code>$variable</code>, and <code>@mixin</code>/<code>@include</code> directives.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Draggable Dialogs</h3>
+      <p class="docs-p">All dialogs — Link, Image, Video, Emoji, Icon, and Find &amp; Replace — can be repositioned by dragging their title bar. The dialog snaps to its initial centred position on first drag and is clamped to the viewport on subsequent drags.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Find &amp; Replace — Floating Panel</h3>
+      <p class="docs-p">The Find &amp; Replace dialog has been redesigned as a <strong>compact non-blocking floating panel</strong> in the top-right corner. Highlights: inline case-sensitive toggle (<code>Aa</code>), icon-button navigation (↑ ↓), and a collapsible replace row — the document remains fully interactive while searching.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Dark Theme — Floating Elements</h3>
+      <p class="docs-p">When <code>theme: 'dark'</code> is set, <code>an-theme-dark</code> is now also applied to <code>document.body</code> so all floating elements appended to <code>&lt;body&gt;</code> (dialogs, tooltips, colour pickers, popovers) correctly inherit dark styles. The class is removed from body when the last dark editor is destroyed.</p>
+    </section>
+
     <!-- ── Plugin API ── -->
     <section class="docs-section" id="plugin-api">
       <h2 class="section-h">Plugin API <span class="badge">v1.4.1</span></h2>
@@ -999,7 +1025,7 @@ console.log(api?.version); // '1.0.0'</code></pre>
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span>MIT License · © 2026 Minh Pham · AutumnNote v1.5.0</span>
+    <span>MIT License · © 2026 Minh Pham · AutumnNote v1.6.0</span>
     <nav class="footer-links">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>

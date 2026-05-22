@@ -12,12 +12,14 @@ import * as Style from '../editing/Style.js';
 
 /**
  * @typedef {object} DropdownDef
- * @property {string}   name       - unique identifier
- * @property {'select'} type       - discriminator for Toolbar renderer
+ * @property {string}   name          - unique identifier
+ * @property {'select'} type          - discriminator for Toolbar renderer
  * @property {string}   tooltip
- * @property {string[]} [items]    - overridden at render time from options
- * @property {Function} action     - called with (context, value)
- * @property {Function} [getValue] - called with (context) to get current value
+ * @property {Array<string|{value:string,label:string,disabled?:boolean}>} [items] - overridden at render time from options
+ * @property {Function} action        - called with (context, value)
+ * @property {Function} [getValue]    - called with (context) to get current value
+ * @property {string}   [selectClass] - extra CSS class(es) for the <select>
+ * @property {string}   [placeholder] - placeholder text for the empty option
  */
 
 // ---------------------------------------------------------------------------
@@ -103,7 +105,7 @@ export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', 
   if (!sel || !sel.rangeCount) return false;
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
-  return !!(sc && sc.closest && sc.closest('u'));
+  return !!(sc && /** @type {Element} */ (sc).closest('u'));
 });
 export const strikeBtn = btn('strikethrough', 'strikethrough', 'Strikethrough', () => Style.strikethrough(), () => document.queryCommandState('strikeThrough'));
 export const superscriptBtn = btn('superscript', 'superscript', 'Superscript', () => Style.superscript(), () => document.queryCommandState('superscript'));
@@ -179,10 +181,10 @@ export const fontSizeBtn = {
     try {
       const sel = window.getSelection();
       if (sel && sel.rangeCount) {
-        let el = sel.getRangeAt(0).startContainer;
-        if (el.nodeType === 3) el = el.parentElement;
-        while (el && el.nodeType === 1 && !el.style.fontSize) el = el.parentElement;
-        const size = (el && el.style && el.style.fontSize) ? el.style.fontSize : '';
+        let el = /** @type {Element|null} */ (sel.getRangeAt(0).startContainer);
+        if (el && el.nodeType === 3) el = el.parentElement;
+        while (el && el.nodeType === 1 && !/** @type {HTMLElement} */ (el).style.fontSize) el = el.parentElement;
+        const size = (el && /** @type {HTMLElement} */ (el).style.fontSize) ? /** @type {HTMLElement} */ (el).style.fontSize : '';
         if (size) return size;
       }
       // Fallback: read the base font size from the editable element itself
@@ -281,11 +283,11 @@ export const lineHeightBtn = {
       const sel = window.getSelection();
       if (!sel || !sel.rangeCount) return '';
       const BLOCKS = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH']);
-      let el = sel.getRangeAt(0).startContainer;
-      if (el.nodeType === 3) el = el.parentElement;
-      while (el && !BLOCKS.has(el.tagName)) el = el.parentElement;
+      let el = /** @type {Element|null} */ (sel.getRangeAt(0).startContainer);
+      if (el && el.nodeType === 3) el = el.parentElement;
+      while (el && !BLOCKS.has(/** @type {Element} */ (el).tagName)) el = el.parentElement;
       if (!el) return '';
-      return el.style.lineHeight || getComputedStyle(el).lineHeight || '';
+      return /** @type {HTMLElement} */ (el).style.lineHeight || getComputedStyle(/** @type {Element} */ (el)).lineHeight || '';
     } catch { return ''; }
   },
 };

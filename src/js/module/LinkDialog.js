@@ -3,7 +3,7 @@
  * Inspired by Summernote's LinkDialog — rewritten without jQuery
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class LinkDialog {
@@ -63,42 +63,47 @@ export class LinkDialog {
     const overlay = createElement('div', { class: 'an-dialog-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': L.ariaLabel });
     const box = createElement('div', { class: 'an-dialog-box' });
 
+    const header = createElement('div', { class: 'an-dialog-header' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    header.appendChild(iconEl);
+    header.appendChild(title);
 
     // URL field
     const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = L.url;
-    const urlInput = createElement('input', {
+    const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'url',
       class: 'an-input',
       placeholder: L.urlPlaceholder,
       id: 'an-link-url',
       name: 'url',
       autocomplete: 'off',
-    });
+    }));
     this._urlInput = urlInput;
 
     // Text field
     const textLabel = createElement('label', { class: 'an-label' });
     textLabel.textContent = L.displayText;
-    const textInput = createElement('input', {
+    const textInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
       class: 'an-input',
       placeholder: L.textPlaceholder,
       id: 'an-link-text',
       name: 'linkText',
       autocomplete: 'off',
-    });
+    }));
     this._textInput = textInput;
 
     // Open in new tab
     const tabLabel = createElement('label', { class: 'an-label an-label-inline' });
-    const tabCheckbox = createElement('input', {
+    const tabCheckbox = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'checkbox',
       id: 'an-link-newtab',
       name: 'openInNewTab',
-    });
+    }));
     this._tabCheckbox = tabCheckbox;
     tabLabel.appendChild(tabCheckbox);
     tabLabel.appendChild(document.createTextNode(' ' + L.openInNewTab));
@@ -112,15 +117,16 @@ export class LinkDialog {
     btnRow.appendChild(insertBtn);
     btnRow.appendChild(cancelBtn);
 
-    box.append(title, urlLabel, urlInput, textLabel, textInput, tabLabel, btnRow);
+    box.append(header, urlLabel, urlInput, textLabel, textInput, tabLabel, btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     // Events
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());
     const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    const d4 = on(urlInput,  'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    const d5 = on(textInput, 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d4 = on(urlInput,  'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
+    const d5 = on(textInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     this._disposers.push(d1, d2, d3, d4, d5);
 
     return overlay;
@@ -142,9 +148,9 @@ export class LinkDialog {
       }
     }
     if (anchor) {
-      this._urlInput.value = anchor.getAttribute('href') || '';
+      this._urlInput.value = /** @type {Element} */ (anchor).getAttribute('href') || '';
       this._textInput.value = anchor.textContent || '';
-      this._tabCheckbox.checked = anchor.getAttribute('target') === '_blank';
+      this._tabCheckbox.checked = /** @type {Element} */ (anchor).getAttribute('target') === '_blank';
     } else {
       this._urlInput.value = '';
       this._textInput.value = sel ? sel.toString() : '';

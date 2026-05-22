@@ -103,4 +103,55 @@ describe('AutumnNote integration', () => {
 
     editor.destroy();
   });
+
+  it('AutumnNote.defaults getter returns a copy of default options', () => {
+    const defaults = AutumnNote.defaults;
+    expect(typeof defaults).toBe('object');
+    expect(defaults).toHaveProperty('height');
+    // It's a copy, modifying it should not affect originals
+    defaults.height = 9999;
+    expect(AutumnNote.defaults.height).not.toBe(9999);
+  });
+
+  it('AutumnNote.create with NodeList creates multiple editors', () => {
+    const div1 = document.createElement('div');
+    const div2 = document.createElement('div');
+    document.body.appendChild(div1);
+    document.body.appendChild(div2);
+
+    const editors = AutumnNote.create(document.querySelectorAll('div:not([class])'));
+    const arr = Array.isArray(editors) ? editors : [editors];
+    expect(arr.length).toBeGreaterThan(0);
+    arr.forEach((e) => e.destroy());
+  });
+
+  it('options.focus:true focuses the editable after initialization', () => {
+    const ta = document.createElement('textarea');
+    ta.id = 'focus-test-editor';
+    document.body.appendChild(ta);
+
+    const focused = [];
+    const origFocus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function () { focused.push(this); };
+
+    const editor = AutumnNote.create('#focus-test-editor', { focus: true });
+    HTMLElement.prototype.focus = origFocus;
+
+    const editable = editor.layoutInfo.editable;
+    expect(focused).toContain(editable);
+    editor.destroy();
+  });
+
+  it('options.onDestroy callback is called when editor is destroyed', () => {
+    const ta = document.createElement('textarea');
+    ta.id = 'ondestroy-test-editor';
+    document.body.appendChild(ta);
+
+    const onDestroy = vi.fn();
+    const editor = AutumnNote.create('#ondestroy-test-editor', { onDestroy });
+    editor.destroy();
+
+    expect(onDestroy).toHaveBeenCalledTimes(1);
+    expect(onDestroy).toHaveBeenCalledWith(editor);
+  });
 });

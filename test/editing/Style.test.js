@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist } from '../../src/js/editing/Style.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist, underline, strikethrough, lineHeight } from '../../src/js/editing/Style.js';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -344,5 +344,326 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
     // Whitespace-only lines are filtered — no checklist should be created,
     // and the execCommand path is also skipped.
     expect(document.body.querySelector('ul.an-checklist')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// underline() — manual unwrap when inside <u> and queryCommandState is false
+// ---------------------------------------------------------------------------
+
+describe('underline — manual unwrap path', () => {
+  let execMock;
+
+  beforeEach(() => {
+    execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => false), configurable: true, writable: true });
+  });
+
+  afterEach(() => {
+    delete document.queryCommandState;
+  });
+
+  function makeSelectionMock(range) {
+    return { rangeCount: 1, getRangeAt: () => range, removeAllRanges: vi.fn(), addRange: vi.fn() };
+  }
+
+  it('manually unwraps <u> element when queryCommandState returns false', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<u>hello world</u>';
+    document.body.appendChild(p);
+    const uEl = p.querySelector('u');
+    const textNode = uEl.firstChild;
+
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+
+    underline();
+    vi.unstubAllGlobals();
+
+    // All children should have been moved out of <u>
+    expect(uEl.textContent).toBe('');
+    // Text is accessible from <p>
+    expect(p.textContent).toBe('hello world');
+    // execCommand should NOT have been called (manual path returns early)
+    expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('falls through to execCommand when inside <u> but queryCommandState returns true', () => {
+    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => true), configurable: true, writable: true });
+    const p = document.createElement('p');
+    p.innerHTML = '<u>text</u>';
+    document.body.appendChild(p);
+    const uEl = p.querySelector('u');
+    const range = document.createRange();
+    range.setStart(uEl.firstChild, 0);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+
+    underline();
+    vi.unstubAllGlobals();
+
+    expect(execMock).toHaveBeenCalledWith('underline', false, null);
+  });
+
+  it('does nothing when no selection exists', () => {
+    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+    expect(() => underline()).not.toThrow();
+    vi.unstubAllGlobals();
+    expect(execMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// strikethrough() — manual unwrap when inside <s> and queryCommandState is false
+// ---------------------------------------------------------------------------
+
+describe('strikethrough — manual unwrap path', () => {
+  let execMock;
+
+  beforeEach(() => {
+    execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => false), configurable: true, writable: true });
+  });
+
+  afterEach(() => {
+    delete document.queryCommandState;
+    vi.unstubAllGlobals();
+  });
+
+  function makeSelectionMock(range) {
+    return { rangeCount: 1, getRangeAt: () => range, removeAllRanges: vi.fn(), addRange: vi.fn() };
+  }
+
+  it('manually unwraps <s> element when queryCommandState returns false', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<s>struck text</s>';
+    document.body.appendChild(p);
+    const sEl = p.querySelector('s');
+    const textNode = sEl.firstChild;
+
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+
+    strikethrough();
+    vi.unstubAllGlobals();
+
+    // Text moved out of <s>
+    expect(sEl.textContent).toBe('');
+    expect(p.textContent).toBe('struck text');
+    expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('manually unwraps <strike> element when queryCommandState returns false', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<strike>old strike</strike>';
+    document.body.appendChild(p);
+    const strikeEl = p.querySelector('strike');
+    const textNode = strikeEl.firstChild;
+
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+
+    strikethrough();
+    vi.unstubAllGlobals();
+
+    expect(strikeEl.textContent).toBe('');
+    expect(p.textContent).toBe('old strike');
+    expect(execMock).not.toHaveBeenCalled();
+  });
+
+  it('falls through to execCommand when inside <s> but queryCommandState is true', () => {
+    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => true), configurable: true, writable: true });
+    const p = document.createElement('p');
+    p.innerHTML = '<s>text</s>';
+    document.body.appendChild(p);
+    const sEl = p.querySelector('s');
+    const range = document.createRange();
+    range.setStart(sEl.firstChild, 0);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+
+    strikethrough();
+    vi.unstubAllGlobals();
+
+    expect(execMock).toHaveBeenCalledWith('strikeThrough', false, null);
+  });
+
+  it('does nothing when no selection', () => {
+    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+    expect(() => strikethrough()).not.toThrow();
+    vi.unstubAllGlobals();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// lineHeight() — collapsed and range selection paths
+// ---------------------------------------------------------------------------
+
+describe('lineHeight', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('does nothing when no selection', () => {
+    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+    expect(() => lineHeight('1.5')).not.toThrow();
+  });
+
+  it('sets lineHeight on nearest block for collapsed selection', () => {
+    const p = document.createElement('p');
+    p.textContent = 'hello';
+    document.body.appendChild(p);
+    const textNode = p.firstChild;
+
+    const range = document.createRange();
+    range.setStart(textNode, 2);
+    range.collapse(true);
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+    }));
+
+    lineHeight('1.8');
+    expect(p.style.lineHeight).toBe('1.8');
+  });
+
+  it('sets lineHeight on all blocks in a range selection', () => {
+    const div = document.createElement('div');
+    div.innerHTML = '<p>first</p><p>second</p>';
+    document.body.appendChild(div);
+    const p1 = div.querySelectorAll('p')[0];
+    const p2 = div.querySelectorAll('p')[1];
+
+    const range = document.createRange();
+    range.setStart(p1.firstChild, 0);
+    range.setEnd(p2.firstChild, 3);
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+    }));
+
+    lineHeight('1.6');
+    // CSS may normalize the value; check it is non-empty
+    expect(p1.style.lineHeight).toBeTruthy();
+    expect(p2.style.lineHeight).toBeTruthy();
+  });
+
+  it('falls back to commonAncestorContainer block when no text nodes in range', () => {
+    const p = document.createElement('p');
+    document.body.appendChild(p);
+
+    const range = document.createRange();
+    range.setStart(p, 0);
+    range.setEnd(p, 0);
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+    }));
+
+    lineHeight('1.2');
+    expect(p.style.lineHeight).toBe('1.2');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toggleChecklist — cursor in editable root (lines 581–583)
+// ---------------------------------------------------------------------------
+
+describe('toggleChecklist cursor in non-standard block', () => {
+  beforeEach(() => {
+    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+  });
+
+  it('converts non-standard block (section) to checklist', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    // Use a <p> block with text — standard block elements are converted
+    editable.innerHTML = '<p>convert me</p>';
+    document.body.appendChild(editable);
+
+    const p = editable.querySelector('p');
+    const textNode = p.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+      removeAllRanges: vi.fn(),
+      addRange: vi.fn(),
+    }));
+
+    toggleChecklist();
+    vi.unstubAllGlobals();
+
+    // The <p> should have been replaced by a checklist
+    expect(editable.querySelector('ul.an-checklist')).not.toBeNull();
+  });
+
+  it('inserts checklist via Range API when cursor is in non-block editable root (lines 581-583)', () => {
+    // Use <article> as editable — 'ARTICLE' is not in BLOCK_TAGS so the traversal
+    // reaches null, triggering the else branch that uses Range.insertNode().
+    const editable = document.createElement('article');
+    editable.contentEditable = 'true';
+    editable.textContent = 'Direct text';
+    document.body.appendChild(editable);
+
+    const textNode = editable.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.collapse(true);
+
+    vi.stubGlobal('getSelection', () => ({
+      rangeCount: 1,
+      getRangeAt: () => range,
+      removeAllRanges: vi.fn(),
+      addRange: vi.fn(),
+      toString: () => '',
+    }));
+
+    toggleChecklist();
+    vi.unstubAllGlobals();
+
+    // A <ul class="an-checklist"> should have been inserted into the article
+    expect(editable.querySelector('ul.an-checklist')).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// toggleChecklist — text inside inline element (line 624)
+// ---------------------------------------------------------------------------
+
+describe('toggleChecklist — text inside inline element', () => {
+  beforeEach(() => {
+    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => false), configurable: true, writable: true });
+  });
+
+  it('converts <p><strong>text</strong></p> to checklist (line 624 traversal)', () => {
+    const p = document.createElement('p');
+    p.innerHTML = '<strong>Hello World</strong>';
+    document.body.appendChild(p);
+
+    const strong = p.querySelector('strong');
+    const range = document.createRange();
+    range.setStart(strong.firstChild, 0);
+    range.setEnd(strong.firstChild, strong.textContent.length);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    // The <p> should have been replaced by a checklist
+    const ul = document.body.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    expect(ul.querySelector('li').textContent).toContain('Hello World');
   });
 });

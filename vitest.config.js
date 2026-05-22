@@ -6,5 +6,16 @@ export default defineConfig({
     globals: true,
     include: ['test/**/*.test.js'],
     pool: 'forks',
+    coverage: {
+      provider: 'v8',
+      include: ['src/js/**'],
+      exclude: ['src/js/i18n/**'],
+      thresholds: {
+        lines: 88,
+        statements: 84,
+        functions: 80,
+        branches: 71,
+      },
+    },
   },
 });

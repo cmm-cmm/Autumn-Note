@@ -44,11 +44,11 @@ export function handleKeydown(event, editable, options = {}) {
     if (sel && sel.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE) {
-        const textNode = r.startContainer;
+        const textNode = /** @type {ChildNode} */ (r.startContainer);
         // Case A: cursor at offset 0, preceding sibling is an FA icon
         if (r.startOffset === 0 && isFAIcon(textNode.previousSibling)) {
           event.preventDefault();
-          textNode.previousSibling.remove();
+          /** @type {ChildNode} */ (textNode.previousSibling).remove();
           return true;
         }
 
@@ -59,7 +59,7 @@ export function handleKeydown(event, editable, options = {}) {
             isFAIcon(textNode.previousSibling)) {
           event.preventDefault();
           const parent   = textNode.parentNode;
-          const icon     = textNode.previousSibling;
+          const icon     = /** @type {ChildNode} */ (textNode.previousSibling);
           const prevNode = icon.previousSibling; // node before the icon (e.g. ZWS of prior icon)
           icon.remove();
           textNode.remove();
@@ -241,7 +241,7 @@ export function handleKeydown(event, editable, options = {}) {
 
     // Hoist sc/el once so all guards below can reuse them.
     const sc = range.sc;
-    const el = sc.nodeType === 3 ? sc.parentElement : sc;
+    const el = /** @type {Element|null} */ (sc.nodeType === 3 ? sc.parentElement : sc);
 
     // Guard: if the cursor is inside a <i> FA icon element (zero text children,
     // rendered entirely by CSS ::before), pressing Enter would split the block
@@ -259,7 +259,7 @@ export function handleKeydown(event, editable, options = {}) {
 
     // Video wrapper — Enter should create a new paragraph after the wrapper,
     // not split the wrapper's container and produce an empty video clone.
-    const videoWrapper = el && el.closest && el.closest('.an-video-wrapper');
+    const videoWrapper = el && el.closest('.an-video-wrapper');
     if (videoWrapper) {
       event.preventDefault();
       const p = document.createElement('p');
@@ -275,7 +275,7 @@ export function handleKeydown(event, editable, options = {}) {
     }
 
     // Checklist — Enter creates new item; empty item exits the list
-    const checkLi = el && el.closest && el.closest('.an-checklist li');
+    const checkLi = el && el.closest('.an-checklist li');
     if (checkLi) {
       event.preventDefault();
       const ul = checkLi.closest('.an-checklist');

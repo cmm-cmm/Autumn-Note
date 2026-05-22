@@ -53,13 +53,13 @@ export class Codeview {
     const { editable } = this.context.layoutInfo;
     const html = editable.innerHTML;
 
-    this._textarea = createElement('textarea', {
+    this._textarea = /** @type {HTMLTextAreaElement} */ (createElement('textarea', {
       class: 'an-codeview',
       spellcheck: 'false',
       autocomplete: 'off',
       autocorrect: 'off',
       autocapitalize: 'off',
-    });
+    }));
     this._textarea.value = this._prettyPrint(html);
 
     editable.style.display = 'none';

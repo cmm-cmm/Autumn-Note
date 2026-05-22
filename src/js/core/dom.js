@@ -29,7 +29,7 @@ export const isInline = (node) =>
   isElement(node) &&
   /^(a|abbr|acronym|b|bdo|big|br|button|cite|code|dfn|em|i|img|input|kbd|label|map|object|output|q|s|samp|select|small|span|strong|sub|sup|textarea|time|tt|u|var)$/i.test(node.nodeName);
 /** @param {Node} node */
-export const isEditable = (node) => isElement(node) && node.isContentEditable;
+export const isEditable = (node) => isElement(node) && /** @type {HTMLElement} */ (node).isContentEditable;
 /** @param {Node} node */
 export const isAnchor = (node) => isElement(node) && node.nodeName.toUpperCase() === 'A';
 /** @param {Node} node */
@@ -100,7 +100,7 @@ export function prevElement(node) {
   while (sibling && !isElement(sibling)) {
     sibling = sibling.previousSibling;
   }
-  return sibling;
+  return /** @type {Element|null} */ (sibling);
 }
 
 /**
@@ -113,7 +113,7 @@ export function nextElement(node) {
   while (sibling && !isElement(sibling)) {
     sibling = sibling.nextSibling;
   }
-  return sibling;
+  return /** @type {Element|null} */ (sibling);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,7 +214,7 @@ export function isEmpty(node) {
   if (isText(node)) return !node.nodeValue;
   if (isVoid(node)) return false;
   if (node.childNodes.length === 1 && node.firstChild?.nodeName === 'BR') return true;
-  return !node.textContent.trim() && !node.querySelector('img, video, hr, table');
+  return !node.textContent.trim() && !/** @type {Element} */ (node).querySelector('img, video, hr, table');
 }
 
 /**
@@ -303,16 +303,72 @@ export function trapFocus(container, onEscape) {
     if (e.shiftKey) {
       if (document.activeElement === first) {
         e.preventDefault();
-        last.focus();
+        /** @type {HTMLElement} */ (last).focus();
       }
     } else {
       if (document.activeElement === last) {
         e.preventDefault();
-        first.focus();
+        /** @type {HTMLElement} */ (first).focus();
       }
     }
   };
 
   document.addEventListener('keydown', handler);
   return () => document.removeEventListener('keydown', handler);
+}
+
+/**
+ * Makes a dialog box draggable by its handle element.
+ * On first drag the box is pinned to its current viewport coordinates via
+ * `position:fixed`, freeing it from the parent flex container's centering.
+ * The position is clamped to the visible viewport.
+ *
+ * @param {HTMLElement} handle  Element the user grabs (title bar / header)
+ * @param {HTMLElement} box     Element that actually moves
+ * @returns {Function}          Cleanup function (removes the mousedown listener)
+ */
+export function makeDraggable(handle, box) {
+  handle.style.cursor = 'grab';
+
+  const onMousedown = (e) => {
+    if (e.button !== 0) return;
+    // Don't start drag when clicking on interactive children of the handle
+    if (/** @type {Element} */ (e.target).closest('button, input, select, textarea, a')) return;
+
+    e.preventDefault();
+
+    // First drag: snapshot position and pin to viewport with position:fixed
+    if (!box.dataset.anDragPinned) {
+      const r = box.getBoundingClientRect();
+      box.style.position = 'fixed';
+      box.style.margin = '0';
+      box.style.left = `${r.left}px`;
+      box.style.top = `${r.top}px`;
+      box.dataset.anDragPinned = '1';
+    }
+
+    const startX = e.clientX - parseFloat(box.style.left);
+    const startY = e.clientY - parseFloat(box.style.top);
+
+    handle.style.cursor = 'grabbing';
+
+    const onMove = (ev) => {
+      const bw = box.offsetWidth;
+      const bh = box.offsetHeight;
+      box.style.left = `${Math.max(0, Math.min(ev.clientX - startX, window.innerWidth  - bw))}px`;
+      box.style.top  = `${Math.max(0, Math.min(ev.clientY - startY, window.innerHeight - bh))}px`;
+    };
+
+    const onUp = () => {
+      handle.style.cursor = 'grab';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  };
+
+  handle.addEventListener('mousedown', onMousedown);
+  return () => handle.removeEventListener('mousedown', onMousedown);
 }

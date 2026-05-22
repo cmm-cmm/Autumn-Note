@@ -59,7 +59,7 @@ export class Context {
     this.locale = resolveLocale(this.options.lang);
 
     /** @type {{ container: HTMLElement, editable: HTMLElement, toolbar?: HTMLElement, statusbar?: HTMLElement }} */
-    this.layoutInfo = {};
+    this.layoutInfo = /** @type {any} */ ({});
 
     /** @type {Map<string, Function[]>} */
     this._listeners = new Map();
@@ -167,7 +167,7 @@ export class Context {
   /**
    * Registers and initialises a custom module on this instance.
    * @param {string} name
-   * @param {Function} ModuleClass
+   * @param {new (ctx: this) => any} ModuleClass
    * @returns {this}
    */
   registerModule(name, ModuleClass) {
@@ -555,10 +555,15 @@ export class Context {
     this._disposers = [];
 
     const container = this.layoutInfo.container;
+    const wasDark = container && container.classList.contains('an-theme-dark');
     if (container && container.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
       container.parentNode.removeChild(container);
+    }
+    // If this was a dark editor and no other dark containers remain, clean up body
+    if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {
+      document.body.classList.remove('an-theme-dark');
     }
 
     if (typeof this.options.onDestroy === 'function') {
@@ -578,7 +583,7 @@ export class Context {
    */
   _syncToTarget() {
     if (this.targetEl.tagName === 'TEXTAREA' || this.targetEl.tagName === 'INPUT') {
-      this.targetEl.value = this.getHTML();
+      /** @type {HTMLInputElement} */ (this.targetEl).value = this.getHTML();
     }
   }
 }

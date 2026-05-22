@@ -39,26 +39,31 @@ export class VideoTooltip {
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         // The shield div sits on top of iframes — we detect hover via it or the wrapper
-        const wrapper = e.target.closest('.an-video-wrapper');
+        const target = /** @type {Element} */ (e.target);
+        const wrapper = target && target.closest ? target.closest('.an-video-wrapper') : null;
         if (wrapper && editable.contains(wrapper)) {
           this._scheduleShow(wrapper);
         }
       }, { passive: true }),
       on(editable, 'mouseout', (e) => {
-        const to = e.relatedTarget;
-        if (!to || (!editable.contains(to) && !this._el.contains(to))) {
+        const to = /** @type {MouseEvent} */ (e).relatedTarget;
+        if (!to || (!editable.contains(/** @type {Node} */ (to)) && !this._el.contains(/** @type {Node} */ (to)))) {
           this._scheduleHide();
         }
       }, { passive: true }),
       on(document, 'click', (e) => {
+        const target = /** @type {Node} */ (e.target);
         if (
           this._activeWrapper &&
-          !this._activeWrapper.contains(e.target) &&
-          !this._el.contains(e.target)
+          !this._activeWrapper.contains(target) &&
+          !this._el.contains(target)
         ) {
           this._hide();
         }
       }),
+      // Hide when the page scrolls or resizes — the tooltip position becomes stale
+      on(window, 'scroll', () => this._hide(), { passive: true }),
+      on(window, 'resize', () => this._hide(), { passive: true }),
     );
 
     return this;
@@ -174,7 +179,7 @@ export class VideoTooltip {
     this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
   }
 
-  _show(wrapper) {
+  _show(_wrapper) {
     this._el.style.display = 'flex';
     // Defer: offsetWidth on a newly-visible element forces synchronous layout
     requestAnimationFrame(() => {

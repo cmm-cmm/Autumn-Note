@@ -2,7 +2,7 @@
  * IconDialog.js - Browse and insert FontAwesome Free icons
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ export class IconDialog {
     // Already present (icon element or stylesheet link)?
     if (document.getElementById('an-fontawesome-css')) return;
     const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-      .map((l) => l.href || '').join(' ');
+      .map((l) => /** @type {HTMLLinkElement} */ (l).href || '').join(' ');
     if (/fontawesome|font-awesome/.test(links)) return;
     if (document.querySelector('.fa-solid, .fas, .far, .fab')) return;
 
@@ -344,19 +344,23 @@ export class IconDialog {
 
     // Title row
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    titleGroup.append(iconEl, title);
     const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': L.close });
     closeBtn.innerHTML = '&times;';
-    titleRow.append(title, closeBtn);
+    titleRow.append(titleGroup, closeBtn);
 
     // Search
-    const searchInput = createElement('input', {
+    const searchInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'search',
       class: 'an-input an-icon-search',
       placeholder: L.searchPlaceholder,
       autocomplete: 'off',
-    });
+    }));
     this._searchInput = searchInput;
 
     // Category tabs
@@ -388,7 +392,7 @@ export class IconDialog {
 
     const styleLabel = createElement('label', { class: 'an-label' });
     styleLabel.textContent = L.style;
-    const styleSelect = createElement('select', { class: 'an-input an-icon-option-select' });
+    const styleSelect = /** @type {HTMLSelectElement} */ (createElement('select', { class: 'an-input an-icon-option-select' }));
     [['fa-solid', 'Solid'], ['fa-regular', 'Regular'], ['fa-light', 'Light (Pro)']].forEach(([v, t]) => {
       const opt = createElement('option', { value: v });
       opt.textContent = t;
@@ -399,9 +403,9 @@ export class IconDialog {
 
     const sizeLabel = createElement('label', { class: 'an-label' });
     sizeLabel.textContent = L.size;
-    const sizeSelect = createElement('select', { class: 'an-input an-icon-option-select' });
+    const sizeSelect = /** @type {HTMLSelectElement} */ (createElement('select', { class: 'an-input an-icon-option-select' }));
     [['', 'Inherit'], ['0.75em', '0.75em'], ['1em', '1em'], ['1.25em', '1.25em'], ['1.5em', '1.5em'], ['2em', '2em'], ['3em', '3em']].forEach(([v, t]) => {
-      const opt = createElement('option', { value: v });
+      const opt = /** @type {HTMLOptionElement} */ (createElement('option', { value: v }));
       if (v === '1em') opt.selected = true;
       opt.textContent = t;
       sizeSelect.appendChild(opt);
@@ -410,11 +414,11 @@ export class IconDialog {
 
     const colorLabel = createElement('label', { class: 'an-label' });
     colorLabel.textContent = L.color;
-    const colorInput = createElement('input', { type: 'color', class: 'an-icon-color', value: '#000000' });
+    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-icon-color', value: '#000000' }));
     this._colorInput = colorInput;
 
     const useColorLabel = createElement('label', { class: 'an-label an-label-inline an-icon-use-color' });
-    const useColorCb = createElement('input', { type: 'checkbox', checked: '' });
+    const useColorCb = /** @type {HTMLInputElement} */ (createElement('input', { type: 'checkbox', checked: '' }));
     this._useColorCb = useColorCb;
     useColorLabel.append(useColorCb, document.createTextNode(L.useColor));
 
@@ -438,6 +442,7 @@ export class IconDialog {
 
     box.append(titleRow, searchInput, catBar, grid, optRow, preview, btnRow);
     overlay.appendChild(box);
+    makeDraggable(titleRow, box);
 
     // -------------------------------------------------------------------------
     // Events
@@ -449,7 +454,7 @@ export class IconDialog {
     const d4 = on(overlay,     'click',  (e) => { if (e.target === overlay) this._close(); });
     const d5 = on(searchInput, 'input',  () => this._filterIcons(searchInput.value, this._activeCat));
     const d6 = on(catBar,      'click',  (e) => {
-      const tab = e.target.closest('[data-cat]');
+      const tab = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('[data-cat]'));
       if (tab) {
         this._activeCat = tab.dataset.cat;
         this._updateCatTabs();
@@ -457,7 +462,7 @@ export class IconDialog {
       }
     });
     const d7 = on(grid, 'click', (e) => {
-      const cell = e.target.closest('.an-icon-cell');
+      const cell = /** @type {HTMLElement} */ (/** @type {Element} */ (e.target)?.closest('.an-icon-cell'));
       if (cell) this._selectIcon(cell.dataset.name);
     });
     const d8 = on(styleSelect, 'change', () => this._updatePreview(this._selectedIcon));
@@ -476,7 +481,7 @@ export class IconDialog {
 
   _updateCatTabs() {
     this._catBar.querySelectorAll('.an-icon-cat').forEach((tab) => {
-      tab.classList.toggle('active', tab.dataset.cat === this._activeCat);
+      tab.classList.toggle('active', /** @type {HTMLElement} */ (tab).dataset.cat === this._activeCat);
     });
   }
 
@@ -484,12 +489,13 @@ export class IconDialog {
     const q = (query || '').trim().toLowerCase();
     let visibleCount = 0;
     this._grid.querySelectorAll('.an-icon-cell').forEach((cell) => {
-      const name = cell.dataset.name;
-      const cellCat = cell.dataset.cat;
+      const hCell = /** @type {HTMLElement} */ (cell);
+      const name = hCell.dataset.name;
+      const cellCat = hCell.dataset.cat;
       const matchesCat = !cat || cat === 'all' || cellCat === cat;
       const matchesQuery = !q || name.includes(q);
       const visible = matchesCat && matchesQuery;
-      cell.style.display = visible ? '' : 'none';
+      hCell.style.display = visible ? '' : 'none';
       if (visible) visibleCount++;
     });
     // Show empty state if needed
@@ -499,14 +505,14 @@ export class IconDialog {
       empty.textContent = 'No icons found';
       this._grid.appendChild(empty);
     }
-    empty.style.display = visibleCount > 0 ? 'none' : '';
+    /** @type {HTMLElement} */ (empty).style.display = visibleCount > 0 ? 'none' : '';
   }
 
   _selectIcon(name) {
     this._selectedIcon = name;
     // Highlight selected cell
     this._grid.querySelectorAll('.an-icon-cell').forEach((cell) => {
-      cell.classList.toggle('active', cell.dataset.name === name);
+      cell.classList.toggle('active', /** @type {HTMLElement} */ (cell).dataset.name === name);
     });
     // Enable insert button
     this._insertBtn.removeAttribute('disabled');
@@ -581,8 +587,8 @@ export class IconDialog {
     // deleteContents() can drift the range endpoint outside the cell in some
     // browsers.  Save the cell reference first and re-anchor after deletion.
     const _sc = range.startContainer;
-    const _tdAnchor = (_sc.nodeType === 1 ? _sc : _sc.parentElement)
-      ?.closest?.('td, th');
+    const _tdAnchor = /** @type {Element|null} */ (_sc.nodeType === 1 ? _sc : _sc.parentElement)
+      ?.closest('td, th');
     range.deleteContents();
     if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
       range.setStart(_tdAnchor, 0);

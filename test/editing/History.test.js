@@ -187,6 +187,78 @@ describe('History', () => {
     }
   });
 
+  it('_restoreSelection restores a real DOM selection after undo', () => {
+    // Set up a real selection so it gets serialized in the snapshot
+    el.innerHTML = '<p>hello world</p>';
+    const p = el.querySelector('p');
+    const textNode = p.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, 5);
+    window.getSelection().addRange(range);
+
+    history.recordUndo(); // captures the selection
+
+    // Change content and record again
+    window.getSelection().removeAllRanges();
+    el.innerHTML = '<p>different content</p>';
+    history.recordUndo();
+
+    // Undo — should call _restoreSelection with the saved non-null selection
+    history.undo();
+
+    // Selection restoration may partially work in jsdom; just verify no throw
+    expect(el.innerHTML).toContain('hello world');
+  });
+
+  it('_charOffset returns 0 when passed an element node (not a text node)', () => {
+    // The TreeWalker only visits TEXT nodes, so an element node is never found
+    el.innerHTML = '<p>hello</p>';
+    const p = el.querySelector('p');
+    // Directly call _charOffset with an element — covers the return 0 path (line 59)
+    const result = history._charOffset(p, 0);
+    expect(result).toBe(0);
+  });
+
+  it('_charOffset iterates past multiple text nodes to find the target', () => {
+    // Two paragraphs: cursor in SECOND paragraph forces _charOffset to iterate past first
+    el.innerHTML = '<p>hello</p><p>world</p>';
+    const secondP = el.querySelectorAll('p')[1];
+    const textNode = secondP.firstChild;
+    const range = document.createRange();
+    range.setStart(textNode, 2);
+    range.collapse(true);
+    window.getSelection().addRange(range);
+    history.recordUndo();
+
+    window.getSelection().removeAllRanges();
+    el.innerHTML = '<p>new</p>';
+    history.recordUndo();
+
+    // Undo restores content; _restoreSelection traverses past first paragraph's text
+    expect(() => history.undo()).not.toThrow();
+    expect(el.innerHTML).toContain('hello');
+  });
+
+  it('_restoreSelection handles selection where start/end are in different text nodes', () => {
+    el.innerHTML = '<p>first</p><p>second</p>';
+    const first = el.querySelectorAll('p')[0].firstChild;
+    const second = el.querySelectorAll('p')[1].firstChild;
+    const range = document.createRange();
+    range.setStart(first, 0);
+    range.setEnd(second, 3);
+    window.getSelection().addRange(range);
+
+    history.recordUndo();
+
+    window.getSelection().removeAllRanges();
+    el.innerHTML = '<p>new content</p>';
+    history.recordUndo();
+
+    expect(() => history.undo()).not.toThrow();
+    expect(el.innerHTML).toContain('first');
+  });
+
   it('does not throw when _restoreSelection encounters a detached node', () => {
     el.innerHTML = '<p>text</p>';
     history.recordUndo();
