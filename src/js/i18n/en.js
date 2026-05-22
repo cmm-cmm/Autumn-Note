@@ -298,6 +298,8 @@ export const en = {
       rowHeight:          'Row Height',
       tableBorderWidth:   'Table Border Width',
       deleteTable:        'Delete Table',
+      cellBackground:     'Cell Background',
+      noShading:          'No Shading',
       columnWidthPx:      'Column Width (px)',
       rowHeightPx:        'Row Height (px)',
       tableBorderWidthPx: 'Table Border Width (px)',

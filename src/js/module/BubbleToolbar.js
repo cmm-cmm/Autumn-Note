@@ -115,7 +115,9 @@ export class BubbleToolbar {
     const d6 = this.context.on('contextMenu:hide', () => {
       this._contextMenuOpen = false;
     });
-    this._disposers.push(d1, d2, d3, d4, d5, d6);
+    const d7 = on(window, 'scroll', () => this._hide(), { passive: true });
+    const d8 = on(window, 'resize', () => this._hide(), { passive: true });
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8);
     return this;
   }
 
@@ -352,6 +354,19 @@ export class BubbleToolbar {
 
     if (top < 8) {
       top = rect.bottom + gap;
+    }
+
+    // If the Table Tooltip is visible, avoid overlapping it by flipping below the selection.
+    // The Table Tooltip sits above the table, which is the same vertical zone the bubble
+    // toolbar would normally occupy when text is selected inside a table cell.
+    const tableTooltipEl = document.querySelector('.an-table-tooltip');
+    if (tableTooltipEl && /** @type {HTMLElement} */ (tableTooltipEl).style.display !== 'none') {
+      const ttRect = tableTooltipEl.getBoundingClientRect();
+      const overlapsVertically = top < ttRect.bottom + gap && top + bh > ttRect.top - gap;
+      if (overlapsVertically) {
+        top = rect.bottom + gap;
+        if (top + bh > window.innerHeight - 8) top = ttRect.bottom + gap;
+      }
     }
 
     el.style.top = `${top}px`;

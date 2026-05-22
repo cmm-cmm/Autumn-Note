@@ -293,6 +293,8 @@ export const vi = {
       rowHeight:          'Chiều cao hàng',
       tableBorderWidth:   'Độ rộng viền bảng',
       deleteTable:        'Xóa bảng',
+      cellBackground:     'Màu Nền Ô',
+      noShading:          'Xóa Màu Nền',
       columnWidthPx:      'Chiều rộng cột (px)',
       rowHeightPx:        'Chiều cao hàng (px)',
       tableBorderWidthPx: 'Độ rộng viền bảng (px)',

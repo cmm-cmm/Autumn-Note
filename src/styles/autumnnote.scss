@@ -652,6 +652,31 @@
   letter-spacing: 0.02em;
 }
 
+// Color-strip variant for the cell shade button (mirrors .an-bubble-btn--color)
+.an-link-tooltip-btn--shade {
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 0 3px;
+  height: auto;
+
+  .an-bubble-btn-svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    svg { display: block; }
+  }
+
+  .an-link-tooltip-color-strip {
+    display: block;
+    width: 13px;
+    height: 3px;
+    border-radius: 1px;
+    pointer-events: none;
+    background: transparent;
+  }
+}
+
 // Active state for toggle buttons in tooltips (e.g. Select Cells)
 .an-link-tooltip-btn--active {
   background: rgba(#3b82f6, 0.12) !important;
@@ -723,6 +748,58 @@
     display: flex;
     justify-content: flex-end;
     gap: 6px;
+  }
+}
+
+// =============================================================================
+// Cell shade popover
+
+.an-cell-shade-popover {
+  position: fixed;
+  z-index: 1200;
+  background: $an-bg;
+  border: 1px solid $an-border;
+  border-radius: 8px;
+  padding: 10px 10px 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 166px;
+
+  .an-size-popover-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: $an-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .an-shade-no-color {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    font-size: 12px;
+    color: $an-muted;
+    background: transparent;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      background: $an-bg-btn-hover;
+      color: $an-text;
+    }
+  }
+
+  .an-shade-color-input {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid $an-border;
+    border-radius: $an-radius-sm;
+    cursor: pointer;
+    background: transparent;
   }
 }
 
@@ -819,8 +896,29 @@
   gap: 10px;
 }
 
+.an-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.an-dialog-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba($an-primary, 0.1);
+  color: $an-primary;
+
+  svg { display: block; stroke: currentColor; }
+}
+
 .an-dialog-title {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: $an-text;
@@ -1759,6 +1857,11 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-dialog-title { color: #cdd6f4; }
 
+  .an-dialog-icon {
+    background: rgba(#818cf8, 0.15);
+    color: #818cf8;
+  }
+
   .an-label { color: #cdd6f4; }
 
   .an-input {
@@ -1794,10 +1897,21 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-color-popup,
   .an-table-picker-popup,
-  .an-size-popover {
+  .an-size-popover,
+  .an-cell-shade-popover {
     background: #24273a;
     border-color: #3f3f5f;
     color: #cdd6f4;
+  }
+
+  .an-cell-shade-popover .an-shade-no-color {
+    border-color: #3f3f5f;
+    color: #a6adc8;
+
+    &:hover {
+      background: #313244;
+      color: #cdd6f4;
+    }
   }
 
   .an-link-tooltip-btn--active {

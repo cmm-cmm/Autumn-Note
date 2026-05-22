@@ -66,8 +66,13 @@ export class ImageDialog {
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
+    const header = createElement('div', { class: 'an-dialog-header' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    header.appendChild(iconEl);
+    header.appendChild(title);
 
     // URL tab
     const urlLabel = createElement('label', { class: 'an-label' });
@@ -91,7 +96,7 @@ export class ImageDialog {
     }));
     this._altInput = altInput;
 
-    box.append(title, urlLabel, urlInput, altLabel, altInput);
+    box.append(header, urlLabel, urlInput, altLabel, altInput);
 
     // Alignment
     const alignLabel = createElement('label', { class: 'an-label' });

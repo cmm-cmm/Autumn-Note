@@ -58,6 +58,9 @@ export class ImageTooltip {
           this._hide();
         }
       }),
+      // Hide when the page scrolls or resizes — the tooltip position becomes stale
+      on(window, 'scroll', () => this._hide(), { passive: true }),
+      on(window, 'resize', () => this._hide(), { passive: true }),
     );
 
     return this;
