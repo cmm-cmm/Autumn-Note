@@ -7,7 +7,7 @@
  *   • Direct video URLs   → <video> element (.mp4 / .webm / .ogg)
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class VideoDialog {
@@ -115,6 +115,7 @@ export class VideoDialog {
 
     box.append(header, urlLabel, urlInput, hintEl, widthLabel, widthInput, btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     // Live URL hint
     const d0 = on(urlInput, 'input', () => {

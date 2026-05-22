@@ -2,7 +2,7 @@
  * IconDialog.js - Browse and insert FontAwesome Free icons
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -344,11 +344,15 @@ export class IconDialog {
 
     // Title row
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
+    titleGroup.append(iconEl, title);
     const closeBtn = createElement('button', { type: 'button', class: 'an-icon-close', 'aria-label': L.close });
     closeBtn.innerHTML = '&times;';
-    titleRow.append(title, closeBtn);
+    titleRow.append(titleGroup, closeBtn);
 
     // Search
     const searchInput = /** @type {HTMLInputElement} */ (createElement('input', {
@@ -438,6 +442,7 @@ export class IconDialog {
 
     box.append(titleRow, searchInput, catBar, grid, optRow, preview, btnRow);
     overlay.appendChild(box);
+    makeDraggable(titleRow, box);
 
     // -------------------------------------------------------------------------
     // Events

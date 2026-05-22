@@ -3,7 +3,7 @@
  * Inspired by Summernote's ImageDialog — rewritten without jQuery
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class ImageDialog {
@@ -146,6 +146,7 @@ export class ImageDialog {
 
     box.append(btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     const d1 = on(insertBtn, 'click', () => this._onInsert());
     const d2 = on(cancelBtn, 'click', () => this._close());

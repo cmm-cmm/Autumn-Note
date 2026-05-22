@@ -555,10 +555,15 @@ export class Context {
     this._disposers = [];
 
     const container = this.layoutInfo.container;
+    const wasDark = container && container.classList.contains('an-theme-dark');
     if (container && container.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
       container.parentNode.removeChild(container);
+    }
+    // If this was a dark editor and no other dark containers remain, clean up body
+    if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {
+      document.body.classList.remove('an-theme-dark');
     }
 
     if (typeof this.options.onDestroy === 'function') {

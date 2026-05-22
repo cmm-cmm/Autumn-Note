@@ -317,6 +317,9 @@ export class Editor {
     // C4: Remove figure.an-figure elements whose <img> has been deleted so
     // orphaned figcaptions do not accumulate in the DOM.
     this._cleanOrphanedFigures();
+    // Ensure the editable always ends with a paragraph so the user can click
+    // and type after block elements that trap the cursor (pre, table, etc.).
+    this._ensureTrailingParagraph();
     // Immediate: keep toolbar and statusbar in sync on every mutation.
     this.context.invoke('toolbar.refresh');
     this.context.invoke('statusbar.update');
@@ -352,6 +355,25 @@ export class Editor {
         fig.parentNode.removeChild(fig);
       }
     });
+  }
+
+  /**
+   * Ensures the editable always ends with a plain paragraph so the cursor can
+   * be placed after block elements that do not naturally allow it
+   * (pre, blockquote, table, figure, ul, ol, hr).
+   * Without this, clicking below the last such element does nothing.
+   */
+  _ensureTrailingParagraph() {
+    const editable = this.context.layoutInfo.editable;
+    if (!editable) return;
+    const last = editable.lastElementChild;
+    if (!last) return;
+    const TRAPPING = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
+    if (TRAPPING.has(last.nodeName)) {
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      editable.appendChild(p);
+    }
   }
 
   // ---------------------------------------------------------------------------

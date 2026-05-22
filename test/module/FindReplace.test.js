@@ -262,7 +262,7 @@ describe('FindReplace._replace', () => {
     fr._replaceInput.value = 'hi';
     fr._onSearch();
     vi.spyOn(fr, '_replace');
-    const replaceBtn = fr._dialog.querySelector('.an-fr-replace-actions .an-btn:not(.an-btn-primary)');
+    const replaceBtn = fr._dialog.querySelector('.an-fr-replace-row .an-fr-replace-btn:not(.an-btn-primary)');
     replaceBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(fr._replace).toHaveBeenCalled();
   });
@@ -311,7 +311,7 @@ describe('FindReplace._replaceAll', () => {
     fr._replaceInput.value = 'hi';
     fr._onSearch();
     vi.spyOn(fr, '_replaceAll');
-    const replaceAllBtn = fr._dialog.querySelector('.an-fr-replace-actions .an-btn-primary');
+    const replaceAllBtn = fr._dialog.querySelector('.an-fr-replace-row .an-fr-replace-btn.an-btn-primary');
     replaceAllBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(fr._replaceAll).toHaveBeenCalled();
   });

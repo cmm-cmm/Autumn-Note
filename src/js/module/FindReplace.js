@@ -7,7 +7,7 @@
  * single / replace-all replacement.
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 
 export class FindReplace {
   /** @param {import('../Context.js').Context} context */
@@ -137,108 +137,133 @@ export class FindReplace {
       'aria-modal': 'true',
       'aria-label': L.findReplaceTitle,
     });
-    const box = createElement('div', { class: 'an-dialog-box' });
+    const box = createElement('div', { class: 'an-dialog-box an-fr-box' });
 
-    // ---- Title row ----
-    const titleRow = createElement('div', { class: 'an-icon-title-row' });
+    // ---- Header: [icon][title]  [×] ----
+    const header = createElement('div', { class: 'an-fr-header' });
+    const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
+    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.findTitle;
+    titleGroup.append(iconEl, title);
     const closeBtn = createElement('button', {
       type: 'button',
       class: 'an-icon-close',
-      'aria-label': 'Close',
+      title: L.close,
+      'aria-label': L.close,
     });
-    closeBtn.textContent = L.close;
+    closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
     this._closeBtn = closeBtn;
-    titleRow.append(title, closeBtn);
-    box.appendChild(titleRow);
+    header.append(titleGroup, closeBtn);
+    box.appendChild(header);
 
-    // ---- Find row ----
-    const findRow = createElement('div', { class: 'an-fr-find-row' });
+    // ---- Search bar: [input] [Aa] [↑] [↓]  counter ----
+    const searchBar = createElement('div', { class: 'an-fr-search-bar' });
     const findInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
-      class: 'an-input',
+      class: 'an-input an-fr-input',
       placeholder: L.findPlaceholder,
       'aria-label': L.searchAriaLabel,
     }));
     this._findInput = findInput;
-    findRow.appendChild(findInput);
-    box.appendChild(findRow);
 
-    // ---- Options row (case-sensitive toggle + match counter) ----
-    const optRow = createElement('div', { class: 'an-fr-options-row' });
-    const caseLabel = createElement('label', { class: 'an-label an-label-inline' });
+    // Case-sensitive toggle (visual button; hidden checkbox kept for state)
     const caseCheckbox = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'checkbox',
-      'aria-label': 'Case sensitive',
+      style: 'display:none',
+      'aria-hidden': 'true',
     }));
     this._caseCheckbox = caseCheckbox;
-    caseLabel.append(caseCheckbox, document.createTextNode(L.caseSensitive));
+    const caseBtn = createElement('button', {
+      type: 'button',
+      class: 'an-fr-icon-btn',
+      title: 'Case sensitive',
+      'aria-label': 'Case sensitive',
+    });
+    caseBtn.textContent = 'Aa';
+
+    const prevBtn = createElement('button', {
+      type: 'button',
+      class: 'an-fr-icon-btn',
+      title: 'Previous (Shift+Enter)',
+      'aria-label': 'Previous',
+    });
+    prevBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
+
+    const nextBtn = createElement('button', {
+      type: 'button',
+      class: 'an-fr-icon-btn',
+      title: 'Next (Enter)',
+      'aria-label': 'Next',
+    });
+    nextBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;
-    optRow.append(caseLabel, counter);
-    box.appendChild(optRow);
 
-    // ---- Find actions ----
-    const findActions = createElement('div', { class: 'an-dialog-actions an-fr-find-actions' });
-    const prevBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    prevBtn.textContent = L.prevBtn;
-    const nextBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    nextBtn.textContent = L.nextBtn;
-    findActions.append(prevBtn, nextBtn);
-    box.appendChild(findActions);
+    searchBar.append(findInput, caseCheckbox, caseBtn, prevBtn, nextBtn, counter);
+    box.appendChild(searchBar);
 
-    // ---- Replace row (hidden by default) ----
+    // ---- Replace row: [input] [Replace] [All]  (hidden by default) ----
     const replaceRow = createElement('div', { class: 'an-fr-replace-row' });
     replaceRow.style.display = 'none';
     const replaceInput = /** @type {HTMLInputElement} */ (createElement('input', {
       type: 'text',
-      class: 'an-input',
+      class: 'an-input an-fr-input',
       placeholder: L.replacePlaceholder,
       'aria-label': L.replaceAriaLabel,
     }));
     this._replaceInput = replaceInput;
-    replaceRow.appendChild(replaceInput);
+    const replaceBtn = createElement('button', { type: 'button', class: 'an-btn an-fr-replace-btn' });
+    replaceBtn.textContent = L.replaceBtn;
+    const replaceAllBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary an-fr-replace-btn' });
+    replaceAllBtn.textContent = L.replaceAllBtn;
+    replaceRow.append(replaceInput, replaceBtn, replaceAllBtn);
     box.appendChild(replaceRow);
 
-    // ---- Replace actions (hidden by default) ----
-    const replaceActions = createElement('div', { class: 'an-dialog-actions an-fr-replace-actions' });
+    // Compat div — _updateMode toggles this; kept empty so existing logic works
+    const replaceActions = createElement('div', { class: 'an-fr-replace-actions' });
     replaceActions.style.display = 'none';
-    const replaceBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    replaceBtn.textContent = L.replaceBtn;
-    const replaceAllBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    replaceAllBtn.textContent = L.replaceAllBtn;
-    replaceActions.append(replaceBtn, replaceAllBtn);
     box.appendChild(replaceActions);
 
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     // ---- Event bindings ----
     const d1 = on(closeBtn, 'click', () => this._close());
     const d2 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d3 = on(findInput, 'input', () => this._onSearch());
-    const d4 = on(caseCheckbox, 'change', () => {
-      this._caseSensitive = caseCheckbox.checked;
+    const d4 = on(caseBtn, 'click', () => {
+      this._caseSensitive = !this._caseSensitive;
+      caseCheckbox.checked = this._caseSensitive;
+      caseBtn.classList.toggle('an-fr-icon-btn--active', this._caseSensitive);
       this._onSearch();
     });
-    const d5 = on(nextBtn, 'click', () => this._next());
-    const d6 = on(prevBtn, 'click', () => this._prev());
-    const d7 = on(replaceBtn, 'click', () => this._replace());
-    const d8 = on(replaceAllBtn, 'click', () => this._replaceAll());
-    const d9 = on(findInput, 'keydown', (e) => {
+    // Hidden checkbox change handler keeps backward-compat with programmatic toggles
+    const d5 = on(caseCheckbox, 'change', () => {
+      this._caseSensitive = caseCheckbox.checked;
+      caseBtn.classList.toggle('an-fr-icon-btn--active', this._caseSensitive);
+      this._onSearch();
+    });
+    const d6 = on(nextBtn, 'click', () => this._next());
+    const d7 = on(prevBtn, 'click', () => this._prev());
+    const d8 = on(replaceBtn, 'click', () => this._replace());
+    const d9 = on(replaceAllBtn, 'click', () => this._replaceAll());
+    const d10 = on(findInput, 'keydown', (e) => {
       const ke = /** @type {KeyboardEvent} */ (e);
       if (ke.key === 'Enter') {
         e.preventDefault();
         ke.shiftKey ? this._prev() : this._next();
       }
     });
-    const d10 = on(replaceInput, 'keydown', (e) => {
+    const d11 = on(replaceInput, 'keydown', (e) => {
       if (/** @type {KeyboardEvent} */ (e).key === 'Enter') {
         e.preventDefault();
         this._replace();
       }
     });
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10);
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11);
 
     return overlay;
   }

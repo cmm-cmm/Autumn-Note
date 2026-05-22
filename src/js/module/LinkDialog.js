@@ -3,7 +3,7 @@
  * Inspired by Summernote's LinkDialog — rewritten without jQuery
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 export class LinkDialog {
@@ -119,6 +119,7 @@ export class LinkDialog {
 
     box.append(header, urlLabel, urlInput, textLabel, textInput, tabLabel, btnRow);
     overlay.appendChild(box);
+    makeDraggable(header, box);
 
     // Events
     const d1 = on(insertBtn, 'click', () => this._onInsert());

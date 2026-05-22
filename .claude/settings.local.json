@@ -78,7 +78,8 @@
       "Bash(sort -t '|' -k5 -n)",
       "Bash(awk -F'|' '{gsub\\(/ /,\"\",$5\\); if \\($5+0 < 88\\) print $0}')",
       "Bash(awk -F'|' 'NF>5 {gsub\\(/ /,\"\",$6\\); if \\($6+0 < 88 && $6+0 > 0\\) print $1, $5, $6, $7}')",
-      "Bash(sort -k3 -rn)"
+      "Bash(sort -k3 -rn)",
+      "Bash(awk '/\\\\.an-theme-dark/,/^}/' src/styles/autumnnote.scss)"
     ]
   }
 }
