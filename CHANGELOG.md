@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-05-22
+
+### Added
+- **Cell background shading** — Table Tooltip now includes a paint-bucket button to set cell background colour; 24 colour presets, custom colour input, and "No Shading" to clear; colour strip on the button reflects the current cell's colour and syncs when the cursor moves between cells; applies to all selected cells in Select Mode
+- **Dialog icons** — Link, Image, Video, Emoji, Icon, and Find & Replace dialogs now display a contextual icon in the title header for visual consistency
+- **Draggable modals** — all dialogs (Link, Image, Video, Emoji, Icon, Find & Replace) can be repositioned by dragging their title bar; position is preserved across open/close cycles; clamped to viewport bounds
+- **Find & Replace — floating panel** — upgraded from a blocking centred modal to a compact non-blocking floating panel in the top-right corner; compact search bar with inline Case-sensitive toggle (`Aa`) and icon navigation buttons (↑ ↓); replace row collapses when not needed
+- **Auto language detection for code blocks** — formatting selected text as a code block automatically analyses the content and applies the matching Prism.js syntax highlighting; 20 languages: JavaScript, TypeScript, Python, HTML, CSS, SCSS, JSON, SQL, Bash/Shell, Java, C#, PHP, Ruby, Go, Rust, C++, C, Kotlin, Swift, XML
+- **SCSS language support** — SCSS added as a distinct code-tooltip language option; SCSS-specific markers (`//` comments, `&` nesting, `$variable`, `@mixin/@include`) are auto-detected and differentiated from plain CSS
+
+### Fixed
+- **Tooltips hide on scroll / resize** — LinkTooltip, ImageTooltip, VideoTooltip, TableTooltip, and BubbleToolbar now listen to `window scroll` and `window resize` (passive) and hide immediately, preventing stale floating elements
+- **Dark theme for all floating elements** — `an-theme-dark` is now also added to `document.body` at init time so dialogs, tooltips, colour pickers, and popovers appended to `<body>` receive correct dark styles; removed from body on `destroy()` when no other dark editor remains
+- **FontAwesome icons visible in dark mode** — icon cells in the Icon Dialog now explicitly set `<i>` colour in dark mode (was invisible against dark backgrounds)
+- **Cursor placement below block elements** — `afterCommand()` now appends an empty `<p>` after `<pre>`, `<blockquote>`, `<table>`, `<figure>`, `<ul>`, `<ol>`, and `<hr>` when they are the last element in the editable, allowing the cursor to be placed below them
+- **BubbleToolbar avoids overlapping Table Tooltip** — `_show()` detects `.an-table-tooltip` visibility and shifts the toolbar below the selection to prevent overlap
+
+### Changed
+- Find & Replace: `Prev`/`Next` replaced with SVG icon buttons (↑ ↓); case-sensitive checkbox replaced with styled `Aa` toggle; counter moved inline with navigation
+- Table Tooltip shade button uses the same colour-strip layout as `foreColor`/`hiliteColor` in BubbleToolbar; strip colour auto-syncs via `selectionchange`
+
+### Development
+- Test coverage raised to **90.02 %** line coverage (5 524 / 6 136 lines); **1 534 tests** across **47 test files**
+- New utility: `src/js/core/detectLang.js` — zero-dependency heuristic language detector with 23 unit tests covering 20 languages
+- Zero ESLint warnings; zero TypeScript errors across the entire source
+
+---
+
 ## [1.5.0] - 2026-05-20
 
 ### Added

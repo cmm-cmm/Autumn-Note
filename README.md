@@ -67,7 +67,8 @@ A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no
 - **FA Icon picker** — FontAwesome 6 Free Solid icons across 8 categories; keyword search; configurable style, size, and colour; inserts as `<i>` element; auto-injects FA CDN if not on the page
 
 ### Search
-- **Find and Replace** — `Ctrl+F` to find, `Ctrl+H` for find-and-replace; TreeWalker text matching; `<mark>` highlighting; case-sensitive toggle; Prev/Next navigation; single and replace-all modes
+- **Find and Replace** — `Ctrl+F` to find, `Ctrl+H` for find-and-replace; compact non-blocking floating panel (top-right); TreeWalker text matching; `<mark>` highlighting; case-sensitive `Aa` toggle; icon-button Prev/Next navigation (↑ ↓); single and replace-all modes
+- **Auto language detection** — when selected text is formatted as a code block the editor automatically analyses the content and applies Prism.js syntax highlighting; 20 languages detected: JavaScript, TypeScript, Python, HTML, CSS, SCSS, JSON, SQL, Bash, Java, C#, PHP, Ruby, Go, Rust, C++, C, Kotlin, Swift, XML
 
 ### Inline tooltips
 Floating toolbars appear automatically when the user clicks on an editable element:
@@ -77,8 +78,8 @@ Floating toolbars appear automatically when the user clicks on an editable eleme
 | **Link** | Open in new tab, Edit (reopens dialog), Unlink |
 | **Image** | Edit alt/URL (reopens dialog), Crop, Delete |
 | **Video** | Edit (reopens dialog), Delete |
-| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Unmerge cells, Cell selection mode, Column width, Row height, Border width, Delete table |
-| **Code block** | Copy code, Delete block |
+| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Unmerge cells, Cell selection mode, Column width, Row height, Border width, **Cell background colour**, Delete table |
+| **Code block** | Copy code, Language selector (20 languages + SCSS), Delete block |
 
 ### Context menu
 Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **Cut**, **Copy**, **Paste**, **Bold**, **Italic**, **Underline**, **Copy Format**, **Paste Format**, **Remove Format**, and a **colour palette** for quick text/highlight colour changes.
@@ -92,7 +93,8 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 ### UI
 - **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
-- **Dark / light theme** — `theme: 'dark'` or `theme: 'light'` (default); full SCSS variable coverage
+- **Dark / light theme** — `theme: 'dark'` or `theme: 'light'` (default); full SCSS variable coverage; dark styles propagate to all floating elements (dialogs, tooltips, colour pickers)
+- **Draggable dialogs** — all dialogs (Link, Image, Video, Emoji, Icon, Find & Replace) can be repositioned by dragging their title bar; position is clamped to the viewport
 - **Image resizer** — drag handle on selected image to resize proportionally
 - **Video resizer** — drag handle on selected video embed to resize
 - **Statusbar** — live word and character count; drag handle to resize editor height; limit warnings when `maxChars` or `maxWords` is reached

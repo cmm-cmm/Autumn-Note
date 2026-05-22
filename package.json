@@ -1,6 +1,6 @@
 {
   "name": "autumnnote",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG editor built with vanilla JavaScript, no jQuery required.",
   "main": "dist/autumnnote.umd.js",
   "module": "dist/autumnnote.es.js",
