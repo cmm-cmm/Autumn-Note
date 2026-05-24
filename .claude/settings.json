@@ -32,7 +32,8 @@
       "Bash(Invoke-RestMethod -Uri \"https://api.cdnjs.com/libraries/prism/1.29.0?fields=sri\")",
       "Bash(ConvertTo-Json -Depth 5)",
       "Bash(curl -s \"https://api.cdnjs.com/libraries/prism/1.29.0?fields=sri\")",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in d.get\\('sri',{}\\).items\\(\\) if any\\(x in k for x in ['prism-tomorrow','prism.min','prism-javascript','prism-typescript','prism-bash','prism-markup']\\)]\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in d.get\\('sri',{}\\).items\\(\\) if any\\(x in k for x in ['prism-tomorrow','prism.min','prism-javascript','prism-typescript','prism-bash','prism-markup']\\)]\")",
+      "Bash(grep -v \"//.*\\\\bwindow\\\\b\")"
     ]
   }
 }
