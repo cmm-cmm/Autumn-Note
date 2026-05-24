@@ -33,7 +33,9 @@
       "Bash(ConvertTo-Json -Depth 5)",
       "Bash(curl -s \"https://api.cdnjs.com/libraries/prism/1.29.0?fields=sri\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in d.get\\('sri',{}\\).items\\(\\) if any\\(x in k for x in ['prism-tomorrow','prism.min','prism-javascript','prism-typescript','prism-bash','prism-markup']\\)]\")",
-      "Bash(grep -v \"//.*\\\\bwindow\\\\b\")"
+      "Bash(grep -v \"//.*\\\\bwindow\\\\b\")",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell(git commit -m \"chore: bump version to 1.6.1 - code quality and accessibility improvements`n`nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\")"
     ]
   }
 }
