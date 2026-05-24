@@ -65,7 +65,18 @@
     "ckeditor-alternative",
     "zero-dependencies",
     "react-wysiwyg",
-    "vue-wysiwyg"
+    "vue-wysiwyg",
+    "prosemirror-alternative",
+    "trix-alternative",
+    "slate-alternative",
+    "vue3",
+    "quill",
+    "tinymce",
+    "react",
+    "vue",
+    "plugin-api",
+    "rtl",
+    "autosave"
   ],
   "homepage": "https://cmm-cmm.github.io/Autumn-Note/",
   "repository": {
