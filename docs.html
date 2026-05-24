@@ -3,8 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote Docs  EAPI Reference</title>
+  <title>AutumnNote — API Reference | WYSIWYG Editor Docs</title>
   <meta name="description" content="Full API reference for AutumnNote WYSIWYG editor. Options, methods, events, toolbar configuration, Plugin API, and TypeScript types." />
+  <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/docs.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AutumnNote — API Reference" />
+  <meta property="og:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor. Options, methods, events, plugins, and toolbar configuration." />
+  <meta property="og:url" content="https://cmm-cmm.github.io/Autumn-Note/docs.html" />
+  <meta property="og:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AutumnNote — API Reference" />
+  <meta name="twitter:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "name": "AutumnNote API Reference",
+    "description": "Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor.",
+    "url": "https://cmm-cmm.github.io/Autumn-Note/docs.html",
+    "author": { "@type": "Person", "name": "Minh Pham" }
+  }
+  </script>
+
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" />
   <style>
@@ -204,6 +231,16 @@
     @media (max-width: 768px) {
       .docs-sidebar { display: none; }
       .docs-main { padding: 24px 20px; }
+    }
+    @media (max-width: 480px) {
+      .docs-main { padding: 16px; }
+      h1.page-title { font-size: 22px; }
+      h2.section-h { font-size: 17px; }
+      h3.method-h { font-size: 13px; }
+      .header-inner { padding: 0 12px; gap: 6px; }
+      .brand-name { font-size: 14px; }
+      .nav-link { font-size: 12px; padding: 4px 7px; }
+      .docs-table-wrap { font-size: 12px; }
     }
   </style>
 </head>
