@@ -477,21 +477,18 @@ export class Context {
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   }
 
   /**
-   * Opens the editor content in a new window and triggers the browser print dialog.
+   * Opens the editor content in a new globalThis and triggers the browser print dialog.
    * @param {string} [title='']
    */
   print(title = '') {
     const content = this.getHTML();
-    const safeTitle = (title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const w = window.open('', '_blank');
-    if (!w) return; // popup blocked by browser
-    w.document.write(
-      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+    const safeTitle = (title || '').replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const markup = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
       `<title>${safeTitle}</title>` +
       '<style>' +
       'body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.6;padding:20mm;color:#111827;}' +
@@ -502,10 +499,15 @@ export class Context {
       'pre{background:#f3f4f6;padding:.75em 1em;border-radius:4px;overflow-x:auto;}' +
       'table{border-collapse:collapse;}td,th{border:1px solid #d1d5db;padding:4px 8px;}' +
       '</style>' +
-      `</head><body>${content}</body></html>`,
-    );
-    w.document.close();
-    w.onload = () => { w.print(); };
+      `</head><body>${content}</body></html>`;
+    const blob = new Blob([markup], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const w = globalThis.open(url, '_blank');
+    if (!w) { URL.revokeObjectURL(url); return; } // popup blocked by browser
+    w.addEventListener('load', () => {
+      w.print();
+      URL.revokeObjectURL(url);
+    });
   }
 
   /**
@@ -555,11 +557,11 @@ export class Context {
     this._disposers = [];
 
     const container = this.layoutInfo.container;
-    const wasDark = container && container.classList.contains('an-theme-dark');
-    if (container && container.parentNode) {
+    const wasDark = container?.classList.contains('an-theme-dark');
+    if (container?.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
-      container.parentNode.removeChild(container);
+      container.remove();
     }
     // If this was a dark editor and no other dark containers remain, clean up body
     if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {

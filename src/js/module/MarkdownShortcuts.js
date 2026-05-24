@@ -61,8 +61,8 @@ export class MarkdownShortcuts {
    * @returns {{ text: string, range: Range, lineNode: Node } | null}
    */
   _getLineContext() {
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return null;
+    const sel = globalThis.getSelection();
+    if (!sel?.rangeCount) return null;
     const range = sel.getRangeAt(0);
     if (!range.collapsed) return null;
 
@@ -87,7 +87,7 @@ export class MarkdownShortcuts {
 
   _isBlock(node) {
     if (node.nodeType !== Node.ELEMENT_NODE) return false;
-    const display = window.getComputedStyle(node).display;
+    const display = globalThis.getComputedStyle(node).display;
     return display === 'block' || display === 'list-item' || display === 'table-cell';
   }
 
@@ -106,7 +106,7 @@ export class MarkdownShortcuts {
     ];
 
     for (const { re, handler } of blockPatterns) {
-      const m = text.match(re);
+      const m = re.exec(text);
       if (m) {
         handler(m);
         return true;
@@ -137,8 +137,8 @@ export class MarkdownShortcuts {
   // ---------------------------------------------------------------------------
 
   _selectLineAndDelete() {
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
+    const sel = globalThis.getSelection();
+    if (!sel?.rangeCount) return;
     const range = sel.getRangeAt(0);
     // Select from the start of the block to the cursor and delete
     const startRange = document.createRange();
@@ -188,8 +188,8 @@ export class MarkdownShortcuts {
   // ---------------------------------------------------------------------------
 
   _onInput() {
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
+    const sel = globalThis.getSelection();
+    if (!sel?.rangeCount) return;
     const range = sel.getRangeAt(0);
     if (!range.collapsed) return;
 
@@ -215,7 +215,7 @@ export class MarkdownShortcuts {
 
     const upToCursor = text.slice(0, offset);
     for (const { re, tag } of inlineRules) {
-      const m = upToCursor.match(re);
+      const m = re.exec(upToCursor);
       if (!m) continue;
 
       const matchStart = upToCursor.length - m[0].length;
@@ -233,11 +233,8 @@ export class MarkdownShortcuts {
       const beforeNode = document.createTextNode(before);
       const afterNode = document.createTextNode('​' + after);
 
-      const parent = node.parentNode;
-      parent.insertBefore(beforeNode, node);
-      parent.insertBefore(el, node);
-      parent.insertBefore(afterNode, node);
-      parent.removeChild(node);
+      /** @type {ChildNode} */ (node).before(beforeNode, el, afterNode);
+      /** @type {ChildNode} */ (node).remove();
 
       // Place cursor after the element (after the ZWS)
       const newRange = document.createRange();

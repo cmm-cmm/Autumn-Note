@@ -14,8 +14,8 @@ import { currentRange } from '../core/range.js';
 // at ~120+ events/sec during normal typing.
 // ---------------------------------------------------------------------------
 const _FA_PATTERN = /\bfa-/;
-const isFAIcon = (n) => !!(n && n.nodeName === 'I' && _FA_PATTERN.test(n.className || ''));
-const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
+const isFAIcon = (n) => !!(n?.nodeName === 'I' && _FA_PATTERN.test(n.className || ''));
+const isZwsAnchor = (n) => !!(n?.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
 
 /**
  * Handles special keydown behaviour inside the editor.
@@ -26,7 +26,7 @@ const isZwsAnchor = (n) => !!(n && n.nodeType === Node.TEXT_NODE && (n.textConte
  */
 export function handleKeydown(event, editable, options = {}) {
   const moveCaret = (setFn) => {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel) return false;
     const nr = document.createRange();
     setFn(nr);
@@ -40,8 +40,8 @@ export function handleKeydown(event, editable, options = {}) {
   // Backspace key — one-press deletion of a preceding FA icon (<i> element)
   // -------------------------------------------------------------------------
   if (isKey(event, key.BACKSPACE)) {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
+    const sel = globalThis.getSelection();
+    if (sel?.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       if (r.collapsed && r.startContainer.nodeType === Node.TEXT_NODE) {
         const textNode = /** @type {ChildNode} */ (r.startContainer);
@@ -89,7 +89,7 @@ export function handleKeydown(event, editable, options = {}) {
   // ArrowLeft / ArrowRight — one-press navigation across FA icon nodes
   // -------------------------------------------------------------------------
   if (isKey(event, key.LEFT) || isKey(event, key.RIGHT)) {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || sel.rangeCount === 0) return false;
 
     const r = sel.getRangeAt(0);
@@ -207,7 +207,7 @@ export function handleKeydown(event, editable, options = {}) {
     }
 
     // In a pre/code block, insert spaces using configured tabSize
-    if (para && para.nodeName.toUpperCase() === 'PRE') {
+    if (para?.nodeName.toUpperCase() === 'PRE') {
       if (event.shiftKey) return false;
       event.preventDefault();
       execCommand('insertText', ' '.repeat(options.tabSize || 4));
@@ -248,18 +248,18 @@ export function handleKeydown(event, editable, options = {}) {
     // and leave an orphan <i> in the new paragraph — visually an "auto-created
     // icon". Push the cursor to just after the <i> first, then fall through so
     // the browser fires its default Enter at a safe text boundary.
-    if (el && el.nodeName === 'I' && /\bfa-/.test(el.className || '')) {
+    if (el?.nodeName === 'I' && /\bfa-/.test(el.className || '')) {
       const nr = document.createRange();
       nr.setStartAfter(el);
       nr.collapse(true);
-      const selI = window.getSelection();
+      const selI = globalThis.getSelection();
       if (selI) { selI.removeAllRanges(); selI.addRange(nr); }
       return false; // cursor is now outside <i> — let browser default handle Enter
     }
 
     // Video wrapper — Enter should create a new paragraph after the wrapper,
     // not split the wrapper's container and produce an empty video clone.
-    const videoWrapper = el && el.closest('.an-video-wrapper');
+    const videoWrapper = el?.closest('.an-video-wrapper');
     if (videoWrapper) {
       event.preventDefault();
       const p = document.createElement('p');
@@ -268,18 +268,18 @@ export function handleKeydown(event, editable, options = {}) {
       const nr = document.createRange();
       nr.setStart(p, 0);
       nr.collapse(true);
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       sel.removeAllRanges();
       sel.addRange(nr);
       return true;
     }
 
     // Checklist — Enter creates new item; empty item exits the list
-    const checkLi = el && el.closest('.an-checklist li');
+    const checkLi = el?.closest('.an-checklist li');
     if (checkLi) {
       event.preventDefault();
       const ul = checkLi.closest('.an-checklist');
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       let nativeRange = sel.getRangeAt(0);
 
       // Helper: get trimmed text content of a li, excluding the checkbox INPUT.
@@ -358,14 +358,14 @@ export function handleKeydown(event, editable, options = {}) {
     const para = closestPara(range.sc, editable);
 
     // Enter in a pre/code block: insert a literal newline instead of a new block
-    if (para && para.nodeName.toUpperCase() === 'PRE') {
+    if (para?.nodeName.toUpperCase() === 'PRE') {
       event.preventDefault();
       execCommand('insertText', '\n');
       return true;
     }
 
     // Pressing Enter at the end of a blockquote should exit it
-    if (para && para.nodeName.toUpperCase() === 'BLOCKQUOTE') {
+    if (para?.nodeName.toUpperCase() === 'BLOCKQUOTE') {
       const native = range.toNativeRange();
       native.setEnd(para, para.childNodes.length);
       if (native.toString() === '' && range.isCollapsed()) {

@@ -40,19 +40,19 @@ export const italic = () => execCommand('italic');
  * execCommand's state detection is unreliable.
  */
 export function underline() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
   // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
-  const uEl = container && /** @type {Element} */ (container).closest('u');
+  const uEl = /** @type {Element|null} */ (container)?.closest('u');
   const nativeState = document.queryCommandState('underline');
   if (uEl && !nativeState) {
     // Browser doesn't recognise the underline state (e.g. inside <code>).
     // Manually unwrap the <u> element.
     const parent = uEl.parentNode;
     while (uEl.firstChild) parent.insertBefore(uEl.firstChild, uEl);
-    parent.removeChild(uEl);
+    uEl.remove();
     return;
   }
   execCommand('underline');
@@ -64,21 +64,21 @@ export function underline() {
  * execCommand's state detection is unreliable (mirrors underline() logic).
  */
 export function strikethrough() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return;
   // Use startContainer for consistent detection across collapsed and range
   // selections — commonAncestorContainer can miss ancestor <s>/<strike> tags
   // when the selection spans across nested inline elements.
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
-  const sEl = sc && (/** @type {Element} */ (sc).closest('s') || /** @type {Element} */ (sc).closest('strike'));
+  const sEl = /** @type {Element|null} */ (sc)?.closest('s') || /** @type {Element|null} */ (sc)?.closest('strike');
   const nativeState = document.queryCommandState('strikeThrough');
   if (sEl && !nativeState) {
     // Browser doesn’t recognise the strikethrough state (e.g. inside <code>
     // or deeply nested inline formats). Manually unwrap the <s>/<strike>.
     const parent = sEl.parentNode;
     while (sEl.firstChild) parent.insertBefore(sEl.firstChild, sEl);
-    parent.removeChild(sEl);
+    sEl.remove();
     return;
   }
   execCommand('strikeThrough');
@@ -119,7 +119,7 @@ export const fontName = (name) => execCommand('fontName', name);
  * @param {HTMLElement|Document} [editable] - scoping element to avoid touching nodes outside this editor
  */
 export function fontSize(size, editable = document) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   const wasCollapsed = !sel || !sel.rangeCount || sel.getRangeAt(0).collapsed;
 
   // B-I-3/4: For a collapsed (caret) selection the browser's execCommand
@@ -158,7 +158,7 @@ export function fontSize(size, editable = document) {
     span.style.fontSize = size;
     el.parentNode.insertBefore(span, el);
     while (el.firstChild) span.appendChild(el.firstChild);
-    el.parentNode.removeChild(el);
+    el.remove();
     newSpans.push(span);
   });
 
@@ -167,7 +167,7 @@ export function fontSize(size, editable = document) {
   // value until the next selectionchange event).
   if (!wasCollapsed && sel && newSpans.length > 0) {
     const first = newSpans[0];
-    const last  = newSpans[newSpans.length - 1];
+    const last  = newSpans.at(-1);
     try {
       const nr = document.createRange();
       const startNode = first.firstChild || first;
@@ -222,11 +222,11 @@ export const indent = () => execCommand('indent');
  * (which would destroy the ul > li checklist structure).
  */
 export function outdent() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (sel && sel.rangeCount) {
     let container = sel.getRangeAt(0).commonAncestorContainer;
     if (container.nodeType === 3) container = container.parentElement;
-    const checkLi = container && /** @type {Element} */ (container).closest('.an-checklist li');
+    const checkLi = /** @type {Element|null} */ (container)?.closest('.an-checklist li');
     if (checkLi) {
       _checklistItemToP(/** @type {HTMLElement} */ (checkLi));
       return;
@@ -261,7 +261,7 @@ function _checklistItemToP(checkLi) {
     p.appendChild(child.cloneNode(true));
   }
   // Strip ZWS anchors left over from checklist markup
-  p.innerHTML = p.innerHTML.replace(/\u200B/g, '');
+  p.innerHTML = p.innerHTML.replaceAll('\u200B', '');
   if (!p.hasChildNodes() || !p.textContent.trim()) {
     p.innerHTML = '';
     p.appendChild(document.createTextNode('\u00a0'));
@@ -279,8 +279,8 @@ function _checklistItemToP(checkLi) {
   checkUl.parentNode.insertBefore(p, checkUl.nextSibling);
 
   // Remove current li from checkUl; delete checkUl if now empty
-  checkUl.removeChild(checkLi);
-  if (checkUl.children.length === 0) checkUl.parentNode.removeChild(checkUl);
+  checkLi.remove();
+  if (checkUl.children.length === 0) checkUl.remove();
 
   // Place caret at start of the new <p>
   try {
@@ -288,7 +288,7 @@ function _checklistItemToP(checkLi) {
     const firstChild = p.firstChild;
     nr.setStart(firstChild && firstChild.nodeType === 3 ? firstChild : p, 0);
     nr.collapse(true);
-    const s = window.getSelection();
+    const s = globalThis.getSelection();
     if (s) { s.removeAllRanges(); s.addRange(nr); }
   } catch {}
 }
@@ -316,7 +316,7 @@ export const insertOrderedList = () => execCommand('insertOrderedList');
  * @param {string} value - Line-height value to apply; typically a unitless multiplier (for example, "1.5").
  */
 export function lineHeight(value) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) return;
 
   const range = sel.getRangeAt(0);
@@ -376,7 +376,7 @@ export function currentStyle(editable) {
   const el = /** @type {Element|null} */ (isElement(container) ? container : container.parentElement);
   if (!el) return {};
 
-  const computed = window.getComputedStyle(el);
+  const computed = globalThis.getComputedStyle(el);
 
   return {
     bold: document.queryCommandState('bold'),
@@ -405,12 +405,12 @@ export function currentStyle(editable) {
  * @param {HTMLElement} [_editable]
  */
 export function toggleInlineCode(_editable) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return;
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  const codeEl = container && /** @type {Element} */ (container).closest('code');
+  const codeEl = /** @type {Element|null} */ (container)?.closest('code');
   if (codeEl && !codeEl.closest('pre')) {
     // Unwrap — save range endpoints relative to surrounding text so we can
     // restore the selection after normalize() merges adjacent text nodes.
@@ -419,17 +419,17 @@ export function toggleInlineCode(_editable) {
     const prevSibling = codeEl.previousSibling;
     const movedChildren = Array.from(codeEl.childNodes);
     while (codeEl.firstChild) parent.insertBefore(codeEl.firstChild, codeEl);
-    parent.removeChild(codeEl);
+    codeEl.remove();
     // Normalize only the immediate parent to merge adjacent text nodes without
     // invalidating distant selection anchors (full editable.normalize() can
     // cause selection offsets to shift, making subsequent format toggles miss).
-    if (parent && parent.normalize) parent.normalize();
+    parent?.normalize();
     // Restore selection to the text that was inside the unwrapped <code>.
     if (movedChildren.length > 0) {
       try {
         // After normalize, find the merged text node that contains the content.
         const firstMoved = movedChildren[0];
-        const lastMoved  = movedChildren[movedChildren.length - 1];
+        const lastMoved  = movedChildren.at(-1);
         const nr = document.createRange();
         // Use the (possibly merged) live node if still in the DOM.
         const anchorNode = (firstMoved.parentNode === parent) ? firstMoved : (prevSibling ? prevSibling.nextSibling : parent.firstChild);
@@ -476,11 +476,11 @@ export function toggleInlineCode(_editable) {
  * @returns {boolean}
  */
 export function isInlineCode() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return false;
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
-  const code = sc && /** @type {Element} */ (sc).closest('code');
+  const code = /** @type {Element|null} */ (sc)?.closest('code');
   return !!(code && !code.closest('pre'));
 }
 
@@ -503,13 +503,13 @@ export function isInlineCode() {
  * Empty or whitespace-only selections do not create a checklist.
  */
 export function toggleChecklist() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return;
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
 
-  const ul = container && /** @type {Element} */ (container).closest('.an-checklist');
+  const ul = /** @type {Element|null} */ (container)?.closest('.an-checklist');
   if (ul) {
     // If selection covers multiple <li>, convert them all
     const selectedLis = Array.from(ul.querySelectorAll('li')).filter((li) =>
@@ -523,14 +523,14 @@ export function toggleChecklist() {
           if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
           p.appendChild(child.cloneNode(true));
         }
-        p.innerHTML = p.innerHTML.replace(/\u200b/g, '');
+        p.innerHTML = p.innerHTML.replaceAll('\u200b', '');
         if (!p.hasChildNodes() || !p.textContent.trim()) {
           p.innerHTML = '';
           p.appendChild(document.createTextNode('\u00a0'));
         }
         ul.parentNode.insertBefore(p, ul);
         if (!firstP) firstP = p;
-        ul.removeChild(li);
+        li.remove();
       });
       if (ul.children.length === 0) ul.remove();
       // Move caret to first converted paragraph
@@ -561,7 +561,7 @@ export function toggleChecklist() {
       ? Array.from(block.childNodes)
           .map((n) => n.textContent)
           .join('')
-          .replace(/\u00a0/g, ' ')
+          .replaceAll('\u00a0', ' ')
       : '';
 
     const ul = document.createElement('ul');
@@ -656,7 +656,7 @@ export function toggleChecklist() {
   // Insert the new list before the first block, then remove all source blocks.
   const firstBlock = blocks[0];
   firstBlock.parentNode.insertBefore(newUl, firstBlock);
-  blocks.forEach((block) => block.parentNode && block.parentNode.removeChild(block));
+  blocks.forEach((block) => block.remove());
 
   // Move caret to end of the last checklist item.
   if (lastTextNode) {
@@ -673,9 +673,9 @@ export function toggleChecklist() {
  * @returns {boolean}
  */
 export function isInChecklist() {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return false;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  return !!(container && /** @type {Element} */ (container).closest('.an-checklist li'));
+  return !!(/** @type {Element|null} */ (container)?.closest('.an-checklist li'));
 }

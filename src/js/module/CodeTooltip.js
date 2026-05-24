@@ -68,7 +68,7 @@ export class CodeTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    this._el?.remove();
     this._el = null;
   }
 
@@ -226,7 +226,7 @@ export class CodeTooltip {
     let left = rect.left + (rect.width - tipW) / 2;
 
     if (top < margin) top = rect.bottom + margin;
-    if (left + tipW > window.innerWidth  - margin) left = window.innerWidth  - tipW - margin;
+    if (left + tipW > globalThis.innerWidth  - margin) left = globalThis.innerWidth  - tipW - margin;
     if (left < margin) left = margin;
 
     // Tooltip uses position:fixed, so viewport coordinates are used directly.
@@ -241,7 +241,7 @@ export class CodeTooltip {
   _syncWrapBtn() {
     if (!this._activePre || !this._wrapBtn) return;
     const wrapped = (this._activePre.style.whiteSpace || '').includes('pre-wrap')
-      || window.getComputedStyle(this._activePre).whiteSpace === 'pre-wrap';
+      || globalThis.getComputedStyle(this._activePre).whiteSpace === 'pre-wrap';
     this._wrapBtn.classList.toggle('active', wrapped);
     this._wrapBtn.title = wrapped
       ? this.context.locale.tooltips.code.disableWordWrap
@@ -251,7 +251,7 @@ export class CodeTooltip {
   _syncLangSelect() {
     if (!this._activePre || !this._langSelect) return;
     const codeEl = this._activePre.querySelector('code');
-    const fromAttr = this._activePre.getAttribute('data-language') || '';
+    const fromAttr = this._activePre.dataset.language || '';
     const fromClass = codeEl ? (_LANG_CLASS_RE.exec(codeEl.className) || [])[1] || '' : '';
     this._langSelect.value = fromAttr || fromClass || '';
   }
@@ -274,7 +274,7 @@ export class CodeTooltip {
       document.body.appendChild(ta);
       ta.select();
       try { document.execCommand('copy'); this._flashCopied(); } catch (_) {}
-      document.body.removeChild(ta);
+      ta.remove();
     }
   }
 
@@ -310,8 +310,7 @@ export class CodeTooltip {
   applyLanguage(pre, lang) {
     if (!pre || !lang) return;
     // Temporarily set activePre so _onLangChange can target it
-    const savedPre    = this._activePre;
-    const savedSelect = this._langSelect ? this._langSelect.value : '';
+    const savedPre = this._activePre;
     this._activePre = pre;
     if (this._langSelect) this._langSelect.value = lang;
     this._onLangChange();
@@ -320,14 +319,13 @@ export class CodeTooltip {
     this._activePre = savedPre || pre;
     // Don't restore savedPre if it was null — keep `pre` as activePre so that
     // the tooltip select is correct the first time the user hovers over it.
-    void savedSelect;
   }
 
   _onLangChange() {
     const pre = this._activePre;
     if (!pre) return;
     const lang = this._langSelect.value;
-    const _w = /** @type {any} */ (window);
+    const _w = /** @type {any} */ (globalThis);
 
     // Ensure a <code> child exists (Prism targets <pre><code class="language-xxx">)
     let codeEl = pre.querySelector('code');
@@ -342,9 +340,9 @@ export class CodeTooltip {
     // Mirror language class on <pre> so Prism CSS theme targets it (pre[class*='language-'])
     pre.className = lang ? `language-${lang}` : '';
     if (lang) {
-      pre.setAttribute('data-language', lang);
+      pre.dataset.language = lang;
     } else {
-      pre.removeAttribute('data-language');
+      delete pre.dataset.language;
     }
 
     // Trigger Prism if available.
@@ -357,7 +355,7 @@ export class CodeTooltip {
     };
 
     if (lang) {
-      if (typeof _w.Prism !== 'undefined') {
+      if (_w.Prism !== undefined) {
         // Grammar already loaded — highlight immediately
         if (_w.Prism.languages[lang]) {
           applyPrism();
@@ -387,7 +385,7 @@ export class CodeTooltip {
    * Called once at initialize time. Fire-and-forget; errors are silent.
    */
   _ensurePrism() {
-    const _w = /** @type {any} */ (window);
+    const _w = /** @type {any} */ (globalThis);
     if (!this.context.options.codeHighlight || _w.Prism) return;
     const cdn = this.context.options.codeHighlightCDN;
     const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
@@ -422,14 +420,14 @@ export class CodeTooltip {
    * @param {Function} cb  – called once the grammar is ready
    */
   _loadPrismComponent(lang, cb) {
-    const _w = /** @type {any} */ (window);
+    const _w = /** @type {any} */ (globalThis);
     const cdn = this.context.options.codeHighlightCDN;
     const src = `${cdn}/components/prism-${lang}.min.js`;
     // Avoid loading the same component twice
     if (document.querySelector(`script[src="${src}"]`)) {
       // Already in DOM — might still be loading; poll briefly then call cb
       const poll = setInterval(() => {
-        if (_w.Prism && _w.Prism.languages[lang]) {
+        if (_w.Prism?.languages[lang]) {
           clearInterval(poll);
           cb();
         }
@@ -466,7 +464,7 @@ export class CodeTooltip {
     const pre = this._activePre;
     if (!pre) return;
     this._hide();
-    if (pre.parentNode) pre.parentNode.removeChild(pre);
+    pre.remove();
     this.context.invoke('editor.afterCommand');
   }
 }

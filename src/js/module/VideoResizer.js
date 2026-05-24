@@ -46,8 +46,8 @@ export class VideoResizer {
         if (wrapper) this._select(wrapper);
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
-      on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', onWindowResize),
+      on(globalThis, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
+      on(globalThis, 'resize', onWindowResize),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
       // D1: Prevent native browser drag of video wrappers. Without this, a user
       // can hold-and-drag to produce a "copy" that lands outside .an-editable,
@@ -75,9 +75,7 @@ export class VideoResizer {
       this._positionRaf = null;
     }
     this._deselect();
-    if (this._overlay && this._overlay.parentNode) {
-      this._overlay.parentNode.removeChild(this._overlay);
-    }
+    this._overlay?.remove();
     this._overlay = null;
   }
 
@@ -111,7 +109,7 @@ export class VideoResizer {
   _findWrapper(el) {
     if (!el || !(el instanceof Element)) return null;
     // Direct hit on wrapper
-    if (el.classList && el.classList.contains('an-video-wrapper')) return /** @type {HTMLElement} */ (el);
+    if (el.classList?.contains('an-video-wrapper')) return /** @type {HTMLElement} */ (el);
     // Child element (iframe, video, or nested)
     const w = el.closest('.an-video-wrapper');
     if (w) return /** @type {HTMLElement} */ (w);
@@ -152,7 +150,7 @@ export class VideoResizer {
   _onDocClick(e) {
     if (!this._activeWrapper) return;
     if (this._activeWrapper.contains(e.target)) return;
-    if (this._overlay && this._overlay.contains(e.target)) return;
+    if (this._overlay?.contains(e.target)) return;
     if (e.target.closest('.an-contextmenu')) return;
     this._deselect();
   }

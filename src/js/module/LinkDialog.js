@@ -33,7 +33,7 @@ export class LinkDialog {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
+      this._dialog.remove();
     }
     this._dialog = null;
   }
@@ -138,7 +138,7 @@ export class LinkDialog {
 
   _prefill() {
     // Try to find currently selected anchor
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     let anchor = null;
     if (sel && sel.rangeCount > 0) {
       let node = sel.getRangeAt(0).startContainer;

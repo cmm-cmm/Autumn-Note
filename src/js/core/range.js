@@ -41,10 +41,10 @@ export class WrappedRange {
   }
 
   /**
-   * Select this wrapped range in the window.
+   * Select this wrapped range in the globalThis.
    */
   select() {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel) return;
     sel.removeAllRanges();
     sel.addRange(this.toNativeRange());
@@ -116,13 +116,13 @@ export function fromNativeRange(range) {
 }
 
 /**
- * Returns a WrappedRange for the current window selection,
+ * Returns a WrappedRange for the current globalThis selection,
  * optionally restricted to a given editable element.
  * @param {HTMLElement} [editable]
  * @returns {WrappedRange|null}
  */
 export function currentRange(editable) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) return null;
   const native = sel.getRangeAt(0);
   // Optionally check that the selection is inside the editable element
@@ -161,7 +161,7 @@ export function collapsedRange(node, offset = 0) {
  * @returns {boolean}
  */
 export function isSelectionInside(el) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) return false;
   return el.contains(sel.getRangeAt(0).commonAncestorContainer);
 }
@@ -171,7 +171,7 @@ export function isSelectionInside(el) {
  * @param {Function} fn
  */
 export function withSavedRange(fn) {
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) {
     fn(null);
     return;

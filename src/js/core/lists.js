@@ -52,7 +52,7 @@ export function tail(arr, n = 1) {
  * @returns {T[]}
  */
 export function flatten(arr) {
-  return arr.reduce((acc, val) => acc.concat(val), []);
+  return arr.flat();
 }
 
 /**

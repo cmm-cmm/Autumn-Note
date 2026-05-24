@@ -46,7 +46,7 @@ export function renderLayout(targetEl, options) {
   editable.innerHTML = sanitiseHTML(initialContent, { allowIframes: true });
 
   // Apply default font family so the editable renders in the configured font
-  const defaultFont = options.defaultFontFamily || (options.fontFamilies && options.fontFamilies[0]);
+  const defaultFont = options.defaultFontFamily || options.fontFamilies?.[0];
   if (defaultFont) {
     editable.style.fontFamily = defaultFont;
   }

@@ -33,7 +33,7 @@ export class ImageDialog {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
+      this._dialog.remove();
     }
     this._dialog = null;
   }

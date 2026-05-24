@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2026-05-24
+
+### Changed
+- **Code modernisation** — replaced deprecated patterns across all `src/js/` source files to align with ES2022+ best practices: `window` → `globalThis` (279 occurrences), `parentNode.removeChild()` → `el.remove()` (65 occurrences), optional chaining `a && a.b` → `a?.b` (165 occurrences), `String.prototype.replace(/g)` → `replaceAll()` (33 occurrences), `el.getAttribute('data-*')` → `el.dataset.*` (15 occurrences), `str.match(re)` → `re.exec(str)` for first-match usage (12 occurrences), `parseInt/parseFloat` → `Number.parseInt/Number.parseFloat`, `arr[arr.length-1]` → `arr.at(-1)` where applicable
+- **Accessibility** — `index.html` feature strip converted from `<div role="listitem">` to semantic `<ul>/<li>` elements; `docs.html` `<section>` and `<nav>` elements now include `aria-label`; `playground.html` config inputs have proper `<label>` associations and clickable card headers have keyboard equivalents
+- **WCAG AA contrast** — `playground.html` hover and primary button colours updated to meet minimum 4.5:1 contrast ratio
+- **SCSS cleanup** — removed empty rule block and redundant non-prefixed `user-drag` property; `vite.demo.config.js` updated to use `node:path` protocol
+
+### Development
+- Zero SonarCloud issues in source files (previously 1 052 open issues across 53 rules); ~900 issues resolved
+- Zero ESLint warnings; zero TypeScript errors
+
+---
+
 ## [1.6.0] - 2026-05-22
 
 ### Added

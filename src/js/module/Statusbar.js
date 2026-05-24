@@ -109,9 +109,7 @@ export class Statusbar {
       this._dragDisposers.forEach((d) => d());
       this._dragDisposers = null;
     }
-    if (this.el && this.el.parentNode) {
-      this.el.parentNode.removeChild(this.el);
-    }
+    this.el?.remove();
     this.el = null;
   }
 
@@ -217,7 +215,7 @@ export class Statusbar {
     // textContent is faster than innerText (no layout flush, no CSS visibility check)
     const text = editable.textContent || '';
     const words = _countWords(text);
-    const chars = text.replace(/\n/g, '').length;
+    const chars = text.replaceAll('\n', '').length;
     const maxWords = this.options.maxWords || 0;
     const maxChars = this.options.maxChars || 0;
 
@@ -249,6 +247,6 @@ export class Statusbar {
    */
   getCharCount() {
     const editable = this.context.layoutInfo.editable;
-    return ((editable.innerText || '').replace(/\n/g, '')).length;
+    return (editable.innerText || '').replaceAll('\n', '').length;
   }
 }

@@ -66,7 +66,7 @@ function drawCropToCanvas(img, naturalRect, renderW, renderH) {
     if (
       img.src.startsWith('data:') ||
       img.src.startsWith('blob:') ||
-      img.src.startsWith(window.location.origin)
+      img.src.startsWith(globalThis.location.origin)
     ) {
       tryDraw(img);
       return;
@@ -340,8 +340,8 @@ export class ImageCropOverlay {
     this._cropBox.style.height = `${h}px`;
 
     // Scrim cutout via clip-path polygon (punches a transparent hole)
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vw = globalThis.innerWidth;
+    const vh = globalThis.innerHeight;
     // Outer rect → inner rectangle (counterclockwise) = hole
     this._scrim.style.clipPath = [
       `polygon(`,
@@ -367,7 +367,7 @@ export class ImageCropOverlay {
     // Position toolbar below crop box (or above if near bottom)
     const margin = 8;
     let tbTop = y + h + margin;
-    if (tbTop + 40 > window.innerHeight - margin) tbTop = y - 40 - margin;
+    if (tbTop + 40 > globalThis.innerHeight - margin) tbTop = y - 40 - margin;
     this._toolbar.style.left = `${x}px`;
     this._toolbar.style.top  = `${tbTop}px`;
   }
@@ -514,7 +514,7 @@ export class ImageCropOverlay {
     }
 
     // Determine output format: preserve JPEG, fall back to PNG
-    const fmt = img.src.match(/^data:image\/(jpe?g)/i) ? 'image/jpeg' : 'image/png';
+    const fmt = /^data:image\/(jpe?g)/i.exec(img.src) ? 'image/jpeg' : 'image/png';
     const quality = fmt === 'image/jpeg' ? 0.92 : undefined;
     const newSrc = canvas.toDataURL(fmt, quality);
 
@@ -551,7 +551,7 @@ export class ImageCropOverlay {
     ].join(';');
     banner.textContent = msg;
     document.body.appendChild(banner);
-    setTimeout(() => { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 4000);
+    setTimeout(() => { banner.remove(); }, 4000);
   }
 
   /**
@@ -563,7 +563,7 @@ export class ImageCropOverlay {
     this._disposers = [];
 
     [this._scrim, this._cropBox, this._toolbar].forEach((el) => {
-      if (el && el.parentNode) el.parentNode.removeChild(el);
+      el?.remove();
     });
 
     this._scrim   = null;

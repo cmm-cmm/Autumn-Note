@@ -43,7 +43,7 @@ export class Placeholder {
     // addition to regular whitespace before deciding if the editor is empty.
     // Without this, a freshly-created checklist item or icon leaves a ZWS in
     // the DOM that causes the placeholder to overlap real content (A-1).
-    const hasText = editable.textContent.replace(/\u200B/g, '').trim().length > 0;
+    const hasText = editable.textContent.replaceAll('\u200B', '').trim().length > 0;
     const isEmpty = !hasText &&
       !editable.querySelector('img, table, hr, .an-video-wrapper');
     editable.classList.toggle('an-placeholder', isEmpty && !isFocused);

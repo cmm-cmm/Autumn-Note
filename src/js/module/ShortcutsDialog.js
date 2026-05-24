@@ -69,9 +69,7 @@ export class ShortcutsDialog {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
-    }
+    this._dialog?.remove();
     this._dialog = null;
   }
 
@@ -79,7 +77,7 @@ export class ShortcutsDialog {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
       this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._closeBtn && this._closeBtn.focus(), 50);
+      setTimeout(() => this._closeBtn?.focus(), 50);
     }
   }
 

@@ -62,14 +62,12 @@
       // Prevent images from being dragged out.
       img {
         -webkit-user-drag: none;
-        user-drag: none;
       }
 
       // Prevent video wrapper itself from being dragged, but keep pointer-events
       // active so the video shield works and the iframe is visible/interactive.
       .an-video-wrapper {
         -webkit-user-drag: none;
-        user-drag: none;
       }
 
       // D-3: In read-only mode, disable the video shield so clicks reach the
@@ -1423,7 +1421,6 @@ $an-video-accent: #8b5cf6; // violet-500
 // .an-video-selected is applied by VideoResizer for JS state tracking.
 // Visual selection is handled entirely by the .an-video-resizer overlay,
 // so no CSS outline is needed here (two visible frames would appear otherwise).
-.an-video-selected {}
 
 // ---------------------------------------------------------------------------
 // Icon dialog
