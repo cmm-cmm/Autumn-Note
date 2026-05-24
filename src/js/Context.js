@@ -487,11 +487,8 @@ export class Context {
    */
   print(title = '') {
     const content = this.getHTML();
-    const safeTitle = (title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const w = window.open('', '_blank');
-    if (!w) return; // popup blocked by browser
-    w.document.write(
-      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+    const safeTitle = (title || '').replace(/[<>&"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const markup = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
       `<title>${safeTitle}</title>` +
       '<style>' +
       'body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.6;padding:20mm;color:#111827;}' +
@@ -502,10 +499,15 @@ export class Context {
       'pre{background:#f3f4f6;padding:.75em 1em;border-radius:4px;overflow-x:auto;}' +
       'table{border-collapse:collapse;}td,th{border:1px solid #d1d5db;padding:4px 8px;}' +
       '</style>' +
-      `</head><body>${content}</body></html>`,
-    );
-    w.document.close();
-    w.onload = () => { w.print(); };
+      `</head><body>${content}</body></html>`;
+    const blob = new Blob([markup], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (!w) { URL.revokeObjectURL(url); return; } // popup blocked by browser
+    w.addEventListener('load', () => {
+      w.print();
+      URL.revokeObjectURL(url);
+    });
   }
 
   /**
