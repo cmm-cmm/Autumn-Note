@@ -477,12 +477,12 @@ export class Context {
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   }
 
   /**
-   * Opens the editor content in a new window and triggers the browser print dialog.
+   * Opens the editor content in a new globalThis and triggers the browser print dialog.
    * @param {string} [title='']
    */
   print(title = '') {
@@ -502,7 +502,7 @@ export class Context {
       `</head><body>${content}</body></html>`;
     const blob = new Blob([markup], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const w = window.open(url, '_blank');
+    const w = globalThis.open(url, '_blank');
     if (!w) { URL.revokeObjectURL(url); return; } // popup blocked by browser
     w.addEventListener('load', () => {
       w.print();
@@ -557,11 +557,11 @@ export class Context {
     this._disposers = [];
 
     const container = this.layoutInfo.container;
-    const wasDark = container && container.classList.contains('an-theme-dark');
-    if (container && container.parentNode) {
+    const wasDark = container?.classList.contains('an-theme-dark');
+    if (container?.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
-      container.parentNode.removeChild(container);
+      container.remove();
     }
     // If this was a dark editor and no other dark containers remain, clean up body
     if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {

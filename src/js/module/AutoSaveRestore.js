@@ -4,7 +4,7 @@
  *
  * Activated when both `autoSave` and `autoSaveRestore` options are true.
  * On initialize it checks localStorage for a draft that is within the
- * `autoSaveRestoreTimeout` day window.  If one is found a dismissible banner
+ * `autoSaveRestoreTimeout` day globalThis.  If one is found a dismissible banner
  * is prepended to the editor container.
  */
 
@@ -118,9 +118,7 @@ export class AutoSaveRestore {
   }
 
   _removeBanner() {
-    if (this._banner && this._banner.parentNode) {
-      this._banner.parentNode.removeChild(this._banner);
-    }
+    this._banner?.remove();
     this._banner = null;
   }
 }

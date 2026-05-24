@@ -26,9 +26,7 @@ export class Codeview {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._textarea && this._textarea.parentNode) {
-      this._textarea.parentNode.removeChild(this._textarea);
-    }
+    this._textarea?.remove();
     this._textarea = null;
   }
 
@@ -74,7 +72,7 @@ export class Codeview {
     const { editable } = this.context.layoutInfo;
     // Sanitise the HTML typed in the textarea before applying (allow iframes for video embeds)
     editable.innerHTML = sanitiseHTML(this._textarea.value, { allowIframes: true });
-    this._textarea.parentNode.removeChild(this._textarea);
+    this._textarea.remove();
     this._textarea = null;
     editable.style.display = '';
     this._active = false;
@@ -108,7 +106,7 @@ export class Codeview {
       .map((line) => {
         const stripped = line.trim();
         if (!stripped) return '';
-        if (/^<\//.test(stripped)) indent = Math.max(0, indent - 1);
+        if (stripped.startsWith('</')) indent = Math.max(0, indent - 1);
         const out = '  '.repeat(indent) + stripped;
         if (
           /^<[^/!][^>]*[^/]>/.test(stripped) &&

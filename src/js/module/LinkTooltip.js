@@ -46,8 +46,8 @@ export class LinkTooltip {
         }
       }),
       // Hide when the page scrolls or resizes — the tooltip position becomes stale
-      on(window, 'scroll', () => this._hide(), { passive: true }),
-      on(window, 'resize', () => this._hide(), { passive: true }),
+      on(globalThis, 'scroll', () => this._hide(), { passive: true }),
+      on(globalThis, 'resize', () => this._hide(), { passive: true }),
     );
 
     return this;
@@ -57,7 +57,7 @@ export class LinkTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    if (this._el && this._el.parentNode) this._el.remove();
     this._el = null;
   }
 
@@ -163,11 +163,11 @@ export class LinkTooltip {
     let top  = rect.bottom + margin;
     let left = rect.left;
 
-    if (top + tipH > window.innerHeight - margin) {
+    if (top + tipH > globalThis.innerHeight - margin) {
       top = rect.top - tipH - margin;
     }
-    if (left + tipW > window.innerWidth - margin) {
-      left = window.innerWidth - tipW - margin;
+    if (left + tipW > globalThis.innerWidth - margin) {
+      left = globalThis.innerWidth - tipW - margin;
     }
     if (left < margin) left = margin;
 
@@ -190,13 +190,13 @@ export class LinkTooltip {
   // ---------------------------------------------------------------------------
 
   _openLink() {
-    const url = this._activeAnchor && this._activeAnchor.getAttribute('href');
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    const url = this._activeAnchor?.getAttribute('href');
+    if (url) globalThis.open(url, '_blank', 'noopener,noreferrer');
     this._hide();
   }
 
   _copyLink() {
-    const url = this._activeAnchor && this._activeAnchor.getAttribute('href');
+    const url = this._activeAnchor?.getAttribute('href');
     if (url) {
       navigator.clipboard.writeText(url).catch(() => {
         // Fallback for environments where clipboard API is unavailable
@@ -207,7 +207,7 @@ export class LinkTooltip {
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
-        document.body.removeChild(ta);
+        ta.remove();
       });
     }
     // Brief visual feedback  
@@ -223,7 +223,7 @@ export class LinkTooltip {
     this._hide();
 
     // Place cursor inside the anchor, then open the link dialog (which pre-fills from selection)
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     const range = document.createRange();
     range.selectNodeContents(anchor);
     sel.removeAllRanges();
@@ -238,7 +238,7 @@ export class LinkTooltip {
     this._hide();
 
     // Select the anchor text, then remove the link
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     const range = document.createRange();
     range.selectNode(anchor);
     sel.removeAllRanges();

@@ -139,7 +139,7 @@ export class Clipboard {
       // Unwrap — replace el with its children
       const parent = el.parentNode;
       while (el.firstChild) parent.insertBefore(el.firstChild, el);
-      parent.removeChild(el);
+      el.remove();
     }
     // Strip class and all data-* attributes from every remaining element
     doc.querySelectorAll('*').forEach((el) => {
@@ -180,7 +180,7 @@ export class Clipboard {
   }
 
   _onPaste(event) {
-    const clipboardData = event.clipboardData || /** @type {any} */ (window).clipboardData;
+    const clipboardData = event.clipboardData || /** @type {any} */ (globalThis).clipboardData;
     if (!clipboardData) return;
 
     // Consume and reset the one-shot plain-paste flag
@@ -247,7 +247,6 @@ export class Clipboard {
       if (this.options.pasteStripAttributes) html = this._stripAttributes(html);
       execCommand('insertHTML', html);
       this.context.invoke('editor.afterCommand');
-      return;
     }
 
     // Otherwise let the browser handle paste natively
@@ -300,11 +299,11 @@ export class Clipboard {
     }
 
     // C2: Reject image formats that browsers cannot decode/display.
-    const UNSUPPORTED = ['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp'];
+    const UNSUPPORTED = new Set(['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp']);
     const maxBytes = (this.options.maxImageSize || 5) * 1024 * 1024;
     files.forEach((file) => {
       if (!file || !file.type.startsWith('image/')) return;
-      if (UNSUPPORTED.includes(file.type)) {
+      if (UNSUPPORTED.has(file.type)) {
         const message = `Image format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
         this.context.triggerEvent('imageError', { file, message });
         console.warn('[AutumnNote]', message);
@@ -351,10 +350,10 @@ export class Clipboard {
    */
   _dataUrlToBlob(dataUrl) {
     const [header, b64] = dataUrl.split(',');
-    const mime = header.match(/:(.*?);/)?.[1] ?? 'image/png';
+    const mime = /:(.*?);/.exec(header)?.[1] ?? 'image/png';
     const binary = atob(b64);
     const arr = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.codePointAt(i);
     return new Blob([arr], { type: mime });
   }
 
@@ -438,7 +437,7 @@ export class Clipboard {
       }
     }
     if (!range) return;
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (sel) {
       sel.removeAllRanges();
       sel.addRange(range);
@@ -456,10 +455,10 @@ export class Clipboard {
    */
   _escapeHTML(str) {
     return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 }

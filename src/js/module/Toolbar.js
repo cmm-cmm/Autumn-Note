@@ -146,7 +146,7 @@ export class Toolbar {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this.el && this.el.parentNode) {
-      this.el.parentNode.removeChild(this.el);
+      this.el.remove();
     }
     this.el = null;
   }
@@ -244,8 +244,8 @@ export class Toolbar {
 
     const setHighlight = (rows, cols) => {
       cells.forEach((cell) => {
-        const r = +cell.getAttribute('data-row');
-        const c = +cell.getAttribute('data-col');
+        const r = +cell.dataset.row;
+        const c = +cell.dataset.col;
         cell.classList.toggle('active', r <= rows && c <= cols);
       });
       label.textContent = (rows && cols) ? `${rows} × ${cols}` : (this.context.locale.toolbar.insertTableLabel || 'Insert Table');
@@ -264,8 +264,8 @@ export class Toolbar {
 
       let left = rect.left;
       let top  = rect.bottom + 4;
-      if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
-      if (top  + ph > window.innerHeight - 8) top  = rect.top - ph - 4;
+      if (left + pw > globalThis.innerWidth - 8) left = Math.max(8, globalThis.innerWidth - pw - 8);
+      if (top  + ph > globalThis.innerHeight - 8) top  = rect.top - ph - 4;
 
       popup.style.left = `${left}px`;
       popup.style.top  = `${top}px`;
@@ -286,18 +286,18 @@ export class Toolbar {
     });
 
     const d2 = on(grid, 'mouseover', (e) => {
-      const cell = /** @type {Element} */ (e.target)?.closest('.an-table-cell');
+      const cell = /** @type {HTMLElement|null} */ (/** @type {Element} */ (e.target)?.closest('.an-table-cell'));
       if (!cell) return;
-      setHighlight(+cell.getAttribute('data-row'), +cell.getAttribute('data-col'));
+      setHighlight(+cell.dataset.row, +cell.dataset.col);
     });
 
     const d3 = on(grid, 'mouseleave', () => setHighlight(0, 0));
 
     const d4 = on(grid, 'click', (e) => {
-      const cell = /** @type {Element} */ (e.target)?.closest('.an-table-cell');
+      const cell = /** @type {HTMLElement|null} */ (/** @type {Element} */ (e.target)?.closest('.an-table-cell'));
       if (!cell) return;
-      const rows = +cell.getAttribute('data-row');
-      const cols = +cell.getAttribute('data-col');
+      const rows = +cell.dataset.row;
+      const cols = +cell.dataset.col;
       closePopup();
       this.context.invoke('editor.focus');
       def.action(this.context, rows, cols);
@@ -308,7 +308,7 @@ export class Toolbar {
     // Append popup to body so position:fixed is truly viewport-relative,
     // unaffected by any ancestor transform / filter (same pattern as color picker).
     this._disposers.push(d1, d2, d3, d4, d5, () => {
-      if (popup.parentNode) popup.parentNode.removeChild(popup);
+      if (popup.parentNode) popup.remove();
     });
 
     wrap.appendChild(btn);
@@ -398,14 +398,14 @@ export class Toolbar {
     let savedRange = null;
 
     const saveSelection = () => {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
     };
 
     const restoreSelection = () => {
       if (!savedRange) return;
       try {
-        const sel = window.getSelection();
+        const sel = globalThis.getSelection();
         if (!sel) return;
         sel.removeAllRanges();
         sel.addRange(savedRange);
@@ -424,7 +424,7 @@ export class Toolbar {
       const rect = arrowBtn.getBoundingClientRect();
       const popupMinW = 184;
       let left = rect.left;
-      if (left + popupMinW > window.innerWidth) left = rect.right - popupMinW;
+      if (left + popupMinW > globalThis.innerWidth) left = rect.right - popupMinW;
       popup.style.top  = `${rect.bottom + 4}px`;
       popup.style.left = `${Math.max(4, left)}px`;
       popup.style.display = 'block';
@@ -491,13 +491,13 @@ export class Toolbar {
     // popup doesn't drift away from the button it belongs to.
     const onScrollResize = () => { if (isOpen) closePopup(); };
     document.addEventListener('scroll', onScrollResize, { passive: true, capture: true });
-    window.addEventListener('resize',   onScrollResize, { passive: true });
+    globalThis.addEventListener('resize',   onScrollResize, { passive: true });
 
     this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6,
       () => document.removeEventListener('scroll', onScrollResize, { capture: true }),
-      () => window.removeEventListener('resize',   onScrollResize),
+      () => globalThis.removeEventListener('resize',   onScrollResize),
       // Remove popup from body on editor destroy
-      () => { if (popup.parentNode) popup.parentNode.removeChild(popup); },
+      () => { if (popup.parentNode) popup.remove(); },
     );
 
     // Register this popup's closer so other color pickers can close it
@@ -562,7 +562,7 @@ export class Toolbar {
     /** @type {Range|null} */
     let _savedRange = null;
     const dMousedown = on(select, 'mousedown', () => {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       _savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
     });
 
@@ -574,7 +574,7 @@ export class Toolbar {
       // Restore selection saved on mousedown so the action targets the correct text.
       if (_savedRange) {
         try {
-          const sel = window.getSelection();
+          const sel = globalThis.getSelection();
           if (sel) { sel.removeAllRanges(); sel.addRange(_savedRange); }
         } catch (_) { /* range may be stale if DOM changed */ }
       }
@@ -684,7 +684,7 @@ export class Toolbar {
 
     // Sync button active states
     this.el.querySelectorAll('button[data-btn]').forEach((btn) => {
-      const def = btnMap.get(btn.getAttribute('data-btn'));
+      const def = btnMap.get(/** @type {HTMLElement} */ (btn).dataset.btn);
       if (def && typeof def.isActive === 'function') {
         btn.classList.toggle('active', !!def.isActive(this.context));
       }
@@ -695,7 +695,7 @@ export class Toolbar {
 
     // Sync select dropdowns (e.g. font family) with current cursor position
     this.el.querySelectorAll('select[data-btn]').forEach((select) => {
-      const def = btnMap.get(select.getAttribute('data-btn'));
+      const def = btnMap.get(/** @type {HTMLElement} */ (select).dataset.btn);
       if (!def || typeof def.getValue !== 'function') return;
       // queryCommandValue returns the font name, possibly quoted — strip quotes
       let raw = (def.getValue(this.context) || '').replace(/["']/g, '').trim();

@@ -101,7 +101,7 @@ export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', 
   // also check for a <u> ancestor in the DOM using startContainer for
   // consistent behaviour across both collapsed and range selections.
   if (document.queryCommandState('underline')) return true;
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || !sel.rangeCount) return false;
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
@@ -179,7 +179,7 @@ export const fontSizeBtn = {
   action: (ctx, value) => Style.fontSize(value, ctx.layoutInfo.editable),
   getValue: (ctx) => {
     try {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (sel && sel.rangeCount) {
         let el = /** @type {Element|null} */ (sel.getRangeAt(0).startContainer);
         if (el && el.nodeType === 3) el = el.parentElement;
@@ -188,7 +188,7 @@ export const fontSizeBtn = {
         if (size) return size;
       }
       // Fallback: read the base font size from the editable element itself
-      const editable = ctx && ctx.layoutInfo && ctx.layoutInfo.editable;
+      const editable = ctx?.layoutInfo?.editable;
       if (editable) return editable.style.fontSize || '';
       return '';
     } catch { return ''; }
@@ -280,7 +280,7 @@ export const lineHeightBtn = {
   action: (_ctx, value) => Style.lineHeight(value),
   getValue: () => {
     try {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (!sel || !sel.rangeCount) return '';
       const BLOCKS = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TD','TH']);
       let el = /** @type {Element|null} */ (sel.getRangeAt(0).startContainer);

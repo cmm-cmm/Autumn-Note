@@ -76,9 +76,7 @@ export class Mention {
 
   destroy() {
     clearTimeout(this._debounceTimer);
-    if (this._dropdown && this._dropdown.parentNode) {
-      this._dropdown.parentNode.removeChild(this._dropdown);
-    }
+    this._dropdown?.remove();
     this._dropdown = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
@@ -163,10 +161,10 @@ export class Mention {
     let top = rect.bottom + 4;
     let left = rect.left;
 
-    if (rect.bottom + ddh + 8 > window.innerHeight) {
+    if (rect.bottom + ddh + 8 > globalThis.innerHeight) {
       top = rect.top - ddh - 4;
     }
-    left = Math.max(8, Math.min(left, window.innerWidth - ddw - 8));
+    left = Math.max(8, Math.min(left, globalThis.innerWidth - ddw - 8));
 
     dd.style.top = `${top}px`;
     dd.style.left = `${left}px`;
@@ -196,7 +194,7 @@ export class Mention {
   _captureCaretRect() {
     // Prefer a range over the trigger character — it has non-zero width and
     // getBoundingClientRect() reliably returns a valid rect.
-    if (this._triggerNode && this._triggerNode.isConnected) {
+    if (this._triggerNode?.isConnected) {
       try {
         const r = document.createRange();
         const end = Math.min(this._triggerOffset + 1, this._triggerNode.textContent.length);
@@ -211,7 +209,7 @@ export class Mention {
     }
 
     // Fallback: use getClientRects() on the current collapsed selection
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || !sel.rangeCount) return;
     const rects = sel.getRangeAt(0).getClientRects();
     if (rects.length > 0) {
@@ -224,7 +222,7 @@ export class Mention {
   // ---------------------------------------------------------------------------
 
   _getQueryAtCursor() {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || !sel.rangeCount) return null;
     const range = sel.getRangeAt(0);
     if (!range.collapsed) return null;
@@ -305,7 +303,7 @@ export class Mention {
 
   _onDocClick(e) {
     if (!this._open) return;
-    if (this._dropdown && this._dropdown.contains(e.target)) return;
+    if (this._dropdown?.contains(e.target)) return;
     this._hideDropdown();
   }
 
@@ -325,7 +323,7 @@ export class Mention {
       node.textContent = before + after;
 
       // Move cursor to where the trigger was
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       const range = document.createRange();
       range.setStart(node, this._triggerOffset);
       range.collapse(true);

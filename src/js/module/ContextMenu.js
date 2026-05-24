@@ -1,4 +1,4 @@
-// ContextMenu.js - Right-click context menu for editor actions
+﻿// ContextMenu.js - Right-click context menu for editor actions
 import { createElement, on } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
 
@@ -60,7 +60,7 @@ const defaultItems = [
   { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => document.execCommand('copy') },
   { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
     if (!navigator.clipboard) return;
-    const editable = ctx.layoutInfo && ctx.layoutInfo.editable;
+    const editable = ctx.layoutInfo?.editable;
     if (!editable) return;
     // Prefer read() to get rich HTML; fall back to readText() for plain text
     const doInsert = (html, text) => {
@@ -131,14 +131,14 @@ export class ContextMenu {
 
     this._renderItems(this._items);
 
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (editable) {
       this._disposers.push(on(editable, 'contextmenu', (e) => this._onContextMenu(e)));
     }
 
     this._disposers.push(on(document, 'click', (e) => this._maybeHide(e)));
     this._disposers.push(on(document, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Escape') this.hide(); }));
-    this._disposers.push(on(window, 'scroll', () => this.hide(), { passive: true }));
+    this._disposers.push(on(globalThis, 'scroll', () => this.hide(), { passive: true }));
 
     return this;
   }
@@ -148,7 +148,7 @@ export class ContextMenu {
     this._menuDisposers = [];
     this._disposers.forEach((d) => { try { d(); } catch (_e) {} });
     this._disposers = [];
-    if (this.el && this.el.parentNode) this.el.parentNode.removeChild(this.el);
+    if (this.el) this.el.remove();
     this.el = null;
   }
 
@@ -176,8 +176,8 @@ export class ContextMenu {
         backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [backLabel]));
         const off = on(backBtn, 'click', (e) => {
           e.stopPropagation();
-          const curLeft = parseFloat(this.el.style.left);
-          const curTop = parseFloat(this.el.style.top);
+          const curLeft = Number.parseFloat(this.el.style.left);
+          const curTop = Number.parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
           this._reposition(curLeft, curTop);
         });
@@ -212,8 +212,8 @@ export class ContextMenu {
         btn.appendChild(chevron);
         const off = on(btn, 'click', (e) => {
           e.stopPropagation();
-          const curLeft = parseFloat(this.el.style.left);
-          const curTop = parseFloat(this.el.style.top);
+          const curLeft = Number.parseFloat(this.el.style.left);
+          const curTop = Number.parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
           this._reposition(curLeft, curTop);
         });
@@ -334,10 +334,10 @@ export class ContextMenu {
           if (!cell) return;
           const rows = +cell.dataset.row;
           const cols = +cell.dataset.col;
-          const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+          const editable = this.context.layoutInfo?.editable;
           if (editable && this._savedRange) {
             editable.focus();
-            const sel = window.getSelection();
+            const sel = globalThis.getSelection();
             sel.removeAllRanges();
             sel.addRange(this._savedRange.cloneRange());
           }
@@ -372,13 +372,13 @@ export class ContextMenu {
   }
 
   _onContextMenu(event) {
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (!editable) return;
     if (!editable.contains(event.target)) return;
     if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
     event.preventDefault();
 
-    const winSel = window.getSelection();
+    const winSel = globalThis.getSelection();
     this._savedRange = (winSel && winSel.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     this._renderItems(this._items);
 
@@ -425,9 +425,9 @@ export class ContextMenu {
     let left = rx;
     let top = ry;
     // Clamp to viewport so the menu never overflows the screen edge
-    if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+    if (left + w > globalThis.innerWidth - 8) left = globalThis.innerWidth - w - 8;
     if (left < 8) left = 8;
-    if (top + h > window.innerHeight - 8) top = window.innerHeight - h - 8;
+    if (top + h > globalThis.innerHeight - 8) top = globalThis.innerHeight - h - 8;
     if (top < 8) top = 8;
     this.el.style.left = `${left}px`;
     this.el.style.top = `${top}px`;
@@ -454,7 +454,7 @@ export class ContextMenu {
     let node = range.startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node) return type === 'foreColor' ? '#000000' : 'transparent';
-    const cs = window.getComputedStyle(/** @type {Element} */ (node));
+    const cs = globalThis.getComputedStyle(/** @type {Element} */ (node));
     if (type === 'foreColor') {
       return cs.color || '#000000';
     }
@@ -464,10 +464,10 @@ export class ContextMenu {
 
   /** Restore selection, apply a color command, then hide the menu. */
   _applyColor(type, color) {
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (!editable || !this._savedRange) return;
     editable.focus();
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
     document.execCommand(type, false, color);
@@ -482,20 +482,20 @@ export class ContextMenu {
   copyFormat() {
     const range = this._savedRange;
     if (!range) return;
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     let node = range.startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node || !editable || !editable.contains(node)) return;
 
     // Walk up to collect explicitly-set inline properties from the nearest styled ancestor
-    const cs = window.getComputedStyle(/** @type {Element} */ (node));
+    const cs = globalThis.getComputedStyle(/** @type {Element} */ (node));
 
     // Detect if an explicit font-family / font-size is set on an element (not just inherited)
     const explicitFontFamily = this._findExplicitStyle(node, editable, 'fontFamily');
     const explicitFontSize   = this._findExplicitStyle(node, editable, 'fontSize');
 
     this._copiedFormat = {
-      bold:            parseInt(cs.fontWeight, 10) >= 700,
+      bold:            Number.parseInt(cs.fontWeight, 10) >= 700,
       italic:          cs.fontStyle === 'italic' || cs.fontStyle === 'oblique',
       underline:       (cs.textDecorationLine || '').includes('underline'),
       strikethrough:   (cs.textDecorationLine || '').includes('line-through'),
@@ -533,13 +533,13 @@ export class ContextMenu {
   pasteFormat() {
     if (!this._copiedFormat || !this._savedRange) return;
     const fmt = this._copiedFormat;
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (!editable) return;
 
     // CRITICAL: focus the editable FIRST, then restore selection.
     // Calling focus() after addRange() can wipe the selection in Chrome/Firefox.
     editable.focus();
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
 
@@ -575,14 +575,14 @@ export class ContextMenu {
       document.execCommand('fontSize', false, '7');
       // Mark only the NEWLY created font[size="7"] elements.
       editable.querySelectorAll('font[size="7"]').forEach((el) => {
-        if (!preExisting.has(el)) el.setAttribute('data-an-tmp', marker);
+        if (!preExisting.has(el)) /** @type {HTMLElement} */ (el).dataset.anTmp = marker;
       });
       editable.querySelectorAll(`[data-an-tmp="${marker}"]`).forEach((el) => {
         const span = document.createElement('span');
         span.style.fontSize = fmt.fontSize;
         el.parentNode.insertBefore(span, el);
         while (el.firstChild) span.appendChild(el.firstChild);
-        el.parentNode.removeChild(el);
+        el.remove();
       });
     }
 
@@ -592,11 +592,11 @@ export class ContextMenu {
   /** Strip all inline formatting from the saved selection. */
   removeFormat() {
     if (!this._savedRange) return;
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (!editable) return;
 
     editable.focus();
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
 

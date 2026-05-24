@@ -56,7 +56,7 @@ export function insertTable(cols, rows, opts = {}) {
   if (cols <= 0 || rows <= 0) return;
   const table = createTable(cols, rows, opts);
 
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) return;
   const range = sel.getRangeAt(0);
   range.deleteContents();
@@ -64,7 +64,7 @@ export function insertTable(cols, rows, opts = {}) {
   // Walk up to find the nearest block-level ancestor to insert after
   const BLOCK = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI', 'PRE']);
   let anchor = /** @type {Element|null} */ (range.startContainer);
-  if (anchor && anchor.nodeType === 3) anchor = anchor.parentElement;
+  if (anchor?.nodeType === 3) anchor = anchor.parentElement;
   while (anchor && !BLOCK.has(anchor.tagName?.toUpperCase()) && anchor.parentElement) {
     anchor = anchor.parentElement;
   }
