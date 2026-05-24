@@ -22,7 +22,13 @@
       "Bash(git tag *)",
       "Bash(Get-ChildItem -Path \"d:\\\\Project\\\\Autumn-Note\" -Recurse -Include \"vite*.config.*\" -Exclude \"node_modules\", \"dist\", \"_site\")",
       "Bash(Select-Object FullName)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(git -C \"d:\\\\Project\\\\Autumn-Note\" push origin main)",
+      "Bash(git -C \"d:\\\\Project\\\\Autumn-Note\" checkout dev)",
+      "Bash(git -C \"d:\\\\Project\\\\Autumn-Note\" stash pop)",
+      "Bash(git -C 'd:\\\\Project\\\\Autumn-Note' commit -m ' *)",
+      "Bash(git -C \"d:\\\\Project\\\\Autumn-Note\" checkout main)",
+      "Bash(git -C 'd:\\\\Project\\\\Autumn-Note' merge dev --no-ff -m ' *)"
     ]
   }
 }
