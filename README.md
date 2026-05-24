@@ -1,4 +1,4 @@
-# Autumn Note
+# AutumnNote — WYSIWYG Rich Text Editor
 
 <p align="center"><img src="public/image/banner.png" width="120" alt="AutumnNote Banner"/></p>
 
@@ -12,7 +12,7 @@
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
 
-A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, no heavy dependencies.
+A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES2022+) — no jQuery, no runtime dependencies. Lightweight alternative to Summernote, Quill, and TinyMCE with React and Vue 3 wrappers included.
 
 > **Fast. Lightweight. Reliable. Efficient.**
 
@@ -746,9 +746,9 @@ Build output in `dist/`:
 
 ## Comparison
 
-The table below compares AutumnNote against editors commonly used in this category — such as Summernote, Quill, TinyMCE, and Froala. Specific library names are kept generic to avoid direct bias; the comparison is based on publicly documented feature sets.
+The table below compares AutumnNote against popular WYSIWYG editors: **Summernote**, **Quill**, and **TinyMCE**. Comparison is based on publicly documented feature sets.
 
-| Feature | Editor A | Editor B | Editor C | **AutumnNote** |
+| Feature | Summernote | Quill | TinyMCE | **AutumnNote** |
 |---|---|---|---|---|
 | jQuery dependency | Required | Required | Optional | **None** |
 | Runtime dependencies | Several | Several | 1–2 | **Zero** |

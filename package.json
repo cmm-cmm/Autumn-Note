@@ -1,7 +1,7 @@
 {
   "name": "autumnnote",
   "version": "1.6.0",
-  "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG editor built with vanilla JavaScript, no jQuery required.",
+  "description": "WYSIWYG rich-text editor built with vanilla JavaScript — zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers included.",
   "main": "dist/autumnnote.umd.js",
   "module": "dist/autumnnote.es.js",
   "types": "types/index.d.ts",
@@ -58,7 +58,14 @@
     "dark-mode",
     "i18n",
     "typescript",
-    "esm"
+    "esm",
+    "javascript-wysiwyg",
+    "wysiwyg-vanilla",
+    "froala-alternative",
+    "ckeditor-alternative",
+    "zero-dependencies",
+    "react-wysiwyg",
+    "vue-wysiwyg"
   ],
   "homepage": "https://cmm-cmm.github.io/Autumn-Note/",
   "repository": {
