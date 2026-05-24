@@ -373,8 +373,8 @@
       background: #11111b;
     }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/playground-Bh5Z4lTw.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-Cw6I26Ge.js">
+  <script type="module" crossorigin src="/Autumn-Note/assets/playground-b8vNzzDY.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-B2oqvZDk.js">
   <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-lz6k2XQr.css">
 </head>
 <body>
@@ -412,7 +412,7 @@
 
       <!-- Config card -->
       <div class="card">
-        <div class="card-header" onclick="toggleCard(this)">
+        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
           <span class="card-title">⚙ Options</span>
           <span class="card-toggle open">▶</span>
         </div>
@@ -466,15 +466,15 @@
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Max chars</span>
+            <label class="cfg-label" for="cfg-maxchars">Max chars</label>
             <input type="number" id="cfg-maxchars" class="cfg-input" value="0" min="0" step="100" />
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Focus color</span>
+            <label class="cfg-label" for="cfg-color">Focus color</label>
             <input type="color" id="cfg-color" class="cfg-input" value="#e8751a" />
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Height (px)</span>
+            <label class="cfg-label" for="cfg-height">Height (px)</label>
             <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
           <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
@@ -483,7 +483,7 @@
 
       <!-- Snippet card -->
       <div class="card">
-        <div class="card-header" onclick="toggleCard(this)">
+        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
           <span class="card-title">📄 Load Snippet</span>
           <span class="card-toggle open">▶</span>
         </div>
