@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.5] - 2026-05-25
+
+### Security
+- **`.claude/` directory removed from version control** — expanded the `.gitignore` entry from the specific `settings.local.json` file to the entire `.claude/` directory; prevents all local AI assistant config files (`settings.json`, `settings.local.json`, workspace metadata, machine-specific paths) from being accidentally committed
+
+---
+
 ## [1.6.4] - 2026-05-25
 
 ### Fixed
