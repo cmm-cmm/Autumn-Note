@@ -13,7 +13,7 @@
  * @returns {string|null}
  */
 export function detectLang(code) {
-  if (!code || !code.trim()) return null;
+  if (!code?.trim()) return null;
   const s = code.trim();
 
   // ── TypeScript ─────────────────────────────────────────────────────────────

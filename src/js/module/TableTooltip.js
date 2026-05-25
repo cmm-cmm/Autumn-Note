@@ -58,7 +58,7 @@ function getCellAfterVisualCol(row, visualIdx) {
     if (vIdx > visualIdx) {
       // next cell after the one that starts at / spans visualIdx
       const next = c.nextElementSibling;
-      return (next && next.tagName === 'TD' || next && next.tagName === 'TH') ? /** @type {HTMLTableCellElement} */ (next) : null;
+      return (next?.tagName === 'TD' || next?.tagName === 'TH') ? /** @type {HTMLTableCellElement} */ (next) : null;
     }
   }
   return null;
@@ -388,11 +388,11 @@ export class TableTooltip {
     this._disposers = [];
     if (this._el && this._el.parentNode) this._el.remove();
     this._el = null;
-    if (this._sizePopover && this._sizePopover.parentNode) {
+    if (this._sizePopover?.parentNode) {
       this._sizePopover.remove();
     }
     this._sizePopover = null;
-    if (this._shadePopover && this._shadePopover.parentNode) {
+    if (this._shadePopover?.parentNode) {
       this._shadePopover.remove();
     }
     this._shadePopover = null;
@@ -604,7 +604,7 @@ export class TableTooltip {
   _getCell() {
     // Prefer the cell under the current text cursor (most intuitive for operations)
     const sel = globalThis.getSelection();
-    if (sel && sel.rangeCount) {
+    if (sel?.rangeCount) {
       let container = sel.getRangeAt(0).commonAncestorContainer;
       if (container.nodeType === 3) container = container.parentElement;
       const cellFromSel = /** @type {Element} */ (container)?.closest('td, th');
@@ -659,7 +659,7 @@ export class TableTooltip {
     if (!startCell) return [];
     if (!endCell || startCell === endCell) return [startCell];
     const table = startCell.closest('table');
-    if (!table || !table.contains(endCell)) return [startCell];
+    if (!table?.contains(endCell)) return [startCell];
 
     const { gridMap, cellPos } = buildGridMap(table);
     const sp = cellPos.get(startCell);
@@ -742,8 +742,8 @@ export class TableTooltip {
     for (let i = 0; i < colCount; i++) {
       const td = createElement('td', {}, ['\u00a0']);
       const ref = refCells[i];
-      if (ref && ref.style.width)    td.style.width    = ref.style.width;
-      if (ref && ref.style.minWidth) td.style.minWidth = ref.style.minWidth;
+      if (ref?.style.width)    td.style.width    = ref.style.width;
+      if (ref?.style.minWidth) td.style.minWidth = ref.style.minWidth;
       newRow.appendChild(td);
     }
     if (position === 'above') refRow.parentElement?.insertBefore(newRow, refRow);

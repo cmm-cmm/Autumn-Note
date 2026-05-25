@@ -305,11 +305,9 @@ export function trapFocus(container, onEscape) {
         e.preventDefault();
         /** @type {HTMLElement} */ (last).focus();
       }
-    } else {
-      if (document.activeElement === last) {
-        e.preventDefault();
-        /** @type {HTMLElement} */ (first).focus();
-      }
+    } else if (document.activeElement === last) {
+      e.preventDefault();
+      /** @type {HTMLElement} */ (first).focus();
     }
   };
 

@@ -52,7 +52,7 @@ describe('Clipboard._cleanSocialHtml', () => {
         const parent = el.parentNode;
         if (!parent) return;
         while (el.firstChild) parent.insertBefore(el.firstChild, el);
-        parent.removeChild(el);
+        el.remove();
         changed = true;
       });
     }

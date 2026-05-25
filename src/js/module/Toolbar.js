@@ -399,7 +399,7 @@ export class Toolbar {
 
     const saveSelection = () => {
       const sel = globalThis.getSelection();
-      savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+      savedRange = sel?.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
     };
 
     const restoreSelection = () => {
@@ -543,7 +543,7 @@ export class Toolbar {
       const value    = (typeof item === 'object') ? item.value    : item;
       const label    = (typeof item === 'object')
         ? (def.name === 'paragraphStyle'
-            ? ((this.context.locale.toolbar.paragraphItems || {})[item.value] || item.label)
+            ? (this.context.locale.toolbar.paragraphItems?.[item.value] || item.label)
             : item.label)
         : item;
       const isHeader = (typeof item === 'object') && !!item.disabled;
@@ -563,7 +563,7 @@ export class Toolbar {
     let _savedRange = null;
     const dMousedown = on(select, 'mousedown', () => {
       const sel = globalThis.getSelection();
-      _savedRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+      _savedRange = sel?.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
     });
 
     const disposer = on(select, 'change', (e) => {
@@ -617,15 +617,13 @@ export class Toolbar {
       } else {
         btn.textContent = btnDef.icon || btnDef.name;
       }
-    } else {
+    } else if (_SVG_MAP.has(btnDef.icon)) {
       // FontAwesome absent: use SVG fallback when available
-      if (_SVG_MAP.has(btnDef.icon)) {
-        btn.innerHTML = _SVG_MAP.get(btnDef.icon);
-      } else if (_SVG_MAP.has(btnDef.name)) {
-        btn.innerHTML = _SVG_MAP.get(btnDef.name);
-      } else {
-        btn.textContent = btnDef.icon || btnDef.name;
-      }
+      btn.innerHTML = _SVG_MAP.get(btnDef.icon);
+    } else if (_SVG_MAP.has(btnDef.name)) {
+      btn.innerHTML = _SVG_MAP.get(btnDef.name);
+    } else {
+      btn.textContent = btnDef.icon || btnDef.name;
     }
 
     const disposer = on(btn, 'click', (event) => {

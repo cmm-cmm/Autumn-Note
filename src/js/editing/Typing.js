@@ -68,7 +68,7 @@ export function handleKeydown(event, editable, options = {}) {
           // (not a text node), causing the next Backspace to miss Cases A/B and
           // requiring an extra keypress when two icons are adjacent.
           const nr = document.createRange();
-          if (prevNode && prevNode.nodeType === Node.TEXT_NODE) {
+          if (prevNode?.nodeType === Node.TEXT_NODE) {
             nr.setStart(prevNode, prevNode.textContent.length);
           } else if (prevNode) {
             nr.setStartAfter(prevNode);
@@ -168,7 +168,7 @@ export function handleKeydown(event, editable, options = {}) {
         if (isFAIcon(next)) {
           const after = next.nextSibling;
           event.preventDefault();
-          if (after && after.nodeType === Node.TEXT_NODE) {
+          if (after?.nodeType === Node.TEXT_NODE) {
             const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
             return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
           }
@@ -178,7 +178,7 @@ export function handleKeydown(event, editable, options = {}) {
           const icon = next.nextSibling;
           const after = icon.nextSibling;
           event.preventDefault();
-          if (after && after.nodeType === Node.TEXT_NODE) {
+          if (after?.nodeType === Node.TEXT_NODE) {
             const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
             return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
           }
@@ -341,11 +341,11 @@ export function handleKeydown(event, editable, options = {}) {
       // may normalise it to element-level, placing the caret before the
       // absolutely-positioned checkbox.  \u200B is stripped by getHTML().
       let cursorNode = newLi.childNodes[1]; // first child after checkbox
-      if (!cursorNode || cursorNode.nodeType !== Node.TEXT_NODE) {
+      if (cursorNode?.nodeType !== Node.TEXT_NODE) {
         cursorNode = document.createTextNode('\u200B');
         newLi.appendChild(cursorNode);
       }
-      checkLi.insertAdjacentElement('afterend', newLi);
+      checkLi.after(newLi);
 
       const nr = document.createRange();
       nr.setStart(cursorNode, 0);

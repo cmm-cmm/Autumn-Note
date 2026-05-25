@@ -51,7 +51,7 @@ export class BaseDialog {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
       this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._firstInput && this._firstInput.focus(), 50);
+      setTimeout(() => this._firstInput?.focus(), 50);
     }
   }
 

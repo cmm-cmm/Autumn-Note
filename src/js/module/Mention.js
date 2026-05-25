@@ -210,7 +210,7 @@ export class Mention {
 
     // Fallback: use getClientRects() on the current collapsed selection
     const sel = globalThis.getSelection();
-    if (!sel || !sel.rangeCount) return;
+    if (!sel?.rangeCount) return;
     const rects = sel.getRangeAt(0).getClientRects();
     if (rects.length > 0) {
       this._caretRect = rects[rects.length - 1];

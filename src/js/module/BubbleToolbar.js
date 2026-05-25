@@ -389,7 +389,7 @@ export class BubbleToolbar {
     if (!this._btnCache) return;
     this._btnCache.forEach((btn) => {
       const activeFn = _ACTIVE[/** @type {HTMLElement} */ (btn).dataset.name];
-      btn.classList.toggle('an-active', !!(activeFn && activeFn()));
+      btn.classList.toggle('an-active', !!(activeFn?.()));
     });
   }
 
@@ -397,7 +397,7 @@ export class BubbleToolbar {
   _syncColorStrips() {
     if (!this._el) return;
     const sel = globalThis.getSelection();
-    if (!sel || !sel.rangeCount) return;
+    if (!sel?.rangeCount) return;
     let node = sel.getRangeAt(0).startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node) return;

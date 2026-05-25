@@ -86,7 +86,7 @@ export class Editor {
     // keyup  : arrow-key navigation may land at <li>[0]; move to start-of-text.
     const fixChecklistCursor = (event) => {
       const sel = globalThis.getSelection();
-      if (!sel || !sel.rangeCount) return;
+      if (!sel?.rangeCount) return;
       const r = sel.getRangeAt(0);
       if (!r.collapsed) return;
       const sc = r.startContainer;
@@ -102,7 +102,7 @@ export class Editor {
 
       // For mouse events: ask the browser where the pointer landed so the
       // cursor respects the actual click position inside the text.
-      if (event && event.type === 'mouseup') {
+      if (event?.type === 'mouseup') {
         let caret = null;
         if (document.caretRangeFromPoint) {
           caret = document.caretRangeFromPoint(event.clientX, event.clientY);
@@ -181,7 +181,7 @@ export class Editor {
     let _compositionSupSub = null;
     const onCompositionStart = () => {
       const sel = globalThis.getSelection();
-      if (!sel || !sel.rangeCount) { _compositionSupSub = null; return; }
+      if (!sel?.rangeCount) { _compositionSupSub = null; return; }
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
       if (node) {
@@ -196,7 +196,7 @@ export class Editor {
       _compositionSupSub = null;
       if (!tag) return;
       const sel = globalThis.getSelection();
-      if (!sel || !sel.rangeCount) return;
+      if (!sel?.rangeCount) return;
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
       const el = /** @type {Element} */ (node);

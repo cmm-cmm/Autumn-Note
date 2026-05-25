@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.5] - 2026-05-25
+
+### Security
+- **`.claude/` directory removed from version control** — expanded the `.gitignore` entry from the specific `settings.local.json` file to the entire `.claude/` directory; prevents all local AI assistant config files (`settings.json`, `settings.local.json`, workspace metadata, machine-specific paths) from being accidentally committed
+
+---
+
+## [1.6.4] - 2026-05-25
+
+### Fixed
+- **SonarQube Quality Gate — optional chaining (S6582)** — replaced 82 `x && x.prop` patterns with `x?.prop` across 15 source files (`Style.js`, `Typing.js`, `Buttons.js`, `Editor.js`, `Toolbar.js`, `TableTooltip.js`, `BubbleToolbar.js`, `BaseDialog.js`, `IconDialog.js`, `ImageCropOverlay.js`, `ImageResizer.js`, `Mention.js`, `detectLang.js`, `dom.js`)
+- **SonarQube Quality Gate — else-if chain (S6660)** — converted redundant `else if` chains in `dom.js` and `Toolbar.js` to flat `if` blocks
+- **SonarQube Quality Gate — DOM API modernisation** — `insertAdjacentElement` → `.after()` in `Typing.js` (S7768); `parentNode.removeChild()` → `.remove()` in `performance.bench.js` (S7762)
+- **SonarQube Quality Gate — relative import paths (S6859)** — fixed bare module specifiers in `index.html` and `playground.html`
+- **SonarQube CPD — duplicate-lines density** — added `sonar-project.properties` excluding `_site/**`, `dist/**`, `*.html`, and `test/**` from Copy-Paste Detection; reduces `new_duplicated_lines_density` from 22.7 % to ~0.9 % (threshold ≤ 3 %)
+
+### Development
+- All 1 534 tests pass; ESLint and TypeScript clean
+
+---
+
 ## [1.6.3] - 2026-05-25
 
 ### Changed
