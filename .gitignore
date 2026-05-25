@@ -16,6 +16,9 @@ coverage/
 .env.local
 .env.*.local
 
+# Claude Code local settings (may contain API tokens / secrets)
+.claude/settings.local.json
+
 # Editor / IDE
 .vscode/
 .idea/
