@@ -2,8 +2,8 @@
  * IconDialog.js - Browse and insert FontAwesome Free icons
  */
 
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
-import { withSavedRange } from '../core/range.js';
+import { createElement, on, makeDraggable } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
 // ---------------------------------------------------------------------------
 // Icon catalogue — FA 6 Free Solid slug names, grouped by category
@@ -247,19 +247,9 @@ const ICON_LIST = [
   ['puzzle-piece',          'objects'],
 ];
 
-export class IconDialog {
-  /**
-   * @param {import('../Context.js').Context} context
-   */
-  constructor(context) {
-    this.context = context;
-    /** @type {HTMLElement|null} */
-    this._dialog = null;
-    this._disposers = [];
-    this._savedRange = null;
-    this._selectedIcon = null;
-    this._activeCat = 'all';
-  }
+export class IconDialog extends BaseDialog {
+  _selectedIcon = null;
+  _activeCat = 'all';
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -267,7 +257,7 @@ export class IconDialog {
 
   initialize() {
     this._ensureFontAwesome();
-    // Dialog grid is built lazily on first show() to avoid rendering ~250 icon cells at load time.
+    // Grid is built lazily in show() to avoid ~250 icon cells at load time.
     return this;
   }
 
@@ -294,13 +284,6 @@ export class IconDialog {
     document.head.appendChild(link);
   }
 
-  destroy() {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    this._dialog?.remove();
-    this._dialog = null;
-  }
-
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
@@ -310,9 +293,7 @@ export class IconDialog {
       this._dialog = this._buildDialog();
       document.body.appendChild(this._dialog);
     }
-    withSavedRange((range) => {
-      this._savedRange = range;
-    });
+    this._saveRange();
     this._selectedIcon = null;
     this._activeCat = 'all';
     this._searchInput.value = '';
@@ -360,6 +341,7 @@ export class IconDialog {
       autocomplete: 'off',
     }));
     this._searchInput = searchInput;
+    this._firstInput = searchInput;
 
     // Category tabs
     const catBar = createElement('div', { class: 'an-icon-cats' });
@@ -629,22 +611,8 @@ export class IconDialog {
     this.context.invoke('editor.afterCommand');
   }
 
-  // ---------------------------------------------------------------------------
-  // Open / Close
-  // ---------------------------------------------------------------------------
-
-  _open() {
-    if (this._dialog) {
-      this._dialog.style.display = 'flex';
-      this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._searchInput?.focus(), 50);
-    }
-  }
-
   _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
-    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
-    this._savedRange = null;
     this._selectedIcon = null;
+    super._close();
   }
 }

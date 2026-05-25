@@ -3,8 +3,8 @@
  * Click an emoji to insert it directly at the caret — no extra "Insert" step.
  */
 
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
-import { withSavedRange } from '../core/range.js';
+import { createElement, on, makeDraggable } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
 // ---------------------------------------------------------------------------
 // Emoji catalogue
@@ -500,35 +500,16 @@ const EMOJI_LIST = [
 // Dialog class
 // ---------------------------------------------------------------------------
 
-export class EmojiDialog {
-  /**
-   * @param {import('../Context.js').Context} context
-   */
-  constructor(context) {
-    this.context = context;
-    /** @type {HTMLElement|null} */
-    this._dialog = null;
-    this._disposers = [];
-    this._savedRange = null;
-    this._activeCat = 'all';
-  }
+export class EmojiDialog extends BaseDialog {
+  _activeCat = 'all';
 
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
 
   initialize() {
-    // Dialog grid is built lazily on first show() to avoid rendering ~500 DOM nodes at load time.
+    // Grid is built lazily in show() to avoid ~500 DOM nodes at load time.
     return this;
-  }
-
-  destroy() {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.remove();
-    }
-    this._dialog = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -540,9 +521,7 @@ export class EmojiDialog {
       this._dialog = this._buildDialog();
       document.body.appendChild(this._dialog);
     }
-    withSavedRange((range) => {
-      this._savedRange = range;
-    });
+    this._saveRange();
     this._activeCat = 'all';
     this._searchInput.value = '';
     this._updateCatTabs();
@@ -612,6 +591,7 @@ export class EmojiDialog {
       grid.appendChild(cell);
     });
     this._grid = grid;
+    this._firstInput = searchInput;
 
     // Cancel only — clicking an emoji inserts immediately
     const btnRow = createElement('div', { class: 'an-dialog-actions' });
@@ -724,21 +704,4 @@ export class EmojiDialog {
     this.context.invoke('editor.afterCommand');
   }
 
-  // ---------------------------------------------------------------------------
-  // Open / Close
-  // ---------------------------------------------------------------------------
-
-  _open() {
-    if (this._dialog) {
-      this._dialog.style.display = 'flex';
-      this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._searchInput?.focus(), 50);
-    }
-  }
-
-  _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
-    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
-    this._savedRange = null;
-  }
 }
