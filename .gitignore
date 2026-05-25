@@ -16,8 +16,8 @@ coverage/
 .env.local
 .env.*.local
 
-# Claude Code local settings (may contain API tokens / secrets)
-.claude/settings.local.json
+# Claude Code — local AI assistant config (may contain tokens / secrets)
+.claude/
 
 # Editor / IDE
 .vscode/
