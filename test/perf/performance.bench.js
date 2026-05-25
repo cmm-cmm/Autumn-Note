@@ -189,16 +189,18 @@ describe('CodeTooltip._syncLangSelect regex', () => {
   const CACHED_RE = /language-(\S+)/;
 
   bench('legacy: new regex on every sync call', () => {
+    let result;
     for (let i = 0; i < 1000; i++) {
-      const result = (className.match(/language-(\S+)/) || [])[1] || '';
-      return result;
+      result = (className.match(/language-(\S+)/) || [])[1] || '';
     }
+    return result;
   });
 
   bench('current: module-level cached regex', () => {
+    let result;
     for (let i = 0; i < 1000; i++) {
-      const result = (CACHED_RE.exec(className) || [])[1] || '';
-      return result;
+      result = (CACHED_RE.exec(className) || [])[1] || '';
     }
+    return result;
   });
 });

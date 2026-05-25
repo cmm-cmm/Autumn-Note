@@ -3,49 +3,18 @@
  * Inspired by Summernote's ImageDialog — rewritten without jQuery
  */
 
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
-import { withSavedRange } from '../core/range.js';
+import { createElement, on } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
-export class ImageDialog {
-  /**
-   * @param {import('../Context.js').Context} context
-   */
-  constructor(context) {
-    this.context = context;
-    this.options = context.options;
-    /** @type {HTMLElement|null} */
-    this._dialog = null;
-    this._disposers = [];
-    this._savedRange = null;
-  }
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
-
-  initialize() {
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
-    return this;
-  }
-
-  destroy() {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.remove();
-    }
-    this._dialog = null;
-  }
-
+export class ImageDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
   show() {
-    withSavedRange((range) => {
-      this._savedRange = range;
-    });
+    this._saveRange();
     this._urlInput.value = '';
     this._altInput.value = '';
     if (this._fileInput) this._fileInput.value = '';
@@ -58,23 +27,9 @@ export class ImageDialog {
 
   _buildDialog() {
     const L = this.context.locale.imageDialog;
-    const overlay = createElement('div', {
-      class: 'an-dialog-overlay',
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-label': L.ariaLabel,
-    });
-    const box = createElement('div', { class: 'an-dialog-box' });
+    const { overlay, box } = this._buildDialogShell(L.ariaLabel, ICON_SVG, L.title);
 
-    const header = createElement('div', { class: 'an-dialog-header' });
-    const iconEl = createElement('span', { class: 'an-dialog-icon' });
-    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
-    const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = L.title;
-    header.appendChild(iconEl);
-    header.appendChild(title);
-
-    // URL tab
+    // URL field
     const urlLabel = createElement('label', { class: 'an-label' });
     urlLabel.textContent = L.imageUrl;
     const urlInput = /** @type {HTMLInputElement} */ (createElement('input', {
@@ -84,6 +39,7 @@ export class ImageDialog {
       autocomplete: 'off',
     }));
     this._urlInput = urlInput;
+    this._firstInput = urlInput;
 
     // Alt text
     const altLabel = createElement('label', { class: 'an-label' });
@@ -96,7 +52,7 @@ export class ImageDialog {
     }));
     this._altInput = altInput;
 
-    box.append(header, urlLabel, urlInput, altLabel, altInput);
+    box.append(urlLabel, urlInput, altLabel, altInput);
 
     // Alignment
     const alignLabel = createElement('label', { class: 'an-label' });
@@ -118,6 +74,7 @@ export class ImageDialog {
     });
     this._alignRow = alignRow;
     box.append(alignLabel, alignRow);
+
     if (this.options.allowImageUpload !== false) {
       const fileLabel = createElement('label', { class: 'an-label' });
       fileLabel.textContent = L.uploadLabel;
@@ -135,25 +92,12 @@ export class ImageDialog {
       box.append(fileLabel, fileInput, fileHint);
     }
 
-    // Buttons
-    const btnRow = createElement('div', { class: 'an-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    insertBtn.textContent = L.insertBtn;
-    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = L.cancelBtn;
-    btnRow.appendChild(insertBtn);
-    btnRow.appendChild(cancelBtn);
-
+    const btnRow = this._buildButtonRow(L.insertBtn, L.cancelBtn, () => this._onInsert());
     box.append(btnRow);
-    overlay.appendChild(box);
-    makeDraggable(header, box);
 
-    const d1 = on(insertBtn, 'click', () => this._onInsert());
-    const d2 = on(cancelBtn, 'click', () => this._close());
-    const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(urlInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     const d5 = on(altInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    this._disposers.push(d1, d2, d3, d4, d5);
+    this._disposers.push(d4, d5);
 
     return overlay;
   }
@@ -216,19 +160,5 @@ export class ImageDialog {
 
     this.context.invoke('editor.insertImage', src, alt, align);
     this._close();
-  }
-
-  _open() {
-    if (this._dialog) {
-      this._dialog.style.display = 'flex';
-      this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._urlInput && this._urlInput.focus(), 50);
-    }
-  }
-
-  _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
-    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
-    this._savedRange = null;
   }
 }

@@ -159,8 +159,10 @@ export class Context {
     register('mention', Mention);
 
     // Custom modules registered via AutumnNote.registerModule()
-    for (const [name, ModuleClass] of _customModules) {
-      register(name, ModuleClass);
+    if (_customModules.size > 0) {
+      for (const [name, ModuleClass] of _customModules) {
+        register(name, ModuleClass);
+      }
     }
   }
 
@@ -220,6 +222,7 @@ export class Context {
   }
 
   _applyGlobalPlugins() {
+    if (_globalPlugins.size === 0) return;
     for (const { plugin, options } of _globalPlugins.values()) {
       this._installPlugin(plugin, options);
     }

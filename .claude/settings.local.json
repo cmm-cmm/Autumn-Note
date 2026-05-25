@@ -84,7 +84,11 @@
       "Bash(ls docs/)",
       "Bash(powershell -Command \"\\(Get-Content index.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' -replace '\\\\\"softwareVersion\\\\\": \\\\\"1\\\\.5\\\\.0\\\\\"', '\\\\\"softwareVersion\\\\\": \\\\\"1.6.0\\\\\"' | Set-Content index.html -Encoding UTF8\")",
       "Bash(powershell -Command \"\\(Get-Content docs.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' -replace 'AutumnNote v1\\\\.5\\\\.0', 'AutumnNote v1.6.0' | Set-Content docs.html -Encoding UTF8\")",
-      "Bash(powershell -Command \"\\(Get-Content playground.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' | Set-Content playground.html -Encoding UTF8\")"
+      "Bash(powershell -Command \"\\(Get-Content playground.html\\) -replace 'v1\\\\.5\\\\.0', 'v1.6.0' | Set-Content playground.html -Encoding UTF8\")",
+      "Bash(curl -s -u \"c6b4896f22dabd84da8a8f6c0c9e832752fb576a:\" \"https://sonarcloud.io/api/qualitygates/project_status?projectKey=cmm-cmm_Autumn-Note\")",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -u \"c6b4896f22dabd84da8a8f6c0c9e832752fb576a:\" \"https://sonarcloud.io/api/measures/component?component=cmm-cmm_Autumn-Note&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density,security_hotspots,reliability_rating,security_rating,maintainability_rating,ncloc\")",
+      "Bash(curl -s -u \"c6b4896f22dabd84da8a8f6c0c9e832752fb576a:\" \"https://sonarcloud.io/api/measures/component?component=cmm-cmm_Autumn-Note&metricKeys=bugs,vulnerabilities,code_smells,coverage,duplicated_lines_density,security_hotspots,reliability_rating,security_rating,sqale_rating,ncloc\")"
     ]
   }
 }

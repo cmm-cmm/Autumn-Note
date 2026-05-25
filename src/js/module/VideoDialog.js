@@ -7,47 +7,18 @@
  *   • Direct video URLs   → <video> element (.mp4 / .webm / .ogg)
  */
 
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
-import { withSavedRange } from '../core/range.js';
+import { createElement, on } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
-export class VideoDialog {
-  /** @param {import('../Context.js').Context} context */
-  constructor(context) {
-    this.context = context;
-    this.options = context.options;
-    /** @type {HTMLElement|null} */
-    this._dialog = null;
-    this._disposers = [];
-    this._savedRange = null;
-  }
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
 
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
-
-  initialize() {
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
-    return this;
-  }
-
-  destroy() {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.remove();
-    }
-    this._dialog = null;
-  }
-
+export class VideoDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
   show() {
-    withSavedRange((range) => {
-      this._savedRange = range;
-    });
+    this._saveRange();
     this._urlInput.value = '';
     this._widthInput.value = '560';
     this._hintEl.textContent = '';
@@ -60,21 +31,7 @@ export class VideoDialog {
 
   _buildDialog() {
     const L = this.context.locale.videoDialog;
-    const overlay = createElement('div', {
-      class: 'an-dialog-overlay',
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-label': L.ariaLabel,
-    });
-    const box = createElement('div', { class: 'an-dialog-box' });
-
-    const header = createElement('div', { class: 'an-dialog-header' });
-    const iconEl = createElement('span', { class: 'an-dialog-icon' });
-    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
-    const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = L.title;
-    header.appendChild(iconEl);
-    header.appendChild(title);
+    const { overlay, box } = this._buildDialogShell(L.ariaLabel, ICON_SVG, L.title);
 
     // URL input
     const urlLabel = createElement('label', { class: 'an-label' });
@@ -86,6 +43,7 @@ export class VideoDialog {
       autocomplete: 'off',
     }));
     this._urlInput = urlInput;
+    this._firstInput = urlInput;
 
     // Hint (detected source)
     const hintEl = createElement('p', { class: 'an-dialog-hint' });
@@ -104,30 +62,16 @@ export class VideoDialog {
     }));
     this._widthInput = widthInput;
 
-    // Buttons
-    const btnRow = createElement('div', { class: 'an-dialog-actions' });
-    const insertBtn = createElement('button', { type: 'button', class: 'an-btn an-btn-primary' });
-    insertBtn.textContent = L.insertBtn;
-    const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
-    cancelBtn.textContent = L.cancelBtn;
-    btnRow.appendChild(insertBtn);
-    btnRow.appendChild(cancelBtn);
-
-    box.append(header, urlLabel, urlInput, hintEl, widthLabel, widthInput, btnRow);
-    overlay.appendChild(box);
-    makeDraggable(header, box);
+    const btnRow = this._buildButtonRow(L.insertBtn, L.cancelBtn, () => this._onInsert());
+    box.append(urlLabel, urlInput, hintEl, widthLabel, widthInput, btnRow);
 
     // Live URL hint
     const d0 = on(urlInput, 'input', () => {
       const info = this._parseVideoUrl(urlInput.value.trim());
       hintEl.textContent = info ? this.context.locale.videoDialog.detected(info.type) : (urlInput.value ? this.context.locale.videoDialog.unknownFormat : '');
     });
-
-    const d1 = on(insertBtn, 'click', () => this._onInsert());
-    const d2 = on(cancelBtn, 'click', () => this._close());
-    const d3 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
     const d4 = on(urlInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
-    this._disposers.push(d0, d1, d2, d3, d4);
+    this._disposers.push(d0, d4);
 
     return overlay;
   }
@@ -155,20 +99,6 @@ export class VideoDialog {
     if (this._savedRange) this._savedRange.select();
     this.context.invoke('editor.insertVideo', html);
     this._close();
-  }
-
-  _open() {
-    if (this._dialog) {
-      this._dialog.style.display = 'flex';
-      this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._urlInput && this._urlInput.focus(), 50);
-    }
-  }
-
-  _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
-    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
-    this._savedRange = null;
   }
 
   // ---------------------------------------------------------------------------

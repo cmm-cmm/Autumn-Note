@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - 2026-05-25
+
+### Changed
+- **`BaseDialog` base class** — extracted shared lifecycle and shell-building logic from `LinkDialog`, `ImageDialog`, and `VideoDialog` into a new `src/js/module/BaseDialog.js` base class; each dialog now extends `BaseDialog` and only implements `_buildDialog()` for its own form fields; reduces duplication by ~250 lines while preserving all existing behaviour (draggable, focus trap, overlay click-to-close, saved-range restore)
+- **`Context.js` micro-optimisations** — `_registerModules()` and `_applyGlobalPlugins()` now guard their loops with a size check, skipping iteration entirely when no custom modules or global plugins are registered
+
+---
+
 ## [1.6.1] - 2026-05-24
 
 ### Changed
