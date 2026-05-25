@@ -399,7 +399,7 @@ export class ImageCropOverlay {
     const startY = e.clientY;
     const orig   = { ...this._box };
     const r      = this._imgRect;
-    const lockAR = this._arCheck && this._arCheck.checked;
+    const lockAR = this._arCheck?.checked;
     const aspect = orig.w / (orig.h || 1);
 
     const onMove = (me) => {

@@ -41,7 +41,7 @@ export const italic = () => execCommand('italic');
  */
 export function underline() {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return;
+  if (!sel?.rangeCount) return;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
   // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
@@ -65,7 +65,7 @@ export function underline() {
  */
 export function strikethrough() {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return;
+  if (!sel?.rangeCount) return;
   // Use startContainer for consistent detection across collapsed and range
   // selections — commonAncestorContainer can miss ancestor <s>/<strike> tags
   // when the selection spans across nested inline elements.
@@ -120,7 +120,7 @@ export const fontName = (name) => execCommand('fontName', name);
  */
 export function fontSize(size, editable = document) {
   const sel = globalThis.getSelection();
-  const wasCollapsed = !sel || !sel.rangeCount || sel.getRangeAt(0).collapsed;
+  const wasCollapsed = !sel?.rangeCount || sel.getRangeAt(0).collapsed;
 
   // B-I-3/4: For a collapsed (caret) selection the browser's execCommand
   // 'fontSize' leaves an internal "pending" state of size-7 (=48px) instead of
@@ -223,7 +223,7 @@ export const indent = () => execCommand('indent');
  */
 export function outdent() {
   const sel = globalThis.getSelection();
-  if (sel && sel.rangeCount) {
+  if (sel?.rangeCount) {
     let container = sel.getRangeAt(0).commonAncestorContainer;
     if (container.nodeType === 3) container = container.parentElement;
     const checkLi = /** @type {Element|null} */ (container)?.closest('.an-checklist li');
@@ -286,7 +286,7 @@ function _checklistItemToP(checkLi) {
   try {
     const nr = document.createRange();
     const firstChild = p.firstChild;
-    nr.setStart(firstChild && firstChild.nodeType === 3 ? firstChild : p, 0);
+    nr.setStart(firstChild?.nodeType === 3 ? firstChild : p, 0);
     nr.collapse(true);
     const s = globalThis.getSelection();
     if (s) { s.removeAllRanges(); s.addRange(nr); }
@@ -406,7 +406,7 @@ export function currentStyle(editable) {
  */
 export function toggleInlineCode(_editable) {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return;
+  if (!sel?.rangeCount) return;
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
@@ -477,7 +477,7 @@ export function toggleInlineCode(_editable) {
  */
 export function isInlineCode() {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return false;
+  if (!sel?.rangeCount) return false;
   let sc = sel.getRangeAt(0).startContainer;
   if (sc.nodeType === 3) sc = sc.parentElement;
   const code = /** @type {Element|null} */ (sc)?.closest('code');
@@ -504,7 +504,7 @@ export function isInlineCode() {
  */
 export function toggleChecklist() {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return;
+  if (!sel?.rangeCount) return;
   const range = sel.getRangeAt(0);
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
@@ -552,7 +552,7 @@ export function toggleChecklist() {
     // and convert it into a single checklist item.
     const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
     let block = /** @type {Element|null} */ (container);
-    while (block && block.parentNode && !BLOCK_TAGS.has(block.tagName)) {
+    while (block?.parentNode && !BLOCK_TAGS.has(block.tagName)) {
       block = /** @type {Element|null} */ (block.parentNode);
     }
     // Fallback: if no block element found (e.g. cursor directly in editable root), use the
@@ -674,7 +674,7 @@ export function toggleChecklist() {
  */
 export function isInChecklist() {
   const sel = globalThis.getSelection();
-  if (!sel || !sel.rangeCount) return false;
+  if (!sel?.rangeCount) return false;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
   return !!(/** @type {Element|null} */ (container)?.closest('.an-checklist li'));

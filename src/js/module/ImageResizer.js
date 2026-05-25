@@ -181,7 +181,7 @@ export class ImageResizer {
 
     // Skip DOM writes when position hasn't changed (common during non-scroll rAF ticks)
     const p = this._lastOverlayPos;
-    if (p && p.l === rect.left && p.t === rect.top && p.w === rect.width && p.h === rect.height) return;
+    if (p?.l === rect.left && p.t === rect.top && p.w === rect.width && p.h === rect.height) return;
     this._lastOverlayPos = { l: rect.left, t: rect.top, w: rect.width, h: rect.height };
 
     const left = rect.left - containerRect.left + offsetParent.scrollLeft;

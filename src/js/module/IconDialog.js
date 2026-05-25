@@ -580,7 +580,7 @@ export class IconDialog extends BaseDialog {
     //    Keep a text anchor (\u200B) after the icon so ArrowLeft/ArrowRight and
     //    caret placement at end-of-line stay stable across browsers.
     let caretTextNode = iconEl.nextSibling;
-    if (!caretTextNode || caretTextNode.nodeType !== Node.TEXT_NODE) {
+    if (caretTextNode?.nodeType !== Node.TEXT_NODE) {
       caretTextNode = document.createTextNode('\u200B');
       iconEl.parentNode.insertBefore(caretTextNode, iconEl.nextSibling);
     } else if (!caretTextNode.textContent) {
