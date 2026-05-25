@@ -3,7 +3,8 @@
  * Opened via the toolbar '?' button or Shift+? inside the editor.
  */
 
-import { createElement, on, trapFocus } from '../core/dom.js';
+import { createElement, on } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
 const SHORTCUTS = [
   {
@@ -51,64 +52,37 @@ const SHORTCUTS = [
   },
 ];
 
-export class ShortcutsDialog {
-  /** @param {import('../Context.js').Context} context */
-  constructor(context) {
-    this.context = context;
-    this._dialog = null;
-    this._closeBtn = null;
-    this._disposers = [];
-  }
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M18 15h.01M10 15h4"/><path d="M7 3l5 4 5-4"/></svg>`;
 
-  initialize() {
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
-    return this;
-  }
-
-  destroy() {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    this._dialog?.remove();
-    this._dialog = null;
-  }
+export class ShortcutsDialog extends BaseDialog {
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
 
   show() {
-    if (this._dialog) {
-      this._dialog.style.display = 'flex';
-      this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._closeBtn?.focus(), 50);
-    }
+    this._open();
   }
 
-  _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
-    if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
-  }
+  // ---------------------------------------------------------------------------
+  // Build dialog
+  // ---------------------------------------------------------------------------
 
   _buildDialog() {
-    const overlay = createElement('div', {
-      class: 'an-dialog-overlay',
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-label': this.context.locale.shortcutsDialog.ariaLabel,
-    });
+    const L = this.context.locale.shortcutsDialog;
+    const { overlay, box } = this._buildDialogShell(L.ariaLabel, ICON_SVG, L.title);
+    box.classList.add('an-shortcuts-box');
 
-    const box = createElement('div', { class: 'an-dialog-box an-shortcuts-box' });
-
-    // Title row with close button
-    const titleRow = createElement('div', { class: 'an-icon-title-row' });
-    const title = createElement('h3', { class: 'an-dialog-title' });
-    title.textContent = this.context.locale.shortcutsDialog.title;
+    // Close button pinned to the right of the header row
     const closeBtn = createElement('button', {
       type: 'button',
       class: 'an-icon-close',
-      'aria-label': this.context.locale.shortcutsDialog.close,
+      'aria-label': L.close,
+      style: 'margin-left:auto',
     });
     closeBtn.textContent = '×';
     this._closeBtn = closeBtn;
-    titleRow.append(title, closeBtn);
-    box.appendChild(titleRow);
+    this._firstInput = closeBtn;
+    box.querySelector('.an-dialog-header').appendChild(closeBtn);
 
     const shortcuts = this.context.locale.shortcutsDialog.shortcuts || SHORTCUTS;
     shortcuts.forEach(({ category, items }) => {
@@ -129,11 +103,8 @@ export class ShortcutsDialog {
       box.appendChild(table);
     });
 
-    overlay.appendChild(box);
-
     const d1 = on(closeBtn, 'click', () => this._close());
-    const d2 = on(overlay, 'click', (e) => { if (e.target === overlay) this._close(); });
-    this._disposers.push(d1, d2);
+    this._disposers.push(d1);
 
     return overlay;
   }

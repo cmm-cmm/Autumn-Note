@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.3] - 2026-05-25
+
+### Changed
+- **BaseDialog migration completed** — `EmojiDialog`, `IconDialog`, `ShortcutsDialog`, and `FindReplace` now extend `BaseDialog`, eliminating a further ~100 lines of duplicated lifecycle boilerplate (`initialize`/`destroy`/`_open`/`_close`/`_disposers` setup); lazy grid initialisation for emoji and icon dialogs is preserved
+
+### Security
+- **API token removed from git history tracking** — `.claude/settings.local.json` (which contained a Bearer token exposed in a prior commit) has been removed from git index and added to `.gitignore`; prevents accidental re-commit of local Claude Code settings that may carry credentials
+
+---
+
 ## [1.6.2] - 2026-05-25
 
 ### Changed

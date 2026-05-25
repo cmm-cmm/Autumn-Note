@@ -8,14 +8,13 @@
  */
 
 import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
+import { BaseDialog } from './BaseDialog.js';
 
-export class FindReplace {
+export class FindReplace extends BaseDialog {
   /** @param {import('../Context.js').Context} context */
   constructor(context) {
-    this.context = context;
+    super(context);
 
-    /** @type {HTMLElement|null} */
-    this._dialog = null;
     /** @type {HTMLInputElement|null} */
     this._findInput = null;
     /** @type {HTMLInputElement|null} */
@@ -39,8 +38,6 @@ export class FindReplace {
     this._lastQuery = null;
     this._lastCaseSensitive = null;
 
-    this._disposers = [];
-    this._removeTrap = null;
     this._focusTimer = null;
   }
 
@@ -48,22 +45,11 @@ export class FindReplace {
   // Lifecycle
   // ---------------------------------------------------------------------------
 
-  initialize() {
-    this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
-    return this;
-  }
-
   destroy() {
     clearTimeout(this._focusTimer);
     this._focusTimer = null;
     this._clearHighlights();
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.remove();
-    }
-    this._dialog = null;
+    super.destroy();
   }
 
   // ---------------------------------------------------------------------------
