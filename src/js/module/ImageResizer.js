@@ -38,7 +38,7 @@ export class ImageResizer {
 
     const editable = this.context.layoutInfo.editable;
 
-    // Debounce window resize — _updateOverlayPosition already has rAF gating but
+    // Debounce globalThis resize — _updateOverlayPosition already has rAF gating but
     // every call cancels + re-schedules it; a debounce reduces that churn.
     let _resizeDebounce = null;
     const onWindowResize = () => {
@@ -55,8 +55,8 @@ export class ImageResizer {
         if (img) this._select(img);
       }),
       on(document, 'click', (e) => this._onDocClick(e)),
-      on(window, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
-      on(window, 'resize', onWindowResize, { passive: true }),
+      on(globalThis, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
+      on(globalThis, 'resize', onWindowResize, { passive: true }),
       on(editable, 'scroll', () => this._updateOverlayPosition(), { passive: true }),
     );
 
@@ -76,7 +76,7 @@ export class ImageResizer {
     }
     this._deselect();
     if (this._overlay && this._overlay.parentNode) {
-      this._overlay.parentNode.removeChild(this._overlay);
+      this._overlay.remove();
     }
     this._overlay = null;
   }

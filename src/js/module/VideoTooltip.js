@@ -40,7 +40,7 @@ export class VideoTooltip {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         // The shield div sits on top of iframes — we detect hover via it or the wrapper
         const target = /** @type {Element} */ (e.target);
-        const wrapper = target && target.closest ? target.closest('.an-video-wrapper') : null;
+        const wrapper = target?.closest('.an-video-wrapper');
         if (wrapper && editable.contains(wrapper)) {
           this._scheduleShow(wrapper);
         }
@@ -62,8 +62,8 @@ export class VideoTooltip {
         }
       }),
       // Hide when the page scrolls or resizes — the tooltip position becomes stale
-      on(window, 'scroll', () => this._hide(), { passive: true }),
-      on(window, 'resize', () => this._hide(), { passive: true }),
+      on(globalThis, 'scroll', () => this._hide(), { passive: true }),
+      on(globalThis, 'resize', () => this._hide(), { passive: true }),
     );
 
     return this;
@@ -74,7 +74,7 @@ export class VideoTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    this._el?.remove();
     this._el = null;
   }
 
@@ -210,8 +210,8 @@ export class VideoTooltip {
     let top  = rect.bottom + margin;
     let left = rect.left + (rect.width - tipW) / 2;
 
-    if (top + tipH > window.innerHeight - margin) top = rect.top - tipH - margin;
-    if (left + tipW > window.innerWidth  - margin) left = window.innerWidth - tipW - margin;
+    if (top + tipH > globalThis.innerHeight - margin) top = rect.top - tipH - margin;
+    if (left + tipW > globalThis.innerWidth  - margin) left = globalThis.innerWidth - tipW - margin;
     if (left < margin) left = margin;
 
     this._el.style.top  = `${top}px`;
@@ -268,7 +268,7 @@ export class VideoTooltip {
     if (!wrapper) return;
     this._hide();
     this.context.invoke('videoResizer.deselect');
-    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    wrapper.remove();
     this.context.invoke('editor.afterCommand');
   }
 

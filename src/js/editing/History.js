@@ -31,7 +31,7 @@ export class History {
    * @returns {{ start: number, end: number }|null}
    */
   _serializeSelection() {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || sel.rangeCount === 0) return null;
     const range = sel.getRangeAt(0);
     if (!this.editable.contains(range.startContainer)) return null;
@@ -97,7 +97,7 @@ export class History {
       const range = document.createRange();
       range.setStart(startNode, startOff);
       range.setEnd(endNode, endOff);
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
     } catch (_) {
@@ -106,7 +106,7 @@ export class History {
         const fb = document.createRange();
         fb.setStart(this.editable, 0);
         fb.collapse(true);
-        const s = window.getSelection();
+        const s = globalThis.getSelection();
         if (s) { s.removeAllRanges(); s.addRange(fb); }
       } catch (_2) { /* fully give up */ }
     }
@@ -181,7 +181,7 @@ export class History {
     const current = this._serialize();
     const { html: tokenized } = this._tokenizeImages(current);
     const prev = this.stack[this.stackOffset];
-    if (prev && prev.html === tokenized) return; // No change
+    if (prev?.html === tokenized) return; // No change
     this._savePoint();
   }
 

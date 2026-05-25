@@ -19,7 +19,7 @@ export const env = {
   /** True if running on mobile */
   isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent),
   /** True if touch is supported */
-  isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+  isTouch: 'ontouchstart' in globalThis || navigator.maxTouchPoints > 0,
   /** Modifier key name depending on platform */
   modifierKey: /Macintosh/.test(userAgent) ? 'metaKey' : 'ctrlKey',
 };

@@ -148,7 +148,7 @@ export function createElement(tag, attrs = {}, childNodes = []) {
  */
 export function remove(node) {
   if (node && node.parentNode) {
-    node.parentNode.removeChild(node);
+    /** @type {ChildNode} */ (node).remove();
   }
 }
 
@@ -162,7 +162,7 @@ export function unwrap(node) {
   while (node.firstChild) {
     parent.insertBefore(node.firstChild, node);
   }
-  parent.removeChild(node);
+  /** @type {ChildNode} */ (node).remove();
 }
 
 /**
@@ -238,7 +238,7 @@ export function placeCaret(el) {
   const range = document.createRange();
   range.selectNodeContents(el);
   range.collapse(false);
-  const sel = window.getSelection();
+  const sel = globalThis.getSelection();
   if (sel) {
     sel.removeAllRanges();
     sel.addRange(range);
@@ -292,14 +292,14 @@ export function trapFocus(container, onEscape) {
   const handler = (e) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
-      onEscape && onEscape();
+      onEscape?.();
       return;
     }
     if (e.key !== 'Tab') return;
     const els = getFocusable();
     if (!els.length) return;
     const first = els[0];
-    const last = els[els.length - 1];
+    const last = els.at(-1);
     if (e.shiftKey) {
       if (document.activeElement === first) {
         e.preventDefault();
@@ -347,16 +347,16 @@ export function makeDraggable(handle, box) {
       box.dataset.anDragPinned = '1';
     }
 
-    const startX = e.clientX - parseFloat(box.style.left);
-    const startY = e.clientY - parseFloat(box.style.top);
+    const startX = e.clientX - Number.parseFloat(box.style.left);
+    const startY = e.clientY - Number.parseFloat(box.style.top);
 
     handle.style.cursor = 'grabbing';
 
     const onMove = (ev) => {
       const bw = box.offsetWidth;
       const bh = box.offsetHeight;
-      box.style.left = `${Math.max(0, Math.min(ev.clientX - startX, window.innerWidth  - bw))}px`;
-      box.style.top  = `${Math.max(0, Math.min(ev.clientY - startY, window.innerHeight - bh))}px`;
+      box.style.left = `${Math.max(0, Math.min(ev.clientX - startX, globalThis.innerWidth  - bw))}px`;
+      box.style.top  = `${Math.max(0, Math.min(ev.clientY - startY, globalThis.innerHeight - bh))}px`;
     };
 
     const onUp = () => {

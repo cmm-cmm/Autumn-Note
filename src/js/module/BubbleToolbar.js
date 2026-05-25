@@ -44,13 +44,13 @@ const _ACTIONS = {
   strikethrough: (ctx) => ctx.invoke('editor.strikethrough'),
   link:          (ctx) => ctx.invoke('linkDialog.show'),
   removeFormat:  (ctx) => {
-    const editable = ctx.layoutInfo && ctx.layoutInfo.editable;
+    const editable = ctx.layoutInfo?.editable;
     if (!editable) return;
     editable.focus();
     document.execCommand('removeFormat');
     // Also strip inline style attributes which execCommand('removeFormat') misses
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
+    const sel = globalThis.getSelection();
+    if (sel?.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
       const range = sel.getRangeAt(0);
       const ancestor = range.commonAncestorContainer;
       const root = /** @type {Element|null} */ (ancestor.nodeType === 1 ? ancestor : ancestor.parentElement);
@@ -115,16 +115,16 @@ export class BubbleToolbar {
     const d6 = this.context.on('contextMenu:hide', () => {
       this._contextMenuOpen = false;
     });
-    const d7 = on(window, 'scroll', () => this._hide(), { passive: true });
-    const d8 = on(window, 'resize', () => this._hide(), { passive: true });
+    const d7 = on(globalThis, 'scroll', () => this._hide(), { passive: true });
+    const d8 = on(globalThis, 'resize', () => this._hide(), { passive: true });
     this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8);
     return this;
   }
 
   destroy() {
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    this._el?.remove();
     this._el = null;
-    if (this._picker && this._picker.parentNode) this._picker.parentNode.removeChild(this._picker);
+    this._picker?.remove();
     this._picker = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
@@ -259,8 +259,8 @@ export class BubbleToolbar {
 
   _openColorPicker(type, anchorBtn) {
     // Save current selection before the picker might shift focus
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
+    const sel = globalThis.getSelection();
+    if (sel?.rangeCount > 0) {
       this._savedRange = sel.getRangeAt(0).cloneRange();
     }
 
@@ -272,8 +272,8 @@ export class BubbleToolbar {
     const noColorBtn = pickerAny._noColorBtn;
     if (type === 'hiliteColor') {
       if (!palette.contains(noColorBtn)) palette.appendChild(noColorBtn);
-    } else {
-      if (palette.contains(noColorBtn)) palette.removeChild(noColorBtn);
+    } else if (palette.contains(noColorBtn)) {
+      noColorBtn.remove();
     }
 
     // Seed the custom color input
@@ -292,7 +292,7 @@ export class BubbleToolbar {
     // Align horizontally with the clicked button, clamped to viewport
     const btnRect = anchorBtn.getBoundingClientRect();
     let left = btnRect.left;
-    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+    left = Math.max(8, Math.min(left, globalThis.innerWidth - pw - 8));
 
     this._picker.style.left = `${left}px`;
     this._picker.style.top = `${top}px`;
@@ -305,11 +305,11 @@ export class BubbleToolbar {
 
   /** Restore the saved selection, apply execCommand, update the color strip, then close the picker. */
   _applyColor(type, color) {
-    const editable = this.context.layoutInfo && this.context.layoutInfo.editable;
+    const editable = this.context.layoutInfo?.editable;
     if (!editable || !this._savedRange) return;
 
     editable.focus();
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     sel.removeAllRanges();
     try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { return; }
 
@@ -322,8 +322,8 @@ export class BubbleToolbar {
 
     // Update the color strip on the corresponding button
     const name = type === 'hiliteColor' ? 'hiliteColor' : 'foreColor';
-    const btn = this._el && this._el.querySelector(`[data-name="${name}"]`);
-    const strip = btn && btn.querySelector('.an-bubble-color-strip');
+    const btn = this._el?.querySelector(`[data-name="${name}"]`);
+    const strip = btn?.querySelector('.an-bubble-color-strip');
     if (strip) /** @type {HTMLElement} */ (strip).style.background = color === 'transparent' ? 'transparent' : color;
 
     this._closeColorPicker();
@@ -350,7 +350,7 @@ export class BubbleToolbar {
     let left = rect.left + rect.width / 2 - bw / 2;
     let top = rect.top - bh - gap;
 
-    left = Math.max(8, Math.min(left, window.innerWidth - bw - 8));
+    left = Math.max(8, Math.min(left, globalThis.innerWidth - bw - 8));
 
     if (top < 8) {
       top = rect.bottom + gap;
@@ -365,7 +365,7 @@ export class BubbleToolbar {
       const overlapsVertically = top < ttRect.bottom + gap && top + bh > ttRect.top - gap;
       if (overlapsVertically) {
         top = rect.bottom + gap;
-        if (top + bh > window.innerHeight - 8) top = ttRect.bottom + gap;
+        if (top + bh > globalThis.innerHeight - 8) top = ttRect.bottom + gap;
       }
     }
 
@@ -396,19 +396,19 @@ export class BubbleToolbar {
   /** Read the current selection's color and update the color-strip indicators. */
   _syncColorStrips() {
     if (!this._el) return;
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || !sel.rangeCount) return;
     let node = sel.getRangeAt(0).startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
     if (!node) return;
-    const cs = window.getComputedStyle(/** @type {Element} */ (node));
+    const cs = globalThis.getComputedStyle(/** @type {Element} */ (node));
 
     const foreBtn = this._el.querySelector('[data-name="foreColor"]');
-    const foreStrip = foreBtn && foreBtn.querySelector('.an-bubble-color-strip');
+    const foreStrip = foreBtn?.querySelector('.an-bubble-color-strip');
     if (foreStrip) /** @type {HTMLElement} */ (foreStrip).style.background = cs.color || '#000000';
 
     const hiliteBtn = this._el.querySelector('[data-name="hiliteColor"]');
-    const hiliteStrip = hiliteBtn && hiliteBtn.querySelector('.an-bubble-color-strip');
+    const hiliteStrip = hiliteBtn?.querySelector('.an-bubble-color-strip');
     if (hiliteStrip) {
       const bg = cs.backgroundColor;
       /** @type {HTMLElement} */ (hiliteStrip).style.background = (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') ? 'transparent' : bg;
@@ -426,7 +426,7 @@ export class BubbleToolbar {
       // Keep toolbar visible while color picker is open
       if (this._picker && this._picker.style.display !== 'none') return;
 
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (!sel || sel.isCollapsed || !sel.rangeCount) {
         this._hide();
         return;
@@ -458,8 +458,8 @@ export class BubbleToolbar {
   _onMousedown(e) {
     // Hide when clicking outside both the editable, the bubble toolbar, and the color picker
     if (!this._visible) return;
-    if (this._el && this._el.contains(e.target)) return;
-    if (this._picker && this._picker.contains(e.target)) return;
+    if (this._el?.contains(e.target)) return;
+    if (this._picker?.contains(e.target)) return;
     const editable = this.context.layoutInfo.editable;
     if (editable.contains(e.target)) return;
     this._hide();

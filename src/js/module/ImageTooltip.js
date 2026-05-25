@@ -1,4 +1,4 @@
-// ImageTooltip.js - Hover tooltip for images inside the editor
+﻿// ImageTooltip.js - Hover tooltip for images inside the editor
 // Displays a horizontal action bar below (or above) the selected image,
 // similar in appearance and interaction to LinkTooltip.
 import { createElement, on } from '../core/dom.js';
@@ -59,8 +59,8 @@ export class ImageTooltip {
         }
       }),
       // Hide when the page scrolls or resizes — the tooltip position becomes stale
-      on(window, 'scroll', () => this._hide(), { passive: true }),
-      on(window, 'resize', () => this._hide(), { passive: true }),
+      on(globalThis, 'scroll', () => this._hide(), { passive: true }),
+      on(globalThis, 'resize', () => this._hide(), { passive: true }),
     );
 
     return this;
@@ -70,7 +70,7 @@ export class ImageTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.parentNode.removeChild(this._el);
+    this._el?.remove();
     this._el = null;
   }
 
@@ -215,8 +215,8 @@ export class ImageTooltip {
     let top  = rect.bottom + margin;
     let left = rect.left + (rect.width - tipW) / 2;
 
-    if (top + tipH > window.innerHeight - margin) top = rect.top - tipH - margin;
-    if (left + tipW > window.innerWidth  - margin) left = window.innerWidth - tipW - margin;
+    if (top + tipH > globalThis.innerHeight - margin) top = rect.top - tipH - margin;
+    if (left + tipW > globalThis.innerWidth  - margin) left = globalThis.innerWidth - tipW - margin;
     if (left < margin) left = margin;
 
     this._el.style.top  = `${top}px`;
@@ -279,8 +279,8 @@ export class ImageTooltip {
     if (!img) return;
     // Parse current rotation angle from inline transform
     const current = img.style.transform || '';
-    const match   = current.match(/rotate\((-?[\d.]+)deg\)/);
-    const prev    = match ? parseFloat(match[1]) : 0;
+    const match   = /rotate\((-?[\d.]+)deg\)/.exec(current);
+    const prev    = match ? Number.parseFloat(match[1]) : 0;
     const next    = (prev + delta + 360) % 360; // normalise to [0, 360)
     // Preserve any other transform functions (e.g. scale), replace only rotate()
     const cleaned = current.replace(/rotate\(-?[\d.]+deg\)/, '').trim();
@@ -298,10 +298,10 @@ export class ImageTooltip {
     this._hide();
     this.context.invoke('imageResizer.deselect');
     const figure = img.closest('figure.an-figure');
-    if (figure && figure.parentNode) {
-      figure.parentNode.removeChild(figure);
-    } else if (img.parentNode) {
-      img.parentNode.removeChild(img);
+    if (figure) {
+      figure.remove();
+    } else {
+      img.remove();
     }
     this.context.invoke('editor.afterCommand');
   }
@@ -327,7 +327,7 @@ export class ImageTooltip {
         this._hide();
         const range = document.createRange();
         range.selectNodeContents(cap);
-        const sel = window.getSelection();
+        const sel = globalThis.getSelection();
         if (sel) { sel.removeAllRanges(); sel.addRange(range); }
       }
       return;
@@ -367,7 +367,7 @@ export class ImageTooltip {
     // Select caption text immediately
     const range = document.createRange();
     range.selectNodeContents(figcaption);
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (sel) { sel.removeAllRanges(); sel.addRange(range); }
 
     this.context.invoke('editor.afterCommand');

@@ -67,7 +67,7 @@ function _domToMd(node, depth = 0) {
     }
     case 'pre': {
       const codeEl = el.querySelector('code');
-      const langMatch = ((codeEl && codeEl.className) || '').match(/language-(\S+)/);
+      const langMatch = /language-(\S+)/.exec((codeEl && codeEl.className) || '');
       const lang = langMatch ? langMatch[1] : '';
       const content = (codeEl || el).textContent || '';
       return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
@@ -105,13 +105,13 @@ function _domToMd(node, depth = 0) {
       const rows = Array.from(el.querySelectorAll('tr'));
       if (!rows.length) return inner();
       const cellTexts = rows.map((tr) =>
-        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replace(/\|/g, '\\|')),
+        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replaceAll('|', '\\|')),
       );
       const cols = Math.max(...cellTexts.map((r) => r.length));
       const padRow = (row) => { const r = [...row]; while (r.length < cols) r.push(''); return r; };
       let md = '\n\n';
       md += `| ${padRow(cellTexts[0]).join(' | ')} |\n`;
-      md += `| ${Array(cols).fill('---').join(' | ')} |\n`;
+      md += `| ${new Array(cols).fill('---').join(' | ')} |\n`;
       for (let r = 1; r < cellTexts.length; r++) {
         md += `| ${padRow(cellTexts[r]).join(' | ')} |\n`;
       }
@@ -139,7 +139,7 @@ export function isMarkdown(text) {
  * @returns {string}
  */
 export function markdownToHTML(text) {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const lines = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
   const out = [];
   let i = 0;
 
@@ -147,7 +147,7 @@ export function markdownToHTML(text) {
     const line = lines[i];
 
     // ---- Fenced code block ``` lang ... ``` -----------------------------------
-    const fenceMatch = line.match(/^```(\S*)$/);
+    const fenceMatch = /^```(\S*)$/.exec(line);
     if (fenceMatch) {
       const lang = fenceMatch[1];
       const codeLines = [];
@@ -170,7 +170,7 @@ export function markdownToHTML(text) {
     }
 
     // ---- ATX Headings # – ######  -------------------------------------------
-    const hMatch = line.match(/^(#{1,6})\s+(.+)$/);
+    const hMatch = /^(#{1,6})\s+(.+)$/.exec(line);
     if (hMatch) {
       const level = hMatch[1].length;
       out.push(`<h${level}>${_inline(hMatch[2])}</h${level}>`);
@@ -228,10 +228,10 @@ export function markdownToHTML(text) {
         bodyRows.push(_parseTableRow(lines[i]));
         i++;
       }
-      const thead = `<thead><tr>${headerCells.map((c) => `<th>${_inline(c)}</th>`).join('')}</tr></thead>`;
-      const tbody = bodyRows.length
-        ? `<tbody>${bodyRows.map((row) => `<tr>${row.map((c) => `<td>${_inline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`
-        : '';
+      const thCells = headerCells.map((c) => `<th>${_inline(c)}</th>`).join('');
+      const thead = `<thead><tr>${thCells}</tr></thead>`;
+      const renderRow = (row) => `<tr>${row.map((c) => `<td>${_inline(c)}</td>`).join('')}</tr>`;
+      const tbody = bodyRows.length ? `<tbody>${bodyRows.map(renderRow).join('')}</tbody>` : '';
       out.push(`<table>${thead}${tbody}</table>`);
       continue;
     }
@@ -298,16 +298,16 @@ function _inline(text) {
 
 function _esc(v) {
   return String(v)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }
 
 function _escAttr(v) {
   return String(v)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }

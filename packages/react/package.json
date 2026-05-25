@@ -1,21 +1,58 @@
 {
   "name": "autumnnote-react",
-  "version": "1.5.0",
-  "description": "React wrapper for Autumn Note WYSIWYG editor",
+  "version": "1.6.1",
+  "description": "Official React wrapper for AutumnNote — zero-dependency WYSIWYG editor. Mount the editor with a single component and access the full Context API via ref.",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
   "scripts": {
     "build": "vite build"
   },
+  "keywords": [
+    "wysiwyg",
+    "wysiwyg-editor",
+    "rich-text",
+    "rich-text-editor",
+    "react",
+    "react-wysiwyg",
+    "react-editor",
+    "react-rich-text",
+    "react-component",
+    "contenteditable",
+    "no-jquery",
+    "vanilla-js",
+    "dark-mode",
+    "markdown",
+    "mention",
+    "bubble-toolbar",
+    "toolbar",
+    "autumnnote",
+    "summernote-alternative",
+    "quill-alternative",
+    "tinymce-alternative"
+  ],
+  "homepage": "https://cmm-cmm.github.io/Autumn-Note/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmm-cmm/Autumn-Note.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/cmm-cmm/Autumn-Note/issues"
+  },
+  "author": "Minh Pham",
+  "license": "MIT",
   "peerDependencies": {
     "autumnnote": ">=1.4.0",
     "react": ">=16.8.0",

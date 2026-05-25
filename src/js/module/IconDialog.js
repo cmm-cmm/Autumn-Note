@@ -297,9 +297,7 @@ export class IconDialog {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
-    }
+    this._dialog?.remove();
     this._dialog = null;
   }
 
@@ -370,7 +368,7 @@ export class IconDialog {
     catBar.appendChild(allTab);
     ICON_CATEGORIES.forEach(({ id, label }) => {
       const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
-      tab.textContent = (L.categories && L.categories[id]) || label;
+      tab.textContent = L.categories?.[id] || label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
@@ -526,10 +524,10 @@ export class IconDialog {
       this._preview.innerHTML = '<span class="an-icon-preview-hint">Select an icon</span>';
       return;
     }
-    const cls   = (this._styleSelect && this._styleSelect.value) || 'fa-solid';
-    const size  = (this._sizeSelect  && this._sizeSelect.value)  || '1em';
-    const useColor = this._useColorCb ? this._useColorCb.checked : false;
-    const color = (useColor && this._colorInput) ? this._colorInput.value : '';
+    const cls   = this._styleSelect?.value || 'fa-solid';
+    const size  = this._sizeSelect?.value  || '1em';
+    const useColor = this._useColorCb?.checked ?? false;
+    const color = useColor ? (this._colorInput?.value ?? '') : '';
     const styleAttr = [
       size  ? `font-size:${size}`  : '',
       color ? `color:${color}`     : '',
@@ -549,10 +547,10 @@ export class IconDialog {
   _onInsert() {
     if (!this._selectedIcon) return;
 
-    const cls      = (this._styleSelect && this._styleSelect.value) || 'fa-solid';
-    const size     = (this._sizeSelect  && this._sizeSelect.value)  || '';
-    const useColor = this._useColorCb ? this._useColorCb.checked    : false;
-    const color    = (useColor && this._colorInput) ? this._colorInput.value : '';
+    const cls      = this._styleSelect?.value || 'fa-solid';
+    const size     = this._sizeSelect?.value  || '';
+    const useColor = this._useColorCb?.checked ?? false;
+    const color    = useColor ? (this._colorInput?.value ?? '') : '';
     const styleParts = [
       size  ? `font-size:${size}` : '',
       color ? `color:${color}`    : '',
@@ -572,8 +570,8 @@ export class IconDialog {
     if (savedRange) savedRange.select();
 
     // 2. Get the now-live range from the selection
-    const sel = window.getSelection();
-    let range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    const sel = globalThis.getSelection();
+    let range = (sel?.rangeCount ?? 0) > 0 ? sel.getRangeAt(0) : null;
     if (!range) {
       range = document.createRange();
       range.selectNodeContents(editable);
@@ -639,7 +637,7 @@ export class IconDialog {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
       this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._searchInput && this._searchInput.focus(), 50);
+      setTimeout(() => this._searchInput?.focus(), 50);
     }
   }
 

@@ -5,6 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AutumnNote Playground — Try the Editor Live</title>
   <meta name="description" content="Interactive playground for AutumnNote WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
+  <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/playground.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AutumnNote — Interactive Playground" />
+  <meta property="og:description" content="Try AutumnNote live — the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
+  <meta property="og:url" content="https://cmm-cmm.github.io/Autumn-Note/playground.html" />
+  <meta property="og:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AutumnNote — Interactive Playground" />
+  <meta name="twitter:description" content="Try AutumnNote live — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "AutumnNote Playground",
+    "description": "Interactive playground for AutumnNote WYSIWYG editor.",
+    "url": "https://cmm-cmm.github.io/Autumn-Note/playground.html",
+    "author": { "@type": "Person", "name": "Minh Pham" }
+  }
+  </script>
+
   <link rel="icon" href="/Autumn-Note/image/favicon.ico" type="image/x-icon" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -227,10 +254,128 @@
       .panel-right { width: 100%; }
       .panel-editor { min-height: 400px; }
     }
+    @media (max-width: 480px) {
+      .pg-layout { padding: 10px 10px 0; }
+      .pg-toolbar-bar { gap: 4px; margin-bottom: 8px; }
+      .pg-toolbar-bar h1 { font-size: 13px; }
+      .header-inner { padding: 0 12px; gap: 6px; }
+      .brand-name { font-size: 14px; }
+      .nav-link { font-size: 12px; padding: 4px 7px; }
+      .card { border-radius: 8px; }
+      .action-row { gap: 4px; padding: 6px 8px; }
+      .act-btn { padding: 4px 6px; font-size: 10px; }
+    }
+
+    /* ── Dark mode page UI ── */
+    body.dark {
+      background: #1e1e2e;
+      color: #cdd6f4;
+    }
+    body.dark .pg-toolbar-bar h1 {
+      color: #cdd6f4;
+    }
+    body.dark .pg-toolbar-bar h1 span {
+      color: #e8751a;
+    }
+    body.dark .card {
+      background: #181825;
+      border-color: #45475a;
+    }
+    body.dark .card-header {
+      background: #181825;
+      border-color: #45475a;
+    }
+    body.dark .card-header:hover {
+      background: #1e1e2e;
+    }
+    body.dark .card-title {
+      color: #a6adc8;
+    }
+    body.dark .cfg-label {
+      color: #a6adc8;
+    }
+    body.dark .cfg-select,
+    body.dark .cfg-input {
+      background: #313244;
+      border-color: #45475a;
+      color: #cdd6f4;
+    }
+    body.dark .cfg-track {
+      background: #45475a;
+    }
+    body.dark .cfg-toggle input:checked + .cfg-track {
+      background: #e8751a;
+    }
+    body.dark .snippet-btn {
+      background: #313244;
+      border-color: #45475a;
+      color: #cdd6f4;
+    }
+    body.dark .snippet-btn:hover {
+      background: #45475a;
+      border-color: #c6d8f8;
+      color: #c6d8f8;
+    }
+    body.dark .output-tabs {
+      border-color: #45475a;
+    }
+    body.dark .output-tab {
+      color: #6c7086;
+    }
+    body.dark .output-tab.active {
+      color: #89b4fa;
+      background: #181825;
+      border-color: #45475a;
+      border-bottom-color: #181825;
+    }
+    body.dark .output-body {
+      background: #181825;
+      color: #cdd6f4;
+    }
+    body.dark .stats-row {
+      border-color: #45475a;
+    }
+    body.dark .stats-key {
+      color: #6c7086;
+    }
+    body.dark .action-row {
+      border-color: #45475a;
+    }
+    body.dark .act-btn {
+      background: #313244;
+      border-color: #45475a;
+      color: #cdd6f4;
+    }
+    body.dark .act-btn:hover {
+      background: #45475a;
+      border-color: #c6d8f8;
+      color: #c6d8f8;
+    }
+    body.dark .act-btn.primary {
+      background: #b05010;
+      border-color: #b05010;
+      color: #fff;
+    }
+    body.dark .act-btn.primary:hover {
+      background: #d4611a;
+    }
+    body.dark .panel-editor {
+      background: #181825;
+      border-color: #45475a;
+    }
+    body.dark .apply-btn {
+      background: #e8751a;
+    }
+    body.dark .apply-btn:hover {
+      background: #d4611a;
+    }
+    body.dark .site-footer {
+      background: #11111b;
+    }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/playground-Cp2VrKd9.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-pM6MIoKl.js">
-  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-Bf7aAQVC.css">
+  <script type="module" crossorigin src="/Autumn-Note/assets/playground-b8vNzzDY.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-B2oqvZDk.js">
+  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-lz6k2XQr.css">
 </head>
 <body>
 
@@ -239,7 +384,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/Autumn-Note/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.5.0</span>
+      <span class="brand-version">v1.6.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -267,7 +412,7 @@
 
       <!-- Config card -->
       <div class="card">
-        <div class="card-header" onclick="toggleCard(this)">
+        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
           <span class="card-title">⚙ Options</span>
           <span class="card-toggle open">▶</span>
         </div>
@@ -321,15 +466,15 @@
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Max chars</span>
+            <label class="cfg-label" for="cfg-maxchars">Max chars</label>
             <input type="number" id="cfg-maxchars" class="cfg-input" value="0" min="0" step="100" />
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Focus color</span>
+            <label class="cfg-label" for="cfg-color">Focus color</label>
             <input type="color" id="cfg-color" class="cfg-input" value="#e8751a" />
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Height (px)</span>
+            <label class="cfg-label" for="cfg-height">Height (px)</label>
             <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
           <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
@@ -338,7 +483,7 @@
 
       <!-- Snippet card -->
       <div class="card">
-        <div class="card-header" onclick="toggleCard(this)">
+        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
           <span class="card-title">📄 Load Snippet</span>
           <span class="card-toggle open">▶</span>
         </div>

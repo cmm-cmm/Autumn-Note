@@ -32,8 +32,8 @@ export class BaseDialog {
   destroy() {
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
+    if (this._dialog?.parentNode) {
+      this._dialog.remove();
     }
     this._dialog = null;
   }

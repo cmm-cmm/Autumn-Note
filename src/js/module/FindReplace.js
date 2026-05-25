@@ -61,7 +61,7 @@ export class FindReplace {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
+      this._dialog.remove();
     }
     this._dialog = null;
   }
@@ -352,13 +352,14 @@ export class FindReplace {
     // Cap results to prevent blocking the main thread on very large documents
     const MAX_RESULTS = 500;
     const walker = document.createTreeWalker(root, 0x4 /* NodeFilter.SHOW_TEXT */);
-    let node;
-    while ((node = walker.nextNode()) && results.length < MAX_RESULTS) {
+    let node = walker.nextNode();
+    while (node && results.length < MAX_RESULTS) {
       re.lastIndex = 0;
       let m;
-      while ((m = re.exec(node.textContent)) !== null && results.length < MAX_RESULTS) {
+      while ((m = re.exec(/** @type {Text} */ (node).textContent)) !== null && results.length < MAX_RESULTS) {
         results.push({ node: /** @type {Text} */ (node), start: m.index, end: m.index + m[0].length });
       }
+      node = walker.nextNode();
     }
     return results;
   }
@@ -408,7 +409,7 @@ export class FindReplace {
     const parent = match.mark.parentNode;
     const textNode = document.createTextNode(replacement);
     parent.insertBefore(textNode, match.mark);
-    parent.removeChild(match.mark);
+    match.mark.remove();
     parent.normalize();
     this.context.invoke('editor.afterCommand');
     const savedIndex = this._currentIndex;
@@ -428,7 +429,7 @@ export class FindReplace {
       if (!mark || !mark.parentNode) return;
       const textNode = document.createTextNode(replacement);
       mark.parentNode.insertBefore(textNode, mark);
-      mark.parentNode.removeChild(mark);
+      mark.remove();
     });
 
     if (this.context.layoutInfo.editable) {
@@ -456,7 +457,7 @@ export class FindReplace {
       const parent = mark.parentNode;
       if (!parent) return;
       while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
-      parent.removeChild(mark);
+      mark.remove();
     });
     // Merge adjacent text nodes after unwrapping
     editable.normalize();

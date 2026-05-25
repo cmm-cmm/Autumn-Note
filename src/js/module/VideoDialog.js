@@ -82,7 +82,7 @@ export class VideoDialog extends BaseDialog {
 
   _onInsert() {
     const rawUrl = this._urlInput.value.trim();
-    const width  = Math.max(80, parseInt(this._widthInput.value, 10) || 560);
+    const width  = Math.max(80, Number.parseInt(this._widthInput.value, 10) || 560);
 
     if (!rawUrl) {
       this._urlInput.focus();
@@ -120,19 +120,19 @@ export class VideoDialog extends BaseDialog {
     } catch { return null; }
 
     // YouTube watch: https://www.youtube.com/watch?v=ID
-    const ytWatch = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    const ytWatch = /(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(url);
     if (ytWatch) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytWatch[1]}` };
 
     // YouTube short: https://youtu.be/ID
-    const ytShort = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    const ytShort = /youtu\.be\/([a-zA-Z0-9_-]{11})/.exec(url);
     if (ytShort) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytShort[1]}` };
 
     // YouTube Shorts: https://www.youtube.com/shorts/ID
-    const ytShorts = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+    const ytShorts = /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/.exec(url);
     if (ytShorts) return { type: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${ytShorts[1]}` };
 
     // Vimeo: https://vimeo.com/ID
-    const vimeo = url.match(/vimeo\.com\/(\d+)/);
+    const vimeo = /vimeo\.com\/(\d+)/.exec(url);
     if (vimeo) return { type: 'Vimeo', embedUrl: `https://player.vimeo.com/video/${vimeo[1]}` };
 
     // Direct video file
@@ -168,7 +168,7 @@ export class VideoDialog extends BaseDialog {
     }
 
     if (info && info.type === 'Direct video') {
-      const src = info.embedUrl.replace(/"/g, '%22');
+      const src = info.embedUrl.replaceAll('"', '%22');
       return (
         `<div class="an-video-wrapper" style="position:relative;display:block;width:${width}px;max-width:100%">` +
         `<video src="${src}" width="${width}" height="${height}" controls ` +
@@ -188,7 +188,7 @@ export class VideoDialog extends BaseDialog {
     })();
     if (!safeSrc) return null;
 
-    const escapedSrc = safeSrc.replace(/"/g, '%22');
+    const escapedSrc = safeSrc.replaceAll('"', '%22');
     return (
       `<div class="an-video-wrapper" style="position:relative;display:block;width:${width}px;max-width:100%">` +
       `<video src="${escapedSrc}" width="${width}" height="${height}" controls ` +

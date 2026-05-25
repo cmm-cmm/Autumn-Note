@@ -6,7 +6,7 @@
 
   <!-- SEO -->
   <title>AutumnNote — WYSIWYG Editor | Vanilla JS, Zero Dependencies</title>
-  <meta name="description" content="AutumnNote — Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). Zero runtime dependencies, no jQuery. Bubble toolbar, @mention, markdown shortcuts, dark mode, 8 languages, image crop, find &amp; replace, TypeScript definitions." />
+  <meta name="description" content="Zero-dependency WYSIWYG editor in vanilla JS. Bubble toolbar, @mention, markdown shortcuts, dark mode, 8 languages, TypeScript. No jQuery." />
   <meta name="keywords" content="wysiwyg editor, rich text editor, vanilla javascript editor, no jquery editor, summernote alternative, quill alternative, tinymce alternative, lightweight wysiwyg, contenteditable editor, markdown editor, mention editor" />
   <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/" />
 
@@ -14,7 +14,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cmm-cmm.github.io/Autumn-Note/" />
   <meta property="og:title" content="AutumnNote — Lightweight WYSIWYG Editor for the Web" />
-  <meta property="og:description" content="A modern WYSIWYG editor built with vanilla JavaScript. Zero runtime dependencies, no jQuery, TypeScript definitions, dark mode, 8 built-in languages, @mention autocomplete, markdown shortcuts, and more." />
+  <meta property="og:description" content="A modern WYSIWYG editor built with vanilla JavaScript. Zero dependencies, no jQuery. Dark mode, 8 languages, @mention, markdown shortcuts, TypeScript." />
   <meta property="og:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
   <meta property="og:image:width" content="120" />
   <meta property="og:image:height" content="120" />
@@ -39,7 +39,7 @@
     "operatingSystem": "Web Browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "1.5.0",
+    "softwareVersion": "1.6.0",
     "author": { "@type": "Person", "name": "Minh Pham" },
     "codeRepository": "https://github.com/cmm-cmm/Autumn-Note"
   }
@@ -184,6 +184,7 @@
       display: flex; gap: 8px; align-items: center;
       width: max-content; white-space: nowrap;
       animation: an-marquee 40s linear infinite;
+      list-style: none; padding: 0; margin: 0;
     }
     /* Pause on hover so users can read individual items */
     .features-strip:hover .features-inner { animation-play-state: paused; }
@@ -348,9 +349,9 @@
       .demo-section { padding: 36px 16px 40px; }
     }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/main-Go2BbAl1.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-pM6MIoKl.js">
-  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-Bf7aAQVC.css">
+  <script type="module" crossorigin src="/Autumn-Note/assets/main-Cvo4HY_f.js"></script>
+  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-B2oqvZDk.js">
+  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-lz6k2XQr.css">
 </head>
 <body>
   <a class="skip-link" href="#demo">Skip to demo</a>
@@ -361,7 +362,7 @@
       <a class="brand" href="https://cmm-cmm.github.io/Autumn-Note/" aria-label="AutumnNote home">
         <img src="/Autumn-Note/image/banner.png" width="30" height="30" alt="" />
         <span class="brand-name">AutumnNote</span>
-        <span class="brand-version">v1.5.0</span>
+        <span class="brand-version">v1.6.0</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
         <a class="nav-link" href="docs.html">Docs</a>
@@ -374,7 +375,7 @@
 
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.5.0</span>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.6.0</span>
     <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
@@ -395,45 +396,53 @@
   </section>
 
   <!-- ===================== FEATURE STRIP ===================== -->
-  <div class="features-strip" role="list" aria-label="Key features">
-    <div class="features-inner">
+  <div class="features-strip">
+    <ul class="features-inner" aria-label="Key features">
       <!-- Set 1 — accessible -->
-      <span class="feat" role="listitem">✦ Zero dependencies</span>
-      <span class="feat" role="listitem">✦ ES2022 + TypeScript</span>
-      <span class="feat" role="listitem">✦ Dark / Light theme</span>
-      <span class="feat" role="listitem">✦ 8 languages (i18n)</span>
-      <span class="feat" role="listitem">✦ Bubble toolbar</span>
-      <span class="feat" role="listitem">✦ Markdown shortcuts</span>
-      <span class="feat" role="listitem">✦ @mention autocomplete</span>
-      <span class="feat" role="listitem">✦ Auto-save restore</span>
-      <span class="feat" role="listitem">✦ Find &amp; Replace</span>
-      <span class="feat" role="listitem">✦ Image crop overlay</span>
-      <span class="feat" role="listitem">✦ Table merge / unmerge</span>
-      <span class="feat" role="listitem">✦ ~380 emoji picker</span>
-      <span class="feat" role="listitem">✦ FontAwesome icon picker</span>
-      <span class="feat" role="listitem">✦ Video embeds</span>
-      <span class="feat" role="listitem">✦ React wrapper</span>
-      <span class="feat" role="listitem">✦ Vue 3 wrapper</span>
-      <span class="feat" role="listitem">✦ pnpm monorepo</span>
+      <li class="feat">✦ Zero dependencies</li>
+      <li class="feat">✦ ES2022 + TypeScript</li>
+      <li class="feat">✦ Dark / Light theme</li>
+      <li class="feat">✦ 8 languages (i18n)</li>
+      <li class="feat">✦ Bubble toolbar</li>
+      <li class="feat">✦ Markdown shortcuts</li>
+      <li class="feat">✦ @mention autocomplete</li>
+      <li class="feat">✦ Auto-save restore</li>
+      <li class="feat">✦ Find &amp; Replace (floating)</li>
+      <li class="feat">✦ Image crop overlay</li>
+      <li class="feat">✦ Table merge / unmerge</li>
+      <li class="feat">✦ Cell background shading</li>
+      <li class="feat">✦ Auto language detection</li>
+      <li class="feat">✦ SCSS syntax highlight</li>
+      <li class="feat">✦ Draggable dialogs</li>
+      <li class="feat">✦ ~380 emoji picker</li>
+      <li class="feat">✦ FontAwesome icon picker</li>
+      <li class="feat">✦ Video embeds</li>
+      <li class="feat">✦ React wrapper</li>
+      <li class="feat">✦ Vue 3 wrapper</li>
+      <li class="feat">✦ pnpm monorepo</li>
       <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
-      <span class="feat" aria-hidden="true">✦ Zero dependencies</span>
-      <span class="feat" aria-hidden="true">✦ ES2022 + TypeScript</span>
-      <span class="feat" aria-hidden="true">✦ Dark / Light theme</span>
-      <span class="feat" aria-hidden="true">✦ 8 languages (i18n)</span>
-      <span class="feat" aria-hidden="true">✦ Bubble toolbar</span>
-      <span class="feat" aria-hidden="true">✦ Markdown shortcuts</span>
-      <span class="feat" aria-hidden="true">✦ @mention autocomplete</span>
-      <span class="feat" aria-hidden="true">✦ Auto-save restore</span>
-      <span class="feat" aria-hidden="true">✦ Find &amp; Replace</span>
-      <span class="feat" aria-hidden="true">✦ Image crop overlay</span>
-      <span class="feat" aria-hidden="true">✦ Table merge / unmerge</span>
-      <span class="feat" aria-hidden="true">✦ ~380 emoji picker</span>
-      <span class="feat" aria-hidden="true">✦ FontAwesome icon picker</span>
-      <span class="feat" aria-hidden="true">✦ Video embeds</span>
-      <span class="feat" aria-hidden="true">✦ React wrapper</span>
-      <span class="feat" aria-hidden="true">✦ Vue 3 wrapper</span>
-      <span class="feat" aria-hidden="true">✦ pnpm monorepo</span>
-    </div>
+      <li class="feat" aria-hidden="true">✦ Zero dependencies</li>
+      <li class="feat" aria-hidden="true">✦ ES2022 + TypeScript</li>
+      <li class="feat" aria-hidden="true">✦ Dark / Light theme</li>
+      <li class="feat" aria-hidden="true">✦ 8 languages (i18n)</li>
+      <li class="feat" aria-hidden="true">✦ Bubble toolbar</li>
+      <li class="feat" aria-hidden="true">✦ Markdown shortcuts</li>
+      <li class="feat" aria-hidden="true">✦ @mention autocomplete</li>
+      <li class="feat" aria-hidden="true">✦ Auto-save restore</li>
+      <li class="feat" aria-hidden="true">✦ Find &amp; Replace (floating)</li>
+      <li class="feat" aria-hidden="true">✦ Image crop overlay</li>
+      <li class="feat" aria-hidden="true">✦ Table merge / unmerge</li>
+      <li class="feat" aria-hidden="true">✦ Cell background shading</li>
+      <li class="feat" aria-hidden="true">✦ Auto language detection</li>
+      <li class="feat" aria-hidden="true">✦ SCSS syntax highlight</li>
+      <li class="feat" aria-hidden="true">✦ Draggable dialogs</li>
+      <li class="feat" aria-hidden="true">✦ ~380 emoji picker</li>
+      <li class="feat" aria-hidden="true">✦ FontAwesome icon picker</li>
+      <li class="feat" aria-hidden="true">✦ Video embeds</li>
+      <li class="feat" aria-hidden="true">✦ React wrapper</li>
+      <li class="feat" aria-hidden="true">✦ Vue 3 wrapper</li>
+      <li class="feat" aria-hidden="true">✦ pnpm monorepo</li>
+    </ul>
   </div>
 
   <!-- ===================== LIVE DEMO ===================== -->

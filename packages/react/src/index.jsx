@@ -10,6 +10,10 @@ import AutumnNote from 'autumnnote';
  * <AutumnNoteEditor ref={editorRef} options={{ placeholder: 'Type here…' }} />
  * editorRef.current.invoke('editor.getHTML')
  */
+/**
+ * @param {{ options?: Record<string,unknown>, className?: string, style?: import('react').CSSProperties }} props
+ * @param {import('react').ForwardedRef<unknown>} ref
+ */
 const AutumnNoteEditor = forwardRef(function AutumnNoteEditor(
   { options = {}, className, style },
   ref,

@@ -526,7 +526,7 @@ export class EmojiDialog {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this._dialog && this._dialog.parentNode) {
-      this._dialog.parentNode.removeChild(this._dialog);
+      this._dialog.remove();
     }
     this._dialog = null;
   }
@@ -592,7 +592,7 @@ export class EmojiDialog {
     catBar.appendChild(allTab);
     EMOJI_CATS.forEach(({ id, label }) => {
       const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
-      tab.textContent = (L.categories && L.categories[id]) || label;
+      tab.textContent = L.categories?.[id] || label;
       catBar.appendChild(tab);
     });
     this._catBar = catBar;
@@ -685,7 +685,7 @@ export class EmojiDialog {
     // 1. Restore selection while dialog is still mounted (same pattern as ImageDialog)
     if (savedRange) savedRange.select();
 
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     let range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
     if (!range) {
       range = document.createRange();
@@ -703,7 +703,7 @@ export class EmojiDialog {
     const _tdAnchor = /** @type {Element|null} */ (_sc.nodeType === 1 ? _sc : _sc.parentElement)
       ?.closest('td, th');
     range.deleteContents();
-    if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
+    if (_tdAnchor?.isConnected && !_tdAnchor.contains(range.startContainer)) {
       range.setStart(_tdAnchor, 0);
       range.collapse(true);
     }
@@ -732,7 +732,7 @@ export class EmojiDialog {
     if (this._dialog) {
       this._dialog.style.display = 'flex';
       this._removeTrap = trapFocus(this._dialog, () => this._close());
-      setTimeout(() => this._searchInput && this._searchInput.focus(), 50);
+      setTimeout(() => this._searchInput?.focus(), 50);
     }
   }
 

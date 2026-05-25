@@ -61,7 +61,7 @@ export class Editor {
     // Refresh toolbar on selection change, scoped to this editor
     const onSelChange = () => {
       if (!this.context._alive) return;
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
         if (typeof this.options.onSelectionChange === 'function') {
@@ -85,7 +85,7 @@ export class Editor {
     //          lands WHERE the user actually clicked (middle, end of text…).
     // keyup  : arrow-key navigation may land at <li>[0]; move to start-of-text.
     const fixChecklistCursor = (event) => {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (!sel || !sel.rangeCount) return;
       const r = sel.getRangeAt(0);
       if (!r.collapsed) return;
@@ -180,7 +180,7 @@ export class Editor {
     /** @type {string|null} 'superscript' | 'subscript' | null */
     let _compositionSupSub = null;
     const onCompositionStart = () => {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (!sel || !sel.rangeCount) { _compositionSupSub = null; return; }
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
@@ -195,13 +195,12 @@ export class Editor {
       const tag = _compositionSupSub;
       _compositionSupSub = null;
       if (!tag) return;
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (!sel || !sel.rangeCount) return;
       let node = sel.getRangeAt(0).startContainer;
       if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
       const el = /** @type {Element} */ (node);
-      const inContext = el &&
-        (tag === 'superscript' ? el.closest('sup') : el.closest('sub'));
+      const inContext = tag === 'superscript' ? el?.closest('sup') : el?.closest('sub');
       if (!inContext) {
         // The composed character escaped the sup/sub — re-apply the format.
         document.execCommand(tag);
@@ -288,7 +287,7 @@ export class Editor {
     if (!type.startsWith('insert')) return;
 
     const text = this.context.layoutInfo.editable.innerText || '';
-    const chars = text.replace(/\n/g, '').length;
+    const chars = text.replaceAll('\n', '').length;
 
     if (maxChars && chars >= maxChars) {
       event.preventDefault();
@@ -353,7 +352,7 @@ export class Editor {
     const editable = this.context.layoutInfo.editable;
     editable.querySelectorAll('figure.an-figure').forEach((fig) => {
       if (!fig.querySelector('img')) {
-        fig.parentNode.removeChild(fig);
+        fig.remove();
       }
     });
   }
@@ -396,7 +395,7 @@ export class Editor {
    */
   getHTML() {
     // Strip zero-width spaces inserted after icons to allow caret placement.
-    const raw = this.context.layoutInfo.editable.innerHTML.replace(/\u200B/g, '');
+    const raw = this.context.layoutInfo.editable.innerHTML.replaceAll('\u200B', '');
     // Replace any blob: URLs (lightweight DOM references to pasted/dropped images)
     // with their original data URLs so the returned HTML is fully self-contained.
     return this.context.invoke('clipboard.resolveImages', raw) ?? raw;
@@ -451,7 +450,7 @@ export class Editor {
   isEmpty() {
     const text = (this.context.layoutInfo.editable.innerText || '')
       .trim()
-      .replace(/\u00a0/g, '');
+      .replaceAll('\u00a0', '');
     const hasMedia = !!this.context.layoutInfo.editable.querySelector('img, video, iframe, table');
     return !text && !hasMedia;
   }
@@ -557,7 +556,7 @@ export class Editor {
     // Auto-detect the programming language when the user formats a code block.
     // Only runs when converting TO <pre> and the block has no language yet.
     if (tagName === 'pre') {
-      const sel = window.getSelection();
+      const sel = globalThis.getSelection();
       if (sel && sel.rangeCount > 0) {
         const container = sel.getRangeAt(0).commonAncestorContainer;
         const pre = /** @type {Element|null} */ (
@@ -565,7 +564,7 @@ export class Editor {
             ? /** @type {Element} */ (container).closest('pre')
             : (/** @type {Element|null} */ (container.parentElement))?.closest('pre')
         );
-        if (pre && !pre.getAttribute('data-language')) {
+        if (pre && !/** @type {HTMLElement} */ (pre).dataset.language) {
           const code = pre.textContent || '';
           const lang = detectLang(code);
           if (lang) {
@@ -618,7 +617,7 @@ export class Editor {
    * @param {boolean} [openInNewTab=false]
    */
   insertLink(url, text, openInNewTab = false) {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const safeUrl = sanitiseUrl(url);
     if (!safeUrl) return;
@@ -693,7 +692,7 @@ export class Editor {
   // ---------------------------------------------------------------------------
 
   _getClosestAnchor() {
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || sel.rangeCount === 0) return null;
     let node = sel.getRangeAt(0).startContainer;
     while (node) {
@@ -710,10 +709,10 @@ export class Editor {
    */
   _escapeAttr(str) {
     return String(str ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
   }
 
   // --- delegated to shared sanitise.js ---

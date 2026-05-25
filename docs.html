@@ -1,12 +1,39 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote Docs  EAPI Reference</title>
+  <title>AutumnNote — API Reference | WYSIWYG Editor Docs</title>
   <meta name="description" content="Full API reference for AutumnNote WYSIWYG editor. Options, methods, events, toolbar configuration, Plugin API, and TypeScript types." />
+  <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/docs.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AutumnNote — API Reference" />
+  <meta property="og:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor. Options, methods, events, plugins, and toolbar configuration." />
+  <meta property="og:url" content="https://cmm-cmm.github.io/Autumn-Note/docs.html" />
+  <meta property="og:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AutumnNote — API Reference" />
+  <meta name="twitter:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "name": "AutumnNote API Reference",
+    "description": "Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor.",
+    "url": "https://cmm-cmm.github.io/Autumn-Note/docs.html",
+    "author": { "@type": "Person", "name": "Minh Pham" }
+  }
+  </script>
+
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -205,6 +232,16 @@
       .docs-sidebar { display: none; }
       .docs-main { padding: 24px 20px; }
     }
+    @media (max-width: 480px) {
+      .docs-main { padding: 16px; }
+      h1.page-title { font-size: 22px; }
+      h2.section-h { font-size: 17px; }
+      h3.method-h { font-size: 13px; }
+      .header-inner { padding: 0 12px; gap: 6px; }
+      .brand-name { font-size: 14px; }
+      .nav-link { font-size: 12px; padding: 4px 7px; }
+      .docs-table-wrap { font-size: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -234,7 +271,7 @@
       <input type="text" placeholder="Search…" id="sidebar-search" oninput="filterSidebar(this.value)" />
     </div>
 
-    <nav id="sidebar-nav">
+    <nav id="sidebar-nav" aria-label="Documentation navigation">
       <div class="sidebar-group">
         <div class="sidebar-group-title">Getting Started</div>
         <a class="sidebar-link" href="#installation">Installation</a>
@@ -284,7 +321,7 @@
     <p class="page-sub">AutumnNote v1.6.0  EFast. Lightweight. Reliable. Efficient.</p>
 
     <!-- ── Installation ── -->
-    <section class="docs-section" id="installation">
+    <section class="docs-section" id="installation" aria-label="Installation">
       <h2 class="section-h">Installation</h2>
       <p class="docs-p">Install via npm (or pnpm / yarn):</p>
       <div class="code-wrap">
@@ -300,7 +337,7 @@
     </section>
 
     <!-- ── Framework Wrappers ── -->
-    <section class="docs-section" id="framework-wrappers">
+    <section class="docs-section" id="framework-wrappers" aria-label="Framework Wrappers">
       <h2 class="section-h">Framework Wrappers <span class="badge">v1.6.0</span></h2>
       <p class="docs-p">
         Official React and Vue 3 wrappers ship as separate packages in the same pnpm workspace.
@@ -406,7 +443,7 @@ function handleSave() {
     </section>
 
     <!-- ── Quick Start ── -->
-    <section class="docs-section" id="quick-start">
+    <section class="docs-section" id="quick-start" aria-label="Quick Start">
       <h2 class="section-h">Quick Start</h2>
       <p class="docs-p">Wrap any <code>&lt;textarea&gt;</code> or <code>&lt;div&gt;</code> in your HTML:</p>
       <div class="code-wrap">
@@ -434,7 +471,7 @@ editor.destroy(); // clean up when done</code></pre>
     </section>
 
     <!-- ── Options ── -->
-    <section class="docs-section" id="options">
+    <section class="docs-section" id="options" aria-label="Options">
       <h2 class="section-h">All Options <span class="badge">50+ options</span></h2>
       <p class="docs-p">Pass these to <code>AutumnNote.create(selector, options)</code> or <code>AutumnNote.setDefaults(options)</code>.</p>
 
@@ -515,7 +552,7 @@ editor.destroy(); // clean up when done</code></pre>
     </section>
 
     <!-- ── Static API ── -->
-    <section class="docs-section" id="static-api">
+    <section class="docs-section" id="static-api" aria-label="Static API">
       <h2 class="section-h">Static Methods</h2>
       <p class="docs-p">Methods on the <code>AutumnNote</code> object itself (not on an editor instance).</p>
 
@@ -566,7 +603,7 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
     </section>
 
     <!-- ── Instance API ── -->
-    <section class="docs-section" id="instance-api">
+    <section class="docs-section" id="instance-api" aria-label="Instance API">
       <h2 class="section-h">Instance Methods</h2>
       <p class="docs-p">Methods on a <code>Context</code> object returned by <code>AutumnNote.create()</code>.</p>
 
@@ -662,7 +699,7 @@ unsub(); // unsubscribe</code></pre>
     </section>
 
     <!-- ── Events ── -->
-    <section class="docs-section" id="events">
+    <section class="docs-section" id="events" aria-label="Events">
       <h2 class="section-h">Callbacks &amp; Events</h2>
       <p class="docs-p">Events can be subscribed in two ways: as <strong>option callbacks</strong> (passed to <code>create()</code>) or via <code>editor.on()</code>.</p>
       <div class="callout">
@@ -687,7 +724,7 @@ editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
     </section>
 
     <!-- ── Toolbar ── -->
-    <section class="docs-section" id="toolbar">
+    <section class="docs-section" id="toolbar" aria-label="Toolbar">
       <h2 class="section-h">Toolbar Configuration</h2>
       <p class="docs-p">The <code>toolbar</code> option is a 2D array  Eeach inner array is a button group (separated by a divider). Items can be <code>ButtonDef</code> objects imported from the library, or string names of registered buttons.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -755,7 +792,7 @@ const editor = AutumnNote.create('#editor', {
     </section>
 
     <!-- ── What's New v1.6.0 ── -->
-    <section class="docs-section" id="whats-new">
+    <section class="docs-section" id="whats-new" aria-label="What's New">
       <h2 class="section-h">What's New <span class="badge">v1.6.0</span></h2>
       <p class="docs-p">Version 1.6.0 adds several user-facing features and UX improvements.</p>
 
@@ -780,7 +817,7 @@ const editor = AutumnNote.create('#editor', {
     </section>
 
     <!-- ── Plugin API ── -->
-    <section class="docs-section" id="plugin-api">
+    <section class="docs-section" id="plugin-api" aria-label="Plugin API">
       <h2 class="section-h">Plugin API <span class="badge">v1.4.1</span></h2>
       <p class="docs-p">The Plugin API lets you package editor extensions  Ecustom modules, toolbar buttons, and event handlers  Einto a reusable, installable object. Plugins can be distributed as npm packages and installed in one line.</p>
 
@@ -960,7 +997,7 @@ AutumnNote.registerButton({
     </section>
 
     <!-- ── i18n ── -->
-    <section class="docs-section" id="i18n">
+    <section class="docs-section" id="i18n" aria-label="Internationalization">
       <h2 class="section-h">Internationalisation</h2>
       <p class="docs-p">Pass a language code to the <code>lang</code> option. Built-in locales: <code>en</code> (default), <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -983,7 +1020,7 @@ editor3.setHTML(html);</code></pre>
     </section>
 
     <!-- ── TypeScript ── -->
-    <section class="docs-section" id="typescript">
+    <section class="docs-section" id="typescript" aria-label="TypeScript">
       <h2 class="section-h">TypeScript</h2>
       <p class="docs-p">AutumnNote ships bundled TypeScript definitions (<code>types/index.d.ts</code>). No <code>@types</code> package needed.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
@@ -1026,7 +1063,7 @@ console.log(api?.version); // '1.0.0'</code></pre>
 <footer class="site-footer">
   <div class="footer-inner">
     <span>MIT License · © 2026 Minh Pham · AutumnNote v1.6.0</span>
-    <nav class="footer-links">
+    <nav class="footer-links" aria-label="Footer links">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
       <a href="playground.html">Playground</a>
@@ -1035,11 +1072,11 @@ console.log(api?.version); // '1.0.0'</code></pre>
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" integrity="sha512-jwrwRWZWW9J6bjmBOJxPcbRvEBSQeY4Ad0NEXSfP0vwYi/Yu9x5VhDBl3wz6Pnxs8Rx/t1P8r9/OHCRciHcT7Q==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js" integrity="sha512-uOw7XYETzS/DPmmirpP5UCMihSDNMeyTS965J0/456OSPfxn9xEtHHjj5Q/5WefVdqyMfN/afmQnNpZd/tpkcA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYhDwtTmlC/NpZlCr6PSsAaLOrfjVg/iXAnC4H/dtiHawpShhT2SlIMbpIhT/IL/NrpdMm+Hq2C13+VKpHTYw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js" integrity="sha512-Ei5Vokmnc/f7vIt31aodVMuavT/xp2Lt5vGDYLgCzgBX/z5ghbZQfxt/9FkNs+RyG8IfBKAkdRsQQk4PZyHq5g==" crossorigin="anonymous"></script>
 
 <script>
 // ── Copy code blocks ──────────────────────────────────────
