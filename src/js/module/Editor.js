@@ -623,10 +623,7 @@ export class Editor {
     if (!safeUrl) return;
 
     const hasText = sel.toString().trim().length > 0;
-    if (!hasText) {
-      const displayText = this._escapeAttr(text || safeUrl);
-      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${displayText}</a>`);
-    } else {
+    if (hasText) {
       Style.execCommand('createLink', safeUrl);
       if (openInNewTab) {
         const link = this._getClosestAnchor();
@@ -635,6 +632,9 @@ export class Editor {
           /** @type {Element} */ (link).setAttribute('rel', 'noopener noreferrer');
         }
       }
+    } else {
+      const displayText = this._escapeAttr(text || safeUrl);
+      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${displayText}</a>`);
     }
     this.afterCommand();
   }

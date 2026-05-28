@@ -35,7 +35,7 @@ export class WrappedRange {
       range.setStart(this.sc, this.so);
       range.setEnd(this.ec, this.eo);
     } catch (_e) {
-      // Guard against detached nodes
+      void _e; // guard against detached nodes
     }
     return range;
   }

@@ -205,7 +205,7 @@ export class Mention {
           this._caretRect = candidate;
           return;
         }
-      } catch (_) {}
+      } catch (_) { void _; }
     }
 
     // Fallback: use getClientRects() on the current collapsed selection

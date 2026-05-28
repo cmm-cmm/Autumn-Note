@@ -302,7 +302,7 @@ describe('htmlToMarkdown — additional elements', () => {
   it('converts table with pipe characters in cells (escaped)', () => {
     const html = '<table><tr><th>A|B</th></tr><tr><td>C</td></tr></table>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('\\|');
+    expect(md).toContain(String.raw`\|`);
   });
 
   it('handles empty table gracefully', () => {

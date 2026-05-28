@@ -70,7 +70,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
-  try { window.getSelection().removeAllRanges(); } catch (_) {}
+  try { window.getSelection().removeAllRanges(); } catch (_) { void _; }
 });
 
 function makeCtx(overrides = {}) {

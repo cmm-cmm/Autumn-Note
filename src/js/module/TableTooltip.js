@@ -190,10 +190,7 @@ export class TableTooltip {
       on(editable, 'mousedown', onSelMousedown),
       on(editable, 'mousemove', onSelMousemove),
       on(document, 'mouseup',   onSelMouseup),
-    );
-    // ────────────────────────────────────────────────────────────────────────
-
-    this._disposers.push(
+      // ──────────────────────────────────────────────────────────────────────
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const table = /** @type {Element} */ (e.target)?.closest('table');
@@ -734,7 +731,8 @@ export class TableTooltip {
     const refRow = selectedRows.reduce((best, r) => {
       const bi = allRows.indexOf(best);
       const ri = allRows.indexOf(r);
-      return position === 'above' ? (ri < bi ? r : best) : (ri > bi ? r : best);
+      if (position === 'above') return ri < bi ? r : best;
+      return ri > bi ? r : best;
     }, selectedRows[0]);
     const colCount = Array.from(refRow.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
     const newRow = document.createElement('tr');
@@ -747,7 +745,7 @@ export class TableTooltip {
       newRow.appendChild(td);
     }
     if (position === 'above') refRow.parentElement?.insertBefore(newRow, refRow);
-    else refRow.insertAdjacentElement('afterend', newRow);
+    else refRow.after(newRow);
     requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
@@ -1043,9 +1041,12 @@ export class TableTooltip {
         : this.context.locale.tooltips.table.rowHeightPx;
       this._sizeInputEl.min   = '1';
       this._sizeInputEl.max   = '2000';
-      this._sizeInputEl.value = isCol
-        ? (cell.offsetWidth || 120)
-        : (cell.closest('tr') ? (cell.closest('tr').offsetHeight || 40) : 40);
+      if (isCol) {
+        this._sizeInputEl.value = cell.offsetWidth || 120;
+      } else {
+        const refRow = cell.closest('tr');
+        this._sizeInputEl.value = refRow ? (refRow.offsetHeight || 40) : 40;
+      }
       this._sizeApply = (val) => {
         const table = cell.closest('table');
         if (!table) return;
@@ -1140,18 +1141,17 @@ export class TableTooltip {
       on(pop, 'mousedown', (e) => e.preventDefault()),
       on(pop, 'mouseenter', () => this._clearTimers()),
       on(pop, 'mouseleave', () => this._scheduleHide()),
+      // Close on outside click
+      on(document, 'click', (e) => {
+        const et = /** @type {Node} */ (e.target);
+        if (this._shadePopover &&
+            this._shadePopover.style.display !== 'none' &&
+            !this._shadePopover.contains(et) &&
+            !this._el?.contains(et)) {
+          this._hideCellShadePopover();
+        }
+      }),
     );
-
-    // Close on outside click
-    this._disposers.push(on(document, 'click', (e) => {
-      const et = /** @type {Node} */ (e.target);
-      if (this._shadePopover &&
-          this._shadePopover.style.display !== 'none' &&
-          !this._shadePopover.contains(et) &&
-          !this._el?.contains(et)) {
-        this._hideCellShadePopover();
-      }
-    }));
 
     return pop;
   }

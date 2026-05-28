@@ -273,7 +273,7 @@ export class CodeTooltip {
       ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); this._flashCopied(); } catch (_) {}
+      try { document.execCommand('copy'); this._flashCopied(); } catch (_) { void _; }
       ta.remove();
     }
   }

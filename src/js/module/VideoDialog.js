@@ -68,7 +68,10 @@ export class VideoDialog extends BaseDialog {
     // Live URL hint
     const d0 = on(urlInput, 'input', () => {
       const info = this._parseVideoUrl(urlInput.value.trim());
-      hintEl.textContent = info ? this.context.locale.videoDialog.detected(info.type) : (urlInput.value ? this.context.locale.videoDialog.unknownFormat : '');
+      let hint = '';
+      if (info) { hint = this.context.locale.videoDialog.detected(info.type); }
+      else if (urlInput.value) { hint = this.context.locale.videoDialog.unknownFormat; }
+      hintEl.textContent = hint;
     });
     const d4 = on(urlInput, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Enter') { e.preventDefault(); this._onInsert(); } });
     this._disposers.push(d0, d4);

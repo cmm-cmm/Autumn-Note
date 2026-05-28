@@ -311,7 +311,7 @@ export class BubbleToolbar {
     editable.focus();
     const sel = globalThis.getSelection();
     sel.removeAllRanges();
-    try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { return; }
+    try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { void _; return; }
 
     // Firefox does not support 'hiliteColor'; fall back to 'backColor'
     const cmd = type === 'hiliteColor' ? 'hiliteColor' : type;

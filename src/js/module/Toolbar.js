@@ -410,7 +410,7 @@ export class Toolbar {
         sel.removeAllRanges();
         sel.addRange(savedRange);
       } catch (_) {
-        // Range target may be detached if DOM changed while popup was open
+        void _; // range may be stale if DOM changed while popup was open
       }
     };
 
@@ -541,11 +541,14 @@ export class Toolbar {
 
     items.forEach((item) => {
       const value    = (typeof item === 'object') ? item.value    : item;
-      const label    = (typeof item === 'object')
-        ? (def.name === 'paragraphStyle'
-            ? (this.context.locale.toolbar.paragraphItems?.[item.value] || item.label)
-            : item.label)
-        : item;
+      let label;
+      if (typeof item !== 'object') {
+        label = item;
+      } else if (def.name === 'paragraphStyle') {
+        label = this.context.locale.toolbar.paragraphItems?.[item.value] || item.label;
+      } else {
+        label = item.label;
+      }
       const isHeader = (typeof item === 'object') && !!item.disabled;
       const attrs    = { value };
       if (isHeader) attrs.disabled = '';
@@ -576,7 +579,7 @@ export class Toolbar {
         try {
           const sel = globalThis.getSelection();
           if (sel) { sel.removeAllRanges(); sel.addRange(_savedRange); }
-        } catch (_) { /* range may be stale if DOM changed */ }
+        } catch (_) { void _; /* range may be stale if DOM changed */ }
       }
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');

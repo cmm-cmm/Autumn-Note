@@ -817,13 +817,13 @@ function loadFromHash() {
       if (c.height)     document.getElementById('cfg-height').value   = c.height;
     }
     return state.html || null;
-  } catch (_) { return null; }
+  } catch (_) { void _; return null; }
 }
 
 function saveState() {
   try {
     localStorage.setItem('an-playground-cfg', JSON.stringify(buildConfig()));
-  } catch (_) {}
+  } catch (_) { void _; }
 }
 
 function loadSavedConfig() {
@@ -839,7 +839,7 @@ function loadSavedConfig() {
     if (saved.maxChars)   document.getElementById('cfg-maxchars').value = saved.maxChars;
     if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
     if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
-  } catch (_) {}
+  } catch (_) { void _; }
 }
 
 // ── Bootstrap ─────────────────────────────────────────────

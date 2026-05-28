@@ -143,7 +143,7 @@ export function fontSize(size, editable = document) {
       nr.collapse(true);
       sel.removeAllRanges();
       sel.addRange(nr);
-    } catch (_) { /* ignore range errors on unusual DOM structures */ }
+    } catch (_) { void _; /* ignore range errors on unusual DOM structures */ }
     return;
   }
 
@@ -176,7 +176,7 @@ export function fontSize(size, editable = document) {
       nr.setEnd(endNode, endNode.nodeType === Node.TEXT_NODE ? endNode.textContent.length : endNode.childNodes.length);
       sel.removeAllRanges();
       sel.addRange(nr);
-    } catch (_) { /* ignore range errors on unusual DOM structures */ }
+    } catch (_) { void _; /* ignore range errors on unusual DOM structures */ }
   }
 }
 
@@ -432,7 +432,9 @@ export function toggleInlineCode(_editable) {
         const lastMoved  = movedChildren.at(-1);
         const nr = document.createRange();
         // Use the (possibly merged) live node if still in the DOM.
-        const anchorNode = (firstMoved.parentNode === parent) ? firstMoved : (prevSibling ? prevSibling.nextSibling : parent.firstChild);
+        const anchorNode = firstMoved.parentNode === parent
+          ? firstMoved
+          : (prevSibling ? prevSibling.nextSibling : parent.firstChild);
         if (anchorNode) {
           nr.setStart(anchorNode, 0);
           const endAnchor = (lastMoved.parentNode === parent) ? lastMoved : anchorNode;
@@ -440,7 +442,7 @@ export function toggleInlineCode(_editable) {
           sel.removeAllRanges();
           sel.addRange(nr);
         }
-      } catch (_) { /* ignore */ }
+      } catch (_) { void _; /* ignore */ }
     }
   } else {
     if (range.collapsed) return;
