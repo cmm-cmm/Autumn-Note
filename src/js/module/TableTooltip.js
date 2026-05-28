@@ -306,22 +306,27 @@ export class TableTooltip {
       _startY   = e.clientY;
       _table    = _nearCell.closest('table');
       if (_edge === 'col') {
-        _startW   = _nearCell.offsetWidth;
-        _colIdx   = getVisualColIndex(_nearCell);
-        // Cache column cells once so onDocMove never runs querySelectorAll per frame.
-        // F-1: skip merged cells (colSpan > 1) — setting width on a merged cell
-        // distributes it equally across all spanned columns instead of resizing
-        // only the target column.  Rows that have an individual cell at this
-        // visual column index are resized independently as expected.
+        // Right edge of a merged cell = last spanned column, not the start column
+        _colIdx = getVisualColIndex(_nearCell) + (_nearCell.colSpan || 1) - 1;
+        // Cache non-merged cells at that column — merged cells cannot be individually
+        // resized per column (F-1: colSpan > 1 distributes width across all spanned cols)
         _colCells = _colIdx >= 0
           ? Array.from(_table.querySelectorAll('tr'))
               .map(r => getCellAtVisualCol(r, _colIdx))
               .filter(Boolean)
               .filter(c => (c.colSpan || 1) === 1)
           : [];
+        // Use the actual column width from a non-merged cell; fall back to per-column estimate
+        _startW = _colCells.length > 0
+          ? _colCells[0].offsetWidth
+          : Math.max(30, Math.round(_nearCell.offsetWidth / (_nearCell.colSpan || 1)));
         document.body.style.cursor = 'col-resize';
       } else {
-        _row    = _nearCell.closest('tr');
+        // Bottom edge of a merged cell = last spanned row, not the cell's own <tr>
+        const tr = _nearCell.closest('tr');
+        const rowStart = tr ? Array.from(_table.rows).indexOf(tr) : 0;
+        const lastRowIdx = rowStart + (_nearCell.rowSpan || 1) - 1;
+        _row    = _table.rows[lastRowIdx] || tr;
         _startH = _row ? _row.offsetHeight : 40;
         document.body.style.cursor = 'row-resize';
       }
