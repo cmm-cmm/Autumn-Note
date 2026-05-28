@@ -115,7 +115,7 @@ describe('Statusbar', () => {
     const touch = { clientY: 0, identifier: 1 };
     handle.dispatchEvent(new TouchEvent('touchstart', { touches: [touch], bubbles: true }));
     document.dispatchEvent(new TouchEvent('touchmove', { touches: [{ ...touch, clientY: 60 }], bubbles: true }));
-    expect(parseFloat(container.style.height)).toBeGreaterThan(300);
+    expect(Number.parseFloat(container.style.height)).toBeGreaterThan(300);
     document.dispatchEvent(new TouchEvent('touchend', { touches: [], bubbles: true }));
     status.destroy();
   });
@@ -180,7 +180,7 @@ describe('Statusbar', () => {
     handle.dispatchEvent(new MouseEvent('mousedown', { clientY: 0, bubbles: true }));
     document.dispatchEvent(new MouseEvent('mousemove', { clientY: 50, bubbles: true }));
     // Container height should increase by 50px
-    expect(parseFloat(container.style.height)).toBeGreaterThan(300);
+    expect(Number.parseFloat(container.style.height)).toBeGreaterThan(300);
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     status.destroy();
   });

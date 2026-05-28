@@ -107,8 +107,8 @@ export class ImageDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
 
   _onFileChange() {
-    const file = this._fileInput && this._fileInput.files && this._fileInput.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
+    const file = this._fileInput?.files?.[0];
+    if (!file?.type?.startsWith('image/')) return;
 
     // C2: Only allow web-displayable formats. TIFF, BMP, RAW and similar
     // formats are not rendered by browsers — reject them with a clear message.
@@ -146,7 +146,7 @@ export class ImageDialog extends BaseDialog {
   _onInsert() {
     const src = this._urlInput.value.trim();
     const alt = this._altInput.value.trim();
-    const alignRadio = this._alignRow && this._alignRow.querySelector('input[name="an-img-align"]:checked');
+    const alignRadio = this._alignRow?.querySelector('input[name="an-img-align"]:checked');
     const align = alignRadio ? /** @type {HTMLInputElement} */ (alignRadio).value : '';
 
     if (!src) {

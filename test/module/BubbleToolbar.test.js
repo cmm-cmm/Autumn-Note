@@ -541,7 +541,7 @@ describe('BubbleToolbar._show positioning', () => {
     // rect.top = 5 → not enough room above (top - bh - gap < 8)
     const tinyTopRect = { top: 5, bottom: 25, left: 100, right: 300, width: 200, height: 20 };
     bt._show(tinyTopRect);
-    const top = parseFloat(bt._el.style.top);
+    const top = Number.parseFloat(bt._el.style.top);
     // Should flip to below: top = rect.bottom + gap = 25 + 8 = 33
     expect(top).toBeGreaterThan(5);
     expect(bt._visible).toBe(true);
@@ -602,7 +602,7 @@ describe('BubbleToolbar color picker interactions', () => {
     bt._savedRange = r;
 
     const picker = openPicker(bt, 'hiliteColor');
-    const noColor = picker && picker.querySelector('.an-context-color-none');
+    const noColor = picker?.querySelector('.an-context-color-none');
     if (noColor) {
       noColor.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
@@ -620,7 +620,7 @@ describe('BubbleToolbar color picker interactions', () => {
     bt._savedRange = r;
 
     const picker = openPicker(bt, 'foreColor');
-    const colorInput = picker && picker.querySelector('input[type="color"]');
+    const colorInput = picker?.querySelector('input[type="color"]');
     if (colorInput) {
       colorInput.value = '#ff0000';
       colorInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -657,7 +657,7 @@ describe('BubbleToolbar button click handlers', () => {
   });
 
   it('click on foreColor button opens color picker (line 176)', () => {
-    const { bt, ctx } = makeBubble();
+    const { bt } = makeBubble();
     bt._show(MOCK_RECT);
 
     const colorBtn = bt._el.querySelector('[data-name="foreColor"]');

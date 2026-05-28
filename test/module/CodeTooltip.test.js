@@ -446,7 +446,7 @@ describe('CodeTooltip._loadPrismComponent', () => {
     // simulate load event
     script.dispatchEvent(new Event('load'));
     expect(cb).toHaveBeenCalled();
-    script.parentNode.removeChild(script);
+    script.remove();
   });
 
   it('polls when script already in DOM', () => {
@@ -468,6 +468,6 @@ describe('CodeTooltip._loadPrismComponent', () => {
     expect(cb).toHaveBeenCalled();
     vi.unstubAllGlobals();
     vi.useRealTimers();
-    existing.parentNode.removeChild(existing);
+    existing.remove();
   });
 });

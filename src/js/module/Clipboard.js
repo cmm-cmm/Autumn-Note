@@ -64,7 +64,7 @@ export class Clipboard {
    * @param {Node} node
    */
   _revokeRemovedBlobs(node) {
-    if (!this._blobRegistry || !this._blobRegistry.size) return;
+    if (!this._blobRegistry?.size) return;
     const imgs = /** @type {Element[]} */ ([]);
     if (node.nodeName === 'IMG') {
       imgs.push(/** @type {Element} */ (node));
@@ -267,7 +267,7 @@ export class Clipboard {
 
   _onDrop(event) {
     const dt = event.dataTransfer;
-    if (!dt || !dt.files || dt.files.length === 0) return;
+    if (!dt?.files?.length) return;
 
     const imageFiles = Array.from(dt.files).filter((f) => f.type.startsWith('image/'));
     if (imageFiles.length === 0) return;
@@ -302,7 +302,7 @@ export class Clipboard {
     const UNSUPPORTED = new Set(['image/tiff', 'image/x-tiff', 'image/bmp', 'image/x-bmp', 'image/x-ms-bmp']);
     const maxBytes = (this.options.maxImageSize || 5) * 1024 * 1024;
     files.forEach((file) => {
-      if (!file || !file.type.startsWith('image/')) return;
+      if (!file?.type?.startsWith('image/')) return;
       if (UNSUPPORTED.has(file.type)) {
         const message = `Image format "${file.type}" is not supported for display in web browsers. Please convert to PNG, JPEG, or WebP first.`;
         this.context.triggerEvent('imageError', { file, message });
@@ -339,7 +339,7 @@ export class Clipboard {
    * @returns {string}
    */
   resolveImages(html) {
-    if (!this._blobRegistry || !this._blobRegistry.size) return html;
+    if (!this._blobRegistry?.size) return html;
     return html.replace(/blob:[^"'> \t\n\r]*/g, (url) => this._blobRegistry.get(url) || url);
   }
 

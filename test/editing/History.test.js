@@ -13,7 +13,7 @@ function makeEditable(html = '<p>hello</p>') {
 }
 
 function cleanup(el) {
-  if (el && el.parentNode) el.parentNode.removeChild(el);
+  if (el?.parentNode) el.remove();
 }
 
 describe('History', () => {

@@ -11,9 +11,9 @@ export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 3;
 
 /** @param {Node} node */
-export const isElement = (node) => node && node.nodeType === ELEMENT_NODE;
+export const isElement = (node) => node?.nodeType === ELEMENT_NODE;
 /** @param {Node} node */
-export const isText = (node) => node && node.nodeType === TEXT_NODE;
+export const isText = (node) => node?.nodeType === TEXT_NODE;
 /** @param {Node} node */
 export const isVoid = (node) => isElement(node) && /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(node.nodeName);
 /** @param {Node} node */
@@ -147,7 +147,7 @@ export function createElement(tag, attrs = {}, childNodes = []) {
  * @param {Node} node
  */
 export function remove(node) {
-  if (node && node.parentNode) {
+  if (node?.parentNode) {
     /** @type {ChildNode} */ (node).remove();
   }
 }

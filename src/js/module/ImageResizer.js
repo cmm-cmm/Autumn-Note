@@ -75,7 +75,7 @@ export class ImageResizer {
       this._positionRaf = null;
     }
     this._deselect();
-    if (this._overlay && this._overlay.parentNode) {
+    if (this._overlay?.parentNode) {
       this._overlay.remove();
     }
     this._overlay = null;
@@ -140,7 +140,7 @@ export class ImageResizer {
   _onDocClick(e) {
     if (!this._activeImg) return;
     if (e.target === this._activeImg) return;
-    if (this._overlay && this._overlay.contains(e.target)) return;
+    if (this._overlay?.contains(e.target)) return;
     // Don't deselect while interacting with the context menu
     if (e.target.closest('.an-contextmenu')) return;
     this._deselect();

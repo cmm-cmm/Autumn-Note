@@ -214,14 +214,14 @@ describe('ContextMenu._reposition', () => {
   it('clamps left position to minimum 8px margin', () => {
     const { cm } = makeSimpleMenu();
     cm.showAt(-100, 100);
-    const left = parseFloat(cm.el.style.left);
+    const left = Number.parseFloat(cm.el.style.left);
     expect(left).toBeGreaterThanOrEqual(8);
   });
 
   it('clamps top position to minimum 8px margin', () => {
     const { cm } = makeSimpleMenu();
     cm.showAt(100, -100);
-    const top = parseFloat(cm.el.style.top);
+    const top = Number.parseFloat(cm.el.style.top);
     expect(top).toBeGreaterThanOrEqual(8);
   });
 });
@@ -539,7 +539,6 @@ describe('ContextMenu format operations', () => {
 describe('ContextMenu._onContextMenu', () => {
   it('shows menu when contextmenu event fired on editable content', () => {
     const { cm, ctx } = makeSimpleMenu();
-    const p = ctx.layoutInfo.editable.querySelector('p');
     const event = new MouseEvent('contextmenu', {
       bubbles: true,
       cancelable: true,
@@ -584,7 +583,6 @@ describe('ContextMenu._onContextMenu', () => {
     const range = document.createRange();
     range.selectNodeContents(p);
     // Simulate getBoundingClientRect returning a real rect
-    const origGetBBR = range.getBoundingClientRect;
     range.getBoundingClientRect = () => ({ width: 100, height: 20, bottom: 150, top: 130, left: 50, right: 150 });
     window.getSelection().addRange(range);
 
