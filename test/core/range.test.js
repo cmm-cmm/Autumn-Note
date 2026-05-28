@@ -15,13 +15,13 @@ afterEach(() => {
   window.getSelection().removeAllRanges();
 });
 
-function makeEditable(html = 'hello world') {
+const makeEditable = (html = 'hello world') => {
   const el = document.createElement('div');
   el.contentEditable = 'true';
   el.innerHTML = html;
   document.body.appendChild(el);
   return el;
-}
+};
 
 // ── WrappedRange ──────────────────────────────────────────────────────────────
 

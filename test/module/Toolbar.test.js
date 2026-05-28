@@ -15,25 +15,23 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeContext() {
-  return {
-    options: {
-      useFontAwesome: false,
-      toolbar: [[
-        {
-          name: 'bold',
-          icon: 'bold',
-          tooltip: 'Bold',
-          action: vi.fn(),
-          isActive: () => true,
-          isDisabled: () => false,
-        },
-      ]],
-    },
-    locale: en,
-    invoke: vi.fn(),
-  };
-}
+const makeContext = () => ({
+  options: {
+    useFontAwesome: false,
+    toolbar: [[
+      {
+        name: 'bold',
+        icon: 'bold',
+        tooltip: 'Bold',
+        action: vi.fn(),
+        isActive: () => true,
+        isDisabled: () => false,
+      },
+    ]],
+  },
+  locale: en,
+  invoke: vi.fn(),
+});
 
 describe('Toolbar', () => {
   it('builds toolbar buttons and refreshes active state', () => {

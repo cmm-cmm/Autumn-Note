@@ -4,17 +4,17 @@ import { History } from '../../src/js/editing/History.js';
 // ---------------------------------------------------------------------------
 // helpers — build a minimal contenteditable div
 // ---------------------------------------------------------------------------
-function makeEditable(html = '<p>hello</p>') {
+const makeEditable = (html = '<p>hello</p>') => {
   const el = document.createElement('div');
   el.contentEditable = 'true';
   el.innerHTML = html;
   document.body.appendChild(el);
   return el;
-}
+};
 
-function cleanup(el) {
+const cleanup = (el) => {
   if (el?.parentNode) el.remove();
-}
+};
 
 describe('History', () => {
   let el;

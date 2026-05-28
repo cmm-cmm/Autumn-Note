@@ -6,7 +6,7 @@ const DRAFT_KEY  = 'an-autosave-test';
 const META_KEY   = DRAFT_KEY + ':asrmeta';
 const DRAFT_HTML = '<p>Saved draft content</p>';
 
-function makeContext(optOverrides = {}) {
+const makeContext = (optOverrides = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   return {
@@ -22,7 +22,7 @@ function makeContext(optOverrides = {}) {
     setHTML: vi.fn(),
     clearHistory: vi.fn(),
   };
-}
+};
 
 beforeEach(() => {
   localStorage.clear();

@@ -13,7 +13,7 @@ const USERS = [
   { id: 3, label: 'Carol' },
 ];
 
-function makeContext(mentionCfg = {}) {
+const makeContext = (mentionCfg = {}) => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
@@ -32,15 +32,15 @@ function makeContext(mentionCfg = {}) {
     triggerEvent: vi.fn(),
     getHTML: vi.fn(() => '<p></p>'),
   };
-}
+};
 
-function setCursor(textNode, offset) {
+const setCursor = (textNode, offset) => {
   const r = document.createRange();
   r.setStart(textNode, offset);
   r.collapse(true);
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(r);
-}
+};
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 

@@ -14,7 +14,7 @@ afterEach(() => {
 
 const CODE_HTML = '<pre><code class="language-javascript">const x = 1;</code></pre>';
 
-function makeContext(html = CODE_HTML) {
+const makeContext = (html = CODE_HTML) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -28,14 +28,14 @@ function makeContext(html = CODE_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const ct = new CodeTooltip(ctx);
   ct.initialize();
   return { ctx, ct };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

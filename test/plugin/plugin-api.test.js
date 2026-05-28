@@ -14,11 +14,11 @@ if (typeof document.execCommand !== 'function') {
   Object.defineProperty(document, 'execCommand', { value: () => true, configurable: true, writable: true });
 }
 
-function makeEl() {
+const makeEl = () => {
   const ta = document.createElement('textarea');
   document.body.appendChild(ta);
   return ta;
-}
+};
 
 afterEach(() => {
   document.body.innerHTML = '';

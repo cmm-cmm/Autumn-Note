@@ -5,7 +5,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeContext(html = '<p>Hello</p>') {
+const makeContext = (html = '<p>Hello</p>') => {
   const root = document.createElement('div');
   const editable = document.createElement('div');
   editable.innerHTML = html;
@@ -16,7 +16,7 @@ function makeContext(html = '<p>Hello</p>') {
     layoutInfo: { editable },
     invoke: vi.fn(),
   };
-}
+};
 
 describe('Codeview', () => {
   it('toggles to textarea and back, sanitizing unsafe HTML on deactivate', () => {

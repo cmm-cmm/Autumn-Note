@@ -3,7 +3,7 @@ import { CodeTooltip } from '../../src/js/module/CodeTooltip.js';
 import { ImageTooltip } from '../../src/js/module/ImageTooltip.js';
 import { en } from '../../src/js/i18n/en.js';
 
-function makeContext(options = {}) {
+const makeContext = (options = {}) => {
   const editable = document.createElement('div');
   document.body.appendChild(editable);
   return {
@@ -12,7 +12,7 @@ function makeContext(options = {}) {
     locale: en,
     invoke: () => {},
   };
-}
+};
 
 afterEach(() => {
   document.body.innerHTML = '';

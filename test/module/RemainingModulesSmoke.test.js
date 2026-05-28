@@ -20,7 +20,7 @@ if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
 
-function makeEditableContext(html = '<p>x</p>') {
+const makeEditableContext = (html = '<p>x</p>') => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = html;
@@ -31,7 +31,7 @@ function makeEditableContext(html = '<p>x</p>') {
     locale: en,
     invoke: vi.fn(),
   };
-}
+};
 
 describe('Remaining modules smoke', () => {
   it('EmojiDialog lazy-builds on show and destroys cleanly', () => {

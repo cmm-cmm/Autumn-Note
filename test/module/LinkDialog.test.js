@@ -8,7 +8,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function makeContext() {
+const makeContext = () => {
   const container = document.createElement('div');
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
@@ -21,14 +21,14 @@ function makeContext() {
     locale: en,
     invoke: vi.fn(),
   };
-}
+};
 
-function makeDialog() {
+const makeDialog = () => {
   const ctx = makeContext();
   const ld = new LinkDialog(ctx);
   ld.initialize();
   return { ctx, ld };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function makeContext(html = '<p><img src="test.png" alt="test" style="width:200px;height:150px"></p>') {
+const makeContext = (html = '<p><img src="test.png" alt="test" style="width:200px;height:150px"></p>') => {
   const container = document.createElement('div');
   container.className = 'an-container';
   const editable = document.createElement('div');
@@ -22,14 +22,14 @@ function makeContext(html = '<p><img src="test.png" alt="test" style="width:200p
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeResizer(html) {
+const makeResizer = (html) => {
   const ctx = makeContext(html);
   const ir = new ImageResizer(ctx);
   ir.initialize();
   return { ctx, ir };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
