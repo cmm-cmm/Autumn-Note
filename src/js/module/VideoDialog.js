@@ -167,7 +167,7 @@ export class VideoDialog extends BaseDialog {
       );
     }
 
-    if (info && info.type === 'Direct video') {
+    if (info?.type === 'Direct video') {
       const src = info.embedUrl.replaceAll('"', '%22');
       return (
         `<div class="an-video-wrapper" style="position:relative;display:block;width:${width}px;max-width:100%">` +

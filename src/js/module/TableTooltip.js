@@ -386,7 +386,7 @@ export class TableTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.remove();
+    if (this._el?.parentNode) this._el.remove();
     this._el = null;
     if (this._sizePopover?.parentNode) {
       this._sizePopover.remove();

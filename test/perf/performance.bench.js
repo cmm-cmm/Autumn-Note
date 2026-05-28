@@ -69,7 +69,7 @@ describe('Clipboard._cleanSocialHtml', () => {
       if (el.querySelector('a, strong, em, b, i, ul, ol, li, table, img, blockquote, pre, code, h1, h2, h3, h4, h5, h6')) continue;
       const parent = el.parentNode;
       while (el.firstChild) parent.insertBefore(el.firstChild, el);
-      parent.removeChild(el);
+      el.remove();
     }
     return doc.body.innerHTML;
   }
@@ -119,13 +119,13 @@ describe('Typing.handleKeydown predicate allocation', () => {
   bench('legacy: create arrow fn + regex per call (×1000 keydowns)', () => {
     for (let i = 0; i < 1000; i++) {
       // Simulates what happened before: new regex object created on every call
-      const isFAIcon = (n) => !!(n && n.nodeName === 'I' && /\bfa-/.test(n.className || ''));
+      const isFAIcon = (n) => !!(n?.nodeName === 'I' && /\bfa-/.test(n?.className || ''));
       isFAIcon(node);
     }
   });
 
   bench('current: module-level fn + cached regex (×1000 keydowns)', () => {
-    const isFAIconCached = (n) => !!(n && n.nodeName === 'I' && FA_INLINE.test(n.className || ''));
+    const isFAIconCached = (n) => !!(n?.nodeName === 'I' && FA_INLINE.test(n?.className || ''));
     for (let i = 0; i < 1000; i++) {
       isFAIconCached(node);
     }

@@ -89,13 +89,13 @@ export class Context {
 
     // 3. Attach toolbar/statusbar to container
     const toolbar = this._modules.get('toolbar');
-    if (toolbar && toolbar.el) {
+    if (toolbar?.el) {
       container.insertBefore(toolbar.el, editable);
       this.layoutInfo.toolbar = toolbar.el;
     }
 
     const statusbar = this._modules.get('statusbar');
-    if (statusbar && statusbar.el) {
+    if (statusbar?.el) {
       container.appendChild(statusbar.el);
       this.layoutInfo.statusbar = statusbar.el;
     }

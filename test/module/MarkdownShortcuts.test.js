@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { MarkdownShortcuts } from '../../src/js/module/MarkdownShortcuts.js';
 
 // execCommand is not implemented in jsdom

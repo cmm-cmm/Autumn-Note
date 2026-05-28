@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Toolbar } from '../../src/js/module/Toolbar.js';
 import { registerButton, getButton } from '../../src/js/module/Buttons.js';
 import { en } from '../../src/js/i18n/en.js';
@@ -528,6 +528,6 @@ describe('Toolbar button click', () => {
     // Should not throw even if FA elements aren't found
     expect(() => toolbar.initialize()).not.toThrow();
     toolbar.destroy();
-    link.parentNode.removeChild(link);
+    link.remove();
   });
 });

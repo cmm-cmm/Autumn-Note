@@ -145,7 +145,7 @@ export class Toolbar {
     this._refreshRaf = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this.el && this.el.parentNode) {
+    if (this.el?.parentNode) {
       this.el.remove();
     }
     this.el = null;
@@ -700,7 +700,7 @@ export class Toolbar {
       // Fallback: when no selection/font set, use the configured default font
       if (!raw) {
         raw = this.options.defaultFontFamily
-          || (this.options.fontFamilies && this.options.fontFamilies[0])
+          || this.options.fontFamilies?.[0]
           || '';
       }
       // Try to match against available options (case-insensitive)

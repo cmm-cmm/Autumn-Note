@@ -223,7 +223,7 @@ export class Mention {
 
   _getQueryAtCursor() {
     const sel = globalThis.getSelection();
-    if (!sel || !sel.rangeCount) return null;
+    if (!sel?.rangeCount) return null;
     const range = sel.getRangeAt(0);
     if (!range.collapsed) return null;
 

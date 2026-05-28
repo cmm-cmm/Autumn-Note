@@ -128,7 +128,7 @@ export function handleKeydown(event, editable, options = {}) {
         const icon = textNode.nextSibling;
         const after = icon.nextSibling;
         event.preventDefault();
-        if (after && after.nodeType === Node.TEXT_NODE) {
+        if (after?.nodeType === Node.TEXT_NODE) {
           const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
           return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
         }
@@ -142,7 +142,7 @@ export function handleKeydown(event, editable, options = {}) {
         const icon = textNode.nextSibling.nextSibling;
         const after = icon.nextSibling;
         event.preventDefault();
-        if (after && after.nodeType === Node.TEXT_NODE) {
+        if (after?.nodeType === Node.TEXT_NODE) {
           const offset = ((after.textContent || '').startsWith('\u200B')) ? 1 : 0;
           return moveCaret((nr) => nr.setStart(after, Math.min(offset, after.textContent.length)));
         }

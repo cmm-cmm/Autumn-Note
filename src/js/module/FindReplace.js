@@ -311,7 +311,7 @@ export class FindReplace extends BaseDialog {
     if (this._matches.length === 0) return;
 
     // Highlight the first (current) match
-    if (this._matches[0] && this._matches[0].mark) {
+    if (this._matches[0]?.mark) {
       this._matches[0].mark.className = 'an-highlight an-highlight-current';
       this._matches[0].mark.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
@@ -370,7 +370,7 @@ export class FindReplace extends BaseDialog {
 
   _scrollToMatch(index) {
     const match = this._matches[index];
-    if (!match || !match.mark) return;
+    if (!match?.mark) return;
     // Update CSS classes
     this._matches.forEach((m, i) => {
       if (m.mark) {
@@ -389,7 +389,7 @@ export class FindReplace extends BaseDialog {
   _replace() {
     if (this._matches.length === 0 || this._currentIndex < 0) return;
     const match = this._matches[this._currentIndex];
-    if (!match || !match.mark || !match.mark.parentNode) return;
+    if (!match?.mark?.parentNode) return;
 
     const replacement = this._replaceInput ? this._replaceInput.value : '';
     const parent = match.mark.parentNode;
@@ -412,7 +412,7 @@ export class FindReplace extends BaseDialog {
     const replacement = this._replaceInput ? this._replaceInput.value : '';
 
     this._matches.forEach(({ mark }) => {
-      if (!mark || !mark.parentNode) return;
+      if (!mark?.parentNode) return;
       const textNode = document.createTextNode(replacement);
       mark.parentNode.insertBefore(textNode, mark);
       mark.remove();

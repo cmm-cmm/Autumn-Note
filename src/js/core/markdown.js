@@ -67,7 +67,7 @@ function _domToMd(node, depth = 0) {
     }
     case 'pre': {
       const codeEl = el.querySelector('code');
-      const langMatch = /language-(\S+)/.exec((codeEl && codeEl.className) || '');
+      const langMatch = /language-(\S+)/.exec(codeEl?.className || '');
       const lang = langMatch ? langMatch[1] : '';
       const content = (codeEl || el).textContent || '';
       return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;

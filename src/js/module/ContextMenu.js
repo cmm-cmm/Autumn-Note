@@ -114,7 +114,7 @@ export class ContextMenu {
   constructor(context) {
     this.context = context;
     this.options = context.options || {};
-    this._items = (this.options.contextMenu && this.options.contextMenu.items) || defaultItems;
+    this._items = this.options.contextMenu?.items || defaultItems;
     this.el = null;
     this._disposers = [];
     this._menuDisposers = []; // disposers for dynamically-rendered menu buttons
@@ -485,7 +485,7 @@ export class ContextMenu {
     const editable = this.context.layoutInfo?.editable;
     let node = range.startContainer;
     if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    if (!node || !editable || !editable.contains(node)) return;
+    if (!node || !editable?.contains(node)) return;
 
     // Walk up to collect explicitly-set inline properties from the nearest styled ancestor
     const cs = globalThis.getComputedStyle(/** @type {Element} */ (node));
@@ -510,7 +510,7 @@ export class ContextMenu {
   _findExplicitStyle(node, boundary, prop) {
     let el = node;
     while (el && el !== boundary && el !== document.body) {
-      if (el.style && el.style[prop]) return el.style[prop];
+      if (el.style?.[prop]) return el.style[prop];
       // also check font element attributes
       if (el.nodeName === 'FONT') {
         if (prop === 'fontFamily' && el.getAttribute('face')) return el.getAttribute('face');

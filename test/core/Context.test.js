@@ -284,7 +284,7 @@ describe('Context stats delegation API', () => {
   });
 
   it('getWordCount() returns 0 when statusbar not registered', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     const ctx = makeContext();
     expect(ctx.getWordCount()).toBe(0);
   });

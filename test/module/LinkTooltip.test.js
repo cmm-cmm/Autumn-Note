@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LinkTooltip } from '../../src/js/module/LinkTooltip.js';
 import { en } from '../../src/js/i18n/en.js';
 
@@ -360,7 +360,7 @@ describe('LinkTooltip positioning overflow', () => {
     lt._show(anchor);
 
     // top should be less than 770 (positioned above)
-    const topVal = parseFloat(lt._el.style.top);
+    const topVal = Number.parseFloat(lt._el.style.top);
     expect(topVal).toBeLessThan(770);
 
     vi.unstubAllGlobals();
@@ -375,7 +375,7 @@ describe('LinkTooltip positioning overflow', () => {
     vi.stubGlobal('innerWidth', 1000);
     lt._show(anchor);
 
-    const leftVal = parseFloat(lt._el.style.left);
+    const leftVal = Number.parseFloat(lt._el.style.left);
     // With tipW=260 and innerWidth=1000, left should be shifted left from 900
     expect(leftVal).toBeLessThan(900);
 

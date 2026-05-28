@@ -495,7 +495,7 @@ describe('ImageTooltip._toggleCaption', () => {
 
   it('focuses existing figcaption when image already inside figure', () => {
     const { it2, ctx } = makeTooltip(); // default HTML has figure + figcaption
-    const img = showImg(it2, ctx);
+    showImg(it2, ctx);
     it2._toggleCaption();
     // Should not add another figure; existing one stays
     expect(ctx.layoutInfo.editable.querySelectorAll('figure').length).toBe(1);

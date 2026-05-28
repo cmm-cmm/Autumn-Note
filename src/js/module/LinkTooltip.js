@@ -57,7 +57,7 @@ export class LinkTooltip {
     this._clearTimers();
     this._disposers.forEach((d) => d());
     this._disposers = [];
-    if (this._el && this._el.parentNode) this._el.remove();
+    if (this._el?.parentNode) this._el.remove();
     this._el = null;
   }
 
@@ -213,7 +213,7 @@ export class LinkTooltip {
     // Brief visual feedback  
     if (this._copyBtn) {
       this._copyBtn.classList.add('an-link-tooltip-btn--copied');
-      setTimeout(() => this._copyBtn && this._copyBtn.classList.remove('an-link-tooltip-btn--copied'), 1000);
+      setTimeout(() => this._copyBtn?.classList.remove('an-link-tooltip-btn--copied'), 1000);
     }
   }
 
