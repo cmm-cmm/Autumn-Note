@@ -30,6 +30,7 @@ export class AutoSaveRestore {
       saved = localStorage.getItem(key);
       meta = JSON.parse(localStorage.getItem(metaKey) || '{}');
     } catch (_) {
+      void _;
       return this;
     }
 

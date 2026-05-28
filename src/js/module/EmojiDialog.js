@@ -666,7 +666,7 @@ export class EmojiDialog extends BaseDialog {
     if (savedRange) savedRange.select();
 
     const sel = globalThis.getSelection();
-    let range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    let range = sel?.rangeCount > 0 ? sel.getRangeAt(0) : null;
     if (!range) {
       range = document.createRange();
       range.selectNodeContents(editable);

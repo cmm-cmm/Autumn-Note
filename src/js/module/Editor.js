@@ -62,7 +62,7 @@ export class Editor {
     const onSelChange = () => {
       if (!this.context._alive) return;
       const sel = globalThis.getSelection();
-      if (sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode)) {
+      if (sel?.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
         if (typeof this.options.onSelectionChange === 'function') {
           this.options.onSelectionChange(this.context);
@@ -557,7 +557,7 @@ export class Editor {
     // Only runs when converting TO <pre> and the block has no language yet.
     if (tagName === 'pre') {
       const sel = globalThis.getSelection();
-      if (sel && sel.rangeCount > 0) {
+      if (sel?.rangeCount > 0) {
         const container = sel.getRangeAt(0).commonAncestorContainer;
         const pre = /** @type {Element|null} */ (
           container.nodeType === 1

@@ -130,7 +130,7 @@ export function fontSize(size, editable = document) {
   // Only applies when there IS an active selection (sel.rangeCount > 0); when
   // there is no selection at all (e.g. jsdom unit tests) fall through to the
   // execCommand path so the font-replacement logic still runs.
-  if (wasCollapsed && sel && sel.rangeCount > 0) {
+  if (wasCollapsed && sel?.rangeCount > 0) {
     try {
       const range = sel.getRangeAt(0);
       const span = document.createElement('span');
