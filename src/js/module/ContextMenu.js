@@ -381,7 +381,7 @@ export class ContextMenu {
     event.preventDefault();
 
     const winSel = globalThis.getSelection();
-    this._savedRange = (winSel && winSel.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
+    this._savedRange = (winSel?.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     this._renderItems(this._items);
 
     // Open below the selected text so the selection stays visible.
