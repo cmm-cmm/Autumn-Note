@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.6] - 2026-05-28
+
+### Fixed
+- **TableTooltip — column/row resizing with merged cells** — resizing a column or row that contained merged cells (`colspan`/`rowspan`) could produce incorrect cell widths and heights; logic now accounts for span values when distributing resize deltas
+- **TableTooltip — content merging on cell deletion** — merging rows when some cells had empty HTML (e.g. `<br>` only) could leave orphan empty rows; handler now strips purely-empty cells before merging and removes rows that become fully empty
+- **SonarQube code smells — round 1 (S6582 / S3403 / S1128 / S7762)** — optional chaining across 27 source files, `Number.parseInt` replacements, unused imports removed, `parentNode.removeChild` → `.remove()` in test helpers
+- **SonarQube code smells — round 2 (S6582 / S6650 / S4325 / S1186)** — nested ternaries flattened, empty `catch` blocks documented, optional chaining applied to 26 files
+- **SonarQube code smells — round 3 (S6582 / S1186)** — optional chaining and empty-catch cleanup in remaining 5 files (`ContextMenu.js`, `IconDialog.js`, `TableTooltip.js`, `Toolbar.js`)
+
+### Changed
+- **Test files — arrow function consistency** — all 36 test files converted from `function` declarations to arrow functions for consistency with the source style (`describe`/`it`/`beforeEach` callbacks)
+
+---
+
 ## [1.6.5] - 2026-05-25
 
 ### Security
