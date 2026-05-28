@@ -182,7 +182,7 @@ describe('History', () => {
     const sel = window.getSelection();
     // The selection should exist and be collapsed (cursor, not a range)
     expect(sel).not.toBeNull();
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       expect(sel.getRangeAt(0).collapsed).toBe(true);
     }
   });

@@ -709,7 +709,7 @@ export class Toolbar {
       // Try to match against available options (case-insensitive)
       const sel = /** @type {HTMLSelectElement} */ (select);
       const matched = Array.from(sel.options).find(
-        (opt) => opt.value && opt.value.toLowerCase() === raw.toLowerCase()
+        (opt) => opt.value?.toLowerCase() === raw.toLowerCase()
       );
       sel.value = matched ? matched.value : '';
     });

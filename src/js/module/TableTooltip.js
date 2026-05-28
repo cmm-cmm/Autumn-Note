@@ -937,7 +937,7 @@ export class TableTooltip {
       let ref = null;
       for (const tc of targetRow.cells) {
         const tp = cellPos.get(tc);
-        if (tp && tp.c > c) { ref = tc; break; }
+        if (tp?.c > c) { ref = tc; break; }
       }
       for (let dc = 0; dc < cs; dc++) {
         targetRow.insertBefore(createElement(tag, {}, ['\u00a0']), ref);

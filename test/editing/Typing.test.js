@@ -801,7 +801,7 @@ describe('Typing ArrowRight through ZWS anchor then FA icon with text after', ()
     expect(event.preventDefault).toHaveBeenCalled();
     // Cursor should now be in the "end" text
     const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       expect(sel.getRangeAt(0).startContainer).toBe(endText);
     }
   });
