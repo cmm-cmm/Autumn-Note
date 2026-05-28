@@ -5,7 +5,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeContext(placeholder = 'Start typing...') {
+const makeContext = (placeholder = 'Start typing...') => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
@@ -13,7 +13,7 @@ function makeContext(placeholder = 'Start typing...') {
     layoutInfo: { editable },
     options: { placeholder },
   };
-}
+};
 
 describe('Placeholder', () => {
   it('sets placeholder dataset and toggles class by emptiness', () => {

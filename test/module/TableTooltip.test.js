@@ -21,7 +21,7 @@ const TABLE_HTML = `
   </tbody>
 </table>`;
 
-function makeContext(html = TABLE_HTML) {
+const makeContext = (html = TABLE_HTML) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -34,22 +34,22 @@ function makeContext(html = TABLE_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const tt = new TableTooltip(ctx);
   tt.initialize();
   return { ctx, tt };
-}
+};
 
-function activateTable(tt, ctx) {
+const activateTable = (tt, ctx) => {
   const table = ctx.layoutInfo.editable.querySelector('table');
   table.getBoundingClientRect = () => ({ top: 100, bottom: 300, left: 50, right: 400, width: 350, height: 200 });
   tt._activeTable = table;
   tt._show();
   return table;
-}
+};
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 

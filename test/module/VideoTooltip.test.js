@@ -18,7 +18,7 @@ const VIDEO_HTML = `
   </div>
 `;
 
-function makeContext(html = VIDEO_HTML) {
+const makeContext = (html = VIDEO_HTML) => {
   const container = document.createElement('div');
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
@@ -31,22 +31,22 @@ function makeContext(html = VIDEO_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const vt = new VideoTooltip(ctx);
   vt.initialize();
   return { ctx, vt };
-}
+};
 
-function showWrapper(vt, ctx) {
+const showWrapper = (vt, ctx) => {
   const wrapper = ctx.layoutInfo.editable.querySelector('.an-video-wrapper');
   wrapper.getBoundingClientRect = () => ({ top: 100, bottom: 280, left: 50, right: 370, width: 320, height: 180 });
   vt._activeWrapper = wrapper;
   vt._show(wrapper);
   return wrapper;
-}
+};
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 

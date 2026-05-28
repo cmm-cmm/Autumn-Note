@@ -178,7 +178,7 @@ export class LinkTooltip {
   _truncateUrl(url) {
     try {
       const u = new URL(url);
-      const display = u.host + (u.pathname !== '/' ? u.pathname : '');
+      const display = u.host + (u.pathname === '/' ? '' : u.pathname);
       return display.length > 48 ? display.slice(0, 48) + '…' : display;
     } catch {
       return url.length > 48 ? url.slice(0, 48) + '…' : url;

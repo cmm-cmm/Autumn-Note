@@ -12,7 +12,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function makeContext(opts = {}) {
+const makeContext = (opts = {}) => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
@@ -23,15 +23,15 @@ function makeContext(opts = {}) {
     triggerEvent: vi.fn(),
     getHTML: vi.fn(() => '<p></p>'),
   };
-}
+};
 
-function setCursorAt(textNode, offset) {
+const setCursorAt = (textNode, offset) => {
   const range = document.createRange();
   range.setStart(textNode, offset);
   range.collapse(true);
   window.getSelection().removeAllRanges();
   window.getSelection().addRange(range);
-}
+};
 
 // ── initialize / destroy ──────────────────────────────────────────────────────
 

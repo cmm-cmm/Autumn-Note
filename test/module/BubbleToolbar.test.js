@@ -22,7 +22,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function makeContext(opts = {}) {
+const makeContext = (opts = {}) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -41,14 +41,14 @@ function makeContext(opts = {}) {
     on: vi.fn(() => () => {}),  // returns disposer fn
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeBubble(opts = {}) {
+const makeBubble = (opts = {}) => {
   const ctx = makeContext(opts);
   const bt = new BubbleToolbar(ctx);
   bt.initialize();
   return { ctx, bt };
-}
+};
 
 const MOCK_RECT = { top: 100, bottom: 120, left: 200, right: 400, width: 200, height: 20 };
 

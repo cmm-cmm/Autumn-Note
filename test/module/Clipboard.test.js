@@ -10,7 +10,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function makeContext(opts = {}) {
+const makeContext = (opts = {}) => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
@@ -26,14 +26,14 @@ function makeContext(opts = {}) {
     triggerEvent: vi.fn(),
     getHTML: vi.fn(() => '<p></p>'),
   };
-}
+};
 
-function makeClipboard(opts = {}) {
+const makeClipboard = (opts = {}) => {
   const ctx = makeContext(opts);
   const cb = new Clipboard(ctx);
   cb.initialize();
   return { ctx, cb };
-}
+};
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 

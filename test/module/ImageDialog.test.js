@@ -6,7 +6,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeContext() {
+const makeContext = () => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
@@ -17,7 +17,7 @@ function makeContext() {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
 describe('ImageDialog', () => {
   it('invokes editor.insertImage with selected alignment', () => {

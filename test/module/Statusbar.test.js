@@ -6,7 +6,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeContext(options = {}) {
+const makeContext = (options = {}) => {
   const container = document.createElement('div');
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
@@ -22,7 +22,7 @@ function makeContext(options = {}) {
       ...options,
     },
   };
-}
+};
 
 describe('Statusbar', () => {
   it('updates word/char counters and applies warning/exceeded classes', () => {

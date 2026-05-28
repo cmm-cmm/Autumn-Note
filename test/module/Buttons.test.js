@@ -70,10 +70,10 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
-  try { window.getSelection().removeAllRanges(); } catch (_) {}
+  try { window.getSelection().removeAllRanges(); } catch (_) { void _; }
 });
 
-function makeCtx(overrides = {}) {
+const makeCtx = (overrides = {}) => {
   const container = document.createElement('div');
   container.className = 'an-container';
   const editable = document.createElement('div');
@@ -86,7 +86,7 @@ function makeCtx(overrides = {}) {
     invoke: vi.fn(),
     ...overrides,
   };
-}
+};
 
 // ── Button contract ────────────────────────────────────────────────────────────
 

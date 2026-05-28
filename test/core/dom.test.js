@@ -691,7 +691,7 @@ describe('placeCaret', () => {
     placeCaret(el);
     const sel = window.getSelection();
     expect(sel).not.toBeNull();
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       expect(sel.getRangeAt(0).collapsed).toBe(true);
     }
     document.body.innerHTML = '';

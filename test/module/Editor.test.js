@@ -12,7 +12,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function makeContext(html = '<p>x</p>') {
+const makeContext = (html = '<p>x</p>') => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = html;
@@ -23,7 +23,7 @@ function makeContext(html = '<p>x</p>') {
     invoke: vi.fn((path, raw) => (path === 'clipboard.resolveImages' ? raw : undefined)),
     triggerEvent: vi.fn(),
   };
-}
+};
 
 describe('Editor content helpers', () => {
   it('getHTML strips zero-width spaces before returning', () => {

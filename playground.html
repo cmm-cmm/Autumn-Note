@@ -382,7 +382,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.6.5</span>
+      <span class="brand-version">v1.6.6</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -817,13 +817,13 @@ function loadFromHash() {
       if (c.height)     document.getElementById('cfg-height').value   = c.height;
     }
     return state.html || null;
-  } catch (_) { return null; }
+  } catch (_) { void _; return null; }
 }
 
 function saveState() {
   try {
     localStorage.setItem('an-playground-cfg', JSON.stringify(buildConfig()));
-  } catch (_) {}
+  } catch (_) { void _; }
 }
 
 function loadSavedConfig() {
@@ -839,7 +839,7 @@ function loadSavedConfig() {
     if (saved.maxChars)   document.getElementById('cfg-maxchars').value = saved.maxChars;
     if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
     if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
-  } catch (_) {}
+  } catch (_) { void _; }
 }
 
 // ── Bootstrap ─────────────────────────────────────────────

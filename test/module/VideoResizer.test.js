@@ -15,7 +15,7 @@ const VIDEO_HTML = `
     <div class="an-video-shield"></div>
   </div>`;
 
-function makeContext(html = VIDEO_HTML) {
+const makeContext = (html = VIDEO_HTML) => {
   const container = document.createElement('div');
   container.className = 'an-container';
   const editable = document.createElement('div');
@@ -28,20 +28,20 @@ function makeContext(html = VIDEO_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeResizer(html) {
+const makeResizer = (html) => {
   const ctx = makeContext(html);
   const vr = new VideoResizer(ctx);
   vr.initialize();
   return { ctx, vr };
-}
+};
 
-function getWrapper(ctx) {
+const getWrapper = (ctx) => {
   const wrapper = ctx.layoutInfo.editable.querySelector('.an-video-wrapper');
   wrapper.getBoundingClientRect = () => ({ top: 50, left: 100, width: 320, height: 180, bottom: 230, right: 420 });
   return wrapper;
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

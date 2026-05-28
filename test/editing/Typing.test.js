@@ -1,14 +1,14 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { handleKeydown } from '../../src/js/editing/Typing.js';
 
-function setCaret(node, offset) {
+const setCaret = (node, offset) => {
   const sel = window.getSelection();
   const range = document.createRange();
   range.setStart(node, offset);
   range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
-}
+};
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -801,7 +801,7 @@ describe('Typing ArrowRight through ZWS anchor then FA icon with text after', ()
     expect(event.preventDefault).toHaveBeenCalled();
     // Cursor should now be in the "end" text
     const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       expect(sel.getRangeAt(0).startContainer).toBe(endText);
     }
   });

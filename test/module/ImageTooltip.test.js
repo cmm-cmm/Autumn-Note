@@ -18,7 +18,7 @@ afterEach(() => {
 
 const IMG_HTML = '<figure class="an-figure"><img src="https://example.com/photo.jpg" alt="photo" style="width:320px;height:240px"><figcaption class="an-figcaption">Caption</figcaption></figure>';
 
-function makeContext(html = IMG_HTML) {
+const makeContext = (html = IMG_HTML) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -31,22 +31,22 @@ function makeContext(html = IMG_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const it2 = new ImageTooltip(ctx);
   it2.initialize();
   return { ctx, it2 };
-}
+};
 
-function showImg(it2, ctx) {
+const showImg = (it2, ctx) => {
   const img = ctx.layoutInfo.editable.querySelector('img');
   img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
   it2._activeImg = img;
   it2._show(img);
   return img;
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

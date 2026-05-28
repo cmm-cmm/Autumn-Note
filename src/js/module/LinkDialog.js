@@ -88,7 +88,7 @@ export class LinkDialog extends BaseDialog {
     // Try to find currently selected anchor
     const sel = globalThis.getSelection();
     let anchor = null;
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       let node = sel.getRangeAt(0).startContainer;
       while (node) {
         if (node.nodeName === 'A') { anchor = node; break; }

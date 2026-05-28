@@ -4,17 +4,17 @@ import { History } from '../../src/js/editing/History.js';
 // ---------------------------------------------------------------------------
 // helpers — build a minimal contenteditable div
 // ---------------------------------------------------------------------------
-function makeEditable(html = '<p>hello</p>') {
+const makeEditable = (html = '<p>hello</p>') => {
   const el = document.createElement('div');
   el.contentEditable = 'true';
   el.innerHTML = html;
   document.body.appendChild(el);
   return el;
-}
+};
 
-function cleanup(el) {
+const cleanup = (el) => {
   if (el?.parentNode) el.remove();
-}
+};
 
 describe('History', () => {
   let el;
@@ -182,7 +182,7 @@ describe('History', () => {
     const sel = window.getSelection();
     // The selection should exist and be collapsed (cursor, not a range)
     expect(sel).not.toBeNull();
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       expect(sel.getRangeAt(0).collapsed).toBe(true);
     }
   });

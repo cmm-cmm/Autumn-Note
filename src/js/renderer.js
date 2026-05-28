@@ -36,7 +36,7 @@ export function renderLayout(targetEl, options) {
   // Restore auto-saved content when available; fall back to element content
   let initialContent = '';
   if (options.autoSave && options.autoSaveKey) {
-    try { initialContent = localStorage.getItem(options.autoSaveKey) || ''; } catch (_) {}
+    try { initialContent = localStorage.getItem(options.autoSaveKey) || ''; } catch (_) { void _; }
   }
   if (!initialContent) {
     initialContent = targetEl.tagName === 'TEXTAREA'
@@ -111,7 +111,7 @@ export function renderLayout(targetEl, options) {
 
   // Hide the original element; keep it in DOM for form submission
   targetEl.style.display = 'none';
-  targetEl.insertAdjacentElement('afterend', container);
+  targetEl.after(container);
 
   return { container, editable };
 }

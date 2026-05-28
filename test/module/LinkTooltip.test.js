@@ -13,7 +13,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function makeContext(html = '<p><a href="https://example.com">link</a></p>') {
+const makeContext = (html = '<p><a href="https://example.com">link</a></p>') => {
   const container = document.createElement('div');
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
@@ -26,14 +26,14 @@ function makeContext(html = '<p><a href="https://example.com">link</a></p>') {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const lt = new LinkTooltip(ctx);
   lt.initialize();
   return { ctx, lt };
-}
+};
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -123,7 +123,7 @@ describe('LinkTooltip._truncateUrl', () => {
 
 // ── _show / _hide ─────────────────────────────────────────────────────────────
 
-function showAnchor(lt, ctx, anchorHref = 'https://example.com') {
+const showAnchor = (lt, ctx, anchorHref = 'https://example.com') => {
   const anchor = ctx.layoutInfo.editable.querySelector('a') || (() => {
     const a = document.createElement('a');
     a.href = anchorHref;
@@ -134,7 +134,7 @@ function showAnchor(lt, ctx, anchorHref = 'https://example.com') {
   lt._activeAnchor = anchor; // _show() does not set _activeAnchor — set it manually
   lt._show(anchor);
   return anchor;
-}
+};
 
 describe('LinkTooltip._show', () => {
   it('shows the tooltip with URL label', () => {

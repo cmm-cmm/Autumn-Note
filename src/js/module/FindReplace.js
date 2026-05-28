@@ -298,8 +298,7 @@ export class FindReplace extends BaseDialog {
         range.surroundContents(mark);
         this._matches.push({ mark });
       } catch (_) {
-        // surroundContents fails when the range crosses element boundaries.
-        // This can happen with <br> inside matched text — skip safely.
+        void _; // surroundContents fails when the range crosses element boundaries
         this._matches.push({ mark: null });
       }
     }
@@ -328,7 +327,7 @@ export class FindReplace extends BaseDialog {
     // Reuse compiled regex when query and case-sensitivity haven't changed
     if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive) {
       const flags = this._caseSensitive ? 'g' : 'gi';
-      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
       this._queryRegex = new RegExp(escaped, flags);
       this._lastQuery = query;
       this._lastCaseSensitive = this._caseSensitive;

@@ -11,7 +11,7 @@ if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
 
-function makeContext(html = '<p>Hello world hello</p>') {
+const makeContext = (html = '<p>Hello world hello</p>') => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = html;
@@ -21,14 +21,14 @@ function makeContext(html = '<p>Hello world hello</p>') {
     locale: en,
     invoke: vi.fn(),
   };
-}
+};
 
-function makeDialog(html) {
+const makeDialog = (html) => {
   const ctx = makeContext(html);
   const fr = new FindReplace(ctx);
   fr.initialize();
   return { ctx, fr };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

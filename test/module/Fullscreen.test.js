@@ -6,7 +6,7 @@ afterEach(() => {
   document.body.style.overflow = '';
 });
 
-function makeContext() {
+const makeContext = () => {
   const container = document.createElement('div');
   container.style.height = '420px';
   document.body.appendChild(container);
@@ -14,7 +14,7 @@ function makeContext() {
     layoutInfo: { container },
     invoke: vi.fn(),
   };
-}
+};
 
 describe('Fullscreen', () => {
   it('activates and deactivates fullscreen state', () => {

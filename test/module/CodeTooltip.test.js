@@ -14,7 +14,7 @@ afterEach(() => {
 
 const CODE_HTML = '<pre><code class="language-javascript">const x = 1;</code></pre>';
 
-function makeContext(html = CODE_HTML) {
+const makeContext = (html = CODE_HTML) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -28,14 +28,14 @@ function makeContext(html = CODE_HTML) {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeTooltip(html) {
+const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const ct = new CodeTooltip(ctx);
   ct.initialize();
   return { ctx, ct };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -255,7 +255,7 @@ describe('CodeTooltip._syncLangSelect', () => {
   it('sets select value from data-language attribute', () => {
     const { ct, ctx } = makeTooltip();
     const pre = ctx.layoutInfo.editable.querySelector('pre');
-    pre.setAttribute('data-language', 'javascript');
+    pre.dataset.language = 'javascript';
     ct._activePre = pre;
     ct._syncLangSelect();
     expect(ct._langSelect.value).toBe('javascript');
@@ -359,7 +359,7 @@ describe('CodeTooltip._onLangChange', () => {
     ct._onLangChange();
     const codeEl = pre.querySelector('code');
     expect(codeEl.className).toBe('');
-    expect(pre.hasAttribute('data-language')).toBe(false);
+    expect(pre.dataset.language).toBeUndefined();
   });
 
   it('does nothing when no activePre', () => {

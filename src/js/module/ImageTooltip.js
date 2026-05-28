@@ -284,9 +284,11 @@ export class ImageTooltip {
     const next    = (prev + delta + 360) % 360; // normalise to [0, 360)
     // Preserve any other transform functions (e.g. scale), replace only rotate()
     const cleaned = current.replace(/rotate\(-?[\d.]+deg\)/, '').trim();
-    img.style.transform = cleaned
-      ? `${cleaned} rotate(${next}deg)`
-      : next === 0 ? '' : `rotate(${next}deg)`;
+    if (cleaned) {
+      img.style.transform = `${cleaned} rotate(${next}deg)`;
+    } else {
+      img.style.transform = next === 0 ? '' : `rotate(${next}deg)`;
+    }
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
     requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });

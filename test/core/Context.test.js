@@ -6,14 +6,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function makeContext(userOptions = {}) {
+const makeContext = (userOptions = {}) => {
   const target = document.createElement('textarea');
   document.body.appendChild(target);
   return new Context(target, userOptions);
-}
+};
 
 // Inject a mock editor module so invoke('editor.*') works
-function withEditorModule(ctx, overrides = {}) {
+const withEditorModule = (ctx, overrides = {}) => {
   const mockEditor = {
     getHTML:      vi.fn(() => '<p>hello</p>'),
     setHTML:      vi.fn(),
@@ -30,9 +30,9 @@ function withEditorModule(ctx, overrides = {}) {
   };
   ctx._modules.set('editor', mockEditor);
   return mockEditor;
-}
+};
 
-function withStatusbarModule(ctx, overrides = {}) {
+const withStatusbarModule = (ctx, overrides = {}) => {
   const mockStatusbar = {
     getWordCount: vi.fn(() => 3),
     getCharCount: vi.fn(() => 11),
@@ -40,7 +40,7 @@ function withStatusbarModule(ctx, overrides = {}) {
   };
   ctx._modules.set('statusbar', mockStatusbar);
   return mockStatusbar;
-}
+};
 
 describe('Context event system', () => {
   it('calls both subscribed handlers and option callback via triggerEvent', () => {

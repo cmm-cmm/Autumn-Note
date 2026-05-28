@@ -136,17 +136,19 @@ export class ContextMenu {
       this._disposers.push(on(editable, 'contextmenu', (e) => this._onContextMenu(e)));
     }
 
-    this._disposers.push(on(document, 'click', (e) => this._maybeHide(e)));
-    this._disposers.push(on(document, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Escape') this.hide(); }));
-    this._disposers.push(on(globalThis, 'scroll', () => this.hide(), { passive: true }));
+    this._disposers.push(
+      on(document, 'click', (e) => this._maybeHide(e)),
+      on(document, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Escape') this.hide(); }),
+      on(globalThis, 'scroll', () => this.hide(), { passive: true }),
+    );
 
     return this;
   }
 
   destroy() {
-    this._menuDisposers.forEach((d) => { try { d(); } catch (_e) {} });
+    this._menuDisposers.forEach((d) => { try { d(); } catch (_e) { void _e; } });
     this._menuDisposers = [];
-    this._disposers.forEach((d) => { try { d(); } catch (_e) {} });
+    this._disposers.forEach((d) => { try { d(); } catch (_e) { void _e; } });
     this._disposers = [];
     if (this.el) this.el.remove();
     this.el = null;
@@ -379,7 +381,7 @@ export class ContextMenu {
     event.preventDefault();
 
     const winSel = globalThis.getSelection();
-    this._savedRange = (winSel && winSel.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
+    this._savedRange = (winSel?.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     this._renderItems(this._items);
 
     // Open below the selected text so the selection stays visible.
@@ -395,7 +397,7 @@ export class ContextMenu {
           // Keep X at click position (feels natural); Y just below the selection.
           openY = selRect.bottom + 4;
         }
-      } catch (_) {}
+      } catch (_) { void _; }
     }
 
     this._lastX = openX;
@@ -418,8 +420,8 @@ export class ContextMenu {
 
   _reposition(x, y) {
     if (!this.el) return;
-    const rx = x !== undefined ? x : this._lastX;
-    const ry = y !== undefined ? y : this._lastY;
+    const rx = x === undefined ? this._lastX : x;
+    const ry = y === undefined ? this._lastY : y;
     const w = this.el.offsetWidth;
     const h = this.el.offsetHeight;
     let left = rx;

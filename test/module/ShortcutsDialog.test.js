@@ -6,11 +6,11 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-function makeDialog() {
+const makeDialog = () => {
   const dialog = new ShortcutsDialog({ locale: en });
   dialog.initialize();
   return dialog;
-}
+};
 
 describe('ShortcutsDialog', () => {
   it('shows updated keyboard shortcut text and closes via close button', () => {

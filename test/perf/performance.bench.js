@@ -15,10 +15,10 @@ import { JSDOM } from 'jsdom';
 // ---------------------------------------------------------------------------
 
 /** Build a DOM environment for benchmarks that need document/window globals */
-function makeDoc(html = '') {
+const makeDoc = (html = '') => {
   const dom = new JSDOM(`<body>${html}</body>`);
   return dom.window.document;
-}
+};
 
 // ---------------------------------------------------------------------------
 // 1. Clipboard — _cleanSocialHtml  (O(n²) while vs O(n) reverse-pass)

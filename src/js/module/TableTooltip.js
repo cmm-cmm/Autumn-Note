@@ -190,10 +190,7 @@ export class TableTooltip {
       on(editable, 'mousedown', onSelMousedown),
       on(editable, 'mousemove', onSelMousemove),
       on(document, 'mouseup',   onSelMouseup),
-    );
-    // ────────────────────────────────────────────────────────────────────────
-
-    this._disposers.push(
+      // ──────────────────────────────────────────────────────────────────────
       on(editable, 'mouseover', (e) => {
         if (this.context.layoutInfo.container.classList.contains('an-disabled')) return;
         const table = /** @type {Element} */ (e.target)?.closest('table');
@@ -309,22 +306,27 @@ export class TableTooltip {
       _startY   = e.clientY;
       _table    = _nearCell.closest('table');
       if (_edge === 'col') {
-        _startW   = _nearCell.offsetWidth;
-        _colIdx   = getVisualColIndex(_nearCell);
-        // Cache column cells once so onDocMove never runs querySelectorAll per frame.
-        // F-1: skip merged cells (colSpan > 1) — setting width on a merged cell
-        // distributes it equally across all spanned columns instead of resizing
-        // only the target column.  Rows that have an individual cell at this
-        // visual column index are resized independently as expected.
+        // Right edge of a merged cell = last spanned column, not the start column
+        _colIdx = getVisualColIndex(_nearCell) + (_nearCell.colSpan || 1) - 1;
+        // Cache non-merged cells at that column — merged cells cannot be individually
+        // resized per column (F-1: colSpan > 1 distributes width across all spanned cols)
         _colCells = _colIdx >= 0
           ? Array.from(_table.querySelectorAll('tr'))
               .map(r => getCellAtVisualCol(r, _colIdx))
               .filter(Boolean)
               .filter(c => (c.colSpan || 1) === 1)
           : [];
+        // Use the actual column width from a non-merged cell; fall back to per-column estimate
+        _startW = _colCells.length > 0
+          ? _colCells[0].offsetWidth
+          : Math.max(30, Math.round(_nearCell.offsetWidth / (_nearCell.colSpan || 1)));
         document.body.style.cursor = 'col-resize';
       } else {
-        _row    = _nearCell.closest('tr');
+        // Bottom edge of a merged cell = last spanned row, not the cell's own <tr>
+        const tr = _nearCell.closest('tr');
+        const rowStart = tr ? Array.from(_table.rows).indexOf(tr) : 0;
+        const lastRowIdx = rowStart + (_nearCell.rowSpan || 1) - 1;
+        _row    = _table.rows[lastRowIdx] || tr;
         _startH = _row ? _row.offsetHeight : 40;
         document.body.style.cursor = 'row-resize';
       }
@@ -734,7 +736,8 @@ export class TableTooltip {
     const refRow = selectedRows.reduce((best, r) => {
       const bi = allRows.indexOf(best);
       const ri = allRows.indexOf(r);
-      return position === 'above' ? (ri < bi ? r : best) : (ri > bi ? r : best);
+      if (position === 'above') return ri < bi ? r : best;
+      return ri > bi ? r : best;
     }, selectedRows[0]);
     const colCount = Array.from(refRow.cells).reduce((sum, c) => sum + (c.colSpan || 1), 0);
     const newRow = document.createElement('tr');
@@ -747,7 +750,7 @@ export class TableTooltip {
       newRow.appendChild(td);
     }
     if (position === 'above') refRow.parentElement?.insertBefore(newRow, refRow);
-    else refRow.insertAdjacentElement('afterend', newRow);
+    else refRow.after(newRow);
     requestAnimationFrame(() => this._positionNear(this._activeTable));
     this.context.invoke('editor.afterCommand');
   }
@@ -865,8 +868,21 @@ export class TableTooltip {
     first.colSpan = maxC - minC + 1;
     first.rowSpan = maxR - minR + 1;
     first.style.verticalAlign = 'middle';
-    first.innerHTML = rectCells.map((c) => c.innerHTML).join('');
-    rectCells.slice(1).forEach((c) => c.remove());
+    first.style.height = '';
+    first.style.minHeight = '';
+
+    // Merge content: collect non-empty inner HTML, join with <br> separator
+    const parts = rectCells
+      .map((c) => c.innerHTML.replace(/^(<br\s*\/?>|\s)+$/i, '').trim())
+      .filter((h) => h !== '');
+    first.innerHTML = parts.length ? parts.join('<br>') : '<br>';
+
+    rectCells.slice(1).forEach((c) => {
+      const row = c.parentElement;
+      c.remove();
+      // Remove the parent <tr> if it is now completely empty
+      if (row && row.cells.length === 0) row.remove();
+    });
 
     this._clearSelection();
     this.context.invoke('editor.afterCommand');
@@ -939,7 +955,7 @@ export class TableTooltip {
       let ref = null;
       for (const tc of targetRow.cells) {
         const tp = cellPos.get(tc);
-        if (tp && tp.c > c) { ref = tc; break; }
+        if (tp?.c > c) { ref = tc; break; }
       }
       for (let dc = 0; dc < cs; dc++) {
         targetRow.insertBefore(createElement(tag, {}, ['\u00a0']), ref);
@@ -1043,9 +1059,12 @@ export class TableTooltip {
         : this.context.locale.tooltips.table.rowHeightPx;
       this._sizeInputEl.min   = '1';
       this._sizeInputEl.max   = '2000';
-      this._sizeInputEl.value = isCol
-        ? (cell.offsetWidth || 120)
-        : (cell.closest('tr') ? (cell.closest('tr').offsetHeight || 40) : 40);
+      if (isCol) {
+        this._sizeInputEl.value = cell.offsetWidth || 120;
+      } else {
+        const refRow = cell.closest('tr');
+        this._sizeInputEl.value = refRow ? (refRow.offsetHeight || 40) : 40;
+      }
       this._sizeApply = (val) => {
         const table = cell.closest('table');
         if (!table) return;
@@ -1140,18 +1159,17 @@ export class TableTooltip {
       on(pop, 'mousedown', (e) => e.preventDefault()),
       on(pop, 'mouseenter', () => this._clearTimers()),
       on(pop, 'mouseleave', () => this._scheduleHide()),
+      // Close on outside click
+      on(document, 'click', (e) => {
+        const et = /** @type {Node} */ (e.target);
+        if (this._shadePopover &&
+            this._shadePopover.style.display !== 'none' &&
+            !this._shadePopover.contains(et) &&
+            !this._el?.contains(et)) {
+          this._hideCellShadePopover();
+        }
+      }),
     );
-
-    // Close on outside click
-    this._disposers.push(on(document, 'click', (e) => {
-      const et = /** @type {Node} */ (e.target);
-      if (this._shadePopover &&
-          this._shadePopover.style.display !== 'none' &&
-          !this._shadePopover.contains(et) &&
-          !this._el?.contains(et)) {
-        this._hideCellShadePopover();
-      }
-    }));
 
     return pop;
   }

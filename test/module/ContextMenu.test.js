@@ -18,7 +18,7 @@ const SIMPLE_ITEMS = [
   { name: 'italic', label: 'Italic', icon: '', action: vi.fn() },
 ];
 
-function makeContext(itemsOverride) {
+const makeContext = (itemsOverride) => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -36,24 +36,24 @@ function makeContext(itemsOverride) {
     triggerEvent: vi.fn(),
     on: vi.fn(() => () => {}),
   };
-}
+};
 
 // Use defaultItems (no override) to cover all _renderItems paths including
 // color pickers, table grid, submenu, and separator types
-function makeMenu(items) {
+const makeMenu = (items) => {
   const ctx = makeContext(items); // undefined → defaultItems
   const cm = new ContextMenu(ctx);
   cm.initialize();
   return { ctx, cm };
-}
+};
 
 // For simple item tests, use explicit SIMPLE_ITEMS
-function makeSimpleMenu() {
+const makeSimpleMenu = () => {
   const ctx = makeContext(SIMPLE_ITEMS);
   const cm = new ContextMenu(ctx);
   cm.initialize();
   return { ctx, cm };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

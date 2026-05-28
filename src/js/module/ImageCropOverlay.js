@@ -58,6 +58,7 @@ function drawCropToCanvas(img, naturalRect, renderW, renderH) {
         ctx.getImageData(0, 0, 1, 1);
         resolve(canvas);
       } catch (_) {
+        void _; // canvas tainted — resolve with null
         resolve(null);
       }
     };

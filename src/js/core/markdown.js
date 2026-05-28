@@ -105,7 +105,7 @@ function _domToMd(node, depth = 0) {
       const rows = Array.from(el.querySelectorAll('tr'));
       if (!rows.length) return inner();
       const cellTexts = rows.map((tr) =>
-        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replaceAll('|', '\\|')),
+        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replaceAll('|', String.raw`\|`)),
       );
       const cols = Math.max(...cellTexts.map((r) => r.length));
       const padRow = (row) => { const r = [...row]; while (r.length < cols) r.push(''); return r; };

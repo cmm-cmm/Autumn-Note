@@ -30,6 +30,7 @@ export class AutoSaveRestore {
       saved = localStorage.getItem(key);
       meta = JSON.parse(localStorage.getItem(metaKey) || '{}');
     } catch (_) {
+      void _;
       return this;
     }
 
@@ -39,7 +40,7 @@ export class AutoSaveRestore {
     if (timeout > 0) {
       const ageMs = Date.now() - (meta.savedAt || 0);
       if (ageMs > timeout * 86400000) {
-        try { localStorage.removeItem(key); localStorage.removeItem(metaKey); } catch (_) {}
+        try { localStorage.removeItem(key); localStorage.removeItem(metaKey); } catch (_) { void _; }
         return this;
       }
     }
@@ -113,7 +114,7 @@ export class AutoSaveRestore {
     try {
       localStorage.removeItem(key);
       localStorage.removeItem(key + ':asrmeta');
-    } catch (_) {}
+    } catch (_) { void _; }
     this._removeBanner();
   }
 

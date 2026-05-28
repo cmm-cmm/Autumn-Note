@@ -31,7 +31,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function makeEditor(options = {}) {
+const makeEditor = (options = {}) => {
   const ta = document.createElement('textarea');
   ta.value = '<p>Hello world</p>';
   document.body.appendChild(ta);
@@ -41,7 +41,7 @@ function makeEditor(options = {}) {
     ...options,
   });
   return { editor, ta };
-}
+};
 
 // ── Focus / blur ────────────────────────────────────────────────────────────
 

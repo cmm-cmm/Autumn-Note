@@ -570,7 +570,7 @@ export class IconDialog extends BaseDialog {
     const _tdAnchor = /** @type {Element|null} */ (_sc.nodeType === 1 ? _sc : _sc.parentElement)
       ?.closest('td, th');
     range.deleteContents();
-    if (_tdAnchor && _tdAnchor.isConnected && !_tdAnchor.contains(range.startContainer)) {
+    if (_tdAnchor?.isConnected && !_tdAnchor.contains(range.startContainer)) {
       range.setStart(_tdAnchor, 0);
       range.collapse(true);
     }

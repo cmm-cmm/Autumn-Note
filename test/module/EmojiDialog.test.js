@@ -8,7 +8,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function makeContext() {
+const makeContext = () => {
   const container = document.createElement('div');
   const editable  = document.createElement('div');
   editable.contentEditable = 'true';
@@ -22,14 +22,14 @@ function makeContext() {
     invoke: vi.fn(),
     triggerEvent: vi.fn(),
   };
-}
+};
 
-function makeDialog() {
+const makeDialog = () => {
   const ctx = makeContext();
   const ed = new EmojiDialog(ctx);
   ed.initialize();
   return { ctx, ed };
-}
+};
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 

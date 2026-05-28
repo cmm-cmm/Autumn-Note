@@ -2,14 +2,14 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { IconDialog } from '../../src/js/module/IconDialog.js';
 import { en } from '../../src/js/i18n/en.js';
 
-function setCaret(node, offset) {
+const setCaret = (node, offset) => {
   const sel = window.getSelection();
   const range = document.createRange();
   range.setStart(node, offset);
   range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
-}
+};
 
 afterEach(() => {
   document.body.innerHTML = '';

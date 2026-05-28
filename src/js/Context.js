@@ -256,7 +256,7 @@ export class Context {
           const key = this.options.autoSaveKey;
           localStorage.setItem(key, this.getHTML());
           localStorage.setItem(key + ':asrmeta', JSON.stringify({ savedAt: Date.now() }));
-        } catch (_) {}
+        } catch (_) { void _; }
       });
       this._disposers.push(d4);
     }
@@ -551,7 +551,7 @@ export class Context {
 
     for (const { plugin } of this._plugins.values()) {
       if (typeof plugin.uninstall === 'function') {
-        try { plugin.uninstall(this); } catch (_) {}
+        try { plugin.uninstall(this); } catch (_) { void _; }
       }
     }
     this._plugins.clear();
