@@ -863,8 +863,21 @@ export class TableTooltip {
     first.colSpan = maxC - minC + 1;
     first.rowSpan = maxR - minR + 1;
     first.style.verticalAlign = 'middle';
-    first.innerHTML = rectCells.map((c) => c.innerHTML).join('');
-    rectCells.slice(1).forEach((c) => c.remove());
+    first.style.height = '';
+    first.style.minHeight = '';
+
+    // Merge content: collect non-empty inner HTML, join with <br> separator
+    const parts = rectCells
+      .map((c) => c.innerHTML.replace(/^(<br\s*\/?>|\s)+$/i, '').trim())
+      .filter((h) => h !== '');
+    first.innerHTML = parts.length ? parts.join('<br>') : '<br>';
+
+    rectCells.slice(1).forEach((c) => {
+      const row = c.parentElement;
+      c.remove();
+      // Remove the parent <tr> if it is now completely empty
+      if (row && row.cells.length === 0) row.remove();
+    });
 
     this._clearSelection();
     this.context.invoke('editor.afterCommand');
