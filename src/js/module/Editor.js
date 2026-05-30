@@ -525,6 +525,14 @@ export class Editor {
     return this._history ? this._history.canRedo() : false;
   }
 
+  getUndoCount() {
+    return this._history ? this._history.getUndoCount() : 0;
+  }
+
+  getRedoCount() {
+    return this._history ? this._history.getRedoCount() : 0;
+  }
+
   // ---------------------------------------------------------------------------
   // Style commands (delegated to Style module)
   // ---------------------------------------------------------------------------

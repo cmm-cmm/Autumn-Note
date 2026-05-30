@@ -122,6 +122,10 @@ const ICONS = {
   alignRight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>`,
   alignJustify: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>`,
   headerRow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="3" y="3" width="18" height="8" rx="1" fill="currentColor" opacity="0.2"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/></svg>`,
+  sortAsc:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/><path d="M15 9l3-3 3 3"/><line x1="18" y1="6" x2="18" y2="18"/></svg>`,
+  sortDesc:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="13" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/><path d="M15 15l3 3 3-3"/><line x1="18" y1="6" x2="18" y2="18"/></svg>`,
+  exportCSV:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  cellPadding: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="7" y="7" width="10" height="10" rx="0.5" stroke-dasharray="2 1.5"/></svg>`,
 };
 
 const SHADE_PRESETS = [
@@ -456,6 +460,8 @@ export class TableTooltip {
     el.appendChild(this._makeBtn(ICONS.colLeft,   L.addColumnLeft,   () => this._addColumn('left')));
     el.appendChild(this._makeBtn(ICONS.colRight,  L.addColumnRight,  () => this._addColumn('right')));
     el.appendChild(this._makeBtn(ICONS.deleteCol, L.deleteColumn,    () => this._deleteColumn()));
+    el.appendChild(this._makeBtn(ICONS.sortAsc,  L.sortAsc,  () => this._sortColumn('asc')));
+    el.appendChild(this._makeBtn(ICONS.sortDesc, L.sortDesc, () => this._sortColumn('desc')));
 
     el.appendChild(this._sep());
 
@@ -499,6 +505,7 @@ export class TableTooltip {
     el.appendChild(this._makeBtn(ICONS.colWidth,   L.columnWidth,      () => this._openSizePopover('col')));
     el.appendChild(this._makeBtn(ICONS.rowHeight,  L.rowHeight,        () => this._openSizePopover('row')));
     el.appendChild(this._makeBtn(ICONS.tableBorder,L.tableBorderWidth, () => this._openSizePopover('border')));
+    el.appendChild(this._makeBtn(ICONS.cellPadding, L.cellPadding, () => this._openSizePopover('cellPadding')));
 
     // Table border color button — color-strip variant like shade button
     const borderColorBtn = createElement('button', {
@@ -523,6 +530,9 @@ export class TableTooltip {
 
     // Delete table (danger)
     el.appendChild(this._makeBtn(ICONS.deleteTable, L.deleteTable, () => this._deleteTable(), true));
+
+    el.appendChild(this._sep());
+    el.appendChild(this._makeBtn(ICONS.exportCSV, L.exportCSV, () => this._exportTableCSV()));
 
     // Keep tooltip alive while hovering.
     // Don't schedule hide on mouseleave when the size popover is open —
@@ -1098,6 +1108,22 @@ export class TableTooltip {
         }
         this.context.invoke('editor.afterCommand');
       };
+    } else if (type === 'cellPadding') {
+      const cells = this._getSelectedCells();
+      const firstCell = cells[0] || this._getCell();
+      const currentPad = firstCell
+        ? (Number.parseInt(firstCell.style.padding, 10) ||
+           Number.parseInt(firstCell.style.paddingTop, 10) || 4)
+        : 4;
+      this._sizeTitleEl.textContent = this.context.locale.tooltips.table.cellPaddingPx;
+      this._sizeInputEl.min   = '0';
+      this._sizeInputEl.max   = '40';
+      this._sizeInputEl.value = String(currentPad);
+      this._sizeApply = (val) => {
+        const activeCells = this._getSelectedCells();
+        activeCells.forEach((c) => { if (c) c.style.padding = `${val}px`; });
+        this.context.invoke('editor.afterCommand');
+      };
     } else {
       const isCol = type === 'col';
       const activeCells = this._getSelectedCells().filter((c) => {
@@ -1417,5 +1443,57 @@ export class TableTooltip {
     }
 
     this.context.invoke('editor.afterCommand');
+  }
+
+  _sortColumn(direction) {
+    const table = this._activeTable;
+    if (!table) return;
+    const cell = this._getCell();
+    if (!cell) return;
+    const colIdx = getVisualColIndex(cell);
+    if (colIdx === -1) return;
+    const tbody = table.querySelector('tbody') || table;
+    const rows = Array.from(tbody.querySelectorAll(':scope > tr'));
+    if (rows.length < 2) return;
+    rows.sort((a, b) => {
+      const aCell = getCellAtVisualCol(a, colIdx);
+      const bCell = getCellAtVisualCol(b, colIdx);
+      const aText = (aCell?.textContent || '').trim();
+      const bText = (bCell?.textContent || '').trim();
+      const aNum = parseFloat(aText);
+      const bNum = parseFloat(bText);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return direction === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+      return direction === 'asc'
+        ? aText.localeCompare(bText)
+        : bText.localeCompare(aText);
+    });
+    rows.forEach((row) => tbody.appendChild(row));
+    this.context.invoke('editor.afterCommand');
+  }
+
+  _exportTableCSV() {
+    const table = this._activeTable;
+    if (!table) return;
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const csv = rows.map((row) =>
+      Array.from(row.querySelectorAll('td, th'))
+        .map((cell) => {
+          const text = (cell.textContent || '').trim().replace(/"/g, '""');
+          return `"${text}"`;
+        })
+        .join(',')
+    ).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'table.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 }

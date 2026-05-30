@@ -379,6 +379,12 @@ export declare class Context {
    */
   clearHistory(): void;
 
+  /** Returns the number of available undo steps. */
+  getUndoCount(): number;
+
+  /** Returns the number of available redo steps. */
+  getRedoCount(): number;
+
   /** Returns true when the editor has no meaningful content. */
   isEmpty(): boolean;
 

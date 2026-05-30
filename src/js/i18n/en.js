@@ -160,6 +160,7 @@ export const en = {
     replaceBtn:         'Replace',
     replaceAllBtn:      'Replace All',
     noResults:          'No results',
+    useRegex:           'Use Regular Expression',
     close:              '\u00d7',
   },
 
@@ -281,6 +282,7 @@ export const en = {
       disableWordWrap:    'Disable Word Wrap',
       convertToParagraph: 'Convert to Paragraph',
       deleteCodeBlock:    'Delete Code Block',
+      lineNumbers:        'Toggle Line Numbers',
     },
     table: {
       ariaLabel:          'Table actions',
@@ -312,6 +314,11 @@ export const en = {
       tableBorderWidthPx: 'Table Border Width (px)',
       cancelBtn:          'Cancel',
       applyBtn:           'Apply',
+      sortAsc:            'Sort Ascending',
+      sortDesc:           'Sort Descending',
+      exportCSV:          'Export as CSV',
+      cellPadding:        'Cell Padding',
+      cellPaddingPx:      'Cell Padding (px)',
     },
     video: {
       ariaLabel:    'Video actions',

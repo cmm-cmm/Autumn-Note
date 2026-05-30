@@ -158,6 +158,7 @@ export const zh = {
     replaceAriaLabel:   '替换为',
     replaceBtn:         '替换',
     noResults:          '没有结果',
+    useRegex:           '使用正则表达式',
     replaceAllBtn:      '全部替换',
     close:              '\u00d7',
   },
@@ -276,6 +277,7 @@ export const zh = {
       disableWordWrap:    '禁用自动换行',
       convertToParagraph: '转换为段落',
       deleteCodeBlock:    '删除代码块',
+      lineNumbers:        '切换行号',
     },
     table: {
       ariaLabel:          '表格操作',
@@ -298,6 +300,11 @@ export const zh = {
       tableBorderWidthPx: '表格边框宽度 (px)',
       cancelBtn:          '取消',
       applyBtn:           '应用',
+      sortAsc:            '升序排列',
+      sortDesc:           '降序排列',
+      exportCSV:          '导出为 CSV',
+      cellPadding:        '单元格内边距',
+      cellPaddingPx:      '单元格内边距 (px)',
     },
     video: {
       ariaLabel:    '视频操作',

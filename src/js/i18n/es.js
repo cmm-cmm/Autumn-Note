@@ -157,6 +157,7 @@ export const es = {
     replaceAriaLabel:   'Reemplazar con',
     replaceBtn:         'Reemplazar',
     noResults:          'Sin resultados',
+    useRegex:           'Usar expresión regular',
     replaceAllBtn:      'Reemplazar todo',
     close:              '×',
   },
@@ -275,6 +276,7 @@ export const es = {
       disableWordWrap:    'Desactivar ajuste de línea',
       convertToParagraph: 'Convertir en párrafo',
       deleteCodeBlock:    'Eliminar bloque de código',
+      lineNumbers:        'Alternar números de línea',
     },
     table: {
       ariaLabel:          'Acciones de tabla',
@@ -297,6 +299,11 @@ export const es = {
       tableBorderWidthPx: 'Grosor del borde (px)',
       cancelBtn:          'Cancelar',
       applyBtn:           'Aplicar',
+      sortAsc:            'Ordenar ascendente',
+      sortDesc:           'Ordenar descendente',
+      exportCSV:          'Exportar como CSV',
+      cellPadding:        'Relleno de celda',
+      cellPaddingPx:      'Relleno de celda (px)',
     },
     video: {
       ariaLabel:    'Acciones de vídeo',

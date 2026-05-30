@@ -386,6 +386,22 @@ export class Context {
   }
 
   /**
+   * Returns the number of available undo steps.
+   * @returns {number}
+   */
+  getUndoCount() {
+    return this.invoke('editor.getUndoCount') ?? 0;
+  }
+
+  /**
+   * Returns the number of available redo steps.
+   * @returns {number}
+   */
+  getRedoCount() {
+    return this.invoke('editor.getRedoCount') ?? 0;
+  }
+
+  /**
    * Returns true when the editor has no meaningful content.
    * @returns {boolean}
    */

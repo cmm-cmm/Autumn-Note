@@ -14,6 +14,7 @@ const ICONS = {
   wrapOn:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><path d="M3 12h15a3 3 0 0 1 0 6H3"/><polyline points="6 15 3 18 6 21"/></svg>`,
   toParagraph:`<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M9 4h8a4 4 0 0 1 0 8H9V4z"/></svg>`,
   deleteCode: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  lineNumbers:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-2-2-2"/></svg>`,
 };
 
 export class CodeTooltip {
@@ -26,6 +27,8 @@ export class CodeTooltip {
     this._hideTimer = null;
     this._disposers = [];
     this._copyBtn = null;
+    this._wrapBtn = null;
+    this._lineNumbersBtn = null;
     this._langSelect = null;
     this._prismScript = null; // script element while Prism is loading
   }
@@ -127,6 +130,10 @@ export class CodeTooltip {
     this._wrapBtn = this._makeBtn(ICONS.wrapOn, L.toggleWordWrap, () => this._toggleWrap());
     el.appendChild(this._wrapBtn);
 
+    // Toggle line numbers
+    this._lineNumbersBtn = this._makeBtn(ICONS.lineNumbers, L.lineNumbers, () => this._toggleLineNumbers());
+    el.appendChild(this._lineNumbersBtn);
+
     el.appendChild(this._sep());
 
     // Convert to normal paragraph
@@ -183,6 +190,7 @@ export class CodeTooltip {
     this._showTimer = setTimeout(() => {
       this._activePre = pre;
       this._syncWrapBtn();
+      this._syncLineNumbersBtn();
       this._syncLangSelect();
       this._show(pre);
     }, SHOW_DELAY);
@@ -248,6 +256,13 @@ export class CodeTooltip {
       : this.context.locale.tooltips.code.enableWordWrap;
   }
 
+  _syncLineNumbersBtn() {
+    if (!this._activePre || !this._lineNumbersBtn) return;
+    const on = this._activePre.classList.contains('an-code-line-numbers');
+    this._lineNumbersBtn.classList.toggle('active', on);
+    this._lineNumbersBtn.title = this.context.locale.tooltips.code.lineNumbers;
+  }
+
   _syncLangSelect() {
     if (!this._activePre || !this._langSelect) return;
     const codeEl = this._activePre.querySelector('code');
@@ -299,6 +314,14 @@ export class CodeTooltip {
     this._syncWrapBtn();
     this.context.invoke('editor.afterCommand');
     this._positionNear(pre);
+  }
+
+  _toggleLineNumbers() {
+    const pre = this._activePre;
+    if (!pre) return;
+    pre.classList.toggle('an-code-line-numbers');
+    this._syncLineNumbersBtn();
+    this.context.invoke('editor.afterCommand');
   }
 
   /**

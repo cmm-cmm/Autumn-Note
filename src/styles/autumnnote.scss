@@ -108,6 +108,12 @@
   user-select: none;
   // Round the top corners to match the container border-radius
   border-radius: $an-radius $an-radius 0 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .an-btn-group {
@@ -477,6 +483,26 @@
       padding: 0;
     }
   }
+
+  // Code block line numbers (toggled via CodeTooltip)
+  .an-code-line-numbers {
+    position: relative;
+    padding-left: 3.5em !important;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3em;
+      background: rgba(0, 0, 0, 0.04);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      pointer-events: none;
+      z-index: 0;
+    }
+  }
+
   a       { color: $an-primary; }
   hr      { border: none; border-top: 2px solid $an-border; margin: 1em 0; }
   img.an-image {
@@ -1936,6 +1962,11 @@ $an-video-accent: #8b5cf6; // violet-500
     code:not([class*='language-']) {
       background: #313244;
       color: #cdd6f4;
+    }
+
+    .an-code-line-numbers::before {
+      background: rgba(255, 255, 255, 0.05);
+      border-right-color: rgba(255, 255, 255, 0.1);
     }
 
     hr { border-color: #3f3f5f; }

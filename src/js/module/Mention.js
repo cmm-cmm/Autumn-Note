@@ -269,14 +269,18 @@ export class Mention {
     this._query = query;
     clearTimeout(this._debounceTimer);
     this._debounceTimer = setTimeout(() => {
-      this._cfg.onSearch(this._query, (items) => {
+      const cb = (items) => {
         if (!Array.isArray(items) || items.length === 0) {
           this._hideDropdown();
           return;
         }
         this._renderItems(items);
         this._showDropdown();
-      });
+      };
+      const result = this._cfg.onSearch(this._query, cb);
+      if (result && typeof result.then === 'function') {
+        result.then(cb).catch(() => this._hideDropdown());
+      }
     }, this._cfg.debounce);
   }
 

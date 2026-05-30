@@ -157,6 +157,7 @@ export const de = {
     replaceAriaLabel:   'Ersetzen durch',
     replaceBtn:         'Ersetzen',
     noResults:          'Keine Ergebnisse',
+    useRegex:           'Regulären Ausdruck verwenden',
     replaceAllBtn:      'Alle ersetzen',
     close:              '×',
   },
@@ -275,6 +276,7 @@ export const de = {
       disableWordWrap:    'Zeilenumbruch deaktivieren',
       convertToParagraph: 'In Absatz umwandeln',
       deleteCodeBlock:    'Codeblock löschen',
+      lineNumbers:        'Zeilennummern umschalten',
     },
     table: {
       ariaLabel:          'Tabellen-Aktionen',
@@ -297,6 +299,11 @@ export const de = {
       tableBorderWidthPx: 'Tabellenrahmenbreite (px)',
       cancelBtn:          'Abbrechen',
       applyBtn:           'Anwenden',
+      sortAsc:            'Aufsteigend sortieren',
+      sortDesc:           'Absteigend sortieren',
+      exportCSV:          'Als CSV exportieren',
+      cellPadding:        'Zellauffüllung',
+      cellPaddingPx:      'Zellauffüllung (px)',
     },
     video: {
       ariaLabel:    'Video-Aktionen',
