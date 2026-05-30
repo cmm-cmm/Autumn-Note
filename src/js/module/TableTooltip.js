@@ -117,6 +117,11 @@ const ICONS = {
   selectCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z" fill="currentColor" opacity="0.15"/><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z"/></svg>`,
   cellShade:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11L8.93 3.36a1 1 0 0 0-1.29.08L3.22 7.8a1 1 0 0 0-.07 1.29L11 20"/><path d="m5 14 5-5"/><path d="M22 22a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2c0-1.5 2.5-5 3.5-5s3.5 3.5 3.5 5z"/></svg>`,
   borderColor: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="1"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="1.5"/><line x1="12" y1="3" x2="12" y2="17" stroke-width="1.5"/><path d="M3 21h18" stroke-width="3"/></svg>`,
+  alignLeft:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>`,
+  alignCenter:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/></svg>`,
+  alignRight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>`,
+  alignJustify: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>`,
+  headerRow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="3" y="3" width="18" height="8" rx="1" fill="currentColor" opacity="0.2"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/></svg>`,
 };
 
 const SHADE_PRESETS = [
@@ -457,6 +462,15 @@ export class TableTooltip {
     // Merge cells
     el.appendChild(this._makeBtn(ICONS.mergeCells,   L.mergeCells,   () => this._mergeCells()));
     el.appendChild(this._makeBtn(ICONS.unmergeCells, L.unmergeCells, () => this._unmergeCells()));
+
+    el.appendChild(this._sep());
+
+    // Cell text alignment
+    el.appendChild(this._makeBtn(ICONS.alignLeft,    L.cellAlignLeft,    () => this._applyCellAlign('left')));
+    el.appendChild(this._makeBtn(ICONS.alignCenter,  L.cellAlignCenter,  () => this._applyCellAlign('center')));
+    el.appendChild(this._makeBtn(ICONS.alignRight,   L.cellAlignRight,   () => this._applyCellAlign('right')));
+    el.appendChild(this._makeBtn(ICONS.alignJustify, L.cellAlignJustify, () => this._applyCellAlign('justify')));
+    el.appendChild(this._makeBtn(ICONS.headerRow,    L.toggleHeaderRow,  () => this._toggleHeaderRow()));
 
     el.appendChild(this._sep());
 
@@ -1184,7 +1198,7 @@ export class TableTooltip {
     const customRow = createElement('div', { class: 'an-context-color-custom' });
     const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#ffffff' }));
     const customLabel = createElement('span');
-    customLabel.textContent = 'Custom…';
+    customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
     this._disposers.push(on(colorInput, 'change', () => this._applyCellShade(colorInput.value)));
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
@@ -1282,7 +1296,7 @@ export class TableTooltip {
     const customRow = createElement('div', { class: 'an-context-color-custom' });
     const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#000000' }));
     const customLabel = createElement('span');
-    customLabel.textContent = 'Custom…';
+    customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
     this._disposers.push(on(colorInput, 'change', () => this._applyBorderColor(colorInput.value)));
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
@@ -1346,5 +1360,62 @@ export class TableTooltip {
     if (!this._borderColorStrip || !this._el || this._el.style.display === 'none') return;
     const firstCell = this._activeTable?.querySelector('td, th');
     this._borderColorStrip.style.background = firstCell?.style.borderColor || 'transparent';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cell text alignment
+  // ---------------------------------------------------------------------------
+
+  _applyCellAlign(align) {
+    const cells = this._getSelectedCells();
+    cells.forEach((c) => { if (c) c.style.textAlign = align; });
+    this.context.invoke('editor.afterCommand');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Toggle header row
+  // ---------------------------------------------------------------------------
+
+  _toggleHeaderRow() {
+    const table = this._activeTable;
+    if (!table) return;
+    const firstRow = table.querySelector('tr');
+    if (!firstRow) return;
+
+    const isInThead = firstRow.closest('thead') !== null;
+
+    if (isInThead) {
+      // Convert th → td and move row to tbody
+      let tbody = table.querySelector('tbody');
+      if (!tbody) {
+        tbody = document.createElement('tbody');
+        table.appendChild(tbody);
+      }
+      Array.from(firstRow.cells).forEach((cell) => {
+        const td = document.createElement('td');
+        td.innerHTML = cell.innerHTML;
+        td.style.cssText = cell.style.cssText;
+        firstRow.replaceChild(td, cell);
+      });
+      tbody.insertBefore(firstRow, tbody.firstChild);
+      const thead = table.querySelector('thead');
+      if (thead && thead.rows.length === 0) thead.remove();
+    } else {
+      // Convert td → th and move row to thead
+      let thead = table.querySelector('thead');
+      if (!thead) {
+        thead = document.createElement('thead');
+        table.insertBefore(thead, table.firstChild);
+      }
+      Array.from(firstRow.cells).forEach((cell) => {
+        const th = document.createElement('th');
+        th.innerHTML = cell.innerHTML;
+        th.style.cssText = cell.style.cssText;
+        firstRow.replaceChild(th, cell);
+      });
+      thead.appendChild(firstRow);
+    }
+
+    this.context.invoke('editor.afterCommand');
   }
 }

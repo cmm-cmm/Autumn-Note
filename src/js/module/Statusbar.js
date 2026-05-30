@@ -90,9 +90,9 @@ export class Statusbar {
     }
 
     // Counters
-    this._wordCountEl = createElement('span', { class: 'an-word-count' });
-    this._charCountEl = createElement('span', { class: 'an-char-count' });
-    const info = createElement('div', { class: 'an-status-info' });
+    this._wordCountEl = createElement('span', { class: 'an-word-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    this._charCountEl = createElement('span', { class: 'an-char-count', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    const info = createElement('div', { class: 'an-status-info', 'aria-label': 'Editor statistics' });
     info.appendChild(this._wordCountEl);
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);

@@ -67,7 +67,7 @@ export interface AsnOptions {
   /** Top offset in px for sticky toolbar (e.g. height of a fixed nav bar). */
   stickyToolbarOffset?: number;
   /** Colour theme: 'light' (default) | 'dark'. */
-  theme?: 'light' | 'dark';
+  theme?: 'light' | 'dark' | 'auto';
   /** Auto-load Prism.js for syntax highlighting inside code blocks. */
   codeHighlight?: boolean;
   /** CDN base URL for Prism assets. */
@@ -399,6 +399,9 @@ export declare class Context {
 
   /** Returns the current character count (excluding newlines) of the editor content. */
   getCharCount(): number;
+
+  /** Returns an array of heading objects representing the table of contents. */
+  getTableOfContents(): { level: number; text: string; element: HTMLElement }[];
 
   /** Downloads the editor content as an HTML file. */
   downloadHTML(filename?: string): void;

@@ -70,11 +70,14 @@ export function renderLayout(targetEl, options) {
 
   container.appendChild(editable);
 
-  // Apply dark theme — also add to body so floating elements (dialogs, tooltips,
-  // popovers) appended to document.body inherit the dark CSS rules.
+  // Apply theme — also add to body so floating elements (dialogs, tooltips,
+  // popovers) appended to document.body inherit the CSS rules.
   if (options.theme === 'dark') {
     container.classList.add('an-theme-dark');
     document.body.classList.add('an-theme-dark');
+  } else if (options.theme === 'auto') {
+    container.classList.add('an-theme-auto');
+    document.body.classList.add('an-theme-auto');
   }
 
   // Read-only mode
