@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.0.9
+ * @version 1.7.0
  */
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ export interface AsnOptions {
   /** Top offset in px for sticky toolbar (e.g. height of a fixed nav bar). */
   stickyToolbarOffset?: number;
   /** Colour theme: 'light' (default) | 'dark'. */
-  theme?: 'light' | 'dark';
+  theme?: 'light' | 'dark' | 'auto';
   /** Auto-load Prism.js for syntax highlighting inside code blocks. */
   codeHighlight?: boolean;
   /** CDN base URL for Prism assets. */
@@ -158,8 +158,13 @@ export interface MentionOptions {
   maxResults?: number;
   /** Debounce delay in ms before calling onSearch. Default: 200. */
   debounce?: number;
-  /** Required. Called with (query, callback) to fetch matching items. */
-  onSearch: (query: string, callback: (items: MentionItem[]) => void) => void;
+  /**
+   * Called to fetch matching items for the given query.
+   * Supports both callback and Promise styles:
+   * - Callback: `onSearch(query, callback) { callback(items); }`
+   * - Promise:  `async onSearch(query) { return items; }`
+   */
+  onSearch: (query: string, callback: (items: MentionItem[]) => void) => void | Promise<MentionItem[]>;
   /** Optional. Return custom HTML string for the inserted chip, or null to use the default. */
   onInsert?: (item: MentionItem) => string | null;
   /** CSS class added to the inserted mention chip. Default: 'an-mention'. */
@@ -379,6 +384,12 @@ export declare class Context {
    */
   clearHistory(): void;
 
+  /** Returns the number of available undo steps. */
+  getUndoCount(): number;
+
+  /** Returns the number of available redo steps. */
+  getRedoCount(): number;
+
   /** Returns true when the editor has no meaningful content. */
   isEmpty(): boolean;
 
@@ -399,6 +410,9 @@ export declare class Context {
 
   /** Returns the current character count (excluding newlines) of the editor content. */
   getCharCount(): number;
+
+  /** Returns an array of heading objects representing the table of contents. */
+  getTableOfContents(): { level: number; text: string; element: HTMLElement }[];
 
   /** Downloads the editor content as an HTML file. */
   downloadHTML(filename?: string): void;

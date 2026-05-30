@@ -221,4 +221,14 @@ export class History {
   canRedo() {
     return this.stackOffset < this.stack.length - 1;
   }
+
+  /** @returns {number} */
+  getUndoCount() {
+    return Math.max(0, this.stackOffset);
+  }
+
+  /** @returns {number} */
+  getRedoCount() {
+    return Math.max(0, this.stack.length - 1 - this.stackOffset);
+  }
 }

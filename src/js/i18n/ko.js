@@ -157,6 +157,7 @@ export const ko = {
     replaceAriaLabel:   '바꿀 내용',
     replaceBtn:         '바꾸기',
     noResults:          '결과 없음',
+    useRegex:           '정규식 사용',
     replaceAllBtn:      '모두 바꾸기',
     close:              '×',
   },
@@ -275,6 +276,7 @@ export const ko = {
       disableWordWrap:    '줄 바꿈 해제',
       convertToParagraph: '단락으로 변환',
       deleteCodeBlock:    '코드 블록 삭제',
+      lineNumbers:        '줄 번호 전환',
     },
     table: {
       ariaLabel:          '표 작업',
@@ -297,6 +299,11 @@ export const ko = {
       tableBorderWidthPx: '표 테두리 너비 (px)',
       cancelBtn:          '취소',
       applyBtn:           '적용',
+      sortAsc:            '오름차순 정렬',
+      sortDesc:           '내림차순 정렬',
+      exportCSV:          'CSV로 내보내기',
+      cellPadding:        '셀 패딩',
+      cellPaddingPx:      '셀 패딩 (px)',
     },
     video: {
       ariaLabel:    '동영상 작업',

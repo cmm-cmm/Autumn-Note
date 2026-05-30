@@ -30,6 +30,7 @@ export class FindReplace extends BaseDialog {
     this._matches = [];
     this._currentIndex = -1;
     this._caseSensitive = false;
+    this._useRegex = false;
     /** @type {'find'|'replace'} */
     this._mode = 'find';
 
@@ -37,6 +38,7 @@ export class FindReplace extends BaseDialog {
     this._queryRegex = null;
     this._lastQuery = null;
     this._lastCaseSensitive = null;
+    this._lastUseRegex = null;
 
     this._focusTimer = null;
   }
@@ -169,6 +171,14 @@ export class FindReplace extends BaseDialog {
     });
     caseBtn.textContent = 'Aa';
 
+    const regexBtn = createElement('button', {
+      type: 'button',
+      class: 'an-fr-icon-btn',
+      title: L.useRegex,
+      'aria-label': L.useRegex,
+    });
+    regexBtn.textContent = '.*';
+
     const prevBtn = createElement('button', {
       type: 'button',
       class: 'an-fr-icon-btn',
@@ -188,7 +198,7 @@ export class FindReplace extends BaseDialog {
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;
 
-    searchBar.append(findInput, caseCheckbox, caseBtn, prevBtn, nextBtn, counter);
+    searchBar.append(findInput, caseCheckbox, caseBtn, regexBtn, prevBtn, nextBtn, counter);
     box.appendChild(searchBar);
 
     // ---- Replace row: [input] [Replace] [All]  (hidden by default) ----
@@ -249,7 +259,14 @@ export class FindReplace extends BaseDialog {
         this._replace();
       }
     });
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11);
+    const dRegex = on(regexBtn, 'click', () => {
+      this._useRegex = !this._useRegex;
+      regexBtn.classList.toggle('an-fr-icon-btn--active', this._useRegex);
+      this._queryRegex = null; // force recompile
+      this._lastQuery = null;
+      this._onSearch();
+    });
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, dRegex);
 
     return overlay;
   }
@@ -324,14 +341,22 @@ export class FindReplace extends BaseDialog {
    */
   _findRawMatches(query, root) {
     const results = [];
-    // Reuse compiled regex when query and case-sensitivity haven't changed
-    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive) {
+    // Reuse compiled regex when query, case-sensitivity, and regex mode haven't changed
+    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive || this._lastUseRegex !== this._useRegex) {
       const flags = this._caseSensitive ? 'g' : 'gi';
-      const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-      this._queryRegex = new RegExp(escaped, flags);
+      try {
+        const pattern = this._useRegex
+          ? query
+          : query.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+        this._queryRegex = new RegExp(pattern, flags);
+      } catch (_) {
+        this._queryRegex = null;
+      }
       this._lastQuery = query;
       this._lastCaseSensitive = this._caseSensitive;
+      this._lastUseRegex = this._useRegex;
     }
+    if (!this._queryRegex) return results;
     const re = this._queryRegex;
 
     // Cap results to prevent blocking the main thread on very large documents

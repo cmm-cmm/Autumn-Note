@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-05-30
+
+### Added
+- **Table Sort** — TableTooltip now includes Sort Ascending / Sort Descending buttons; rows are sorted by the active column using numeric comparison for numbers and locale-aware string comparison for text; handles merged-cell layouts correctly via visual column mapping
+- **CSV Export** — new Export CSV button in TableTooltip downloads the full table as a UTF-8 (BOM) `.csv` file with proper quote-escaping for cells containing commas or quotes
+- **Cell Padding control** — new Cell Padding button in TableTooltip opens the size popover and lets the user set a uniform padding on all selected cells (in px)
+- **Header Row Toggle** — new Toggle Header Row button converts the first row between `<thead><th>` (header) and `<tbody><td>` (data), creating or removing the `<thead>` wrapper as needed
+- **Find & Replace — Regex mode** — a new `.*` toggle button in the Find & Replace panel enables JavaScript regular expression search; regex compilation is cached across keystrokes; localised in all 8 language packs (`useRegex` key)
+- **Code block line numbers** — CodeTooltip now includes a Toggle Line Numbers button that applies/removes the `an-code-line-numbers` class; a CSS counter generates numbered gutters without JavaScript; state syncs when switching blocks
+- **Undo / Redo count API** — `context.getUndoCount()` and `context.getRedoCount()` return the number of available undo/redo steps; useful for disabling Undo/Redo buttons or displaying a step counter in host applications
+- **Promise-based `@mention` search** — `mention.onSearch` can now return a `Promise<MentionItem[]>` (or be an `async` function) in addition to the existing callback style; rejected Promises automatically hide the dropdown
+- **Dark-auto theme** — new `theme: 'auto'` option applies the `.an-theme-auto` class and uses `@media (prefers-color-scheme: dark)` to follow the OS dark-mode preference automatically; `'light'` and `'dark'` continue to force a specific theme regardless of OS setting
+
+### Changed
+- **Statusbar accessibility** — word-count element now carries `role="status"` and `aria-live="polite"` so screen readers announce word / character count updates; info container gets `aria-label="Editor statistics"`
+- **TableTooltip colspan/rowspan** — all column-level operations (add, delete, resize, sort, padding) now use visual column index mapping that correctly accounts for cells with `colspan` or `rowspan`, eliminating off-by-one issues on tables with merged cells
+
+### Development
+- `types/index.d.ts` updated to v1.7.0: `MentionOptions.onSearch` typed to accept both callback and `Promise` return forms
+- All 1 556 tests defined; 1 542 pass (14 pre-existing `AutoSaveRestore` jsdom environment failures unrelated to this release)
+
+---
+
 ## [1.6.7] - 2026-05-28
 
 ### Fixed

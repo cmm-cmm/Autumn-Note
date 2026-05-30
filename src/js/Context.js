@@ -386,6 +386,22 @@ export class Context {
   }
 
   /**
+   * Returns the number of available undo steps.
+   * @returns {number}
+   */
+  getUndoCount() {
+    return this.invoke('editor.getUndoCount') ?? 0;
+  }
+
+  /**
+   * Returns the number of available redo steps.
+   * @returns {number}
+   */
+  getRedoCount() {
+    return this.invoke('editor.getRedoCount') ?? 0;
+  }
+
+  /**
    * Returns true when the editor has no meaningful content.
    * @returns {boolean}
    */
@@ -514,6 +530,22 @@ export class Context {
   }
 
   /**
+   * Returns an array of heading objects representing the table of contents.
+   * Each entry has: level (1-6), text (heading text), element (DOM element).
+   * @returns {{ level: number, text: string, element: HTMLElement }[]}
+   */
+  getTableOfContents() {
+    const headings = Array.from(
+      this.layoutInfo.editable.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    );
+    return headings.map((el) => ({
+      level: parseInt(el.tagName[1], 10),
+      text: el.textContent?.trim() ?? '',
+      element: /** @type {HTMLElement} */ (el),
+    }));
+  }
+
+  /**
    * Sets whether the editor is disabled (readonly).
    * @param {boolean} disabled
    */
@@ -561,14 +593,18 @@ export class Context {
 
     const container = this.layoutInfo.container;
     const wasDark = container?.classList.contains('an-theme-dark');
+    const wasAuto = container?.classList.contains('an-theme-auto');
     if (container?.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
       container.remove();
     }
-    // If this was a dark editor and no other dark containers remain, clean up body
+    // Clean up body theme classes if no other editors of that type remain
     if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {
       document.body.classList.remove('an-theme-dark');
+    }
+    if (wasAuto && !document.querySelector('.an-container.an-theme-auto')) {
+      document.body.classList.remove('an-theme-auto');
     }
 
     if (typeof this.options.onDestroy === 'function') {

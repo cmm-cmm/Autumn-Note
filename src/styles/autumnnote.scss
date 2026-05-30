@@ -108,6 +108,12 @@
   user-select: none;
   // Round the top corners to match the container border-radius
   border-radius: $an-radius $an-radius 0 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .an-btn-group {
@@ -477,6 +483,26 @@
       padding: 0;
     }
   }
+
+  // Code block line numbers (toggled via CodeTooltip)
+  .an-code-line-numbers {
+    position: relative;
+    padding-left: 3.5em !important;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3em;
+      background: rgba(0, 0, 0, 0.04);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      pointer-events: none;
+      z-index: 0;
+    }
+  }
+
   a       { color: $an-primary; }
   hr      { border: none; border-top: 2px solid $an-border; margin: 1em 0; }
   img.an-image {
@@ -1938,6 +1964,11 @@ $an-video-accent: #8b5cf6; // violet-500
       color: #cdd6f4;
     }
 
+    .an-code-line-numbers::before {
+      background: rgba(255, 255, 255, 0.05);
+      border-right-color: rgba(255, 255, 255, 0.1);
+    }
+
     hr { border-color: #3f3f5f; }
 
     table, .an-table {
@@ -2326,6 +2357,156 @@ $an-video-accent: #8b5cf6; // violet-500
 
 .an-theme-dark .an-editable ul.an-checklist li:has(input[type='checkbox']:checked) {
   color: $an-dark-muted;
+}
+
+// =============================================================================
+// Auto theme — mirrors dark theme when OS prefers dark and no explicit theme set
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+  .an-theme-auto {
+    border-color: #3f3f5f;
+    background: #1e1e2e;
+    color: #cdd6f4;
+
+    &.an-focused {
+      border-color: #89b4fa;
+      box-shadow: 0 0 0 3px rgba(#89b4fa, 0.2);
+    }
+
+    .an-toolbar {
+      background: #181825;
+      border-color: #3f3f5f;
+    }
+
+    .an-btn {
+      color: #cdd6f4;
+
+      &:hover {
+        background: #2a2a3e;
+        border-color: #3f3f5f;
+        color: #cdd6f4;
+
+        svg { stroke: #cdd6f4; }
+      }
+
+      &.active {
+        background: #1a3a5c;
+        border-color: #89b4fa;
+        color: #89b4fa;
+
+        svg { stroke: #89b4fa; }
+      }
+
+      &.an-btn-primary {
+        background: #3b5bdb;
+        border-color: #3b5bdb;
+        color: #fff;
+      }
+    }
+
+    .an-select {
+      background-color: #1e1e2e;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+
+      &:hover, &:focus { border-color: #89b4fa; }
+    }
+
+    .an-editable {
+      background: #1e1e2e;
+      color: #cdd6f4;
+
+      a { color: #89b4fa; }
+
+      blockquote {
+        border-color: #3f3f5f;
+        color: #a6adc8;
+      }
+
+      pre:not([class*='language-']),
+      code:not([class*='language-']) {
+        background: #313244;
+        color: #cdd6f4;
+      }
+
+      hr { border-color: #3f3f5f; }
+
+      table, .an-table {
+        td, th { border-color: #3f3f5f; }
+        th { background: #313244; }
+      }
+
+      &.an-placeholder::before { color: #6c7086; }
+
+      figcaption.an-figcaption { color: #6c7086; }
+    }
+
+    .an-statusbar {
+      background: #181825;
+      border-color: #3f3f5f;
+      color: #6c7086;
+    }
+
+    .an-link-tooltip,
+    .an-contextmenu {
+      background: #24273a;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+    }
+
+    .an-link-tooltip-url { color: #89b4fa; }
+
+    .an-link-tooltip-btn {
+      color: #a6adc8;
+
+      &:hover {
+        background: #2a2a3e;
+        color: #cdd6f4;
+      }
+    }
+
+    .an-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
+
+    .an-dialog-box {
+      background: #24273a;
+      color: #cdd6f4;
+      border: 1px solid #3f3f5f;
+    }
+
+    .an-dialog-title { color: #cdd6f4; }
+
+    .an-input {
+      background: #313244;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+
+      &:focus {
+        border-color: #89b4fa;
+        box-shadow: 0 0 0 3px rgba(#89b4fa, 0.15);
+      }
+    }
+
+    .an-color-popup,
+    .an-table-picker-popup,
+    .an-size-popover,
+    .an-cell-shade-popover {
+      background: #24273a;
+      border-color: #3f3f5f;
+      color: #cdd6f4;
+    }
+
+    .an-context-color-swatch {
+      border-color: rgba(255, 255, 255, 0.15);
+      &:hover { border-color: rgba(255, 255, 255, 0.5); }
+    }
+
+    .an-label { color: #cdd6f4; }
+  }
+
+  .an-theme-auto .an-editable ul.an-checklist li:has(input[type='checkbox']:checked) {
+    color: $an-dark-muted;
+  }
 }
 
 // =============================================================================

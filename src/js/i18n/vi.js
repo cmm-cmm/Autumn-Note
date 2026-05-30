@@ -159,6 +159,7 @@ export const vi = {
     replaceBtn:         'Thay thế',
     replaceAllBtn:      'Thay thế tất cả',
     noResults:          'Không có kết quả',
+    useRegex:           'Dùng biểu thức chính quy',
     close:              '\u00d7',
   },
 
@@ -276,6 +277,7 @@ export const vi = {
       disableWordWrap:    'Tắt xuống dòng',
       convertToParagraph: 'Chuyển thành đoạn văn',
       deleteCodeBlock:    'Xóa khối mã',
+      lineNumbers:        'Bật/Tắt số dòng',
     },
     table: {
       ariaLabel:          'Hành động bảng',
@@ -300,6 +302,11 @@ export const vi = {
       tableBorderWidthPx: 'Độ rộng viền bảng (px)',
       cancelBtn:          'Hủy',
       applyBtn:           'Áp dụng',
+      sortAsc:            'Sắp xếp tăng dần',
+      sortDesc:           'Sắp xếp giảm dần',
+      exportCSV:          'Xuất CSV',
+      cellPadding:        'Khoảng đệm ô',
+      cellPaddingPx:      'Khoảng đệm ô (px)',
     },
     video: {
       ariaLabel:    'Hành động video',

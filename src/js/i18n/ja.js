@@ -158,6 +158,7 @@ export const ja = {
     replaceAriaLabel:   '置換後のテキスト',
     replaceBtn:         '置換',
     noResults:          '結果なし',
+    useRegex:           '正規表現を使用',
     replaceAllBtn:      'すべて置換',
     close:              '\u00d7',
   },
@@ -276,6 +277,7 @@ export const ja = {
       disableWordWrap:    '折り返しを無効にする',
       convertToParagraph: '段落に変換',
       deleteCodeBlock:    'コードブロックを削除',
+      lineNumbers:        '行番号を切り替え',
     },
     table: {
       ariaLabel:          'テーブル操作',
@@ -298,6 +300,11 @@ export const ja = {
       tableBorderWidthPx: 'テーブルの枠幅 (px)',
       cancelBtn:          'キャンセル',
       applyBtn:           '適用',
+      sortAsc:            '昇順で並べ替え',
+      sortDesc:           '降順で並べ替え',
+      exportCSV:          'CSVとしてエクスポート',
+      cellPadding:        'セルの余白',
+      cellPaddingPx:      'セルの余白 (px)',
     },
     video: {
       ariaLabel:    '動画操作',

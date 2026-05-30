@@ -158,6 +158,7 @@ export const fr = {
     replaceAriaLabel:   'Remplacer par',
     replaceBtn:         'Remplacer',
     noResults:          'Aucun résultat',
+    useRegex:           'Utiliser une expression régulière',
     replaceAllBtn:      'Tout remplacer',
     close:              '\u00d7',
   },
@@ -276,6 +277,7 @@ export const fr = {
       disableWordWrap:    'Désactiver le retour à la ligne',
       convertToParagraph: 'Convertir en paragraphe',
       deleteCodeBlock:    'Supprimer le bloc de code',
+      lineNumbers:        'Activer/désactiver les numéros de ligne',
     },
     table: {
       ariaLabel:          'Actions du tableau',
@@ -298,6 +300,11 @@ export const fr = {
       tableBorderWidthPx: 'Épaisseur des bordures (px)',
       cancelBtn:          'Annuler',
       applyBtn:           'Appliquer',
+      sortAsc:            'Trier par ordre croissant',
+      sortDesc:           'Trier par ordre décroissant',
+      exportCSV:          'Exporter en CSV',
+      cellPadding:        'Rembourrage des cellules',
+      cellPaddingPx:      'Rembourrage des cellules (px)',
     },
     video: {
       ariaLabel:    'Actions de la vidéo',
