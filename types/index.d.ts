@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.0.9
+ * @version 1.7.0
  */
 
 // ---------------------------------------------------------------------------
@@ -158,8 +158,13 @@ export interface MentionOptions {
   maxResults?: number;
   /** Debounce delay in ms before calling onSearch. Default: 200. */
   debounce?: number;
-  /** Required. Called with (query, callback) to fetch matching items. */
-  onSearch: (query: string, callback: (items: MentionItem[]) => void) => void;
+  /**
+   * Called to fetch matching items for the given query.
+   * Supports both callback and Promise styles:
+   * - Callback: `onSearch(query, callback) { callback(items); }`
+   * - Promise:  `async onSearch(query) { return items; }`
+   */
+  onSearch: (query: string, callback: (items: MentionItem[]) => void) => void | Promise<MentionItem[]>;
   /** Optional. Return custom HTML string for the inserted chip, or null to use the default. */
   onInsert?: (item: MentionItem) => string | null;
   /** CSS class added to the inserted mention chip. Default: 'an-mention'. */
