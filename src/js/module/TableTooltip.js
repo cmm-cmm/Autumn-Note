@@ -1184,7 +1184,7 @@ export class TableTooltip {
     const customRow = createElement('div', { class: 'an-context-color-custom' });
     const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#ffffff' }));
     const customLabel = createElement('span');
-    customLabel.textContent = 'Custom…';
+    customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
     this._disposers.push(on(colorInput, 'change', () => this._applyCellShade(colorInput.value)));
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
@@ -1282,7 +1282,7 @@ export class TableTooltip {
     const customRow = createElement('div', { class: 'an-context-color-custom' });
     const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#000000' }));
     const customLabel = createElement('span');
-    customLabel.textContent = 'Custom…';
+    customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
     this._disposers.push(on(colorInput, 'change', () => this._applyBorderColor(colorInput.value)));
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
