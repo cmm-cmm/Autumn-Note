@@ -525,4 +525,45 @@ describe('Mention._onInput debounce path', () => {
     expect(m._hideDropdown).toHaveBeenCalled();
     m.destroy();
   });
+
+  it('supports Promise-based onSearch — resolves with items', async () => {
+    vi.useFakeTimers();
+    const onSearch = vi.fn(() => Promise.resolve(USERS));
+    const m = new Mention(makeContext({ onSearch, debounce: 0 }));
+    m.initialize();
+    const el = m.context.layoutInfo.editable;
+    const tn = document.createTextNode('@al');
+    el.appendChild(tn);
+    setCursor(tn, 3);
+    vi.spyOn(m, '_captureCaretRect').mockImplementation(() => {});
+    vi.spyOn(m, '_renderItems');
+    vi.spyOn(m, '_showDropdown');
+    m._onInput();
+    vi.advanceTimersByTime(0);
+    // Flush the microtask queue for the Promise
+    await Promise.resolve();
+    expect(m._renderItems).toHaveBeenCalledWith(USERS);
+    vi.useRealTimers();
+    m.destroy();
+  });
+
+  it('supports Promise-based onSearch — rejects gracefully', async () => {
+    vi.useFakeTimers();
+    const onSearch = vi.fn(() => Promise.reject(new Error('network')));
+    const m = new Mention(makeContext({ onSearch, debounce: 0 }));
+    m.initialize();
+    const el = m.context.layoutInfo.editable;
+    const tn = document.createTextNode('@al');
+    el.appendChild(tn);
+    setCursor(tn, 3);
+    vi.spyOn(m, '_captureCaretRect').mockImplementation(() => {});
+    vi.spyOn(m, '_hideDropdown');
+    m._onInput();
+    vi.advanceTimersByTime(0);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(m._hideDropdown).toHaveBeenCalled();
+    vi.useRealTimers();
+    m.destroy();
+  });
 });

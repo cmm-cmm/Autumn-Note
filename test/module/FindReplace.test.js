@@ -330,3 +330,67 @@ describe('FindReplace._clearHighlights', () => {
     expect(fr._currentIndex).toBe(-1);
   });
 });
+
+// ── Regex toggle ──────────────────────────────────────────────────────────────
+
+describe('FindReplace regex toggle', () => {
+  it('_useRegex defaults to false', () => {
+    const { fr } = makeDialog('<p>hello</p>');
+    expect(fr._useRegex).toBe(false);
+  });
+
+  it('regex mode finds matches using a regex pattern', () => {
+    const { fr } = makeDialog('<p>foo123bar</p>');
+    fr._useRegex = true;
+    fr._queryRegex = null;
+    fr._lastQuery = null;
+    fr._findInput.value = '\\d+';
+    fr._onSearch();
+    expect(fr._matches.length).toBe(1);
+  });
+
+  it('regex mode is case-insensitive when _caseSensitive is false', () => {
+    const { fr } = makeDialog('<p>Hello HELLO hello</p>');
+    fr._useRegex = true;
+    fr._queryRegex = null;
+    fr._lastQuery = null;
+    fr._findInput.value = 'hello';
+    fr._onSearch();
+    expect(fr._matches.length).toBe(3);
+  });
+
+  it('invalid regex pattern returns no matches and does not throw', () => {
+    const { fr } = makeDialog('<p>hello</p>');
+    fr._useRegex = true;
+    fr._queryRegex = null;
+    fr._lastQuery = null;
+    fr._findInput.value = '[invalid(';
+    expect(() => fr._onSearch()).not.toThrow();
+    expect(fr._matches.length).toBe(0);
+  });
+
+  it('invalidates regex cache when _useRegex changes', () => {
+    const { fr } = makeDialog('<p>a.b</p>');
+    fr._findInput.value = 'a.b';
+    fr._onSearch();
+    const regex1 = fr._queryRegex;
+    fr._useRegex = true;
+    fr._findInput.value = 'a.b';
+    fr._onSearch();
+    expect(fr._queryRegex).not.toBe(regex1);
+  });
+
+  it('regexBtn click toggles _useRegex and re-runs search', () => {
+    const { fr } = makeDialog('<p>foo</p>');
+    const regexBtn = fr._dialog.querySelector('.an-fr-icon-btn[title]');
+    // Find the .* button specifically
+    const allBtns = fr._dialog.querySelectorAll('.an-fr-icon-btn');
+    const regBtn = Array.from(allBtns).find(b => b.textContent === '.*');
+    expect(fr._useRegex).toBe(false);
+    regBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(fr._useRegex).toBe(true);
+    expect(regBtn.classList.contains('an-fr-icon-btn--active')).toBe(true);
+    regBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(fr._useRegex).toBe(false);
+  });
+});
