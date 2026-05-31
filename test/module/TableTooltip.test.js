@@ -665,4 +665,229 @@ describe('TableTooltip sizePopover', () => {
     tt._sizeInputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
+
+  it('cellPadding _sizeApply sets padding on selected cells', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._openSizePopover('cellPadding');
+    tt._sizeInputEl.value = '8';
+    const applyBtn = tt._sizePopover.querySelector('.an-btn-primary');
+    applyBtn.click();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+});
+
+// ── Sort column ───────────────────────────────────────────────────────────────
+
+describe('TableTooltip._sortColumn', () => {
+  const SORTABLE_HTML = `
+  <table class="an-table">
+    <tbody>
+      <tr><td>Banana</td><td>3</td></tr>
+      <tr><td>Apple</td><td>10</td></tr>
+      <tr><td>Cherry</td><td>1</td></tr>
+    </tbody>
+  </table>`;
+
+  it('sorts column ascending (text)', () => {
+    const { tt, ctx } = makeTooltip(SORTABLE_HTML);
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._sortColumn('asc');
+    const rows = table.querySelectorAll('tr');
+    expect(rows[0].querySelector('td').textContent).toBe('Apple');
+    expect(rows[2].querySelector('td').textContent).toBe('Cherry');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('sorts column descending (text)', () => {
+    const { tt, ctx } = makeTooltip(SORTABLE_HTML);
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._sortColumn('desc');
+    const rows = table.querySelectorAll('tr');
+    expect(rows[0].querySelector('td').textContent).toBe('Cherry');
+  });
+
+  it('sorts numeric column ascending', () => {
+    const { tt, ctx } = makeTooltip(SORTABLE_HTML);
+    const table = activateTable(tt, ctx);
+    const cells = table.querySelectorAll('td');
+    const numCell = cells[1]; // second column
+    const r = document.createRange();
+    r.setStart(numCell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._sortColumn('asc');
+    const rows = table.querySelectorAll('tr');
+    expect(rows[0].querySelectorAll('td')[1].textContent).toBe('1');
+    expect(rows[2].querySelectorAll('td')[1].textContent).toBe('10');
+  });
+
+  it('does nothing when no active table', () => {
+    const { tt } = makeTooltip();
+    tt._activeTable = null;
+    expect(() => tt._sortColumn('asc')).not.toThrow();
+  });
+
+  it('does nothing when fewer than 2 rows', () => {
+    const singleRow = `<table class="an-table"><tbody><tr><td>only</td></tr></tbody></table>`;
+    const { tt, ctx } = makeTooltip(singleRow);
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    expect(() => tt._sortColumn('asc')).not.toThrow();
+  });
+});
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+
+describe('TableTooltip._exportTableCSV', () => {
+  it('creates a download link and triggers click', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+
+    const mockUrl = 'blob:mock-url';
+    const mockRevoke = vi.fn();
+    const mockClick = vi.fn();
+    vi.stubGlobal('URL', {
+      createObjectURL: vi.fn(() => mockUrl),
+      revokeObjectURL: mockRevoke,
+    });
+
+    const origAppend = document.body.appendChild.bind(document.body);
+    vi.spyOn(document.body, 'appendChild').mockImplementation((el) => {
+      if (el.tagName === 'A') { el.click = mockClick; }
+      return origAppend(el);
+    });
+
+    tt._exportTableCSV();
+    expect(mockClick).toHaveBeenCalled();
+    expect(mockRevoke).toHaveBeenCalledWith(mockUrl);
+  });
+
+  it('does nothing when no active table', () => {
+    const { tt } = makeTooltip();
+    tt._activeTable = null;
+    expect(() => tt._exportTableCSV()).not.toThrow();
+  });
+
+  it('sort buttons in tooltip trigger _sortColumn', () => {
+    const { tt, ctx } = makeTooltip(
+      `<table class="an-table"><tbody><tr><td>B</td></tr><tr><td>A</td></tr></tbody></table>`
+    );
+    activateTable(tt, ctx);
+    const cell = ctx.layoutInfo.editable.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    vi.spyOn(tt, '_sortColumn');
+    const allBtns = Array.from(tt._el.querySelectorAll('button'));
+    const sortAscBtn = allBtns.find(b => b.title === en.tooltips.table.sortAsc);
+    const sortDescBtn = allBtns.find(b => b.title === en.tooltips.table.sortDesc);
+    expect(sortAscBtn).not.toBeUndefined();
+    sortAscBtn.click();
+    expect(tt._sortColumn).toHaveBeenCalledWith('asc');
+    sortDescBtn.click();
+    expect(tt._sortColumn).toHaveBeenCalledWith('desc');
+  });
+});
+
+// ── _applyCellAlign ───────────────────────────────────────────────────────────
+
+describe('TableTooltip._applyCellAlign', () => {
+  it('sets text-align on selected cells', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._applyCellAlign('center');
+    expect(cell.style.textAlign).toBe('center');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('sets text-align right', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().addRange(r);
+    tt._applyCellAlign('right');
+    expect(cell.style.textAlign).toBe('right');
+  });
+});
+
+// ── _toggleHeaderRow ──────────────────────────────────────────────────────────
+
+describe('TableTooltip._toggleHeaderRow', () => {
+  it('promotes first row to thead when in tbody', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+    tt._toggleHeaderRow();
+    const thead = ctx.layoutInfo.editable.querySelector('thead');
+    expect(thead).not.toBeNull();
+    expect(thead.querySelector('th')).not.toBeNull();
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('demotes header row back to tbody when already in thead', () => {
+    const withThead = `
+    <table class="an-table">
+      <thead><tr><th>H1</th><th>H2</th></tr></thead>
+      <tbody><tr><td>A</td><td>B</td></tr></tbody>
+    </table>`;
+    const { tt, ctx } = makeTooltip(withThead);
+    activateTable(tt, ctx);
+    tt._toggleHeaderRow();
+    const thead = ctx.layoutInfo.editable.querySelector('thead');
+    expect(!thead || thead.rows.length === 0).toBe(true);
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('does nothing when no active table', () => {
+    const { tt } = makeTooltip();
+    tt._activeTable = null;
+    expect(() => tt._toggleHeaderRow()).not.toThrow();
+  });
+});
+
+// ── _applyBorderColor ─────────────────────────────────────────────────────────
+
+describe('TableTooltip._applyBorderColor', () => {
+  it('sets border color on all cells', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+    tt._applyBorderColor('#ff0000');
+    const cells = ctx.layoutInfo.editable.querySelectorAll('td');
+    cells.forEach(c => expect(c.style.borderColor).toBe('rgb(255, 0, 0)'));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('does nothing when no active table', () => {
+    const { tt } = makeTooltip();
+    tt._activeTable = null;
+    expect(() => tt._applyBorderColor('#000')).not.toThrow();
+  });
 });

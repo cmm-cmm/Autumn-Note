@@ -275,3 +275,51 @@ describe('History', () => {
     expect(() => history.undo()).not.toThrow();
   });
 });
+
+// ── getUndoCount / getRedoCount ───────────────────────────────────────────────
+
+describe('History.getUndoCount / getRedoCount', () => {
+  let el;
+  beforeEach(() => {
+    el = document.createElement('div');
+    el.contentEditable = 'true';
+    el.innerHTML = '<p>initial</p>';
+    document.body.appendChild(el);
+  });
+  afterEach(() => { el.remove(); });
+
+  it('getUndoCount is 0 on fresh history', () => {
+    const h = new History(el);
+    expect(h.getUndoCount()).toBe(0);
+  });
+
+  it('getRedoCount is 0 on fresh history', () => {
+    const h = new History(el);
+    expect(h.getRedoCount()).toBe(0);
+  });
+
+  it('getUndoCount increases after recordUndo', () => {
+    const h = new History(el);
+    el.innerHTML = '<p>changed</p>';
+    h.recordUndo();
+    expect(h.getUndoCount()).toBe(1);
+  });
+
+  it('getRedoCount increases after undo', () => {
+    const h = new History(el);
+    el.innerHTML = '<p>changed</p>';
+    h.recordUndo();
+    h.undo();
+    expect(h.getRedoCount()).toBe(1);
+    expect(h.getUndoCount()).toBe(0);
+  });
+
+  it('getUndoCount and getRedoCount together span the full stack', () => {
+    const h = new History(el);
+    el.innerHTML = '<p>step1</p>';
+    h.recordUndo();
+    el.innerHTML = '<p>step2</p>';
+    h.recordUndo();
+    expect(h.getUndoCount() + h.getRedoCount()).toBe(h.stack.length - 1);
+  });
+});
