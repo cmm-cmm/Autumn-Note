@@ -326,4 +326,11 @@ export const fr = {
     imageSize: (maxSize) =>
       `Le fichier image est trop volumineux. La taille maximale autorisée est de ${maxSize}\u00a0Mo.`,
   },
+
+  autoSaveRestore: {
+    found:   'Brouillon trouvé. Restaurer ?',
+    foundAt: 'Brouillon du {date}. Restaurer ?',
+    restore: 'Restaurer',
+    discard: 'Ignorer',
+  },
 };

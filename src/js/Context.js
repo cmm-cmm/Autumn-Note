@@ -339,10 +339,13 @@ export class Context {
 
   /**
    * Returns the current HTML content of the editor.
+   * Zero-width spaces (U+200B) inserted by inline editing helpers are stripped
+   * from the output so they don't leak into the consumer's HTML.
    * @returns {string}
    */
   getHTML() {
-    return this.invoke('editor.getHTML');
+    const html = this.invoke('editor.getHTML');
+    return typeof html === 'string' ? html.replace(/​/g, '') : html;
   }
 
   /**
@@ -543,6 +546,28 @@ export class Context {
       text: el.textContent?.trim() ?? '',
       element: /** @type {HTMLElement} */ (el),
     }));
+  }
+
+  /**
+   * Moves focus into the editable area.
+   */
+  focus() {
+    this.layoutInfo.editable.focus();
+  }
+
+  /**
+   * Removes focus from the editable area.
+   */
+  blur() {
+    this.layoutInfo.editable.blur();
+  }
+
+  /**
+   * Returns true when the editor is currently in fullscreen mode.
+   * @returns {boolean}
+   */
+  isFullscreen() {
+    return this.invoke('fullscreen.isActive') === true;
   }
 
   /**

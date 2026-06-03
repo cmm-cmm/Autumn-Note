@@ -153,6 +153,7 @@ export const en = {
     findPlaceholder:  'Find\u2026',
     searchAriaLabel:  'Search text',
     caseSensitive:    '\u00a0Case sensitive',
+    wholeWord:        'Whole Word',
     prevBtn:          '\u2190 Prev',
     nextBtn:          'Next \u2192',
     replacePlaceholder: 'Replace with\u2026',
@@ -162,6 +163,13 @@ export const en = {
     noResults:          'No results',
     useRegex:           'Use Regular Expression',
     close:              '\u00d7',
+  },
+
+  autoSaveRestore: {
+    found:   'Draft found. Restore?',
+    foundAt: 'Draft from {date}. Restore?',
+    restore: 'Restore',
+    discard: 'Discard',
   },
 
   shortcutsDialog: {

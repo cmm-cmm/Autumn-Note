@@ -325,4 +325,11 @@ export const ko = {
     imageSize: (maxSize) =>
       `이미지 파일이 너무 큽니다. 최대 허용 크기는 ${maxSize} MB입니다.`,
   },
+
+  autoSaveRestore: {
+    found:   '초안을 찾았습니다. 복원하시겠습니까?',
+    foundAt: '{date}의 초안을 찾았습니다. 복원하시겠습니까?',
+    restore: '복원',
+    discard: '삭제',
+  },
 };

@@ -279,7 +279,10 @@ export class Mention {
       };
       const result = this._cfg.onSearch(this._query, cb);
       if (result && typeof result.then === 'function') {
-        result.then(cb).catch(() => this._hideDropdown());
+        result.then(cb).catch((err) => {
+          this._hideDropdown();
+          if (typeof this._cfg.onError === 'function') this._cfg.onError(err);
+        });
       }
     }, this._cfg.debounce);
   }

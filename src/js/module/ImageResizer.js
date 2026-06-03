@@ -204,6 +204,7 @@ export class ImageResizer {
     const isCorner = pos.length === 2; // 'nw','ne','se','sw'
 
     const editable = this.context.layoutInfo.editable;
+    const minSz = this.context.options?.minImageSize ?? 20;
     let _raf = null; // rAF handle — ensures at most one write per paint frame
 
     const onMove = (me) => {
@@ -218,19 +219,19 @@ export class ImageResizer {
         let newW = startW;
         let newH = startH;
 
-        if (pos.includes('e')) newW = Math.max(20, startW + dx);
-        if (pos.includes('w')) newW = Math.max(20, startW - dx);
-        if (pos.includes('s')) newH = Math.max(20, startH + dy);
-        if (pos.includes('n')) newH = Math.max(20, startH - dy);
+        if (pos.includes('e')) newW = Math.max(minSz, startW + dx);
+        if (pos.includes('w')) newW = Math.max(minSz, startW - dx);
+        if (pos.includes('s')) newH = Math.max(minSz, startH + dy);
+        if (pos.includes('n')) newH = Math.max(minSz, startH - dy);
 
         newW = Math.min(newW, maxW);
 
         if (isCorner) {
           if (Math.abs(dx) >= Math.abs(dy)) {
-            newH = Math.max(20, Math.round(newW / aspectRatio));
+            newH = Math.max(minSz, Math.round(newW / aspectRatio));
           } else {
-            newW = Math.min(Math.max(20, Math.round(newH * aspectRatio)), maxW);
-            newH = Math.max(20, Math.round(newW / aspectRatio));
+            newW = Math.min(Math.max(minSz, Math.round(newH * aspectRatio)), maxW);
+            newH = Math.max(minSz, Math.round(newW / aspectRatio));
           }
         }
 

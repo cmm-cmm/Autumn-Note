@@ -187,6 +187,18 @@ export class Clipboard {
     const forcePlain = this._forcePlain;
     this._forcePlain = false;
 
+    // Enforce maxPasteSize limit (default 5 MB)
+    const maxBytes = (this.options.maxPasteSize ?? 5) * 1024 * 1024;
+    if (maxBytes > 0) {
+      const text = clipboardData.getData('text/plain') || '';
+      const html = clipboardData.getData('text/html') || '';
+      const size = Math.max(text.length, html.length);
+      if (size > maxBytes) {
+        event.preventDefault();
+        return;
+      }
+    }
+
     // 1. Image file in clipboard (screenshot, copy-image-from-browser, etc.)
     if (clipboardData.items) {
       const imageItems = Array.from(clipboardData.items).filter(
