@@ -31,6 +31,7 @@ export class FindReplace extends BaseDialog {
     this._currentIndex = -1;
     this._caseSensitive = false;
     this._useRegex = false;
+    this._wholeWord = false;
     /** @type {'find'|'replace'} */
     this._mode = 'find';
 
@@ -39,6 +40,7 @@ export class FindReplace extends BaseDialog {
     this._lastQuery = null;
     this._lastCaseSensitive = null;
     this._lastUseRegex = null;
+    this._lastWholeWord = null;
 
     this._focusTimer = null;
   }
@@ -179,6 +181,14 @@ export class FindReplace extends BaseDialog {
     });
     regexBtn.textContent = '.*';
 
+    const wholeWordBtn = createElement('button', {
+      type: 'button',
+      class: 'an-fr-icon-btn',
+      title: L.wholeWord,
+      'aria-label': L.wholeWord,
+    });
+    wholeWordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="7" y1="21" x2="7" y2="17"/><line x1="17" y1="21" x2="17" y2="17"/></svg>`;
+
     const prevBtn = createElement('button', {
       type: 'button',
       class: 'an-fr-icon-btn',
@@ -198,7 +208,7 @@ export class FindReplace extends BaseDialog {
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;
 
-    searchBar.append(findInput, caseCheckbox, caseBtn, regexBtn, prevBtn, nextBtn, counter);
+    searchBar.append(findInput, caseCheckbox, caseBtn, regexBtn, wholeWordBtn, prevBtn, nextBtn, counter);
     box.appendChild(searchBar);
 
     // ---- Replace row: [input] [Replace] [All]  (hidden by default) ----
@@ -266,7 +276,14 @@ export class FindReplace extends BaseDialog {
       this._lastQuery = null;
       this._onSearch();
     });
-    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, dRegex);
+    const dWholeWord = on(wholeWordBtn, 'click', () => {
+      this._wholeWord = !this._wholeWord;
+      wholeWordBtn.classList.toggle('an-fr-icon-btn--active', this._wholeWord);
+      this._queryRegex = null;
+      this._lastQuery = null;
+      this._onSearch();
+    });
+    this._disposers.push(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, dRegex, dWholeWord);
 
     return overlay;
   }
@@ -341,13 +358,14 @@ export class FindReplace extends BaseDialog {
    */
   _findRawMatches(query, root) {
     const results = [];
-    // Reuse compiled regex when query, case-sensitivity, and regex mode haven't changed
-    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive || this._lastUseRegex !== this._useRegex) {
+    // Reuse compiled regex when query, case-sensitivity, regex mode, and whole-word haven't changed
+    if (this._lastQuery !== query || this._lastCaseSensitive !== this._caseSensitive || this._lastUseRegex !== this._useRegex || this._lastWholeWord !== this._wholeWord) {
       const flags = this._caseSensitive ? 'g' : 'gi';
       try {
-        const pattern = this._useRegex
+        let pattern = this._useRegex
           ? query
           : query.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+        if (this._wholeWord) pattern = `\\b${pattern}\\b`;
         this._queryRegex = new RegExp(pattern, flags);
       } catch (_) {
         this._queryRegex = null;
@@ -355,6 +373,7 @@ export class FindReplace extends BaseDialog {
       this._lastQuery = query;
       this._lastCaseSensitive = this._caseSensitive;
       this._lastUseRegex = this._useRegex;
+      this._lastWholeWord = this._wholeWord;
     }
     if (!this._queryRegex) return results;
     const re = this._queryRegex;

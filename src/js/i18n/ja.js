@@ -326,4 +326,11 @@ export const ja = {
     imageSize: (maxSize) =>
       `画像ファイルが大きすぎます。最大許容サイズは ${maxSize} MB です。`,
   },
+
+  autoSaveRestore: {
+    found:   '下書きが見つかりました。復元しますか？',
+    foundAt: '{date} の下書きが見つかりました。復元しますか？',
+    restore: '復元',
+    discard: '破棄',
+  },
 };

@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.7.1
+ * @version 1.8.0
  */
 
 // ---------------------------------------------------------------------------
@@ -119,6 +119,10 @@ export interface AsnOptions {
   autoSaveRestoreTimeout?: number;
   /** Callback fired after the user chooses to restore a draft. */
   onAutoSaveRestore?: (html: string, context: Context) => void;
+  /** Maximum paste size in MB before paste is silently dropped (0 = unlimited). Default: 5. */
+  maxPasteSize?: number;
+  /** Minimum image dimension in px during resize (width and height). Default: 20. */
+  minImageSize?: number;
 
   // ---- Markdown input shortcuts (#3) ----------------------------------------
 
@@ -165,6 +169,8 @@ export interface MentionOptions {
    * - Promise:  `async onSearch(query) { return items; }`
    */
   onSearch: (query: string, callback: (items: MentionItem[]) => void) => void | Promise<MentionItem[]>;
+  /** Called when onSearch rejects with an error (Promise style only). */
+  onError?: (error: unknown) => void;
   /** Optional. Return custom HTML string for the inserted chip, or null to use the default. */
   onInsert?: (item: MentionItem) => string | null;
   /** CSS class added to the inserted mention chip. Default: 'an-mention'. */
@@ -309,6 +315,12 @@ export interface AsnLocale {
     imageFormat: (type: string) => string;
     imageSize: (maxMb: number) => string;
   };
+  autoSaveRestore: {
+    found: string;
+    foundAt: string;
+    restore: string;
+    discard: string;
+  };
 }
 
 /** Registry of all built-in locales (keys: 'en', 'vi', 'ja', 'zh', 'fr'). */
@@ -422,6 +434,18 @@ export declare class Context {
 
   /** Downloads the editor content as a Markdown file. */
   downloadMarkdown(filename?: string): void;
+
+  /** Moves keyboard focus into the editable area. */
+  focus(): void;
+
+  /** Removes keyboard focus from the editable area. */
+  blur(): void;
+
+  /** Returns true when the editor is currently in fullscreen mode. */
+  isFullscreen(): boolean;
+
+  /** Opens a print dialog with the editor content. */
+  print(title?: string): void;
 
   /** Enables or disables (read-only) mode on this instance. */
   setDisabled(disabled: boolean): void;

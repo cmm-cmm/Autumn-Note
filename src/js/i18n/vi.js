@@ -328,4 +328,11 @@ export const vi = {
     imageSize: (maxSize) =>
       `Tệp hình ảnh quá lớn. Kích thước tối đa cho phép là ${maxSize} MB.`,
   },
+
+  autoSaveRestore: {
+    found:   'Tìm thấy bản nháp. Khôi phục?',
+    foundAt: 'Bản nháp từ {date}. Khôi phục?',
+    restore: 'Khôi phục',
+    discard: 'Bỏ qua',
+  },
 };

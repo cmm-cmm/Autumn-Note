@@ -326,4 +326,11 @@ export const zh = {
     imageSize: (maxSize) =>
       `图片文件过大。最大允许大小为 ${maxSize} MB。`,
   },
+
+  autoSaveRestore: {
+    found:   '找到草稿。是否恢复？',
+    foundAt: '发现 {date} 的草稿。是否恢复？',
+    restore: '恢复',
+    discard: '放弃',
+  },
 };

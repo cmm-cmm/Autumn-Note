@@ -325,4 +325,11 @@ export const es = {
     imageSize: (maxSize) =>
       `El archivo de imagen es demasiado grande. El tamaño máximo permitido es ${maxSize} MB.`,
   },
+
+  autoSaveRestore: {
+    found:   'Borrador encontrado. ¿Restaurar?',
+    foundAt: 'Borrador del {date}. ¿Restaurar?',
+    restore: 'Restaurar',
+    discard: 'Descartar',
+  },
 };
