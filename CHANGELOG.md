@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2026-06-05
+
+### Fixed
+- **UMD / CJS button definitions** — all pre-built button constants (`boldBtn`, `italicBtn`, `undoBtn`, `redoBtn`, and all others) together with `defaultToolbar` are now accessible via `AutumnNote.buttons` in UMD and CJS builds; previously these were only reachable as named ESM imports, making custom toolbar configuration impossible in script-tag (`<script src="…">`) environments
+
+### Migration (UMD)
+```js
+// Before — only worked in ESM; undefined in UMD:
+import { boldBtn, undoBtn } from 'autumnnote';
+
+// After — works in UMD / script-tag builds:
+const { boldBtn, undoBtn } = AutumnNote.buttons;
+
+// Or use inline:
+AutumnNote.create('#editor', {
+  toolbar: [
+    [AutumnNote.buttons.undoBtn, AutumnNote.buttons.redoBtn],
+    [AutumnNote.buttons.boldBtn, AutumnNote.buttons.italicBtn],
+  ],
+});
+```
+
+---
+
 ## [1.7.0] - 2026-05-30
 
 ### Added

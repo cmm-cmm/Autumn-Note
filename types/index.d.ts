@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.7.0
+ * @version 1.7.1
  */
 
 // ---------------------------------------------------------------------------
@@ -494,6 +494,56 @@ export declare const foreColorBtn: ColorPickerDef;
 export declare const backColorBtn: ColorPickerDef;
 export declare const defaultToolbar: Array<Array<ToolbarItemDef>>;
 
+/**
+ * All pre-built button definitions grouped in a single namespace object.
+ * Use this to access individual buttons in UMD / CJS environments where
+ * named imports are not available: `AutumnNote.buttons.boldBtn`.
+ */
+export interface ButtonsNamespace {
+  boldBtn: ButtonDef;
+  italicBtn: ButtonDef;
+  underlineBtn: ButtonDef;
+  strikeBtn: ButtonDef;
+  superscriptBtn: ButtonDef;
+  subscriptBtn: ButtonDef;
+  alignLeftBtn: ButtonDef;
+  alignCenterBtn: ButtonDef;
+  alignRightBtn: ButtonDef;
+  alignJustifyBtn: ButtonDef;
+  ulBtn: ButtonDef;
+  olBtn: ButtonDef;
+  indentBtn: ButtonDef;
+  outdentBtn: ButtonDef;
+  undoBtn: ButtonDef;
+  redoBtn: ButtonDef;
+  hrBtn: ButtonDef;
+  linkBtn: ButtonDef;
+  imageBtn: ButtonDef;
+  videoBtn: ButtonDef;
+  emojiBtn: ButtonDef;
+  iconBtn: ButtonDef;
+  tableBtn: GridButtonDef;
+  fontSizeBtn: DropdownDef;
+  removeFormatBtn: ButtonDef;
+  directionBtn: ButtonDef;
+  fontFamilyBtn: DropdownDef;
+  paragraphStyleBtn: DropdownDef;
+  lineHeightBtn: DropdownDef;
+  codeviewBtn: ButtonDef;
+  fullscreenBtn: ButtonDef;
+  shortcutsBtn: ButtonDef;
+  findBtn: ButtonDef;
+  findReplaceBtn: ButtonDef;
+  inlineCodeBtn: ButtonDef;
+  checklistBtn: ButtonDef;
+  printBtn: ButtonDef;
+  foreColorBtn: ColorPickerDef;
+  backColorBtn: ColorPickerDef;
+  defaultToolbar: Array<Array<ToolbarItemDef>>;
+}
+
+export declare const buttons: ButtonsNamespace;
+
 // ---------------------------------------------------------------------------
 // Main AutumnNote API
 // ---------------------------------------------------------------------------
@@ -542,6 +592,13 @@ export interface AutumnNoteStatic {
    * referenced by string name in toolbar configuration.
    */
   registerButton(btnDef: ToolbarItemDef): this;
+
+  /**
+   * All pre-built button definitions in a single namespace.
+   * Use in UMD / CJS builds where named imports are unavailable:
+   * `AutumnNote.buttons.boldBtn`, `AutumnNote.buttons.defaultToolbar`, etc.
+   */
+  readonly buttons: ButtonsNamespace;
 
   /** Library version string. */
   readonly version: string;

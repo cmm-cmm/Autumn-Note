@@ -155,3 +155,32 @@ describe('AutumnNote integration', () => {
     expect(onDestroy).toHaveBeenCalledWith(editor);
   });
 });
+
+// ── AutumnNote.buttons namespace ──────────────────────────────────────────────
+
+describe('AutumnNote.buttons namespace', () => {
+  it('exposes a buttons object on the AutumnNote global', () => {
+    expect(typeof AutumnNote.buttons).toBe('object');
+    expect(AutumnNote.buttons).not.toBeNull();
+  });
+
+  it('contains boldBtn with expected shape', () => {
+    const { boldBtn } = AutumnNote.buttons;
+    expect(boldBtn.name).toBe('bold');
+    expect(typeof boldBtn.action).toBe('function');
+  });
+
+  it('contains undoBtn and redoBtn', () => {
+    expect(AutumnNote.buttons.undoBtn.name).toBe('undo');
+    expect(AutumnNote.buttons.redoBtn.name).toBe('redo');
+  });
+
+  it('includes defaultToolbar array', () => {
+    expect(Array.isArray(AutumnNote.buttons.defaultToolbar)).toBe(true);
+    expect(AutumnNote.buttons.defaultToolbar.length).toBeGreaterThan(0);
+  });
+
+  it('buttons namespace has at least 40 entries (all built-in buttons + defaultToolbar)', () => {
+    expect(Object.keys(AutumnNote.buttons).length).toBeGreaterThanOrEqual(40);
+  });
+});

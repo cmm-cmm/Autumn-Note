@@ -43,6 +43,7 @@ import {
   registerButton,
   getButton,
   _buttonRegistry,
+  buttons,
 } from '../../src/js/module/Buttons.js';
 
 // Stub execCommand and queryCommand* globally
@@ -596,5 +597,50 @@ describe('inlineCode and checklist isActive', () => {
 
   it('checklistBtn.isActive returns boolean', () => {
     expect(typeof checklistBtn.isActive()).toBe('boolean');
+  });
+});
+
+// ── buttons namespace ─────────────────────────────────────────────────────────
+
+describe('buttons namespace', () => {
+  it('is a plain object', () => {
+    expect(typeof buttons).toBe('object');
+    expect(buttons).not.toBeNull();
+  });
+
+  it('contains all standard button definitions', () => {
+    const expected = [
+      'boldBtn', 'italicBtn', 'underlineBtn', 'strikeBtn', 'superscriptBtn',
+      'subscriptBtn', 'alignLeftBtn', 'alignCenterBtn', 'alignRightBtn',
+      'alignJustifyBtn', 'ulBtn', 'olBtn', 'indentBtn', 'outdentBtn',
+      'undoBtn', 'redoBtn', 'hrBtn', 'linkBtn', 'imageBtn', 'videoBtn',
+      'emojiBtn', 'iconBtn', 'tableBtn', 'fontSizeBtn', 'removeFormatBtn',
+      'directionBtn', 'fontFamilyBtn', 'paragraphStyleBtn', 'lineHeightBtn',
+      'codeviewBtn', 'fullscreenBtn', 'shortcutsBtn', 'findBtn', 'findReplaceBtn',
+      'inlineCodeBtn', 'checklistBtn', 'printBtn', 'foreColorBtn', 'backColorBtn',
+    ];
+    expected.forEach((key) => {
+      expect(buttons).toHaveProperty(key);
+      expect(typeof buttons[key]).toBe('object');
+    });
+  });
+
+  it('includes defaultToolbar', () => {
+    expect(Array.isArray(buttons.defaultToolbar)).toBe(true);
+    expect(buttons.defaultToolbar.length).toBeGreaterThan(0);
+  });
+
+  it('button objects in namespace are identical references to named exports', () => {
+    expect(buttons.boldBtn).toBe(boldBtn);
+    expect(buttons.undoBtn).toBe(undoBtn);
+    expect(buttons.tableBtn).toBe(tableBtn);
+    expect(buttons.defaultToolbar).toBe(defaultToolbar);
+  });
+
+  it('each entry has a name string', () => {
+    const btnEntries = Object.values(buttons).filter((v) => v !== buttons.defaultToolbar);
+    btnEntries.forEach((b) => {
+      expect(typeof b.name).toBe('string');
+    });
   });
 });
