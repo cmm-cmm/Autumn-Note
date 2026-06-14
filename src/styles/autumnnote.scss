@@ -565,6 +565,17 @@
     th {
       background: $an-bg-toolbar;
       font-weight: 600;
+
+      // Sort indicator — shows the active sorted column and direction
+      &.an-sort-asc::after,
+      &.an-sort-desc::after {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 0.7em;
+        opacity: 0.6;
+      }
+      &.an-sort-asc::after { content: '\25B2'; }
+      &.an-sort-desc::after { content: '\25BC'; }
     }
   }
 }

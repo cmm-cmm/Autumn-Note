@@ -17,6 +17,7 @@
  *   debounce:     200,
  *   onSearch:     (query, callback) => void,
  *   onInsert:     (item) => string | null,
+ *   onError:      (err: Error) => void,
  *   mentionClass: 'an-mention',
  *   allowSpaces:  false,
  * }
