@@ -251,7 +251,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/Autumn-Note/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.6.0</span>
+      <span class="brand-version">v1.7.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -295,7 +295,7 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Features</div>
-        <a class="sidebar-link" href="#whats-new">What's New v1.6.0</a>
+        <a class="sidebar-link" href="#whats-new">What's New v1.7.0</a>
         <a class="sidebar-link" href="#events">Callbacks &amp; Events</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
         <a class="sidebar-link" href="#plugin-api">Plugin API</a>
@@ -318,7 +318,7 @@
   <main class="docs-main" id="docs-main">
 
     <h1 class="page-title">API Reference</h1>
-    <p class="page-sub">AutumnNote v1.6.0  EFast. Lightweight. Reliable. Efficient.</p>
+    <p class="page-sub">AutumnNote v1.7.0 — Fast. Lightweight. Reliable. Efficient.</p>
 
     <!-- ── Installation ── -->
     <section class="docs-section" id="installation" aria-label="Installation">
@@ -791,29 +791,55 @@ const editor = AutumnNote.create('#editor', {
       </table></div>
     </section>
 
-    <!-- ── What's New v1.6.0 ── -->
+    <!-- ── What's New v1.7.0 ── -->
     <section class="docs-section" id="whats-new" aria-label="What's New">
-      <h2 class="section-h">What's New <span class="badge">v1.6.0</span></h2>
-      <p class="docs-p">Version 1.6.0 adds several user-facing features and UX improvements.</p>
+      <h2 class="section-h">What's New <span class="badge">v1.7.0</span></h2>
+      <p class="docs-p">Version 1.7.0 adds powerful table management tools, regex-based search, code block line numbers, a new <code>theme: 'auto'</code> option, and an expanded public API.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Cell Background Shading</h3>
-      <p class="docs-p">The Table Tooltip now includes a <strong>paint-bucket button</strong> to set the background colour of individual or multi-selected cells. The button displays a colour-strip indicator showing the current cell's colour, and syncs automatically as the cursor moves between cells. 24 colour presets, a custom colour input, and a "No Shading" option are provided.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Table Sort, CSV Export &amp; Cell Padding</h3>
+      <p class="docs-p">The Table Tooltip now includes three new data-management actions:</p>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li><strong>Sort Ascending / Descending</strong> — sort all rows by the active column; numeric values are compared as numbers, text uses locale-aware comparison; merged-cell layouts are handled correctly.</li>
+        <li><strong>Export as CSV</strong> — downloads the full table as a UTF-8 (BOM) <code>.csv</code> file with proper quote-escaping for cells containing commas or newlines.</li>
+        <li><strong>Cell Padding</strong> — open the size popover to apply a uniform padding (in px) to all selected cells.</li>
+      </ul>
+      <p class="docs-p">A <strong>Toggle Header Row</strong> button also converts the first row between <code>&lt;thead&gt;&lt;th&gt;</code> (header) and <code>&lt;tbody&gt;&lt;td&gt;</code> (data), creating or removing the <code>&lt;thead&gt;</code> wrapper as needed.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Auto Language Detection for Code Blocks</h3>
-      <p class="docs-p">When selected text is formatted as a <code>&lt;pre&gt;</code> code block, the editor automatically analyses the content and applies the matching Prism.js language class — no manual selection needed. Supported languages:</p>
-      <p class="docs-p" style="font-family:monospace;font-size:13px;background:#f3f4f6;padding:10px 14px;border-radius:6px;line-height:1.8">
-        JavaScript · TypeScript · Python · HTML · CSS · <strong>SCSS</strong> · JSON · SQL · Bash/Shell · Java · C# · PHP · Ruby · Go · Rust · C++ · C · Kotlin · Swift · XML
-      </p>
-      <p class="docs-p">SCSS is detected separately from CSS using SCSS-specific markers: <code>//</code> line comments, <code>&amp;</code> nesting, <code>$variable</code>, and <code>@mixin</code>/<code>@include</code> directives.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Find &amp; Replace — Regex Mode</h3>
+      <p class="docs-p">A new <code>.*</code> toggle button in the Find &amp; Replace panel enables <strong>JavaScript regular expression search</strong>. The compiled regex is cached across keystrokes for performance. Use cases: find all words matching a pattern, locate email addresses, replace formatted numbers, and so on. Works with case-sensitive mode; regex compilation errors are handled gracefully.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Draggable Dialogs</h3>
-      <p class="docs-p">All dialogs — Link, Image, Video, Emoji, Icon, and Find &amp; Replace — can be repositioned by dragging their title bar. The dialog snaps to its initial centred position on first drag and is clamped to the viewport on subsequent drags.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Code Block Line Numbers</h3>
+      <p class="docs-p">The Code Tooltip now includes a <strong>Toggle Line Numbers</strong> button. When active, a CSS counter generates a numbered gutter on the left side of the code block — no JavaScript counting, no DOM changes to the content. The state syncs automatically when switching between code blocks.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Find &amp; Replace — Floating Panel</h3>
-      <p class="docs-p">The Find &amp; Replace dialog has been redesigned as a <strong>compact non-blocking floating panel</strong> in the top-right corner. Highlights: inline case-sensitive toggle (<code>Aa</code>), icon-button navigation (↑ ↓), and a collapsible replace row — the document remains fully interactive while searching.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Dark-Auto Theme</h3>
+      <p class="docs-p">A new <code>theme: 'auto'</code> option makes the editor follow the operating system's dark-mode preference automatically:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">AutumnNote.create('#editor', { theme: 'auto' });</code></pre>
+      </div>
+      <p class="docs-p">The CSS <code>@media (prefers-color-scheme: dark)</code> activates the full dark palette when the OS is in dark mode; the editor stays light otherwise. <code>theme: 'dark'</code> and <code>theme: 'light'</code> continue to force a specific theme regardless of OS preference.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Dark Theme — Floating Elements</h3>
-      <p class="docs-p">When <code>theme: 'dark'</code> is set, <code>an-theme-dark</code> is now also applied to <code>document.body</code> so all floating elements appended to <code>&lt;body&gt;</code> (dialogs, tooltips, colour pickers, popovers) correctly inherit dark styles. The class is removed from body when the last dark editor is destroyed.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Undo / Redo Count API</h3>
+      <p class="docs-p">Two new instance methods let host applications query the undo/redo stack depth:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">editor.getUndoCount();  // → number of available undo steps
+editor.getRedoCount();  // → number of available redo steps</code></pre>
+      </div>
+      <p class="docs-p">Useful for disabling Undo/Redo toolbar buttons in custom UIs, or showing a step-counter badge in host applications.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Promise-Based @mention Search</h3>
+      <p class="docs-p">The <code>mention.onSearch</code> callback now accepts both callback and <strong>Promise / async</strong> styles:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">// Async / Promise style (new in 1.7.0)
+AutumnNote.create('#editor', {
+  mention: {
+    onSearch: async (query) => {
+      const res = await fetch(`/api/users?q=${query}`);
+      return res.json();  // returns MentionItem[]
+    }
+  }
+});</code></pre>
+      </div>
+      <p class="docs-p">If the Promise rejects, the dropdown closes automatically. The original callback style remains fully supported.</p>
     </section>
 
     <!-- ── Plugin API ── -->
@@ -1062,7 +1088,7 @@ console.log(api?.version); // '1.0.0'</code></pre>
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span>MIT License · © 2026 Minh Pham · AutumnNote v1.6.0</span>
+    <span>MIT License · © 2026 Minh Pham · AutumnNote v1.7.0</span>
     <nav class="footer-links" aria-label="Footer links">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
