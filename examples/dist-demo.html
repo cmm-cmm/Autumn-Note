@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutumnNote — Dist Build Demo</title>
+  <link rel="icon" href="../public/image/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="../dist/autumnnote.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    p  { margin: 0 0 20px; color: #6b7280; }
+    #editor-wrapper, #output-wrapper { width: 50%; }
+    #readonly-wrapper {
+      width: 50%;
+      margin-top: 20px;
+    }
+    #readonly-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    #readonly-bar strong { font-size: 14px; }
+    #readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    #readonly-editor-wrapper {
+      border: 2px solid #fcd34d;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    #output {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #374151;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    #lang-bar {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    #lang-bar label { font-size: 14px; font-weight: 600; white-space: nowrap; }
+    #lang-select {
+      padding: 5px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>AutumnNote</h1>
+  <p>Fast. Lightweight. Reliable. Efficient.</p>
+
+  <div id="lang-bar">
+    <label for="lang-select">🌐 Language:</label>
+    <select id="lang-select">
+      <option value="en">English</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="ja">日本語</option>
+      <option value="zh">简体中文</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+      <option value="ko">한국어</option>
+    </select>
+  </div>
+
+  <div id="editor-wrapper">
+    <textarea id="editor">
+      <p>Hello, <strong>AutumnNote</strong>! ✨</p>
+      <p>Start typing to edit this content.</p>
+    </textarea>
+  </div>
+
+  <div id="output-wrapper">
+    <strong>HTML Output:</strong>
+    <div id="output"></div>
+  </div>
+
+  <div id="readonly-wrapper">
+    <div id="readonly-bar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <strong>Read Only Preview:</strong>
+        <span id="readonly-badge">🔒 Read Only</span>
+      </div>
+    </div>
+    <div id="readonly-editor-wrapper">
+      <textarea id="editor-readonly"></textarea>
+    </div>
+  </div>
+
+  <script src="../dist/autumnnote.umd.js"></script>
+  <script>
+    const langSelect = document.getElementById('lang-select');
+
+    const sharedOptions = () => ({
+      height: 300,
+      codeHighlight: true,
+      lang: langSelect.value,
+    });
+
+    let editor = AutumnNote.create('#editor', {
+      ...sharedOptions(),
+      placeholder: 'Start typing here…',
+      focusColor: '#e8751a',
+      onChange(html) {
+        document.getElementById('output').textContent = html;
+        if (window.editorRO) window.editorRO.setHTML(html);
+      },
+    });
+
+    let editorRO = AutumnNote.create('#editor-readonly', {
+      ...sharedOptions(),
+      readOnly: true,
+    });
+    editorRO.setHTML(editor.getHTML());
+
+    langSelect.addEventListener('change', () => {
+      const html = editor.getHTML();
+      const editorEl = editor.targetEl;
+      const editorROEl = editorRO.targetEl;
+
+      AutumnNote.destroy(editorEl);
+      AutumnNote.destroy(editorROEl);
+      window.editorRO = null;
+
+      editor = AutumnNote.create(editorEl, {
+        ...sharedOptions(),
+        placeholder: 'Start typing here…',
+        focusColor: '#e8751a',
+        onChange(h) {
+          document.getElementById('output').textContent = h;
+          if (window.editorRO) window.editorRO.setHTML(h);
+        },
+      });
+
+      editorRO = AutumnNote.create(editorROEl, {
+        ...sharedOptions(),
+        readOnly: true,
+      });
+
+      window.editor = editor;
+      window.editorRO = editorRO;
+
+      editor.setHTML(html);
+      document.getElementById('output').textContent = html;
+    });
+
+    window.editor = editor;
+    window.editorRO = editorRO;
+    document.getElementById('output').textContent = editor.getHTML();
+  </script>
+</body>
+</html>
