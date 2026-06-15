@@ -9,7 +9,13 @@ export default defineConfig(async () => {
   }
 
   return {
+    // Dev server entry now lives in demo/ (landing page used for `npm run dev`)
+    root: resolve(__dirname, 'demo'),
+    publicDir: resolve(__dirname, 'public'),
     build: {
+      outDir: resolve(__dirname, 'dist'),
+      emptyOutDir: true,
+      copyPublicDir: false,
       lib: {
         entry: resolve(__dirname, 'src/js/index.js'),
         formats: ['es'],

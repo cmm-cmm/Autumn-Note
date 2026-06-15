@@ -18,7 +18,7 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 
 [Live Demo](https://cmm-cmm.github.io/Autumn-Note/) · [Docs](https://cmm-cmm.github.io/Autumn-Note/docs.html) · [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
 
-<p align="center"><img src="demo/Screenshot.png" alt="AutumnNote Screenshot"/></p>
+<p align="center"><img src="examples/Screenshot.png" alt="AutumnNote Screenshot"/></p>
 
 ---
 
