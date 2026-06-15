@@ -309,19 +309,33 @@ function _checklistItemToP(checkLi) {
  *   which toggles the list off (browser-native behaviour).
  * - **No list → UL**: falls back to `execCommand('insertUnorderedList')`.
  */
-export function insertUnorderedList() {
+/**
+ * Helper to get the closest ul/ol element containing the current selection.
+ * @returns {Element|null}
+ */
+function getSelectedList() {
   const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  let container = range.commonAncestorContainer;
+  if (!sel?.rangeCount) return null;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
+  return container?.closest('ul, ol') || null;
+}
 
-  const listEl = container?.closest('ul, ol');
+/**
+ * Strips the checklist class and checkbox inputs from a list element.
+ * @param {Element} listEl
+ */
+function stripChecklist(listEl) {
+  listEl.classList.remove('an-checklist');
+  listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
+}
+
+export function insertUnorderedList() {
+  const listEl = getSelectedList();
   if (listEl) {
     if (listEl.classList.contains('an-checklist')) {
       // Checklist → UL: strip checkboxes and class, swap tag if needed
-      listEl.classList.remove('an-checklist');
-      listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
+      stripChecklist(listEl);
       if (listEl.tagName === 'OL') {
         changeTagName(listEl, 'ul');
       }
@@ -355,18 +369,11 @@ export function insertUnorderedList() {
  * - **No list → OL**: falls back to `execCommand('insertOrderedList')`.
  */
 export function insertOrderedList() {
-  const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  let container = range.commonAncestorContainer;
-  if (container.nodeType === 3) container = container.parentElement;
-
-  const listEl = container?.closest('ul, ol');
+  const listEl = getSelectedList();
   if (listEl) {
     if (listEl.classList.contains('an-checklist')) {
       // Checklist → OL: strip checkboxes and class, swap to <ol>
-      listEl.classList.remove('an-checklist');
-      listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
+      stripChecklist(listEl);
       changeTagName(listEl, 'ol');
     } else if (listEl.tagName === 'UL') {
       // UL → OL: swap container tag
