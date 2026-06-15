@@ -139,7 +139,7 @@ function _domToMd(node, depth = 0) {
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} [^\s]|[ \t]*[-*+] [^\s]|[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text);
+  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text);
 }
 
 /**
@@ -211,11 +211,11 @@ export function markdownToHTML(text) {
         const itemLine = lines[i];
         const content = itemLine.slice(2);
         if (isChecklist) {
-          const cbMatch = /^\[([ xX])\][ \t]+(.*)$/.exec(content);
+          const cbMatch = /^\[([ xX])\][ \t]+/.exec(content);
           const checked = cbMatch?.[1]?.toLowerCase() === 'x';
           const checkedAttr = checked ? ' checked' : '';
           const cbHtml = `<input type="checkbox" contenteditable="false"${checkedAttr}>`;
-          const textContent = cbMatch ? cbMatch[2] : content;
+          const textContent = cbMatch ? content.slice(cbMatch[0].length) : content;
           items.push(`<li>${cbHtml}${_inline(textContent)}</li>`);
         } else {
           items.push(`<li>${_inline(content)}</li>`);
