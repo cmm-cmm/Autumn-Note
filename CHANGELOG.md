@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-06-05
+
+### Added
+- **`AutumnNote.buttons` namespace** — all pre-built button constants (`boldBtn`, `italicBtn`, `undoBtn`, `redoBtn`, etc.) and `defaultToolbar` are now accessible via `AutumnNote.buttons` in UMD and CJS builds; previously only reachable as named ESM imports, making custom toolbar configuration impossible in script-tag (`<script src="…">`) environments
+- **Context convenience methods** — `context.focus()`, `context.blur()`, and `context.isFullscreen()` added for easier programmatic control; `context.print()` types corrected
+- **Find & Replace — Whole Word mode** — new toggle button (`\b...\b` wrapping) enables whole-word matching; works in combination with the existing Regex mode
+- **Paste size limit** — new `maxPasteSize` option (default 5 MB) silently drops oversized paste payloads to prevent memory issues on very large clipboard content
+- **Configurable image resize minimum** — new `minImageSize` option (default 20 px) replaces the hardcoded 20 px floor in ImageResizer; can be set per-instance
+- **`mention.onError` callback** — called when a Promise-based `onSearch` rejects; allows the host app to display an error state instead of silently swallowing the rejection
+- **ZWS cleanup** — `context.getHTML()` now strips zero-width spaces (U+200B) from the output to prevent invisible characters from leaking into saved content
+- **i18n — AutoSaveRestore** — all restore-banner strings (`autoSaveRestore.*`) added to all 8 locale packs (en / vi / ja / zh / fr / de / es / ko), replacing previous hardcoded English fallbacks in `AutoSaveRestore.js`
+- **i18n — Find & Replace whole-word key** — `findReplace.wholeWord` added to `en.js` locale
+
+### Migration (UMD button access)
+```js
+// Script-tag builds — use AutumnNote.buttons namespace:
+const { boldBtn, undoBtn } = AutumnNote.buttons;
+
+AutumnNote.create('#editor', {
+  toolbar: [
+    [AutumnNote.buttons.undoBtn, AutumnNote.buttons.redoBtn],
+    [AutumnNote.buttons.boldBtn, AutumnNote.buttons.italicBtn],
+  ],
+});
+```
+
+---
+
 ## [1.7.0] - 2026-05-30
 
 ### Added

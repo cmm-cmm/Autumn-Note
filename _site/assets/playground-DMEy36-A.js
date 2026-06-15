@@ -1,4 +1,4 @@
-import{t as e}from"./js-B6KfqF8f.js";var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Getting Started with AutumnNote</h1>
+import{t as e}from"./js-At50mhWV.js";var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Getting Started with AutumnNote</h1>
 <p>AutumnNote is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
 <h2>Basic Setup</h2>

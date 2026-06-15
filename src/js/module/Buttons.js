@@ -348,3 +348,52 @@ export const defaultToolbar = [
   [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
   [removeFormatBtn, codeviewBtn, fullscreenBtn, findBtn, printBtn, shortcutsBtn],
 ];
+
+// ---------------------------------------------------------------------------
+// Buttons namespace — all pre-built button definitions in a single object.
+// Exposed as AutumnNote.buttons so UMD / CJS consumers can access them
+// without named imports: AutumnNote.buttons.boldBtn, etc.
+// ---------------------------------------------------------------------------
+
+export const buttons = {
+  boldBtn,
+  italicBtn,
+  underlineBtn,
+  strikeBtn,
+  superscriptBtn,
+  subscriptBtn,
+  alignLeftBtn,
+  alignCenterBtn,
+  alignRightBtn,
+  alignJustifyBtn,
+  ulBtn,
+  olBtn,
+  indentBtn,
+  outdentBtn,
+  undoBtn,
+  redoBtn,
+  hrBtn,
+  linkBtn,
+  imageBtn,
+  videoBtn,
+  emojiBtn,
+  iconBtn,
+  tableBtn,
+  fontSizeBtn,
+  removeFormatBtn,
+  directionBtn,
+  fontFamilyBtn,
+  paragraphStyleBtn,
+  lineHeightBtn,
+  codeviewBtn,
+  fullscreenBtn,
+  shortcutsBtn,
+  findBtn,
+  findReplaceBtn,
+  inlineCodeBtn,
+  checklistBtn,
+  printBtn,
+  foreColorBtn,
+  backColorBtn,
+  defaultToolbar,
+};

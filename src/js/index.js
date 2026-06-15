@@ -12,7 +12,7 @@
 // @ts-ignore
 import '../styles/autumnnote.scss';
 import { Context, _customModules, _globalPlugins } from './Context.js';
-import { registerButton } from './module/Buttons.js';
+import { registerButton, buttons } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 
 // Snapshot of factory defaults taken at module-load time (before any setDefaults() calls)
@@ -140,8 +140,11 @@ const AutumnNote = {
    */
   registerButton(btnDef) { registerButton(btnDef); return this; },
 
+  /** All pre-built button definitions — accessible in every module format including UMD/CJS. */
+  buttons,
+
   /** Library version */
-  version: '1.7.0',
+  version: '1.8.0',
 };
 
 // ---------------------------------------------------------------------------
