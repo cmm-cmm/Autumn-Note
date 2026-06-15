@@ -89,7 +89,16 @@ function _domToMd(node, depth = 0) {
       const items = Array.from(el.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
-      const lines = items.map((li) => `${indent}- ${_domToMd(li, depth + 1).trim()}`).join('\n');
+      const isChecklist = el.classList.contains('an-checklist');
+      const lines = items.map((li) => {
+        let prefix = '- ';
+        if (isChecklist) {
+          const cb = li.querySelector('input[type="checkbox"]');
+          const checked = cb ? cb.checked : false;
+          prefix = checked ? '- [x] ' : '- [ ] ';
+        }
+        return `${indent}${prefix}${_domToMd(li, depth + 1).trim()}`;
+      }).join('\n');
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'ol': {
@@ -189,14 +198,27 @@ export function markdownToHTML(text) {
       continue;
     }
 
-    // ---- Unordered list  - / * / + item  ------------------------------------
+    // ---- Checklist or Unordered list  - / * / + item  ----------------------
     if (/^[-*+] /.test(line)) {
       const items = [];
+      const isChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(line);
+      const listTag = isChecklist ? 'ul class="an-checklist"' : 'ul';
       while (i < lines.length && /^[-*+] /.test(lines[i])) {
-        items.push(`<li>${_inline(lines[i].slice(2))}</li>`);
+        const itemLine = lines[i];
+        const content = itemLine.slice(2);
+        if (isChecklist) {
+          const cbMatch = /^\[([ xX])\]\s+(.*)$/.exec(content);
+          const checked = cbMatch && cbMatch[1].toLowerCase() === 'x';
+          const checkedAttr = checked ? ' checked' : '';
+          const cbHtml = `<input type="checkbox" contenteditable="false"${checkedAttr}>`;
+          const textContent = cbMatch ? cbMatch[2] : content;
+          items.push(`<li>${cbHtml}${_inline(textContent)}</li>`);
+        } else {
+          items.push(`<li>${_inline(content)}</li>`);
+        }
         i++;
       }
-      out.push(`<ul>${items.join('')}</ul>`);
+      out.push(`<${listTag}>${items.join('')}</${listTag.split(' ')[0]}>`);
       continue;
     }
 
