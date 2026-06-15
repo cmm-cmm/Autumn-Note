@@ -406,6 +406,15 @@ See the [full Plugin API docs →](https://cmm-cmm.github.io/Autumn-Note/docs.ht
 | `editor.getHTML()` | Returns the current HTML. Zero-width spaces from the icon picker are stripped automatically. |
 | `editor.setHTML(html)` | Sets HTML content (sanitised). `<iframe>` elements are preserved. |
 | `editor.getText()` | Returns plain text with no markup. |
+| `editor.setText(text)` | Replaces the content with plain text (escaped, no markup). |
+| `editor.getMarkdown()` | Returns the current content converted to Markdown. |
+| `editor.setMarkdown(md)` | Replaces the content, converting the given Markdown to HTML. |
+| `editor.insertHTML(html)` | Inserts sanitised HTML at the current cursor position. |
+| `editor.insertText(text)` | Inserts plain text at the current cursor position. |
+| `editor.downloadHTML(filename?)` | Downloads the current content as an `.html` file (default `document.html`). |
+| `editor.downloadText(filename?)` | Downloads the current content as a `.txt` file (default `document.txt`). |
+| `editor.downloadMarkdown(filename?)` | Downloads the current content as a `.md` file (default `document.md`). |
+| `editor.print(title?)` | Opens the browser print dialog with the current content in a clean printable layout. |
 | `editor.clear()` | Clears all content, resets to an empty `<p>`. |
 | `editor.clearHistory()` | Resets the undo/redo stack. |
 | `editor.getUndoCount()` | Returns the number of available undo steps. |
@@ -414,6 +423,9 @@ See the [full Plugin API docs →](https://cmm-cmm.github.io/Autumn-Note/docs.ht
 | `editor.getCharCount()` | Returns the current character count. |
 | `editor.getTableOfContents()` | Returns an array of `{ level, text, element }` heading objects. |
 | `editor.setDisabled(bool)` | Disables (`true`) or re-enables (`false`) the editor and toolbar. |
+| `editor.focus()` | Moves keyboard focus to the editable area. |
+| `editor.blur()` | Removes keyboard focus from the editable area. |
+| `editor.isFullscreen()` | Returns `true` if the editor is currently in fullscreen mode. |
 | `editor.destroy()` | Removes the editor, disposes all modules, and restores the original element. |
 | `editor.on(event, fn)` | Subscribes to an editor event. Returns an unsubscribe function. |
 | `editor.off(event, fn)` | Removes a previously registered listener. |

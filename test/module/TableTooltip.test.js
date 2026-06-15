@@ -756,6 +756,71 @@ describe('TableTooltip._sortColumn', () => {
   });
 });
 
+// ── Sort indicator ───────────────────────────────────────────────────────────
+
+describe('TableTooltip._markSortIndicator', () => {
+  const THEAD_HTML = `
+  <table class="an-table">
+    <thead>
+      <tr><th>Name</th><th>Score</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Banana</td><td>3</td></tr>
+      <tr><td>Apple</td><td>10</td></tr>
+      <tr><td>Cherry</td><td>1</td></tr>
+    </tbody>
+  </table>`;
+
+  const selectCell = (cell) => {
+    const r = document.createRange();
+    r.setStart(cell.firstChild, 0);
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+  };
+
+  it('marks the sorted column header and toggles direction on repeat sorts', () => {
+    const { tt, ctx } = makeTooltip(THEAD_HTML);
+    const table = activateTable(tt, ctx);
+    const headers = table.querySelectorAll('thead th');
+
+    selectCell(table.querySelector('tbody td'));
+    tt._sortColumn('asc');
+    expect(headers[0].classList.contains('an-sort-asc')).toBe(true);
+    expect(headers[0].classList.contains('an-sort-desc')).toBe(false);
+
+    selectCell(table.querySelector('tbody td'));
+    tt._sortColumn('desc');
+    expect(headers[0].classList.contains('an-sort-desc')).toBe(true);
+    expect(headers[0].classList.contains('an-sort-asc')).toBe(false);
+  });
+
+  it('clears the indicator from the previous column when sorting a different column', () => {
+    const { tt, ctx } = makeTooltip(THEAD_HTML);
+    const table = activateTable(tt, ctx);
+    const headers = table.querySelectorAll('thead th');
+
+    selectCell(table.querySelector('tbody td'));
+    tt._sortColumn('asc');
+    expect(headers[0].classList.contains('an-sort-asc')).toBe(true);
+
+    selectCell(table.querySelectorAll('tbody td')[1]);
+    tt._sortColumn('desc');
+    expect(headers[0].classList.contains('an-sort-asc')).toBe(false);
+    expect(headers[1].classList.contains('an-sort-desc')).toBe(true);
+  });
+
+  it('does not add an indicator when the table has no thead', () => {
+    const noThead = `<table class="an-table"><tbody><tr><td>B</td></tr><tr><td>A</td></tr></tbody></table>`;
+    const { tt, ctx } = makeTooltip(noThead);
+    const table = activateTable(tt, ctx);
+
+    selectCell(table.querySelector('tbody td'));
+    tt._sortColumn('asc');
+    expect(table.querySelector('.an-sort-asc, .an-sort-desc')).toBeNull();
+  });
+});
+
 // ── Export CSV ────────────────────────────────────────────────────────────────
 
 describe('TableTooltip._exportTableCSV', () => {

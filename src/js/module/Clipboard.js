@@ -365,7 +365,7 @@ export class Clipboard {
     const mime = /:(.*?);/.exec(header)?.[1] ?? 'image/png';
     const binary = atob(b64);
     const arr = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) arr[i] = binary.codePointAt(i);
+    for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
     return new Blob([arr], { type: mime });
   }
 

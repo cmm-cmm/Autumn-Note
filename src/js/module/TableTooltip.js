@@ -1470,7 +1470,28 @@ export class TableTooltip {
         : bText.localeCompare(aText);
     });
     rows.forEach((row) => tbody.appendChild(row));
+    this._markSortIndicator(table, colIdx, direction);
     this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Marks the header cell of the sorted column with `an-sort-asc`/`an-sort-desc`
+   * so the active sort column and direction are visible, and clears any previous
+   * indicator. No-op for tables without a `<thead>` (no header row to mark).
+   * @param {HTMLTableElement} table
+   * @param {number} colIdx
+   * @param {'asc'|'desc'} direction
+   */
+  _markSortIndicator(table, colIdx, direction) {
+    const thead = table.querySelector('thead');
+    if (!thead) return;
+    thead.querySelectorAll('.an-sort-asc, .an-sort-desc').forEach((el) => {
+      el.classList.remove('an-sort-asc', 'an-sort-desc');
+    });
+    const headerRow = thead.querySelector('tr');
+    if (!headerRow) return;
+    const headerCell = getCellAtVisualCol(headerRow, colIdx);
+    if (headerCell) headerCell.classList.add(direction === 'asc' ? 'an-sort-asc' : 'an-sort-desc');
   }
 
   _exportTableCSV() {
