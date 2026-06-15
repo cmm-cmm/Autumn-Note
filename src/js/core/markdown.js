@@ -139,7 +139,7 @@ function _domToMd(node, depth = 0) {
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|^```|^\*{2}.+?\*{2}/m.test(text);
+  return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|^```|^\*{2}[^*\n]+\*{2}/m.test(text);
 }
 
 /**
@@ -204,6 +204,10 @@ export function markdownToHTML(text) {
       const isChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(line);
       const listTag = isChecklist ? 'ul class="an-checklist"' : 'ul';
       while (i < lines.length && /^[-*+] /.test(lines[i])) {
+        const nextLineIsChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(lines[i]);
+        if (nextLineIsChecklist !== isChecklist) {
+          break;
+        }
         const itemLine = lines[i];
         const content = itemLine.slice(2);
         if (isChecklist) {
@@ -312,7 +316,7 @@ function _inline(text) {
   text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${_esc(c)}</em>`);
   text = text.replace(/_([^_\n]+?)_/g,   (_, c) => `<em>${_esc(c)}</em>`);
   // Strikethrough  ~~text~~
-  text = text.replace(/~~([^\n]+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
+  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
   // Inline code  `code`
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${_esc(c)}</code>`);
   return text;

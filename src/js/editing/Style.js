@@ -587,6 +587,22 @@ function changeTagName(el, newTagName) {
 }
 
 /**
+ * Ensures all list items under the list element have a checkbox.
+ * @param {Element} listEl
+ */
+function ensureCheckboxes(listEl) {
+  listEl.querySelectorAll('li').forEach(li => {
+    const existingCb = li.querySelector('input[type="checkbox"]');
+    if (!existingCb) {
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.contentEditable = 'false';
+      li.insertBefore(cb, li.firstChild);
+    }
+  });
+}
+
+/**
  * Toggle a checklist at the current selection or caret.
  */
 export function toggleChecklist() {
@@ -632,15 +648,7 @@ export function toggleChecklist() {
       // Transition from standard UL/OL to Checklist
       const targetUl = changeTagName(listEl, 'ul');
       targetUl.classList.add('an-checklist');
-      targetUl.querySelectorAll('li').forEach(li => {
-        const existingCb = li.querySelector('input[type="checkbox"]');
-        if (!existingCb) {
-          const cb = document.createElement('input');
-          cb.type = 'checkbox';
-          cb.contentEditable = 'false';
-          li.insertBefore(cb, li.firstChild);
-        }
-      });
+      ensureCheckboxes(targetUl);
       
       // Place caret inside the first LI
       const firstLi = targetUl.querySelector('li');
@@ -668,15 +676,7 @@ export function toggleChecklist() {
         changeTagName(freshList, 'ul');
       }
       
-      freshList.querySelectorAll('li').forEach(li => {
-        const existingCb = li.querySelector('input[type="checkbox"]');
-        if (!existingCb) {
-          const cb = document.createElement('input');
-          cb.type = 'checkbox';
-          cb.contentEditable = 'false';
-          li.insertBefore(cb, li.firstChild);
-        }
-      });
+      ensureCheckboxes(freshList);
       
       const firstLi = freshList.querySelector('li');
       if (firstLi) {
