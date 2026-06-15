@@ -668,33 +668,126 @@ export function toggleChecklist() {
       }
     }
   } else {
-    // Selection is not in a list: use native UL then upgrade to checklist
-    execCommand('insertUnorderedList');
-    
-    const freshSel = globalThis.getSelection();
-    if (!freshSel?.rangeCount) return;
-    let freshContainer = freshSel.getRangeAt(0).commonAncestorContainer;
-    if (freshContainer.nodeType === 3) freshContainer = freshContainer.parentElement;
-    
-    const freshList = freshContainer?.closest('ul, ol');
-    if (freshList) {
-      freshList.classList.add('an-checklist');
-      if (freshList.tagName === 'OL') {
-        changeTagName(freshList, 'ul');
+    // Selection is not in a list: build the checklist directly via DOM
+    // manipulation. execCommand('insertUnorderedList') is intentionally
+    // avoided here — its behaviour on collapsed/empty selections and
+    // non-standard blocks (e.g. <section>) is too inconsistent across
+    // browsers (and a no-op in jsdom), which left toggleChecklist() as a
+    // silent no-op in those cases.
+    const isCollapsed = range.collapsed;
+    if (isCollapsed) {
+      // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote,
+      // etc.) and convert it into a single checklist item.
+      const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
+      let block = /** @type {Element|null} */ (container);
+      while (block?.parentNode && !BLOCK_TAGS.has(block.tagName)) {
+        block = /** @type {Element|null} */ (block.parentNode);
       }
-      
-      ensureCheckboxes(freshList);
-      
-      const firstLi = freshList.querySelector('li');
-      if (firstLi) {
-        const nr = document.createRange();
-        const textNode = firstLi.lastChild || firstLi;
-        const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
-        nr.setStart(textNode, offset);
-        nr.collapse(true);
-        freshSel.removeAllRanges();
-        freshSel.addRange(nr);
+      // Fallback: if no block element found (e.g. cursor directly in editable
+      // root), insert a fresh item with a zero-width-space so the cursor ends
+      // up inside it.
+      const itemText = (block && BLOCK_TAGS.has(block.tagName))
+        ? Array.from(block.childNodes)
+            .map((n) => n.textContent)
+            .join('')
+            .replaceAll('\u00a0', ' ')
+        : '';
+
+      const newUl = document.createElement('ul');
+      newUl.className = 'an-checklist';
+      const li = document.createElement('li');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.contentEditable = 'false';
+      li.appendChild(checkbox);
+      li.appendChild(document.createTextNode(itemText || '\u200B'));
+      newUl.appendChild(li);
+
+      if (block && BLOCK_TAGS.has(block.tagName)) {
+        block.parentNode.replaceChild(newUl, block);
+      } else {
+        // Cursor directly in editable root — insert via Range API.
+        const nativeRange = sel.getRangeAt(0);
+        nativeRange.deleteContents();
+        nativeRange.insertNode(newUl);
       }
+
+      // Move caret to the text node inside the new <li>.
+      const textNode = li.lastChild;
+      const nr = document.createRange();
+      const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
+      nr.setStart(textNode, offset);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
+      return;
+    }
+
+    // Non-collapsed selection — convert each intersected block element into
+    // a checklist item using direct DOM manipulation.
+    const rawSelText = sel.toString().replace(/[\u00a0\u200B]/g, ' ').trim();
+    if (!rawSelText) return;
+
+    const BLOCK_TAGS_MULTI = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'LI']);
+
+    // Collect block-level ancestors of every node in the selection, in order.
+    const blocks = [];
+    const seenBlocks = new Set();
+    const commonAncestor = range.commonAncestorContainer;
+    const iter = document.createNodeIterator(
+      commonAncestor.nodeType === Node.TEXT_NODE ? commonAncestor.parentNode : commonAncestor,
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+      null,
+    );
+    let node;
+    while ((node = iter.nextNode())) {
+      if (!range.intersectsNode(node)) continue;
+      let blockEl = /** @type {Element|null} */ (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
+      while (blockEl && !BLOCK_TAGS_MULTI.has(blockEl.tagName)) {
+        blockEl = blockEl.parentElement;
+      }
+      if (blockEl && !seenBlocks.has(blockEl)) {
+        seenBlocks.add(blockEl);
+        blocks.push(blockEl);
+      }
+    }
+
+    if (blocks.length === 0) return;
+
+    // Build checklist and replace collected blocks.
+    const newUl = document.createElement('ul');
+    newUl.className = 'an-checklist';
+    /** @type {Text|null} */ let lastTextNode = null;
+    blocks.forEach((block) => {
+      const li = document.createElement('li');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.contentEditable = 'false';
+      li.appendChild(cb);
+      // Preserve plain text content; ZWS/NBSP are stripped for display.
+      const blockText = Array.from(block.childNodes)
+        .map((n) => n.textContent)
+        .join('')
+        .replace(/[\u00a0\u200B]/g, ' ')
+        .trim();
+      const tn = document.createTextNode(blockText || '\u200B');
+      li.appendChild(tn);
+      newUl.appendChild(li);
+      lastTextNode = tn;
+    });
+
+    // Insert the new list before the first block, then remove all source blocks.
+    const firstBlock = blocks[0];
+    firstBlock.parentNode.insertBefore(newUl, firstBlock);
+    blocks.forEach((block) => block.remove());
+
+    // Move caret to end of the last checklist item.
+    if (lastTextNode) {
+      const nr = document.createRange();
+      nr.setStart(lastTextNode, lastTextNode.textContent.length);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
     }
   }
 }
