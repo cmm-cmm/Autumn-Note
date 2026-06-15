@@ -615,7 +615,7 @@ export function toggleChecklist() {
             p.innerHTML = '';
             p.appendChild(document.createTextNode('\u00a0'));
           }
-          parent.insertBefore(p, listEl);
+          listEl.before(p);
           if (!firstP) firstP = p;
         });
         listEl.remove();
@@ -657,7 +657,7 @@ export function toggleChecklist() {
     execCommand('insertUnorderedList');
     
     const freshSel = globalThis.getSelection();
-    if (!freshSel || !freshSel.rangeCount) return;
+    if (!freshSel?.rangeCount) return;
     let freshContainer = freshSel.getRangeAt(0).commonAncestorContainer;
     if (freshContainer.nodeType === 3) freshContainer = freshContainer.parentElement;
     

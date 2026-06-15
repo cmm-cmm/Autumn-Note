@@ -93,7 +93,7 @@ function _domToMd(node, depth = 0) {
       const lines = items.map((li) => {
         let prefix = '- ';
         if (isChecklist) {
-          const cb = li.querySelector('input[type="checkbox"]');
+          const cb = /** @type {HTMLInputElement | null} */ (li.querySelector('input[type="checkbox"]'));
           const checked = cb ? cb.checked : false;
           prefix = checked ? '- [x] ' : '- [ ] ';
         }
@@ -208,7 +208,7 @@ export function markdownToHTML(text) {
         const content = itemLine.slice(2);
         if (isChecklist) {
           const cbMatch = /^\[([ xX])\]\s+(.*)$/.exec(content);
-          const checked = cbMatch && cbMatch[1].toLowerCase() === 'x';
+          const checked = cbMatch?.[1]?.toLowerCase() === 'x';
           const checkedAttr = checked ? ' checked' : '';
           const cbHtml = `<input type="checkbox" contenteditable="false"${checkedAttr}>`;
           const textContent = cbMatch ? cbMatch[2] : content;
