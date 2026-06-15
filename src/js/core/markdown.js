@@ -89,7 +89,16 @@ function _domToMd(node, depth = 0) {
       const items = Array.from(el.querySelectorAll(':scope > li'));
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
-      const lines = items.map((li) => `${indent}- ${_domToMd(li, depth + 1).trim()}`).join('\n');
+      const isChecklist = el.classList.contains('an-checklist');
+      const lines = items.map((li) => {
+        let prefix = '- ';
+        if (isChecklist) {
+          const cb = /** @type {HTMLInputElement | null} */ (li.querySelector('input[type="checkbox"]'));
+          const checked = cb ? cb.checked : false;
+          prefix = checked ? '- [x] ' : '- [ ] ';
+        }
+        return `${indent}${prefix}${_domToMd(li, depth + 1).trim()}`;
+      }).join('\n');
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'ol': {
@@ -130,7 +139,7 @@ function _domToMd(node, depth = 0) {
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} \S|^\s*[-*+] \S|^\s*\d+\. \S|^> \S|^```|^\*{2}.+?\*{2}/m.test(text);
+  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text);
 }
 
 /**
@@ -189,14 +198,31 @@ export function markdownToHTML(text) {
       continue;
     }
 
-    // ---- Unordered list  - / * / + item  ------------------------------------
+    // ---- Checklist or Unordered list  - / * / + item  ----------------------
     if (/^[-*+] /.test(line)) {
       const items = [];
+      const isChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(line);
+      const listTag = isChecklist ? 'ul class="an-checklist"' : 'ul';
       while (i < lines.length && /^[-*+] /.test(lines[i])) {
-        items.push(`<li>${_inline(lines[i].slice(2))}</li>`);
+        const nextLineIsChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(lines[i]);
+        if (nextLineIsChecklist !== isChecklist) {
+          break;
+        }
+        const itemLine = lines[i];
+        const content = itemLine.slice(2);
+        if (isChecklist) {
+          const cbMatch = /^\[([ xX])\][ \t]+/.exec(content);
+          const checked = cbMatch?.[1]?.toLowerCase() === 'x';
+          const checkedAttr = checked ? ' checked' : '';
+          const cbHtml = `<input type="checkbox" contenteditable="false"${checkedAttr}>`;
+          const textContent = cbMatch ? content.slice(cbMatch[0].length) : content;
+          items.push(`<li>${cbHtml}${_inline(textContent)}</li>`);
+        } else {
+          items.push(`<li>${_inline(content)}</li>`);
+        }
         i++;
       }
-      out.push(`<ul>${items.join('')}</ul>`);
+      out.push(`<${listTag}>${items.join('')}</${listTag.split(' ')[0]}>`);
       continue;
     }
 
@@ -290,7 +316,7 @@ function _inline(text) {
   text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${_esc(c)}</em>`);
   text = text.replace(/_([^_\n]+?)_/g,   (_, c) => `<em>${_esc(c)}</em>`);
   // Strikethrough  ~~text~~
-  text = text.replace(/~~([^\n]+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
+  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
   // Inline code  `code`
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${_esc(c)}</code>`);
   return text;

@@ -67,12 +67,12 @@ context.on('eventName', callback)           // subscribe to editor events
 | `func.js` | mergeDeep, debounce, general utils |
 | `key.js` | Keyboard constants |
 | `sanitise.js` | DOM-based XSS sanitiser — strips scripts/on* attrs, rejects `javascript:`/`data:` URLs |
-| `markdown.js` | Bidirectional HTML ↔ Markdown conversion |
+| `markdown.js` | Bidirectional HTML ↔ Markdown conversion (with GFM checklist support) |
 
 ### Editing Layer (`src/js/editing/`)
 
 - **`History.js`** — undo/redo stack of DOM snapshots
-- **`Style.js`** — `execCommand` wrappers for formatting
+- **`Style.js`** — formatting commands (`execCommand` wrappers + direct DOM list/checklist transitions)
 - **`Table.js`** — table creation and cell manipulation
 - **`Typing.js`** — Tab/Enter/Arrow key overrides
 
