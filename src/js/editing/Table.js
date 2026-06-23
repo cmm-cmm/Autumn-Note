@@ -59,7 +59,11 @@ export function insertTable(cols, rows, opts = {}) {
   const sel = globalThis.getSelection();
   if (!sel || sel.rangeCount === 0) return;
   const range = sel.getRangeAt(0);
-  range.deleteContents();
+  try {
+    range.deleteContents();
+  } catch (_) {
+    return;
+  }
 
   // Walk up to find the nearest block-level ancestor to insert after
   const BLOCK = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI', 'PRE']);
@@ -82,7 +86,11 @@ export function insertTable(cols, rows, opts = {}) {
       anchor.remove();
     }
   } else {
-    range.insertNode(table);
+    try {
+      range.insertNode(table);
+    } catch (_) {
+      return;
+    }
   }
 
   // Place cursor in the first cell
