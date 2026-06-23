@@ -674,15 +674,21 @@ export function toggleChecklist() {
     // non-standard blocks (e.g. <section>) is too inconsistent across
     // browsers (and a no-op in jsdom), which left toggleChecklist() as a
     // silent no-op in those cases.
+    // The editable root itself is a <div> and must never be treated as a
+    // "block" to convert/replace/remove — otherwise selections that include
+    // raw text nodes sitting directly inside it (e.g. the first line typed
+    // into an empty editor) would destroy the .an-editable element.
+    const editableRoot = /** @type {Element|null} */ (container)?.closest('[contenteditable="true"]');
     const isCollapsed = range.collapsed;
     if (isCollapsed) {
       // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote,
       // etc.) and convert it into a single checklist item.
       const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
       let block = /** @type {Element|null} */ (container);
-      while (block?.parentNode && !BLOCK_TAGS.has(block.tagName)) {
+      while (block?.parentNode && block !== editableRoot && !BLOCK_TAGS.has(block.tagName)) {
         block = /** @type {Element|null} */ (block.parentNode);
       }
+      if (block === editableRoot) block = null;
       // Fallback: if no block element found (e.g. cursor directly in editable
       // root), insert a fresh item with a zero-width-space so the cursor ends
       // up inside it.
@@ -743,9 +749,10 @@ export function toggleChecklist() {
     while ((node = iter.nextNode())) {
       if (!range.intersectsNode(node)) continue;
       let blockEl = /** @type {Element|null} */ (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
-      while (blockEl && !BLOCK_TAGS_MULTI.has(blockEl.tagName)) {
+      while (blockEl && blockEl !== editableRoot && !BLOCK_TAGS_MULTI.has(blockEl.tagName)) {
         blockEl = blockEl.parentElement;
       }
+      if (blockEl === editableRoot) blockEl = null;
       if (blockEl && !seenBlocks.has(blockEl)) {
         seenBlocks.add(blockEl);
         blocks.push(blockEl);
