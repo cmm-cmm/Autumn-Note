@@ -31,9 +31,13 @@
 
   &.an-focused {
     border-color: var(--an-focus-color, #{$an-primary});
-    // color-mix() blends the focus colour with transparent for the glow ring.
-    // Falls back gracefully to the default blue glow in older browsers.
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--an-focus-color, #{$an-primary}) 18%, transparent);
+    // Fallback glow for browsers without color-mix() (pre-Chrome 111, Safari 15.3, Firefox 112).
+    // Uses the static $an-primary value so --an-focus-color overrides are ignored in those browsers.
+    box-shadow: 0 0 0 3px rgba($an-primary, 0.18);
+    // Modern browsers get a fully themeable glow that respects --an-focus-color.
+    @supports (color: color-mix(in srgb, red, blue)) {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--an-focus-color, #{$an-primary}) 18%, transparent);
+    }
   }
 
   &.an-disabled {
