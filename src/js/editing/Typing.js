@@ -18,6 +18,25 @@ const isFAIcon = (n) => !!(n?.nodeName === 'I' && _FA_PATTERN.test(n.className |
 const isZwsAnchor = (n) => !!(n?.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
 
 /**
+ * Extracts the content from `startContainer:startOffset` to the end of `li`.
+ * Returns an empty fragment if the range is invalid (e.g. detached node).
+ * @param {Range} nativeRange
+ * @param {Element} li
+ * @returns {DocumentFragment}
+ */
+function extractAfterContent(nativeRange, li) {
+  try {
+    const r = document.createRange();
+    r.setStart(nativeRange.startContainer, nativeRange.startOffset);
+    r.setEnd(li, li.childNodes.length);
+    return r.extractContents();
+  } catch (_) {
+    void _;
+    return document.createDocumentFragment();
+  }
+}
+
+/**
  * Handles special keydown behaviour inside the editor.
  * @param {KeyboardEvent} event
  * @param {HTMLElement} editable
@@ -319,15 +338,7 @@ export function handleKeydown(event, editable, options = {}) {
       // 3. Extract everything from cursor to end of li into afterFrag.
       //    Use startContainer/startOffset (cursor position after potential delete),
       //    NOT endContainer/endOffset which is wrong for non-collapsed ranges.
-      let afterFrag;
-      try {
-        const afterRange = document.createRange();
-        afterRange.setStart(nativeRange.startContainer, nativeRange.startOffset);
-        afterRange.setEnd(checkLi, checkLi.childNodes.length);
-        afterFrag = afterRange.extractContents();
-      } catch (_) {
-        afterFrag = document.createDocumentFragment();
-      }
+      const afterFrag = extractAfterContent(nativeRange, checkLi);
 
       // 4. Build the new checklist item with the extracted "after" content.
       const newLi = document.createElement('li');
