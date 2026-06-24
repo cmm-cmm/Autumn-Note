@@ -318,7 +318,7 @@ function getSelectedList() {
   if (!sel?.rangeCount) return null;
   let container = sel.getRangeAt(0).commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
-  return container?.closest('ul, ol') || null;
+  return /** @type {Element|null} */ (container)?.closest('ul, ol') || null;
 }
 
 /**
@@ -619,18 +619,18 @@ export function toggleChecklist() {
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
 
-  const listEl = container?.closest('ul, ol');
+  const listEl = /** @type {Element|null} */ (container)?.closest('ul, ol');
   if (listEl) {
     if (listEl.classList.contains('an-checklist')) {
       // Transition from Checklist to Paragraphs (Toggle off checklist entirely)
       const parent = listEl.parentNode;
       if (parent) {
         const lis = Array.from(listEl.children);
-        let firstP = null;
+        let /** @type {HTMLParagraphElement|null} */ firstP = null;
         lis.forEach(li => {
           const p = document.createElement('p');
           for (const child of li.childNodes) {
-            if (child.nodeType === 1 && child.tagName === 'INPUT') continue;
+            if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
             p.appendChild(child.cloneNode(true));
           }
           p.innerHTML = p.innerHTML.replaceAll('\u200b', '').replaceAll('\u200B', '');
