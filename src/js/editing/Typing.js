@@ -312,16 +312,22 @@ export function handleKeydown(event, editable, options = {}) {
       if (!nativeRange.collapsed) {
         nativeRange.deleteContents();
         // nativeRange is now collapsed at the deletion point; re-read it
+        if (sel.rangeCount === 0 || !checkLi.isConnected) return true;
         nativeRange = sel.getRangeAt(0);
       }
 
       // 3. Extract everything from cursor to end of li into afterFrag.
       //    Use startContainer/startOffset (cursor position after potential delete),
       //    NOT endContainer/endOffset which is wrong for non-collapsed ranges.
-      const afterRange = document.createRange();
-      afterRange.setStart(nativeRange.startContainer, nativeRange.startOffset);
-      afterRange.setEnd(checkLi, checkLi.childNodes.length);
-      const afterFrag = afterRange.extractContents();
+      let afterFrag;
+      try {
+        const afterRange = document.createRange();
+        afterRange.setStart(nativeRange.startContainer, nativeRange.startOffset);
+        afterRange.setEnd(checkLi, checkLi.childNodes.length);
+        afterFrag = afterRange.extractContents();
+      } catch (_) {
+        afterFrag = document.createDocumentFragment();
+      }
 
       // 4. Build the new checklist item with the extracted "after" content.
       const newLi = document.createElement('li');
