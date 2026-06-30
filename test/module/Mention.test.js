@@ -566,4 +566,48 @@ describe('Mention._onInput debounce path', () => {
     vi.useRealTimers();
     m.destroy();
   });
+
+  it('hides dropdown and reports the error when onSearch throws synchronously', () => {
+    vi.useFakeTimers();
+    const onError = vi.fn();
+    const onSearch = vi.fn(() => {
+      throw new Error('boom');
+    });
+    const m = new Mention(makeContext({ onSearch, onError, debounce: 0 }));
+    m.initialize();
+    const el = m.context.layoutInfo.editable;
+    const tn = document.createTextNode('@al');
+    el.appendChild(tn);
+    setCursor(tn, 3);
+    vi.spyOn(m, '_captureCaretRect').mockImplementation(() => {});
+    vi.spyOn(m, '_hideDropdown');
+    m._onInput();
+    vi.advanceTimersByTime(0);
+    expect(m._hideDropdown).toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledWith(expect.any(Error));
+    vi.useRealTimers();
+    m.destroy();
+  });
+
+  it('hides dropdown without throwing when onSearch throws synchronously and onError is not configured', () => {
+    vi.useFakeTimers();
+    const onSearch = vi.fn(() => {
+      throw new Error('boom');
+    });
+    const m = new Mention(makeContext({ onSearch, debounce: 0 }));
+    m.initialize();
+    const el = m.context.layoutInfo.editable;
+    const tn = document.createTextNode('@al');
+    el.appendChild(tn);
+    setCursor(tn, 3);
+    vi.spyOn(m, '_captureCaretRect').mockImplementation(() => {});
+    vi.spyOn(m, '_hideDropdown');
+    expect(() => {
+      m._onInput();
+      vi.advanceTimersByTime(0);
+    }).not.toThrow();
+    expect(m._hideDropdown).toHaveBeenCalled();
+    vi.useRealTimers();
+    m.destroy();
+  });
 });

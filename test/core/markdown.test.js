@@ -67,6 +67,34 @@ describe('markdownToHTML', () => {
     expect(html).toContain('</ol>');
   });
 
+  it('converts a checklist with unchecked and checked items', () => {
+    const md = '- [ ] Todo\n- [x] Done';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ul class="an-checklist">');
+    expect(html).toContain('<input type="checkbox" contenteditable="false">Todo</li>');
+    expect(html).toContain('<input type="checkbox" contenteditable="false" checked>Done</li>');
+  });
+
+  it('converts a checklist with uppercase X as checked', () => {
+    const md = '- [X] Done';
+    const html = markdownToHTML(md);
+    expect(html).toContain('checked');
+  });
+
+  it('stops a checklist block when a plain list item follows', () => {
+    const md = '- [ ] Todo\n- Plain item';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ul class="an-checklist"><li><input type="checkbox" contenteditable="false">Todo</li></ul>');
+    expect(html).toContain('<ul><li>Plain item</li></ul>');
+  });
+
+  it('stops a plain list block when a checklist item follows', () => {
+    const md = '- Plain item\n- [ ] Todo';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ul><li>Plain item</li></ul>');
+    expect(html).toContain('<ul class="an-checklist"><li><input type="checkbox" contenteditable="false">Todo</li></ul>');
+  });
+
   it('converts a blockquote', () => {
     const html = markdownToHTML('> A quote');
     expect(html).toContain('<blockquote>');
@@ -177,6 +205,22 @@ describe('htmlToMarkdown', () => {
     const md = htmlToMarkdown(html);
     expect(md).toContain('1. First');
     expect(md).toContain('2. Second');
+  });
+
+  it('converts a checklist with checked and unchecked items', () => {
+    const html = '<ul class="an-checklist">'
+      + '<li><input type="checkbox" contenteditable="false">Todo</li>'
+      + '<li><input type="checkbox" contenteditable="false" checked>Done</li>'
+      + '</ul>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('- [ ] Todo');
+    expect(md).toContain('- [x] Done');
+  });
+
+  it('treats a checklist item without a checkbox input as unchecked', () => {
+    const html = '<ul class="an-checklist"><li>No checkbox</li></ul>';
+    const md = htmlToMarkdown(html);
+    expect(md).toContain('- [ ] No checkbox');
   });
 
   it('converts <pre><code> to fenced code block', () => {
