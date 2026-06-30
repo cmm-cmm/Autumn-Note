@@ -8,23 +8,27 @@
   <title>AutumnNote — WYSIWYG Editor | Vanilla JS, Zero Dependencies</title>
   <meta name="description" content="Zero-dependency WYSIWYG editor in vanilla JS. Bubble toolbar, @mention, markdown shortcuts, dark mode, 8 languages, TypeScript. No jQuery." />
   <meta name="keywords" content="wysiwyg editor, rich text editor, vanilla javascript editor, no jquery editor, summernote alternative, quill alternative, tinymce alternative, lightweight wysiwyg, contenteditable editor, markdown editor, mention editor" />
-  <link rel="canonical" href="https://cmm-cmm.github.io/Autumn-Note/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Minh Pham" />
+  <link rel="canonical" href="https://autumn.konexforge.com/" />
+  <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://cmm-cmm.github.io/Autumn-Note/" />
+  <meta property="og:url" content="https://autumn.konexforge.com/" />
   <meta property="og:title" content="AutumnNote — Lightweight WYSIWYG Editor for the Web" />
   <meta property="og:description" content="A modern WYSIWYG editor built with vanilla JavaScript. Zero dependencies, no jQuery. Dark mode, 8 languages, @mention, markdown shortcuts, TypeScript." />
-  <meta property="og:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
-  <meta property="og:image:width" content="120" />
-  <meta property="og:image:height" content="120" />
+  <meta property="og:image" content="https://autumn.konexforge.com/image/banner.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:image:alt" content="AutumnNote — WYSIWYG editor banner" />
   <meta property="og:site_name" content="AutumnNote" />
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AutumnNote — Lightweight WYSIWYG Editor" />
   <meta name="twitter:description" content="Zero-dependency WYSIWYG editor in vanilla JS. TypeScript, dark mode, @mention, markdown shortcuts, bubble toolbar." />
-  <meta name="twitter:image" content="https://cmm-cmm.github.io/Autumn-Note/image/banner.png" />
+  <meta name="twitter:image" content="https://autumn.konexforge.com/image/banner.png" />
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
@@ -33,19 +37,76 @@
     "@type": "SoftwareApplication",
     "name": "AutumnNote",
     "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "Text Editor",
     "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+) — no jQuery, zero runtime dependencies.",
-    "url": "https://cmm-cmm.github.io/Autumn-Note/",
+    "url": "https://autumn.konexforge.com/",
     "downloadUrl": "https://www.npmjs.com/package/autumnnote",
     "operatingSystem": "Web Browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "1.8.0",
+    "softwareVersion": "1.8.2",
+    "isAccessibleForFree": true,
     "author": { "@type": "Person", "name": "Minh Pham" },
-    "codeRepository": "https://github.com/cmm-cmm/Autumn-Note"
+    "codeRepository": "https://github.com/cmm-cmm/Autumn-Note",
+    "screenshot": "https://autumn.konexforge.com/image/banner.png",
+    "softwareHelp": { "@type": "CreativeWork", "url": "https://autumn.konexforge.com/docs.html" },
+    "featureList": [
+      "Bubble toolbar on text selection",
+      "@mention autocomplete",
+      "Markdown shortcuts",
+      "Dark mode and auto theme",
+      "Find and Replace with regex and whole-word mode",
+      "Image and video resize",
+      "Table with sort and CSV export",
+      "8 languages (en, vi, ja, zh, fr, de, es, ko)",
+      "Undo and redo history",
+      "Plugin API",
+      "React and Vue 3 wrappers"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is AutumnNote?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AutumnNote is a zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). It has no jQuery or runtime dependencies and offers features such as bubble toolbar, @mention, markdown shortcuts, dark mode, table editing, image and video resize, and a Plugin API. It ships as ES Module and UMD builds and includes official React and Vue 3 wrappers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is AutumnNote free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. AutumnNote is open-source and published under the MIT License. It is free for personal and commercial use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What alternatives to Summernote, Quill, and TinyMCE does AutumnNote replace?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AutumnNote is a modern alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate. Unlike most of these, it has zero runtime dependencies and no jQuery requirement."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I install AutumnNote?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Install via npm: npm install autumnnote. Then import the library and CSS: import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';. Create an editor with AutumnNote.create('#my-editor')."
+        }
+      }
+    ]
   }
   </script>
 
-  <link rel="icon" href="/Autumn-Note/image/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
 
   <style>
     /* === Reset & base === */
@@ -349,9 +410,9 @@
       .demo-section { padding: 36px 16px 40px; }
     }
   </style>
-  <script type="module" crossorigin src="/Autumn-Note/assets/main-9c4z5Geu.js"></script>
-  <link rel="modulepreload" crossorigin href="/Autumn-Note/assets/js-At50mhWV.js">
-  <link rel="stylesheet" crossorigin href="/Autumn-Note/assets/js-CWzl-Z7C.css">
+  <script type="module" crossorigin src="/assets/main-DBgjt_zj.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/js-BR5UPzbA.js">
+  <link rel="stylesheet" crossorigin href="/assets/js-P6V6-LLr.css">
 </head>
 <body>
   <a class="skip-link" href="#demo">Skip to demo</a>
@@ -359,10 +420,10 @@
   <!-- ===================== HEADER ===================== -->
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="https://cmm-cmm.github.io/Autumn-Note/" aria-label="AutumnNote home">
-        <img src="/Autumn-Note/image/banner.png" width="30" height="30" alt="" />
+      <a class="brand" href="https://autumn.konexforge.com/" aria-label="AutumnNote home">
+        <img src="/image/banner.png" width="30" height="30" alt="" />
         <span class="brand-name">AutumnNote</span>
-        <span class="brand-version">v1.8.0</span>
+        <span class="brand-version">v1.8.2</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
         <a class="nav-link" href="docs.html">Docs</a>
@@ -375,7 +436,7 @@
 
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.8.0</span>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.8.2</span>
     <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
