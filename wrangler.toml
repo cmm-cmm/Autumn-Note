@@ -1,5 +1,6 @@
 name = "autumn-note"
 compatibility_date = "2026-06-30"
+workers_dev = false
 
 [assets]
 directory = "./_site"
