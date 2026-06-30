@@ -50,6 +50,23 @@ describe('ImageDialog', () => {
     expect(context.invoke).not.toHaveBeenCalled();
     dialog.destroy();
   });
+
+  it('skips _onFileChange when the context has been destroyed', () => {
+    const context = makeContext();
+    context._alive = false;
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    const file = new File(['data'], 'photo.png', { type: 'image/png' });
+    Object.defineProperty(dialog._fileInput, 'files', { value: [file], configurable: true });
+
+    dialog._onFileChange();
+
+    expect(context.triggerEvent).not.toHaveBeenCalled();
+    expect(dialog._urlInput.value).toBe('');
+
+    dialog.destroy();
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -840,4 +840,105 @@ describe('Typing Enter with non-collapsed selection in checklist', () => {
     const items = editable.querySelectorAll('li');
     expect(items.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('returns true without splitting when the checklist item is detached after deleteContents', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">hello world</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    const textNode = li.lastChild;
+
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, 5);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    // Simulate a browser quirk where deleting the selection detaches the li
+    // from the document (e.g. it was the only remaining content).
+    const deleteContentsSpy = vi.spyOn(Range.prototype, 'deleteContents').mockImplementation(function () {
+      li.remove();
+    });
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+
+    expect(result).toBe(true);
+    expect(li.isConnected).toBe(false);
+    deleteContentsSpy.mockRestore();
+  });
+
+  it('returns true without splitting when the selection is cleared after deleteContents', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">hello world</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    const textNode = li.lastChild;
+
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, 5);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    // Simulate a browser quirk where deleting the selection clears it entirely.
+    const deleteContentsSpy = vi.spyOn(Range.prototype, 'deleteContents').mockImplementation(function () {
+      window.getSelection().removeAllRanges();
+    });
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+
+    expect(result).toBe(true);
+    expect(window.getSelection().rangeCount).toBe(0);
+    deleteContentsSpy.mockRestore();
+  });
+});
+
+describe('Typing checklist Enter — extractAfterContent error fallback', () => {
+  beforeEach(() => {
+    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
+  });
+
+  it('falls back to an empty fragment when the range cannot be extracted', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = `
+      <ul class="an-checklist">
+        <li><input type="checkbox" contenteditable="false">hello world</li>
+      </ul>`;
+    document.body.appendChild(editable);
+
+    const li = editable.querySelector('li');
+    const textNode = li.lastChild;
+    setCaret(textNode, 6);
+
+    // Force the internal extraction range to throw (e.g. an invalidated node).
+    const setEndSpy = vi.spyOn(Range.prototype, 'setEnd').mockImplementation(function () {
+      throw new Error('invalid node');
+    });
+
+    const event = { key: 'Enter', shiftKey: false, preventDefault: vi.fn() };
+    const result = handleKeydown(event, editable, {});
+
+    expect(result).toBe(true);
+    const items = editable.querySelectorAll('li');
+    expect(items.length).toBe(2);
+    // No content after the cursor was carried over since extraction failed.
+    expect(items[1].textContent.replace(/[ ​]/g, '')).toBe('');
+
+    setEndSpy.mockRestore();
+  });
 });

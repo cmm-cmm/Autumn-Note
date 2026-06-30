@@ -61,6 +61,7 @@ export class Mention {
       debounce: cfg.debounce ?? 200,
       onSearch: cfg.onSearch,
       onInsert: cfg.onInsert || null,
+      onError: cfg.onError || null,
       mentionClass: cfg.mentionClass || 'an-mention',
       allowSpaces: cfg.allowSpaces || false,
     };
