@@ -11,9 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Focus outline on content area** — removed the `.an-editable:focus-visible` outline (2 px ring drawn inside the editable box via `outline-offset: -2px`); focus state is now indicated exclusively by the outer container's `border-color` and `box-shadow` on `.an-container.an-focused`, eliminating the double-ring effect on the typing area
+- **`ImageCropOverlay` canvas null crash** — added an explicit null-check for `canvas.getContext('2d')` in `drawCropToCanvas()`; previously a GPU memory limit returning `null` was silently swallowed and incorrectly reported to the user as a CORS error
+- **`Clipboard._compressImage` silent hang** — both FileReader fallback paths (canvas unavailable + image load error) now call `reject()` on failure so the outer `.catch()` can surface the error to `onImageError` instead of leaving the Promise permanently pending
+- **`ContextMenu` clipboard paste unhandled rejection** — added `.catch(() => {})` to the detached inner Promise chain in the `navigator.clipboard.read()` HTML path so permission errors are silently swallowed instead of becoming unhandled rejections
+
+### Added
+- **`maxPasteSize` and `minImageSize` defaults** — added explicit values (`5 * 1024 * 1024` and `20`) to `settings.js`; previously `context.options.maxPasteSize` returned `undefined` because the option was documented and type-declared but absent from `defaultOptions`
+- **TypeScript exports map `"types"` condition** — added `"types": "./types/index.d.ts"` to the `"."` export in `package.json` (root, react, vue) so `moduleResolution: "node16"` / `"bundler"` consumers get types without a fallback `tsconfig` workaround
+- **`"sideEffects"` field in `package.json`** — prevents aggressive tree-shakers from dropping `autumnnote.css` when it is imported as a side-effect
+- **`focusColor` in `types/index.d.ts`** — the option was in `settings.js` and documented but absent from the TypeScript interface; added `focusColor?: string | null`
+- **`'hiliteColor'` in `bubbleToolbarItems` union** — the value ships as part of the default array in `settings.js` but was missing from the TypeScript union, causing a type error on default config
+- **`engines` field in `package.json`** — declares `node >= 18.0.0` requirement
+- **`[[custom_domains]]` in `wrangler.toml`** — version-controls the Cloudflare custom domain binding for `autumn.konexforge.com`
 
 ### Changed
 - **Live demo domain** — migrated from `https://cmm-cmm.github.io/Autumn-Note/` to `https://autumn.konexforge.com/`; all canonical URLs, Open Graph meta, JSON-LD structured data, `vite.demo.config.js` base path (`'/Autumn-Note/'` → `'/'`), and `homepage` in all `package.json` files updated accordingly
+- **`publish.yml`** — changed `pnpm test` to `pnpm test:coverage` so coverage thresholds are enforced before every npm publish
+- **`vitest.config.js`** — added `perFile: true` with per-file floor thresholds (`lines 30, statements 30, functions 25, branches 20`) to catch regressions in low-coverage files that pass on aggregate numbers alone
+- **README** — removed stale `bootstrapVersion` option (not implemented in source); fixed `import '...'` statements incorrectly placed inside `bash` code blocks; corrected `editor.insertImage()` example to `editor.invoke('editor.insertImage', ...)` (the method lives on the `Editor` module, not the Context); updated `theme` docs to include `'auto'`; updated `bubbleToolbarItems` default and type list to include `'hiliteColor'`; added `maxPasteSize` and `minImageSize` to options table
 
 ---
 

@@ -15,6 +15,10 @@ export default defineConfig({
         statements: 83,
         functions: 80,
         branches: 70,
+        perFile: true,
+        // Per-file floor — lower than aggregate so coverage-sparse files are tracked
+        // without failing the build while still catching complete regressions.
+        '**/*': { lines: 30, statements: 30, functions: 25, branches: 20 },
       },
     },
   },

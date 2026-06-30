@@ -2,5 +2,8 @@ name = "autumn-note"
 compatibility_date = "2026-06-30"
 workers_dev = false
 
+[[custom_domains]]
+pattern = "autumn.konexforge.com"
+
 [assets]
 directory = "./_site"

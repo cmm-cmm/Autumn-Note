@@ -153,7 +153,7 @@ export const defaultOptions = {
   // Accepts any valid CSS colour string, e.g. '#f97316', 'hsl(25,90%,55%)'.
   focusColor: null,
   // Display language for the editor UI.
-  // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr'.
+  // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko'.
   // Pass a partial or full locale object to override individual strings.
   lang: 'en',
 
@@ -167,6 +167,12 @@ export const defaultOptions = {
   // Markdown input shortcuts: convert markdown syntax typed inline to HTML.
   // e.g. "## " at line start → <h2>, "**bold**" → <strong>
   markdownShortcuts: true,
+
+  // Maximum paste size in bytes (default 5 MB). Pastes larger than this are silently dropped.
+  maxPasteSize: 5 * 1024 * 1024,
+  // Minimum image dimension in px during resize (width and height). Prevents images from being
+  // resized below this value.
+  minImageSize: 20,
 
   // Bubble toolbar: show a mini floating toolbar above text selections.
   bubbleToolbar: false,

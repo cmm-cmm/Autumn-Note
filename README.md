@@ -177,6 +177,9 @@ Official React and Vue 3 wrappers are available as separate packages in this mon
 
 ```bash
 npm install autumnnote autumnnote-react
+```
+
+```js
 import 'autumnnote/dist/autumnnote.css';
 ```
 
@@ -206,6 +209,9 @@ The `ref` is forwarded to the underlying `Context` instance via `useImperativeHa
 
 ```bash
 npm install autumnnote autumnnote-vue
+```
+
+```js
 import 'autumnnote/dist/autumnnote.css';
 ```
 
@@ -260,7 +266,6 @@ const editor = AutumnNote.create('#my-editor', {
 ```js
 const editor = AutumnNote.create('#my-editor', {
   useBootstrap: true,
-  bootstrapVersion: 5,
   toolbarButtonClass: 'btn btn-sm btn-light',
 });
 ```
@@ -296,7 +301,7 @@ const editor = AutumnNote.create('#my-editor', {
     fd.append('file', files[0]);
     fetch('/api/upload', { method: 'POST', body: fd })
       .then(r => r.json())
-      .then(({ url }) => editor.insertImage(url, files[0].name));
+      .then(({ url }) => editor.invoke('editor.insertImage', url, files[0].name));
   },
 });
 ```
@@ -462,7 +467,6 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `toolbar` | `Array[]` | all buttons | Toolbar layout. See [Toolbar Customisation](#toolbar-customisation). |
 | `toolbarOverflow` | `string` | `'wrap'` | Toolbar overflow strategy: `'wrap'` or `'scroll'`. |
 | `useBootstrap` | `boolean` | `false` | Apply Bootstrap CSS classes to toolbar buttons. |
-| `bootstrapVersion` | `number` | `5` | Bootstrap major version (`4` or `5`). |
 | `toolbarButtonClass` | `string` | `'btn btn-sm btn-light'` | CSS classes for toolbar buttons when `useBootstrap` is `true`. |
 | `useFontAwesome` | `boolean` | `true` | Use FA icons when FontAwesome is detected on the page. |
 | `fontAwesomeClass` | `string` | `'fas'` | FA prefix: `'fas'` for FA 5, `'fa-solid'` for FA 6. |
@@ -479,7 +483,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `fontFamilies` | `string[]` | 10 fonts | Font families available in the font-family dropdown. |
 | `stickyToolbar` | `boolean` | `false` | Pin the toolbar to the viewport top when the page is scrolled. |
 | `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. height of a fixed nav bar). |
-| `theme` | `string` | `'light'` | Colour theme: `'light'` or `'dark'`. |
+| `theme` | `string` | `'light'` | Colour theme: `'light'`, `'dark'`, or `'auto'` (follows system preference). |
 | `readOnly` | `boolean` | `false` | Start the editor in non-editable (read-only) mode with toolbar hidden. |
 | `spellcheck` | `boolean` | `true` | Enable browser spellcheck in the editable area. |
 | `direction` | `string` | `'ltr'` | Text direction: `'ltr'` or `'rtl'`. |
@@ -495,10 +499,12 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `lang` | `string \| object` | `'en'` | UI display language. Built-in codes: `'en'`, `'vi'`, `'ja'`, `'zh'`, `'fr'`, `'de'`, `'es'`, `'ko'`. Pass a partial locale object for custom overrides. |
 | `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |
 | `bubbleToolbar` | `boolean` | `false` | Show a mini floating toolbar above the text selection for quick formatting. |
-| `bubbleToolbarItems` | `string[]` | `['bold','italic','underline','link','foreColor','removeFormat']` | Buttons shown in the bubble toolbar. Available names: `'bold'`, `'italic'`, `'underline'`, `'strikethrough'`, `'link'`, `'foreColor'`, `'removeFormat'`, `'inlineCode'`. |
+| `bubbleToolbarItems` | `string[]` | `['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']` | Buttons shown in the bubble toolbar. Available names: `'bold'`, `'italic'`, `'underline'`, `'strikethrough'`, `'link'`, `'foreColor'`, `'hiliteColor'`, `'removeFormat'`, `'inlineCode'`. |
 | `autoSaveRestore` | `boolean` | `false` | When `autoSave` is also `true`, show a restore banner on load if a draft exists. |
 | `autoSaveRestoreTimeout` | `number` | `7` | Max draft age in days before it is auto-discarded. `0` = no expiry. |
 | `onAutoSaveRestore` | `Function` | `null` | `(html, context) => void` — called after the user restores a draft. |
+| `maxPasteSize` | `number` | `5242880` | Maximum paste payload size in bytes (default 5 MB). Pastes larger than this are silently dropped. |
+| `minImageSize` | `number` | `20` | Minimum image dimension in px during resize (width and height). |
 | `mention` | `object` | `null` | @mention configuration object. Set `mention.onSearch` to activate. See [Mentions](#mentions). |
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |

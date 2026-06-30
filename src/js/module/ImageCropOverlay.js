@@ -48,6 +48,7 @@ function drawCropToCanvas(img, naturalRect, renderW, renderH) {
       canvas.width  = Math.round(renderW);
       canvas.height = Math.round(renderH);
       const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(null); return; } // GPU memory limit — let _confirm() handle null
       try {
         ctx.drawImage(
           source,

@@ -9,10 +9,12 @@
   "exports": {
     ".": {
       "import": "./dist/autumnnote.es.js",
-      "require": "./dist/autumnnote.umd.js"
+      "require": "./dist/autumnnote.umd.js",
+      "types": "./types/index.d.ts"
     },
     "./dist/autumnnote.css": "./dist/autumnnote.css"
   },
+  "sideEffects": ["./dist/autumnnote.css", "**/*.css"],
   "files": [
     "dist",
     "src",
@@ -99,6 +101,9 @@
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
     "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "browserslist": [
     "last 2 versions",

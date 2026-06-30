@@ -381,7 +381,7 @@ export class Clipboard {
     const MAX_DIM = 1920;
     const QUALITY = 0.85;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const objectUrl = URL.createObjectURL(file);
       const img = new Image();
 
@@ -408,6 +408,7 @@ export class Clipboard {
           // embedding the original file without compression.
           const reader = new FileReader();
           reader.onload = (e) => resolve(/** @type {string} */ (e.target.result));
+          reader.onerror = () => reject(new Error('FileReader failed'));
           reader.readAsDataURL(file);
           return;
         }
@@ -423,6 +424,7 @@ export class Clipboard {
         // Fallback: embed original without compression
         const reader = new FileReader();
         reader.onload = (e) => resolve(/** @type {string} */ (e.target.result));
+        reader.onerror = () => reject(new Error('FileReader failed'));
         reader.readAsDataURL(file);
       };
 
