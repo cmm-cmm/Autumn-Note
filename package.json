@@ -1,6 +1,6 @@
 {
   "name": "autumnnote",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "WYSIWYG rich-text editor built with vanilla JavaScript — zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers included.",
   "main": "dist/autumnnote.umd.js",
   "module": "dist/autumnnote.es.js",
@@ -78,7 +78,7 @@
     "rtl",
     "autosave"
   ],
-  "homepage": "https://cmm-cmm.github.io/Autumn-Note/",
+  "homepage": "https://autumn.konexforge.com/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cmm-cmm/Autumn-Note.git"

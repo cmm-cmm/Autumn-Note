@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.2] - 2026-06-30
+
+### Fixed
+- **Focus outline on content area** — removed the `.an-editable:focus-visible` outline (2 px ring drawn inside the editable box via `outline-offset: -2px`); focus state is now indicated exclusively by the outer container's `border-color` and `box-shadow` on `.an-container.an-focused`, eliminating the double-ring effect on the typing area
+
+### Changed
+- **Live demo domain** — migrated from `https://cmm-cmm.github.io/Autumn-Note/` to `https://autumn.konexforge.com/`; all canonical URLs, Open Graph meta, JSON-LD structured data, `vite.demo.config.js` base path (`'/Autumn-Note/'` → `'/'`), and `homepage` in all `package.json` files updated accordingly
+
+---
+
 ## [1.8.1] - 2026-06-30
 
 ### Fixed
@@ -488,4 +498,4 @@ AutumnNote.create('#editor', {
 - DOM-based HTML sanitiser: strips `<script>`, `<iframe>`, `on*` handlers, `javascript:` and `data:` URLs
 - ES module + UMD builds via Vite
 - TypeScript type definitions
-- GitHub Pages live demo: https://cmm-cmm.github.io/Autumn-Note/
+- Live demo: https://autumn.konexforge.com/

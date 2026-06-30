@@ -1,11 +1,11 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-// DEMO_BASE_PATH / DEMO_OUT_DIR let this same config target either GitHub
-// Pages (default, served at /Autumn-Note/) or a /demo/ subpath on another
-// host (e.g. Cloudflare Pages), where the build output must physically live
+// DEMO_BASE_PATH / DEMO_OUT_DIR let this same config target either a root
+// domain (default, served at /) or a /demo/ subpath on another host
+// (e.g. Cloudflare Pages), where the build output must physically live
 // under a `demo/` folder matching the `base` prefix.
-const base = process.env.DEMO_BASE_PATH || '/Autumn-Note/';
+const base = process.env.DEMO_BASE_PATH || '/';
 const outDir = process.env.DEMO_OUT_DIR
   ? resolve(__dirname, process.env.DEMO_OUT_DIR)
   : resolve(__dirname, '_site');
