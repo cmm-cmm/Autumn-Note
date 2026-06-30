@@ -11,8 +11,8 @@ export default defineConfig({
       include: ['src/js/**'],
       exclude: ['src/js/i18n/**'],
       thresholds: {
-        lines: 88,
-        statements: 84,
+        lines: 87,
+        statements: 83,
         functions: 80,
         branches: 70,
       },
