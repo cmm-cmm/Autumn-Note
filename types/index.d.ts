@@ -106,7 +106,7 @@ export interface AsnOptions {
   colorSwatches?: string[];
   /**
    * Display language for the editor UI.
-   * Built-in: 'en' (default) | 'vi' | 'ja' | 'zh' | 'fr'.
+   * Built-in: 'en' (default) | 'vi' | 'ja' | 'zh' | 'fr' | 'de' | 'es' | 'ko'.
    * Pass a partial locale object to override individual strings.
    */
   lang?: string | Partial<AsnLocale>;
@@ -323,7 +323,7 @@ export interface AsnLocale {
   };
 }
 
-/** Registry of all built-in locales (keys: 'en', 'vi', 'ja', 'zh', 'fr'). */
+/** Registry of all built-in locales (keys: 'en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko'). */
 export declare const locales: Record<string, AsnLocale>;
 
 /**

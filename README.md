@@ -677,11 +677,11 @@ src/
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
 │   │   ├── env.js            Browser/platform detection
-│   │   ├── markdown.js       Lightweight Markdown to HTML converter
+│   │   ├── markdown.js       Bidirectional HTML ↔ Markdown conversion (with GFM checklists)
 │   │   └── sanitise.js       DOM-based HTML and URL sanitiser
 │   ├── editing/
 │   │   ├── History.js        Undo/redo stack (configurable depth)
-│   │   ├── Style.js          execCommand style wrappers
+│   │   ├── Style.js          Formatting commands (execCommand + DOM list/checklist transitions)
 │   │   ├── Table.js          Table creation and cell manipulation
 │   │   └── Typing.js         Tab/Enter/ArrowKey behaviour and FA icon caret handling
 │   ├── module/

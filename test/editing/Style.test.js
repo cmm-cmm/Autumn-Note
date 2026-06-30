@@ -347,6 +347,48 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
   });
 });
 
+describe('toggleChecklist — range selection including the editable root (#33)', () => {
+  beforeEach(() => {
+    document.execCommand = () => false;
+  });
+  afterEach(() => {
+    delete document.execCommand;
+  });
+
+  it('does not remove the editable root when a raw text node is a direct child of it', () => {
+    // Reproduces the Chrome quirk where the first line typed into an empty
+    // editor is a raw text node directly inside .an-editable (no <p>/<div>
+    // wrapper), while subsequent lines are wrapped in <div>.
+    const editable = document.createElement('div');
+    editable.setAttribute('contenteditable', 'true');
+    editable.className = 'an-editable';
+    const textNode = document.createTextNode('First line');
+    editable.appendChild(textNode);
+    const div2 = document.createElement('div');
+    div2.textContent = 'Second line';
+    editable.appendChild(div2);
+    document.body.appendChild(editable);
+
+    const range = document.createRange();
+    range.setStart(textNode, 0);
+    range.setEnd(div2.firstChild, div2.textContent.length);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    // The .an-editable element itself must survive — it must never be
+    // converted into a checklist item or removed.
+    expect(document.body.contains(editable)).toBe(true);
+    expect(document.body.querySelector('.an-editable')).not.toBeNull();
+
+    // The properly-wrapped <div> sibling should still be converted.
+    const ul = editable.querySelector('ul.an-checklist');
+    expect(ul).not.toBeNull();
+    expect(ul.textContent).toContain('Second line');
+  });
+});
+
 // ---------------------------------------------------------------------------
 // underline() — manual unwrap when inside <u> and queryCommandState is false
 // ---------------------------------------------------------------------------

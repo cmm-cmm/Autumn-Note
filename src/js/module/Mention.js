@@ -278,7 +278,14 @@ export class Mention {
         this._renderItems(items);
         this._showDropdown();
       };
-      const result = this._cfg.onSearch(this._query, cb);
+      let result;
+      try {
+        result = this._cfg.onSearch(this._query, cb);
+      } catch (err) {
+        this._hideDropdown();
+        if (typeof this._cfg.onError === 'function') this._cfg.onError(err);
+        return;
+      }
       if (result && typeof result.then === 'function') {
         result.then(cb).catch((err) => {
           this._hideDropdown();

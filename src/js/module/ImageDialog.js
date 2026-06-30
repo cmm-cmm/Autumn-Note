@@ -107,6 +107,7 @@ export class ImageDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
 
   _onFileChange() {
+    if (this.context._alive === false) return;
     const file = this._fileInput?.files?.[0];
     if (!file?.type?.startsWith('image/')) return;
 

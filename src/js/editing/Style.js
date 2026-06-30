@@ -294,14 +294,99 @@ function _checklistItemToP(checkLi) {
 }
 
 /**
- * Inserts an unordered list or converts selection.
+ * Inserts an unordered (bulleted) list, or converts the current list to `<ul>`.
+ *
+ * When the cursor is already inside a list, direct DOM manipulation is used to
+ * transition between list types — `execCommand` alone cannot handle checklist →
+ * UL/OL conversions because it has no awareness of the `an-checklist` class or
+ * the checkbox `<input>` elements.
+ *
+ * Transition paths:
+ * - **Checklist → UL**: strips `an-checklist` class and all checkbox inputs;
+ *   converts `<ol>` container to `<ul>` via `changeTagName()` if needed.
+ * - **OL → UL**: swaps the container tag via `changeTagName()`.
+ * - **UL → paragraphs**: falls back to `execCommand('insertUnorderedList')`
+ *   which toggles the list off (browser-native behaviour).
+ * - **No list → UL**: falls back to `execCommand('insertUnorderedList')`.
  */
-export const insertUnorderedList = () => execCommand('insertUnorderedList');
+/**
+ * Helper to get the closest ul/ol element containing the current selection.
+ * @returns {Element|null}
+ */
+function getSelectedList() {
+  const sel = globalThis.getSelection();
+  if (!sel?.rangeCount) return null;
+  let container = sel.getRangeAt(0).commonAncestorContainer;
+  if (container.nodeType === 3) container = container.parentElement;
+  return /** @type {Element|null} */ (container)?.closest('ul, ol') || null;
+}
 
 /**
- * Inserts an ordered list or converts selection.
+ * Strips the checklist class and checkbox inputs from a list element.
+ * @param {Element} listEl
  */
-export const insertOrderedList = () => execCommand('insertOrderedList');
+function stripChecklist(listEl) {
+  listEl.classList.remove('an-checklist');
+  listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
+}
+
+export function insertUnorderedList() {
+  const listEl = getSelectedList();
+  if (listEl) {
+    if (listEl.classList.contains('an-checklist')) {
+      // Checklist → UL: strip checkboxes and class, swap tag if needed
+      stripChecklist(listEl);
+      if (listEl.tagName === 'OL') {
+        changeTagName(listEl, 'ul');
+      }
+    } else if (listEl.tagName === 'OL') {
+      // OL → UL: swap container tag
+      changeTagName(listEl, 'ul');
+    } else {
+      // Already UL → toggle off via execCommand
+      execCommand('insertUnorderedList');
+    }
+  } else {
+    // Not in a list → create new UL via execCommand
+    execCommand('insertUnorderedList');
+  }
+}
+
+/**
+ * Inserts an ordered (numbered) list, or converts the current list to `<ol>`.
+ *
+ * When the cursor is already inside a list, direct DOM manipulation is used to
+ * transition between list types — `execCommand` alone cannot handle checklist →
+ * UL/OL conversions because it has no awareness of the `an-checklist` class or
+ * the checkbox `<input>` elements.
+ *
+ * Transition paths:
+ * - **Checklist → OL**: strips `an-checklist` class and all checkbox inputs;
+ *   converts container to `<ol>` via `changeTagName()`.
+ * - **UL → OL**: swaps the container tag via `changeTagName()`.
+ * - **OL → paragraphs**: falls back to `execCommand('insertOrderedList')`
+ *   which toggles the list off (browser-native behaviour).
+ * - **No list → OL**: falls back to `execCommand('insertOrderedList')`.
+ */
+export function insertOrderedList() {
+  const listEl = getSelectedList();
+  if (listEl) {
+    if (listEl.classList.contains('an-checklist')) {
+      // Checklist → OL: strip checkboxes and class, swap to <ol>
+      stripChecklist(listEl);
+      changeTagName(listEl, 'ol');
+    } else if (listEl.tagName === 'UL') {
+      // UL → OL: swap container tag
+      changeTagName(listEl, 'ol');
+    } else {
+      // Already OL → toggle off via execCommand
+      execCommand('insertOrderedList');
+    }
+  } else {
+    // Not in a list → create new OL via execCommand
+    execCommand('insertOrderedList');
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Line-height helper
@@ -491,18 +576,41 @@ export function isInlineCode() {
 // ---------------------------------------------------------------------------
 
 /**
+ * Changes the tag name of an element in the DOM while preserving attributes and children.
+ * @param {Element} el
+ * @param {string} newTagName
+ * @returns {HTMLElement}
+ */
+function changeTagName(el, newTagName) {
+  const newEl = document.createElement(newTagName);
+  for (const attr of el.attributes) {
+    newEl.setAttribute(attr.name, attr.value);
+  }
+  while (el.firstChild) {
+    newEl.appendChild(el.firstChild);
+  }
+  el.parentNode.replaceChild(newEl, el);
+  return newEl;
+}
+
+/**
+ * Ensures all list items under the list element have a checkbox.
+ * @param {Element} listEl
+ */
+function ensureCheckboxes(listEl) {
+  listEl.querySelectorAll('li').forEach(li => {
+    const existingCb = li.querySelector('input[type="checkbox"]');
+    if (!existingCb) {
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.contentEditable = 'false';
+      li.insertBefore(cb, li.firstChild);
+    }
+  });
+}
+
+/**
  * Toggle a checklist at the current selection or caret.
- *
- * When the selection is inside an existing checklist `<ul class="an-checklist">`,
- * converts the selected `<li>` items back into `<p>` paragraphs and places the caret
- * at the start of the first converted paragraph. Otherwise creates a checklist:
- * - If the selection is collapsed, converts the nearest block-level ancestor (or inserts
- *   a single checklist item at the editable root) into a checklist with one item containing
- *   that block's text and places the caret inside the new item.
- * - If the selection is a range, converts each intersecting block element into one checklist
- *   item (preserving textual content) and places the caret at the end of the last item.
- *
- * Empty or whitespace-only selections do not create a checklist.
  */
 export function toggleChecklist() {
   const sel = globalThis.getSelection();
@@ -511,162 +619,183 @@ export function toggleChecklist() {
   let container = range.commonAncestorContainer;
   if (container.nodeType === 3) container = container.parentElement;
 
-  const ul = /** @type {Element|null} */ (container)?.closest('.an-checklist');
-  if (ul) {
-    // If selection covers multiple <li>, convert them all
-    const selectedLis = Array.from(ul.querySelectorAll('li')).filter((li) =>
-      sel.containsNode(li, true),
-    );
-    if (selectedLis.length > 0) {
-      /** @type {HTMLElement|null} */ let firstP = null;
-      selectedLis.forEach((li) => {
-        const p = document.createElement('p');
-        for (const child of li.childNodes) {
-          if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
-          p.appendChild(child.cloneNode(true));
+  const listEl = /** @type {Element|null} */ (container)?.closest('ul, ol');
+  if (listEl) {
+    if (listEl.classList.contains('an-checklist')) {
+      // Transition from Checklist to Paragraphs (Toggle off checklist entirely)
+      const parent = listEl.parentNode;
+      if (parent) {
+        const lis = Array.from(listEl.children);
+        let /** @type {HTMLParagraphElement|null} */ firstP = null;
+        lis.forEach(li => {
+          const p = document.createElement('p');
+          for (const child of li.childNodes) {
+            if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
+            p.appendChild(child.cloneNode(true));
+          }
+          p.innerHTML = p.innerHTML.replaceAll('\u200b', '').replaceAll('\u200B', '');
+          if (!p.hasChildNodes() || !p.textContent.trim()) {
+            p.innerHTML = '';
+            p.appendChild(document.createTextNode('\u00a0'));
+          }
+          listEl.before(p);
+          if (!firstP) firstP = p;
+        });
+        listEl.remove();
+        
+        if (firstP) {
+          const nr = document.createRange();
+          nr.setStart(firstP.firstChild || firstP, 0);
+          nr.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(nr);
         }
-        p.innerHTML = p.innerHTML.replaceAll('\u200b', '');
-        if (!p.hasChildNodes() || !p.textContent.trim()) {
-          p.innerHTML = '';
-          p.appendChild(document.createTextNode('\u00a0'));
-        }
-        ul.parentNode.insertBefore(p, ul);
-        if (!firstP) firstP = p;
-        li.remove();
-      });
-      if (ul.children.length === 0) ul.remove();
-      // Move caret to first converted paragraph
-      if (firstP) {
+      }
+    } else {
+      // Transition from standard UL/OL to Checklist
+      const targetUl = changeTagName(listEl, 'ul');
+      targetUl.classList.add('an-checklist');
+      ensureCheckboxes(targetUl);
+      
+      // Place caret inside the first LI
+      const firstLi = targetUl.querySelector('li');
+      if (firstLi) {
         const nr = document.createRange();
-        nr.setStart(firstP.firstChild || firstP, 0);
-        nr.collapse(true);
+        nr.selectNodeContents(firstLi);
+        nr.collapse(false);
         sel.removeAllRanges();
         sel.addRange(nr);
       }
+    }
+  } else {
+    // Selection is not in a list: build the checklist directly via DOM
+    // manipulation. execCommand('insertUnorderedList') is intentionally
+    // avoided here — its behaviour on collapsed/empty selections and
+    // non-standard blocks (e.g. <section>) is too inconsistent across
+    // browsers (and a no-op in jsdom), which left toggleChecklist() as a
+    // silent no-op in those cases.
+    // The editable root itself is a <div> and must never be treated as a
+    // "block" to convert/replace/remove — otherwise selections that include
+    // raw text nodes sitting directly inside it (e.g. the first line typed
+    // into an empty editor) would destroy the .an-editable element.
+    const editableRoot = /** @type {Element|null} */ (container)?.closest('[contenteditable="true"]');
+    const isCollapsed = range.collapsed;
+    if (isCollapsed) {
+      // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote,
+      // etc.) and convert it into a single checklist item.
+      const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
+      let block = /** @type {Element|null} */ (container);
+      while (block?.parentNode && block !== editableRoot && !BLOCK_TAGS.has(block.tagName)) {
+        block = /** @type {Element|null} */ (block.parentNode);
+      }
+      if (block === editableRoot) block = null;
+      // Fallback: if no block element found (e.g. cursor directly in editable
+      // root), insert a fresh item with a zero-width-space so the cursor ends
+      // up inside it.
+      const itemText = (block && BLOCK_TAGS.has(block.tagName))
+        ? Array.from(block.childNodes)
+            .map((n) => n.textContent)
+            .join('')
+            .replaceAll('\u00a0', ' ')
+        : '';
+
+      const newUl = document.createElement('ul');
+      newUl.className = 'an-checklist';
+      const li = document.createElement('li');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.contentEditable = 'false';
+      li.appendChild(checkbox);
+      li.appendChild(document.createTextNode(itemText || '\u200B'));
+      newUl.appendChild(li);
+
+      if (block && BLOCK_TAGS.has(block.tagName)) {
+        block.parentNode.replaceChild(newUl, block);
+      } else {
+        // Cursor directly in editable root — insert via Range API.
+        const nativeRange = sel.getRangeAt(0);
+        nativeRange.deleteContents();
+        nativeRange.insertNode(newUl);
+      }
+
+      // Move caret to the text node inside the new <li>.
+      const textNode = li.lastChild;
+      const nr = document.createRange();
+      const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
+      nr.setStart(textNode, offset);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
       return;
     }
-  }
 
-  // Otherwise: insert new checklist from selected text (or current block when collapsed).
-  const isCollapsed = range.collapsed;
-  if (isCollapsed) {
-    // Find the nearest block-level ancestor (p, div, li, h1-h6, blockquote, etc.)
-    // and convert it into a single checklist item.
-    const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
-    let block = /** @type {Element|null} */ (container);
-    while (block?.parentNode && !BLOCK_TAGS.has(block.tagName)) {
-      block = /** @type {Element|null} */ (block.parentNode);
-    }
-    // Fallback: if no block element found (e.g. cursor directly in editable root), use the
-    // insertion approach with a zero-width-space item so the cursor ends up inside.
-    const itemText = (block && BLOCK_TAGS.has(block.tagName))
-      ? Array.from(block.childNodes)
-          .map((n) => n.textContent)
-          .join('')
-          .replaceAll('\u00a0', ' ')
-      : '';
+    // Non-collapsed selection — convert each intersected block element into
+    // a checklist item using direct DOM manipulation.
+    const rawSelText = sel.toString().replace(/[\u00a0\u200B]/g, ' ').trim();
+    if (!rawSelText) return;
 
-    const ul = document.createElement('ul');
-    ul.className = 'an-checklist';
-    const li = document.createElement('li');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.contentEditable = 'false';
-    li.appendChild(checkbox);
-    li.appendChild(document.createTextNode(itemText || '\u200B'));
-    ul.appendChild(li);
+    const BLOCK_TAGS_MULTI = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'LI']);
 
-    if (block && BLOCK_TAGS.has(block.tagName)) {
-      block.parentNode.replaceChild(ul, block);
-    } else {
-      // Cursor directly in editable root — insert via Range API
-      const nativeRange = sel.getRangeAt(0);
-      nativeRange.deleteContents();
-      nativeRange.insertNode(ul);
+    // Collect block-level ancestors of every node in the selection, in order.
+    const blocks = [];
+    const seenBlocks = new Set();
+    const commonAncestor = range.commonAncestorContainer;
+    const iter = document.createNodeIterator(
+      commonAncestor.nodeType === Node.TEXT_NODE ? commonAncestor.parentNode : commonAncestor,
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+      null,
+    );
+    let node;
+    while ((node = iter.nextNode())) {
+      if (!range.intersectsNode(node)) continue;
+      let blockEl = /** @type {Element|null} */ (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
+      while (blockEl && blockEl !== editableRoot && !BLOCK_TAGS_MULTI.has(blockEl.tagName)) {
+        blockEl = blockEl.parentElement;
+      }
+      if (blockEl === editableRoot) blockEl = null;
+      if (blockEl && !seenBlocks.has(blockEl)) {
+        seenBlocks.add(blockEl);
+        blocks.push(blockEl);
+      }
     }
 
-    // Move caret to the text node inside the new <li>
-    const textNode = li.lastChild;
-    const nr = document.createRange();
-    const offset = textNode.nodeType === Node.TEXT_NODE ? textNode.textContent.length : 0;
-    nr.setStart(textNode, offset);
-    nr.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(nr);
-    return;
-  }
+    if (blocks.length === 0) return;
 
-  // G-4: Non-collapsed, non-checklist selection — convert each intersected
-  // block element into a checklist item using direct DOM manipulation.
-  // execCommand('insertHTML') is avoided here because in modern browsers it
-  // deletes the selection but may silently fail to insert when the selection
-  // spans multiple block elements, causing text to disappear.
+    // Build checklist and replace collected blocks.
+    const newUl = document.createElement('ul');
+    newUl.className = 'an-checklist';
+    /** @type {Text|null} */ let lastTextNode = null;
+    blocks.forEach((block) => {
+      const li = document.createElement('li');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.contentEditable = 'false';
+      li.appendChild(cb);
+      // Preserve plain text content; ZWS/NBSP are stripped for display.
+      const blockText = Array.from(block.childNodes)
+        .map((n) => n.textContent)
+        .join('')
+        .replace(/[\u00a0\u200B]/g, ' ')
+        .trim();
+      const tn = document.createTextNode(blockText || '\u200B');
+      li.appendChild(tn);
+      newUl.appendChild(li);
+      lastTextNode = tn;
+    });
 
-  // Guard: if the raw selection is entirely whitespace, do nothing (mirrors
-  // the old line-filter behaviour that prevented empty checklist creation).
-  const rawSelText = sel.toString().replace(/[\u00a0\u200B]/g, ' ').trim();
-  if (!rawSelText) return;
+    // Insert the new list before the first block, then remove all source blocks.
+    const firstBlock = blocks[0];
+    firstBlock.parentNode.insertBefore(newUl, firstBlock);
+    blocks.forEach((block) => block.remove());
 
-  const BLOCK_TAGS_MULTI = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'LI']);
-
-  // Collect block-level ancestors of every node in the selection, in order.
-  const blocks = [];
-  const seenBlocks = new Set();
-  const commonAncestor = range.commonAncestorContainer;
-  const iter = document.createNodeIterator(
-    commonAncestor.nodeType === Node.TEXT_NODE ? commonAncestor.parentNode : commonAncestor,
-    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-    null,
-  );
-  let node;
-  while ((node = iter.nextNode())) {
-    if (!range.intersectsNode(node)) continue;
-    let block = /** @type {Element|null} */ (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
-    while (block && !BLOCK_TAGS_MULTI.has(block.tagName)) {
-      block = block.parentElement;
+    // Move caret to end of the last checklist item.
+    if (lastTextNode) {
+      const nr = document.createRange();
+      nr.setStart(lastTextNode, lastTextNode.textContent.length);
+      nr.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(nr);
     }
-    if (block && !seenBlocks.has(block)) {
-      seenBlocks.add(block);
-      blocks.push(block);
-    }
-  }
-
-  if (blocks.length === 0) return;
-
-  // Build checklist and replace collected blocks.
-  const newUl = document.createElement('ul');
-  newUl.className = 'an-checklist';
-  /** @type {Text|null} */ let lastTextNode = null;
-  blocks.forEach((block) => {
-    const li = document.createElement('li');
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.setAttribute('contenteditable', 'false');
-    li.appendChild(cb);
-    // Preserve plain text content; ZWS/NBSP are stripped for display.
-    const blockText = Array.from(block.childNodes)
-      .map((n) => n.textContent)
-      .join('')
-      .replace(/[\u00a0\u200B]/g, ' ')
-      .trim();
-    const tn = document.createTextNode(blockText || '\u200B');
-    li.appendChild(tn);
-    newUl.appendChild(li);
-    lastTextNode = tn;
-  });
-
-  // Insert the new list before the first block, then remove all source blocks.
-  const firstBlock = blocks[0];
-  firstBlock.parentNode.insertBefore(newUl, firstBlock);
-  blocks.forEach((block) => block.remove());
-
-  // Move caret to end of the last checklist item.
-  if (lastTextNode) {
-    const nr = document.createRange();
-    nr.setStart(lastTextNode, lastTextNode.textContent.length);
-    nr.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(nr);
   }
 }
 

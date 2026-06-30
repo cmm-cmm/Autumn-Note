@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Run tests
+        run: pnpm test
+
       - name: Verify npm auth
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then

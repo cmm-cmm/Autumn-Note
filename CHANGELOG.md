@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.1] - 2026-06-30
+
+### Fixed
+- **Checklist Enter race condition** — `extractContents()` after a collapsed delete in a checklist item is now wrapped in a try-catch via a module-level helper; an `isConnected` guard prevents operating on a detached `<li>` node if the DOM was mutated during `deleteContents()` (`Typing.js`)
+- **`@mention` synchronous `onSearch` errors** — a synchronous throw from `onSearch` was previously silently uncaught; now wrapped in try-catch that hides the dropdown and calls `onError` — matching the existing async-rejection path (`Mention.js`)
+- **ImageDialog FileReader callback after destroy** — added `context._alive === false` guard at the top of `_onFileChange()` so a `FileReader` that completes after the editor is destroyed cannot fire `triggerEvent` on a dead context (`ImageDialog.js`)
+- **Markdown list / checklist conversion** — resolved edge cases in list ↔ markdown conversion including loose list items and GFM task list round-tripping
+- **`toggleChecklist` on non-list selections** — restored direct DOM construction path that prevented the editable root from being deleted when toggling checklist on a plain paragraph selection
+- **CSS focus glow on older browsers** — `color-mix()` has no `@supports` fallback; browsers without support (pre-Chrome 111, Safari 15.3, Firefox 112) now fall back to a static `rgba()` glow instead of showing no glow at all (`autumnnote.scss`)
+- **TypeScript — `Style.js` `.closest()` on `Node`** — four JSDoc type casts added to satisfy `tsc --noEmit` in `getSelectedList()` and `toggleChecklist()`
+
+### Changed
+- **`types/index.d.ts`** — built-in locale list updated from 5 to 8 languages (`'de'`, `'es'`, `'ko'` added to both the `lang` option JSDoc and the `locales` registry declaration)
+- **CI — publish workflow** — `pnpm test` now runs before npm auth check; a failing test suite blocks all three package publishes
+- **CI — pages workflow** — `pnpm lint` and `pnpm typecheck` added before `pnpm test:coverage`; the deploy pipeline now gates on lint cleanliness and TypeScript correctness
+
+---
+
 ## [1.8.0] - 2026-06-05
 
 ### Added
