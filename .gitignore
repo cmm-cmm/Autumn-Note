@@ -8,6 +8,9 @@ dist/
 .vite/
 .rollup.cache/
 
+# Wrangler (Cloudflare) local cache
+.wrangler/
+
 # Test coverage
 coverage/
 
