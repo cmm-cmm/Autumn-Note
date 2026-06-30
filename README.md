@@ -16,7 +16,7 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 
 > **Fast. Lightweight. Reliable. Efficient.**
 
-[Live Demo](https://cmm-cmm.github.io/Autumn-Note/) · [Docs](https://cmm-cmm.github.io/Autumn-Note/docs.html) · [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
+[Live Demo](https://autumn.konexforge.com/) · [Docs](https://autumn.konexforge.com/docs.html) · [Playground](https://autumn.konexforge.com/playground.html)
 
 <p align="center"><img src="examples/Screenshot.png" alt="AutumnNote Screenshot"/></p>
 
@@ -384,7 +384,7 @@ editor.invoke('toolbar.rebuild'); // re-render toolbar with new buttons
 | `context.use(plugin, opts?)` | Install on this instance only. |
 | `context.getPlugin<T>(name)` | Returns the public API from `plugin.install()`. |
 
-See the [full Plugin API docs →](https://cmm-cmm.github.io/Autumn-Note/docs.html#plugin-api)
+See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugin-api)
 
 ---
 

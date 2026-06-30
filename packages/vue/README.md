@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/autumnnote-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-vue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official **Vue 3 wrapper** for [AutumnNote](https://cmm-cmm.github.io/Autumn-Note/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
+Official **Vue 3 wrapper** for [AutumnNote](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
 
 ## Installation
 
@@ -51,7 +51,7 @@ function handleSave() {
 
 | Prop | Type | Description |
 |---|---|---|
-| `options` | `AsnOptions` | Editor configuration. See [all options](https://cmm-cmm.github.io/Autumn-Note/docs.html#options). |
+| `options` | `AsnOptions` | Editor configuration. See [all options](https://autumn.konexforge.com/docs.html#options). |
 
 ## Accessing the editor instance
 
@@ -131,8 +131,8 @@ const options: AsnOptions = { height: 300, bubbleToolbar: true };
 
 ## Links
 
-- [Documentation](https://cmm-cmm.github.io/Autumn-Note/docs.html)
-- [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
+- [Documentation](https://autumn.konexforge.com/docs.html)
+- [Playground](https://autumn.konexforge.com/playground.html)
 - [GitHub](https://github.com/cmm-cmm/Autumn-Note)
 - [npm — autumnnote](https://www.npmjs.com/package/autumnnote)
 - [npm — autumnnote-react](https://www.npmjs.com/package/autumnnote-react)

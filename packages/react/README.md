@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/autumnnote-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official **React wrapper** for [AutumnNote](https://cmm-cmm.github.io/Autumn-Note/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
+Official **React wrapper** for [AutumnNote](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
 
 ## Installation
 
@@ -54,14 +54,14 @@ function MyEditor() {
 
 | Prop | Type | Description |
 |---|---|---|
-| `options` | `AsnOptions` | Editor configuration. See [all options](https://cmm-cmm.github.io/Autumn-Note/docs.html#options). |
+| `options` | `AsnOptions` | Editor configuration. See [all options](https://autumn.konexforge.com/docs.html#options). |
 | `className` | `string` | CSS class applied to the wrapper `<div>`. |
 | `style` | `CSSProperties` | Inline styles applied to the wrapper `<div>`. |
 | `ref` | `React.Ref<Context>` | Forwarded ref — exposes the `Context` instance after mount. |
 
 ## Accessing the editor instance
 
-The component uses `forwardRef` + `useImperativeHandle` to expose the underlying `Context` object. All [instance methods](https://cmm-cmm.github.io/Autumn-Note/docs.html#instance-api) are available via the ref:
+The component uses `forwardRef` + `useImperativeHandle` to expose the underlying `Context` object. All [instance methods](https://autumn.konexforge.com/docs.html#instance-api) are available via the ref:
 
 ```tsx
 import { useRef } from 'react';
@@ -128,8 +128,8 @@ const editorRef = useRef<Context>(null);
 
 ## Links
 
-- [Documentation](https://cmm-cmm.github.io/Autumn-Note/docs.html)
-- [Playground](https://cmm-cmm.github.io/Autumn-Note/playground.html)
+- [Documentation](https://autumn.konexforge.com/docs.html)
+- [Playground](https://autumn.konexforge.com/playground.html)
 - [GitHub](https://github.com/cmm-cmm/Autumn-Note)
 - [npm — autumnnote](https://www.npmjs.com/package/autumnnote)
 - [npm — autumnnote-vue](https://www.npmjs.com/package/autumnnote-vue)

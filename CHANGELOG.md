@@ -488,4 +488,4 @@ AutumnNote.create('#editor', {
 - DOM-based HTML sanitiser: strips `<script>`, `<iframe>`, `on*` handlers, `javascript:` and `data:` URLs
 - ES module + UMD builds via Vite
 - TypeScript type definitions
-- GitHub Pages live demo: https://cmm-cmm.github.io/Autumn-Note/
+- Live demo: https://autumn.konexforge.com/
