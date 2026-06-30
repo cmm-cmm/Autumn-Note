@@ -77,7 +77,7 @@ const defaultItems = [
       navigator.clipboard.read().then((items) => {
         for (const item of items) {
           if (item.types.includes('text/html')) {
-            item.getType('text/html').then((blob) => blob.text()).then((html) => doInsert(html, null));
+            item.getType('text/html').then((blob) => blob.text()).then((html) => doInsert(html, null)).catch(() => {});
             return;
           }
         }

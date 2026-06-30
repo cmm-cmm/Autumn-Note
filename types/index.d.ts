@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.8.2
+ * @version 1.8.3
  */
 
 // ---------------------------------------------------------------------------
@@ -104,6 +104,8 @@ export interface AsnOptions {
   onPaste?: (data: { text: string; html: string | null }) => void;
   /** Additional color swatches shown at the top of the color picker. */
   colorSwatches?: string[];
+  /** Custom focus ring colour — overrides the default blue. Accepts any valid CSS colour string, e.g. '#f97316'. */
+  focusColor?: string | null;
   /**
    * Display language for the editor UI.
    * Built-in: 'en' (default) | 'vi' | 'ja' | 'zh' | 'fr' | 'de' | 'es' | 'ko'.
@@ -134,7 +136,7 @@ export interface AsnOptions {
   /** Show a mini floating toolbar above the text selection. Default: false. */
   bubbleToolbar?: boolean;
   /** Button names shown in the bubble toolbar. */
-  bubbleToolbarItems?: Array<'bold' | 'italic' | 'underline' | 'strikethrough' | 'link' | 'foreColor' | 'removeFormat' | 'inlineCode'>;
+  bubbleToolbarItems?: Array<'bold' | 'italic' | 'underline' | 'strikethrough' | 'link' | 'foreColor' | 'hiliteColor' | 'removeFormat' | 'inlineCode'>;
 
   // ---- @mention (#5) --------------------------------------------------------
 
