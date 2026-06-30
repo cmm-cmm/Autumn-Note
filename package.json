@@ -14,7 +14,6 @@
     },
     "./dist/autumnnote.css": "./dist/autumnnote.css"
   },
-  "sideEffects": ["./dist/autumnnote.css", "**/*.css"],
   "files": [
     "dist",
     "src",
