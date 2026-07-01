@@ -225,6 +225,16 @@ describe('markdownToHTML', () => {
     expect(html).toContain('<td>1</td>');
     expect(html).not.toContain('text-align');
   });
+
+  it('handles a ragged table where separator has fewer columns than the header', () => {
+    const md = '| A | B | C |\n| :--- | :--- |\n| 1 | 2 | 3 |';
+    expect(() => markdownToHTML(md)).not.toThrow();
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th style="text-align:left">A</th>');
+    expect(html).toContain('<th style="text-align:left">B</th>');
+    expect(html).toContain('<th>C</th>');
+    expect(html).toContain('<td>3</td>');
+  });
 });
 
 // ---------------------------------------------------------------------------

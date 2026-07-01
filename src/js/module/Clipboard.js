@@ -178,9 +178,10 @@ export class Clipboard {
    */
   _normalizeExternalTaskLists(html) {
     const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
-    for (const cb of doc.querySelectorAll('li > input[type="checkbox"]')) {
-      const ul = cb.closest('ul');
-      if (!ul || ul.classList.contains('an-checklist')) continue;
+    for (const cb of doc.querySelectorAll('input[type="checkbox"]')) {
+      const li = cb.closest('li');
+      const ul = li?.closest('ul');
+      if (!li || !ul || ul.classList.contains('an-checklist')) continue;
       ul.classList.add('an-checklist');
       cb.removeAttribute('disabled');
       cb.setAttribute('contenteditable', 'false');
