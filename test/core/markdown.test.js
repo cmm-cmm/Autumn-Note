@@ -150,6 +150,81 @@ describe('markdownToHTML', () => {
     // Blank lines are skipped; only the heading should appear
     expect(html).toBe('<h1>Title</h1>');
   });
+
+  // ---- Setext headings -------------------------------------------------------
+
+  it('converts setext H1 (underline with ===)', () => {
+    expect(markdownToHTML('Title\n=====')).toBe('<h1>Title</h1>');
+  });
+
+  it('converts setext H2 (underline with ---)', () => {
+    expect(markdownToHTML('Section\n-------')).toBe('<h2>Section</h2>');
+  });
+
+  it('setext H2 with minimal dashes (--)', () => {
+    expect(markdownToHTML('Sub\n--')).toBe('<h2>Sub</h2>');
+  });
+
+  it('standalone --- is still a horizontal rule, not setext', () => {
+    expect(markdownToHTML('---')).toBe('<hr>');
+  });
+
+  // ---- Nested lists ----------------------------------------------------------
+
+  it('converts a 2-level nested UL', () => {
+    const md = '- Item 1\n  - Nested\n- Item 2';
+    const html = markdownToHTML(md);
+    expect(html).toBe('<ul><li>Item 1<ul><li>Nested</li></ul></li><li>Item 2</li></ul>');
+  });
+
+  it('converts a 2-level nested OL', () => {
+    const md = '1. First\n   1. Nested\n2. Second';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ol>');
+    expect(html).toContain('<li>First<ol><li>Nested</li></ol></li>');
+    expect(html).toContain('<li>Second</li>');
+  });
+
+  it('converts UL with nested OL', () => {
+    const md = '- Item\n  1. Sub one\n  2. Sub two';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ul>');
+    expect(html).toContain('<li>Item<ol><li>Sub one</li><li>Sub two</li></ol></li>');
+  });
+
+  it('converts 3-level deeply nested UL', () => {
+    const md = '- A\n  - B\n    - C';
+    const html = markdownToHTML(md);
+    expect(html).toBe('<ul><li>A<ul><li>B<ul><li>C</li></ul></li></ul></li></ul>');
+  });
+
+  it('checklist with nested plain UL', () => {
+    const md = '- [x] Done\n  - Note';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<ul class="an-checklist">');
+    expect(html).toContain('<ul><li>Note</li></ul>');
+  });
+
+  // ---- Table alignment -------------------------------------------------------
+
+  it('converts GFM table with alignment markers', () => {
+    const md = '| Left | Center | Right |\n| :--- | :---: | ---: |\n| a | b | c |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th style="text-align:left">Left</th>');
+    expect(html).toContain('<th style="text-align:center">Center</th>');
+    expect(html).toContain('<th style="text-align:right">Right</th>');
+    expect(html).toContain('<td style="text-align:left">a</td>');
+    expect(html).toContain('<td style="text-align:center">b</td>');
+    expect(html).toContain('<td style="text-align:right">c</td>');
+  });
+
+  it('table without alignment markers renders plain th/td', () => {
+    const md = '| A | B |\n| --- | --- |\n| 1 | 2 |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th>A</th>');
+    expect(html).toContain('<td>1</td>');
+    expect(html).not.toContain('text-align');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -294,6 +369,18 @@ describe('isMarkdown — edge cases', () => {
 
   it('does not false-positive on email-style list items', () => {
     expect(isMarkdown('Re: your inquiry about pricing')).toBe(false);
+  });
+
+  it('detects setext H1 heading (===)', () => {
+    expect(isMarkdown('Title\n=====')).toBe(true);
+  });
+
+  it('detects setext H2 heading (---)', () => {
+    expect(isMarkdown('Section\n---')).toBe(true);
+  });
+
+  it('detects indented list item', () => {
+    expect(isMarkdown('  - nested item')).toBe(true);
   });
 });
 
