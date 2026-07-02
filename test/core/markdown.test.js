@@ -458,3 +458,101 @@ describe('htmlToMarkdown — additional elements', () => {
     expect(html).toContain('src="https://example.com/img.png"');
   });
 });
+
+// ---------------------------------------------------------------------------
+// isMarkdown — frontmatter and bare tables
+// ---------------------------------------------------------------------------
+
+describe('isMarkdown — frontmatter and tables', () => {
+  it('detects a doc with YAML frontmatter and no other markdown', () => {
+    expect(isMarkdown('---\ntitle: x\n---\n\nJust plain prose.')).toBe(true);
+  });
+
+  it('does not treat an unclosed --- block as frontmatter', () => {
+    expect(isMarkdown('---\nnot closed\nmore text')).toBe(false);
+  });
+
+  it('detects a bare GFM table with no other markdown markers', () => {
+    expect(isMarkdown('| A | B |\n| --- | --- |\n| 1 | 2 |')).toBe(true);
+  });
+
+  it('does not false-positive on a line merely containing pipe characters', () => {
+    expect(isMarkdown('Some text with a | pipe | character but not a table')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — YAML frontmatter
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — frontmatter', () => {
+  it('strips frontmatter, leaving only the body', () => {
+    const md = '---\ntitle: My Post\nauthor: Jane\n---\n\n# Heading';
+    expect(markdownToHTML(md)).toBe('<h1>Heading</h1>');
+  });
+
+  it('renders empty frontmatter with no body as an empty string', () => {
+    expect(markdownToHTML('---\n---')).toBe('');
+  });
+
+  it('does not strip a real horizontal rule followed by non-YAML prose', () => {
+    const md = '---\nSome prose paragraph here.\nMore prose.\n---\n\n# Heading';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<hr>');
+    expect(html).toContain('Some prose paragraph here.');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — reference-style links and footnotes
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — reference links and footnotes', () => {
+  it('resolves a full reference link [text][ref]', () => {
+    const md = '[Google][1]\n\n[1]: https://google.com';
+    expect(markdownToHTML(md)).toBe('<p><a href="https://google.com">Google</a></p>');
+  });
+
+  it('resolves a shortcut reference link [text][]', () => {
+    const md = '[Google][]\n\n[Google]: https://google.com';
+    expect(markdownToHTML(md)).toBe('<p><a href="https://google.com">Google</a></p>');
+  });
+
+  it('resolves a bare/implicit reference link [text]', () => {
+    const md = '[Google]\n\n[Google]: https://google.com';
+    expect(markdownToHTML(md)).toBe('<p><a href="https://google.com">Google</a></p>');
+  });
+
+  it('includes an optional title on a reference link definition', () => {
+    const md = '[1]: https://google.com "Search engine"\n\n[Google][1]';
+    const html = markdownToHTML(md);
+    expect(html).toContain('title="Search engine"');
+    expect(html).toContain('href="https://google.com"');
+  });
+
+  it('renders a footnote marker as superscript and drops the definition line', () => {
+    const md = 'Some text[^1].\n\n[^1]: A footnote.';
+    const html = markdownToHTML(md);
+    expect(html).toBe('<p>Some text<sup>[1]</sup>.</p>');
+    expect(html).not.toContain('A footnote');
+  });
+
+  it('leaves plain bracketed text unchanged when no definition exists', () => {
+    const md = 'See [note] for details, no definition anywhere.';
+    expect(markdownToHTML(md)).toBe('<p>See [note] for details, no definition anywhere.</p>');
+  });
+
+  it('does not strip a reference-definition-like line inside a fenced code block', () => {
+    const md = '```\n[foo]: bar\n```';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<pre>');
+    expect(html).toContain('[foo]: bar');
+  });
+
+  it('resolves a reference link alongside an existing inline link in the same paragraph', () => {
+    const md = '[Click](https://example.com) and [ref][1]\n\n[1]: https://example.com/ref';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<a href="https://example.com">Click</a>');
+    expect(html).toContain('<a href="https://example.com/ref">ref</a>');
+  });
+});
