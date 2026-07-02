@@ -139,7 +139,9 @@ function _domToMd(node, depth = 0) {
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text);
+  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text)
+    || /^.+\n=+\s*$/m.test(text)
+    || /^.+\n-{2,}\s*$/m.test(text);
 }
 
 /**
@@ -171,6 +173,20 @@ export function markdownToHTML(text) {
       continue;
     }
 
+    // ---- Setext headings (Title\n=== or Title\n---) -------------------------
+    if (line.trim() && !/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line) && !/^#{1,6} /.test(line) && i + 1 < lines.length) {
+      if (/^=+\s*$/.test(lines[i + 1])) {
+        out.push(`<h1>${_inline(line.trim())}</h1>`);
+        i += 2;
+        continue;
+      }
+      if (/^-{2,}\s*$/.test(lines[i + 1])) {
+        out.push(`<h2>${_inline(line.trim())}</h2>`);
+        i += 2;
+        continue;
+      }
+    }
+
     // ---- Horizontal rule --- / *** / _________________________________________
     if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
       out.push('<hr>');
@@ -200,41 +216,14 @@ export function markdownToHTML(text) {
 
     // ---- Checklist or Unordered list  - / * / + item  ----------------------
     if (/^[-*+] /.test(line)) {
-      const items = [];
-      const isChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(line);
-      const listTag = isChecklist ? 'ul class="an-checklist"' : 'ul';
-      while (i < lines.length && /^[-*+] /.test(lines[i])) {
-        const nextLineIsChecklist = /^[-*+]\s+\[[ xX]\]\s+/.test(lines[i]);
-        if (nextLineIsChecklist !== isChecklist) {
-          break;
-        }
-        const itemLine = lines[i];
-        const content = itemLine.slice(2);
-        if (isChecklist) {
-          const cbMatch = /^\[([ xX])\][ \t]+/.exec(content);
-          const checked = cbMatch?.[1]?.toLowerCase() === 'x';
-          const checkedAttr = checked ? ' checked' : '';
-          const cbHtml = `<input type="checkbox" contenteditable="false"${checkedAttr}>`;
-          const textContent = cbMatch ? content.slice(cbMatch[0].length) : content;
-          items.push(`<li>${cbHtml}${_inline(textContent)}</li>`);
-        } else {
-          items.push(`<li>${_inline(content)}</li>`);
-        }
-        i++;
-      }
-      out.push(`<${listTag}>${items.join('')}</${listTag.split(' ')[0]}>`);
-      continue;
+      const { html: listHtml, endIdx } = _parseListBlock(lines, i);
+      out.push(listHtml); i = endIdx; continue;
     }
 
     // ---- Ordered list  1. item  ----------------------------------------------
     if (/^\d+\. /.test(line)) {
-      const items = [];
-      while (i < lines.length && /^\d+\. /.test(lines[i])) {
-        items.push(`<li>${_inline(lines[i].replace(/^\d+\. /, ''))}</li>`);
-        i++;
-      }
-      out.push(`<ol>${items.join('')}</ol>`);
-      continue;
+      const { html: listHtml, endIdx } = _parseListBlock(lines, i);
+      out.push(listHtml); i = endIdx; continue;
     }
 
     // ---- Blank line ----------------------------------------------------------
@@ -248,15 +237,25 @@ export function markdownToHTML(text) {
     // a separator row (| --- | --- |). We detect and collect all rows.
     if (/^\|.+\|/.test(line) && i + 1 < lines.length && /^\|[\s|:-]+\|/.test(lines[i + 1])) {
       const headerCells = _parseTableRow(line);
+      const alignments = _parseTableRow(lines[i + 1]).map((c) => {
+        if (c.startsWith(':') && c.endsWith(':')) return 'center';
+        if (c.endsWith(':')) return 'right';
+        if (c.startsWith(':')) return 'left';
+        return null;
+      });
       i += 2; // skip header + separator
       const bodyRows = [];
       while (i < lines.length && /^\|.+\|/.test(lines[i])) {
         bodyRows.push(_parseTableRow(lines[i]));
         i++;
       }
-      const thCells = headerCells.map((c) => `<th>${_inline(c)}</th>`).join('');
+      const _cell = (tag, content, align) => {
+        const s = align ? ` style="text-align:${align}"` : '';
+        return `<${tag}${s}>${_inline(content)}</${tag}>`;
+      };
+      const thCells = headerCells.map((c, idx) => _cell('th', c, alignments[idx])).join('');
       const thead = `<thead><tr>${thCells}</tr></thead>`;
-      const renderRow = (row) => `<tr>${row.map((c) => `<td>${_inline(c)}</td>`).join('')}</tr>`;
+      const renderRow = (row) => `<tr>${row.map((c, idx) => _cell('td', c, alignments[idx])).join('')}</tr>`;
       const tbody = bodyRows.length ? `<tbody>${bodyRows.map(renderRow).join('')}</tbody>` : '';
       out.push(`<table>${thead}${tbody}</table>`);
       continue;
@@ -268,7 +267,9 @@ export function markdownToHTML(text) {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !/^(#{1,6} |> |[-*+] |\d+\. |```|---\s*$|\*{3}\s*$|_{3}\s*$)/.test(lines[i]) &&
-      !/^\|.+\|/.test(lines[i])
+      !/^\|.+\|/.test(lines[i]) &&
+      !(i + 1 < lines.length && /^=+\s*$/.test(lines[i + 1])) &&
+      !(i + 1 < lines.length && /^-{2,}\s*$/.test(lines[i + 1]))
     ) {
       paraLines.push(lines[i]);
       i++;
@@ -297,6 +298,55 @@ function _parseTableRow(row) {
     .replace(/\|$/, '')
     .split('|')
     .map((c) => c.trim());
+}
+
+function _parseListBlock(lines, startIdx) {
+  const baseIndent = (lines[startIdx].match(/^(\s*)/)[1]).length;
+  const isOL = /^\s*\d+\. /.test(lines[startIdx]);
+  const items = [];
+  let firstIsCB = null;
+  let i = startIdx;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.trim() === '') break;
+    const indent = (line.match(/^(\s*)/)[1]).length;
+    if (indent < baseIndent) break;
+
+    if (indent === baseIndent) {
+      if (!/^\s*(?:[-*+]|\d+\.) /.test(line)) break;
+      if (/^\s*\d+\. /.test(line) !== isOL) break;
+      const raw = isOL ? line.replace(/^\s*\d+\. /, '') : line.replace(/^\s*[-*+] /, '');
+      const isCB = !isOL && /^\[[ xX]\]\s+/.test(raw);
+      if (firstIsCB === null) firstIsCB = isCB;
+      if (isCB !== firstIsCB) break;
+      const checked = isCB && raw[1].toLowerCase() === 'x';
+      const text = isCB ? raw.replace(/^\[[ xX]\]\s+/, '') : raw;
+      items.push({ text, isCB, checked, sub: '' });
+      i++;
+    } else {
+      if (!items.length) { i++; continue; }
+      if (/^\s*(?:[-*+]|\d+\.) /.test(line)) {
+        const nested = _parseListBlock(lines, i);
+        items[items.length - 1].sub += nested.html;
+        i = nested.endIdx;
+      } else {
+        items[items.length - 1].text += ' ' + line.trim();
+        i++;
+      }
+    }
+  }
+
+  const hasCB = !isOL && (firstIsCB === true);
+  const open = isOL ? '<ol>' : hasCB ? '<ul class="an-checklist">' : '<ul>';
+  const close = isOL ? '</ol>' : '</ul>';
+  const liHTML = items.map(({ text, isCB, checked, sub }) => {
+    const cbHTML = isCB
+      ? `<input type="checkbox" contenteditable="false"${checked ? ' checked' : ''}>`
+      : '';
+    return `<li>${cbHTML}${_inline(text)}${sub}</li>`;
+  }).join('');
+  return { html: `${open}${liHTML}${close}`, endIdx: i };
 }
 
 function _inline(text) {

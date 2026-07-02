@@ -223,6 +223,63 @@ describe('Clipboard._stripAttributes', () => {
   });
 });
 
+// ── _normalizeExternalTaskLists ───────────────────────────────────────────────
+
+describe('Clipboard._normalizeExternalTaskLists', () => {
+  it('adds an-checklist class and normalizes a GitHub-style direct checkbox', () => {
+    const { cb } = makeClipboard();
+    const html = '<ul class="contains-task-list">'
+      + '<li class="task-list-item"><input type="checkbox" disabled class="task-list-item-checkbox">Todo</li>'
+      + '</ul>';
+    const out = cb._normalizeExternalTaskLists(html);
+    expect(out).toContain('an-checklist');
+    expect(out).toContain('contenteditable="false"');
+    expect(out).not.toContain('disabled');
+    expect(out).not.toContain('task-list-item-checkbox');
+    expect(out).toContain('Todo');
+  });
+
+  it('normalizes a checkbox wrapped in a <label> inside the <li>', () => {
+    const { cb } = makeClipboard();
+    const html = '<ul><li><label><input type="checkbox" disabled>Wrapped</label></li></ul>';
+    const out = cb._normalizeExternalTaskLists(html);
+    expect(out).toContain('an-checklist');
+    expect(out).toContain('contenteditable="false"');
+    expect(out).not.toContain('disabled');
+    expect(out).toContain('Wrapped');
+  });
+
+  it('preserves checked state', () => {
+    const { cb } = makeClipboard();
+    const html = '<ul><li><input type="checkbox" checked disabled>Done</li></ul>';
+    const out = cb._normalizeExternalTaskLists(html);
+    expect(out).toContain('checked');
+    expect(out).toContain('an-checklist');
+  });
+
+  it('normalizes multiple task lists in the same paste', () => {
+    const { cb } = makeClipboard();
+    const html = '<ul><li><input type="checkbox">A</li></ul><p>text</p><ul><li><input type="checkbox">B</li></ul>';
+    const out = cb._normalizeExternalTaskLists(html);
+    const matches = out.match(/an-checklist/g) || [];
+    expect(matches.length).toBe(2);
+  });
+
+  it('leaves an already-normalized ul.an-checklist untouched', () => {
+    const { cb } = makeClipboard();
+    const html = '<ul class="an-checklist"><li><input type="checkbox" contenteditable="false">Todo</li></ul>';
+    const out = cb._normalizeExternalTaskLists(html);
+    expect(out).toBe(html);
+  });
+
+  it('ignores checkboxes outside any list', () => {
+    const { cb } = makeClipboard();
+    const html = '<p><input type="checkbox">Not a list</p>';
+    const out = cb._normalizeExternalTaskLists(html);
+    expect(out).not.toContain('an-checklist');
+  });
+});
+
 // ── _revokeRemovedBlobs ───────────────────────────────────────────────────────
 
 describe('Clipboard._revokeRemovedBlobs', () => {

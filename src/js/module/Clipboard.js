@@ -171,6 +171,30 @@ export class Clipboard {
   }
 
   /**
+   * Normalizes task lists from external sources (GitHub, GitLab, etc.) so they
+   * pass the sanitiser's `ul.an-checklist` guard. Runs before sanitiseHTML().
+   * @param {string} html
+   * @returns {string}
+   */
+  _normalizeExternalTaskLists(html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+    for (const cb of doc.querySelectorAll('input[type="checkbox"]')) {
+      const li = cb.closest('li');
+      const ul = li?.closest('ul');
+      if (!li || !ul || ul.classList.contains('an-checklist')) continue;
+      ul.classList.add('an-checklist');
+      cb.removeAttribute('disabled');
+      cb.setAttribute('contenteditable', 'false');
+      for (const attr of Array.from(cb.attributes)) {
+        if (!['type', 'checked', 'contenteditable'].includes(attr.name)) {
+          cb.removeAttribute(attr.name);
+        }
+      }
+    }
+    return doc.body.innerHTML;
+  }
+
+  /**
    * Forces the next paste operation to strip all HTML formatting.
    * Called by Editor when Ctrl+Shift+V is pressed.
    * @param {boolean} val
@@ -255,6 +279,7 @@ export class Clipboard {
       let html = raw;
       if (isWordContent) html = this._cleanWordHtml(html);
       else if (isSocialContent) html = this._cleanSocialHtml(html);
+      html = this._normalizeExternalTaskLists(html);
       html = sanitiseHTML(html);
       if (this.options.pasteStripAttributes) html = this._stripAttributes(html);
       execCommand('insertHTML', html);

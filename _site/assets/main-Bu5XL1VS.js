@@ -1,4 +1,8 @@
-import{t as e}from"./js-Bn2ApQa-.js";var t=document.getElementById(`lang-select`),n=document.getElementById(`theme-btn`),r=document.getElementById(`theme-label`),i=document.getElementById(`demo-outer`),a=`<circle cx="12" cy="12" r="5"/>
+<<<<<<<< HEAD:_site/assets/main-Bu5XL1VS.js
+import{t as e}from"./js-BpVRJPRO.js";var t=document.getElementById(`lang-select`),n=document.getElementById(`theme-btn`),r=document.getElementById(`theme-label`),i=document.getElementById(`demo-outer`),a=`<circle cx="12" cy="12" r="5"/>
+========
+import{t as e}from"./js-FZpqTuVl.js";var t=document.getElementById(`lang-select`),n=document.getElementById(`theme-btn`),r=document.getElementById(`theme-label`),i=document.getElementById(`demo-outer`),a=`<circle cx="12" cy="12" r="5"/>
+>>>>>>>> origin/claude/table-border-color-tooltip-uzvPY:_site/assets/main-DiHXkvaV.js
       <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
       <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
       <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>

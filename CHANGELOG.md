@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.1] - 2026-07-02
+
+### Fixed
+- **GitHub checklist normalization hardening** — `_normalizeExternalTaskLists()` in `Clipboard.js` now correctly handles checkboxes wrapped inside additional inline elements (e.g. `<label>`, `<span>`) within a `<li>` in external task-list HTML; previously such inputs were not promoted to the `<li>` root and were stripped by the sanitiser
+
+---
+
+## [1.9.0] - 2026-07-02
+
+### Added
+- **Nested list support in markdown paste** — new recursive `_parseListBlock()` helper in `markdown.js` replaces the previous flat UL/OL parser; correctly nests unordered/ordered lists to any depth, including mixed UL-in-OL and OL-in-UL, and checklists with a nested plain sub-list
+- **Setext heading support** — `Title\n===` and `Title\n---` are now recognised as `<h1>`/`<h2>` in `markdownToHTML()`, with matching detection added to `isMarkdown()`; guarded against false positives from horizontal rules and GFM table separator rows
+- **GFM table alignment** — `:---`, `:---:`, and `---:` markers in the separator row are now parsed and emitted as `style="text-align:..."` on the corresponding `<th>`/`<td>` cells; ragged tables (separator column count ≠ header column count) are handled safely
+
+### Fixed
+- **GitHub/GitLab checklist paste** — checkboxes pasted from `ul.contains-task-list` HTML were being stripped entirely because the sanitiser only allows `input[type=checkbox]` inside `ul.an-checklist`; added `_normalizeExternalTaskLists()` in `Clipboard.js` to upgrade external task-list markup before sanitisation runs, including checkboxes wrapped in a `<label>` or other element inside the `<li>`
+
+---
+
 ## [1.8.3] - 2026-06-30
 
 ### Fixed
