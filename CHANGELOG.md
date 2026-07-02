@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.1] - 2026-07-02
+
+### Fixed
+- **GitHub checklist normalization hardening** — `_normalizeExternalTaskLists()` in `Clipboard.js` now correctly handles checkboxes wrapped inside additional inline elements (e.g. `<label>`, `<span>`) within a `<li>` in external task-list HTML; previously such inputs were not promoted to the `<li>` root and were stripped by the sanitiser
+
+---
+
 ## [1.9.0] - 2026-07-02
 
 ### Added
