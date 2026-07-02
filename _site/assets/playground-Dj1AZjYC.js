@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:_site/assets/playground-C4FudC5s.js
-import{t as e}from"./js-BpVRJPRO.js";var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Getting Started with AutumnNote</h1>
-========
-import{t as e}from"./js-FZpqTuVl.js";var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Getting Started with AutumnNote</h1>
->>>>>>>> origin/claude/table-border-color-tooltip-uzvPY:_site/assets/playground-C5tx22J6.js
+import{t as e}from"./js-BEV-Ow0o.js";var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Getting Started with AutumnNote</h1>
 <p>AutumnNote is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
 <h2>Basic Setup</h2>
