@@ -339,26 +339,105 @@ describe('htmlToMarkdown', () => {
     expect(htmlToMarkdown('')).toBe('');
   });
 
-  it('indents nested <ul> lists correctly', () => {
+  it('indents nested <ul> lists correctly, without duplicating the nested item at the top level', () => {
     const html = '<ul><li>parent<ul><li>child</li></ul></li></ul>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('- parent');
-    expect(md).toContain('  - child');
+    expect(md).toBe('- parent\n  - child');
   });
 
-  it('indents deeply nested lists (3 levels)', () => {
+  it('indents deeply nested lists (3 levels), without duplicating nested items', () => {
     const html = '<ul><li>a<ul><li>b<ul><li>c</li></ul></li></ul></li></ul>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('- a');
-    expect(md).toContain('  - b');
-    expect(md).toContain('    - c');
+    expect(md).toBe('- a\n  - b\n    - c');
   });
 
-  it('indents nested <ol> lists correctly', () => {
+  it('indents nested <ol> lists correctly, without duplicating the nested item at the top level', () => {
     const html = '<ol><li>first<ol><li>nested</li></ol></li></ol>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('1. first');
-    expect(md).toContain('  1. nested');
+    expect(md).toBe('1. first\n  1. nested');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — underline and styled span export
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — underline and styled span', () => {
+  it('exports <u> as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<u>text</u>')).toBe('<u>text</u>');
+  });
+
+  it('exports a color-styled span as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<span style="color:red">x</span>')).toBe('<span style="color:red">x</span>');
+  });
+
+  it('exports a font-size-styled span as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<span style="font-size:18px">big</span>')).toBe('<span style="font-size:18px">big</span>');
+  });
+
+  it('unwraps a plain span with no style to plain text', () => {
+    expect(htmlToMarkdown('<span>plain</span>')).toBe('plain');
+  });
+
+  it('unwraps a span with an unrelated style to plain text', () => {
+    expect(htmlToMarkdown('<span style="cursor:pointer">x</span>')).toBe('x');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — headerless table export
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — headerless table', () => {
+  it('emits an empty header row for a tbody-only table with no <th> row', () => {
+    const html = '<table><tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2</td></tr></tbody></table>';
+    expect(htmlToMarkdown(html)).toBe('|  |  |\n| --- | --- |\n| a | b |\n| 1 | 2 |');
+  });
+
+  it('still treats a table with a real <thead> as having a header (regression)', () => {
+    const html = '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>';
+    expect(htmlToMarkdown(html)).toBe('| A | B |\n| --- | --- |\n| 1 | 2 |');
+  });
+
+  it('treats a table with an all-<th> first row as headered even without a <thead> wrapper', () => {
+    const html = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
+    expect(htmlToMarkdown(html)).toBe('| A | B |\n| --- | --- |\n| 1 | 2 |');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — checkbox export without an-checklist class
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — stray checkbox export', () => {
+  it('exports a checked checkbox even when the ul lacks the an-checklist class', () => {
+    const html = '<ul><li><input type="checkbox" checked>Done</li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- [x] Done');
+  });
+
+  it('exports an unchecked checkbox even when the ul lacks the an-checklist class', () => {
+    const html = '<ul><li><input type="checkbox">Todo</li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- [ ] Todo');
+  });
+
+  it('does not misattribute a nested sublist checkbox to its ancestor <li>', () => {
+    const html = '<ul><li>Parent<ul><li><input type="checkbox" checked>Nested</li></ul></li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- Parent\n  - [x] Nested');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — blockquote blank-line collapsing
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — blockquote blank-line collapsing', () => {
+  it('collapses multiple blank lines between blockquote paragraphs into one', () => {
+    const html = '<blockquote><p>Para one</p><p>Para two</p></blockquote>';
+    expect(htmlToMarkdown(html)).toBe('> Para one\n>\n> Para two');
+  });
+
+  it('still converts a simple single-line blockquote (regression)', () => {
+    expect(htmlToMarkdown('<blockquote>Quote text</blockquote>')).toBe('> Quote text');
   });
 });
 

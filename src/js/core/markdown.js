@@ -31,6 +31,18 @@ export function htmlToMarkdown(html) {
  * @param {number} [depth=0] - Current nesting depth used to indent nested list items.
  * @returns {string} The Markdown representation of the node subtree.
  */
+/**
+ * Direct child elements matching a tag name. Used instead of the CSS
+ * `:scope > tag` combinator, which this project's jsdom version resolves
+ * incorrectly (matches descendants at any depth, not just direct children).
+ * @param {Element} el
+ * @param {string} tagName
+ * @returns {Element[]}
+ */
+function _directChildren(el, tagName) {
+  return Array.from(el.children).filter((c) => c.tagName === tagName.toUpperCase());
+}
+
 function _domToMd(node, depth = 0) {
   if (node.nodeType === 3) {
     return node.textContent.replace(/\s+/g, ' ');
@@ -60,6 +72,18 @@ function _domToMd(node, depth = 0) {
     case 'strike':   return `~~${inner()}~~`;
     case 'sup':      return `^${inner()}^`;
     case 'sub':      return `~${inner()}~`;
+    case 'u':        return `<u>${inner()}</u>`;
+    case 'span': {
+      // Markdown has no native underline/color/size syntax; pass through as
+      // raw inline HTML for the specific styles the editor's own toolbar
+      // creates (foreColor/backColor/fontSize) — other noise spans (e.g. from
+      // pasted content) are unwrapped to plain text as before.
+      const style = el.getAttribute('style') || '';
+      if (/\b(color|background-color|font-size)\s*:/.test(style)) {
+        return `<span style="${_escAttr(style)}">${inner()}</span>`;
+      }
+      return inner();
+    }
     case 'code': {
       // Inside <pre> we emit raw text; outside we wrap in backticks
       if (el.closest('pre')) return inner();
@@ -73,8 +97,10 @@ function _domToMd(node, depth = 0) {
       return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
     }
     case 'blockquote': {
-      const lines = inner().trim().split('\n');
-      return `\n\n${lines.map((l) => `> ${l}`).join('\n')}\n\n`;
+      const rawLines = inner().trim().split('\n');
+      // Collapse consecutive blank lines (from adjacent <p> blocks) into one.
+      const lines = rawLines.filter((l, idx) => l.trim() !== '' || (rawLines[idx - 1] ?? '').trim() !== '');
+      return `\n\n${lines.map((l) => (l.trim() === '' ? '>' : `> ${l}`)).join('\n')}\n\n`;
     }
     case 'a': {
       const href = el.getAttribute('href') || '';
@@ -86,14 +112,16 @@ function _domToMd(node, depth = 0) {
       return `![${alt}](${src})`;
     }
     case 'ul': {
-      const items = Array.from(el.querySelectorAll(':scope > li'));
+      const items = _directChildren(el, 'li');
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
       const isChecklist = el.classList.contains('an-checklist');
       const lines = items.map((li) => {
+        const cb = /** @type {HTMLInputElement | undefined} */ (
+          _directChildren(li, 'input').find((c) => c.getAttribute('type') === 'checkbox')
+        );
         let prefix = '- ';
-        if (isChecklist) {
-          const cb = /** @type {HTMLInputElement | null} */ (li.querySelector('input[type="checkbox"]'));
+        if (isChecklist || cb) {
           const checked = cb ? cb.checked : false;
           prefix = checked ? '- [x] ' : '- [ ] ';
         }
@@ -102,7 +130,7 @@ function _domToMd(node, depth = 0) {
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'ol': {
-      const items = Array.from(el.querySelectorAll(':scope > li'));
+      const items = _directChildren(el, 'li');
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
       const lines = items.map((li, i) => `${indent}${i + 1}. ${_domToMd(li, depth + 1).trim()}`).join('\n');
@@ -111,17 +139,24 @@ function _domToMd(node, depth = 0) {
     case 'li':  return inner();
     case 'hr':  return '\n\n---\n\n';
     case 'table': {
-      const rows = Array.from(el.querySelectorAll('tr'));
-      if (!rows.length) return inner();
-      const cellTexts = rows.map((tr) =>
+      const allRows = Array.from(el.querySelectorAll('tr'));
+      if (!allRows.length) return inner();
+      const theadEl = _directChildren(el, 'thead')[0];
+      const firstRowIsHeader = !!theadEl || (
+        allRows[0].children.length > 0 &&
+        Array.from(allRows[0].children).every((c) => c.tagName === 'TH')
+      );
+      const cellTexts = allRows.map((tr) =>
         Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replaceAll('|', String.raw`\|`)),
       );
       const cols = Math.max(...cellTexts.map((r) => r.length));
       const padRow = (row) => { const r = [...row]; while (r.length < cols) r.push(''); return r; };
+      const bodyStart = firstRowIsHeader ? 1 : 0;
+      const headerCells = firstRowIsHeader ? padRow(cellTexts[0]) : new Array(cols).fill('');
       let md = '\n\n';
-      md += `| ${padRow(cellTexts[0]).join(' | ')} |\n`;
+      md += `| ${headerCells.join(' | ')} |\n`;
       md += `| ${new Array(cols).fill('---').join(' | ')} |\n`;
-      for (let r = 1; r < cellTexts.length; r++) {
+      for (let r = bodyStart; r < cellTexts.length; r++) {
         md += `| ${padRow(cellTexts[r]).join(' | ')} |\n`;
       }
       return md + '\n';
@@ -503,15 +538,103 @@ const ESCAPABLE_RE = /\\([*_`#[\]()>\\~|])/g;
 // written as a literal escape) to avoid embedding a raw NUL byte in this file.
 const MARK = String.fromCharCode(0);
 
-function _inline(text) {
-  // Step 0: backslash escapes (\* \_ \` \# \[ \] \( \) \> \\ \~ \|) — replace
-  // with inert placeholders before any syntax regex below can match them, so
-  // e.g. \*not bold\* never gets treated as emphasis. Restored at the end.
+/**
+ * Step 0 of _inline(): replaces backslash-escaped punctuation with inert
+ * placeholders so later syntax regexes can't match them.
+ * @param {string} text
+ * @returns {{ text: string, literals: string[] }}
+ */
+function _extractBackslashEscapes(text) {
   const literals = [];
-  text = text.replace(ESCAPABLE_RE, (_, ch) => {
+  const replaced = text.replace(ESCAPABLE_RE, (_, ch) => {
     literals.push(ch);
     return `${MARK}${literals.length - 1}${MARK}`;
   });
+  return { text: replaced, literals };
+}
+
+/**
+ * Restores placeholders from _extractBackslashEscapes(), HTML-escaping each
+ * literal since it's inserted directly into the output.
+ * @param {string} text
+ * @param {string[]} literals
+ * @returns {string}
+ */
+function _restoreBackslashEscapes(text, literals) {
+  return text.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_, idx) => _esc(literals[Number(idx)]));
+}
+
+/**
+ * Resolves images, inline links, GFM reference-style links (explicit,
+ * shortcut, and bare/implicit forms), and footnote markers. Must run on text
+ * already passed through _esc() — see _inline()'s Step 1 comment.
+ * @param {string} text
+ * @returns {string}
+ */
+function _resolveLinksAndFootnotes(text) {
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
+    `<img src="${_escAttrQuotes(src)}" alt="${_escAttrQuotes(alt)}" class="an-image">`);
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
+    `<a href="${_escAttrQuotes(href)}">${label}</a>`);
+  text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
+    const def = _linkDefs.get(_unescAmpLtGt(ref || label).trim().toLowerCase());
+    if (!def) return m;
+    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
+  });
+  text = text.replace(/\[([^\]]+)\]/g, (m, label) => {
+    const def = _linkDefs.get(_unescAmpLtGt(label).trim().toLowerCase());
+    if (!def) return m;
+    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
+  });
+  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(_unescAmpLtGt(id)) ? `<sup>[${id}]</sup>` : m));
+  return text;
+}
+
+/**
+ * Converts angle-bracket (`<https://...>`) and bare (`https://...`)
+ * autolinks. Runs after _resolveLinksAndFootnotes() so an already-linked URL
+ * isn't reprocessed, and on already-_esc()'d text (see _inline()).
+ * @param {string} text
+ * @returns {string}
+ */
+function _applyAutolinks(text) {
+  text = text.replace(/&lt;(https?:\/\/[^\s&]+?)&gt;/g, (_, url) => `<a href="${_escAttrQuotes(url)}">${url}</a>`);
+  text = text.replace(/(^|[\s(])(https?:\/\/[^\s()]+)/g, (m, pre, rawUrl) => {
+    const trail = /[.,;:!?)]+$/.exec(rawUrl);
+    const url = trail ? rawUrl.slice(0, -trail[0].length) : rawUrl;
+    if (!url) return m;
+    const suffix = trail ? trail[0] : '';
+    return `${pre}<a href="${_escAttrQuotes(url)}">${url}</a>${suffix}`;
+  });
+  return text;
+}
+
+/**
+ * Applies bold/italic/bold-italic (asterisk and underscore forms — underscore
+ * requires a non-word-character boundary per CommonMark), strikethrough, and
+ * inline code.
+ * @param {string} text
+ * @returns {string}
+ */
+function _applyEmphasisAndCode(text) {
+  text = text.replace(/\*{3}([^*\n]+?)\*{3}/g, (_, c) => `<strong><em>${c}</em></strong>`);
+  text = text.replace(/(?<!\w)_{3}([^_\n]+?)_{3}(?!\w)/g, (_, c) => `<strong><em>${c}</em></strong>`);
+  text = text.replace(/\*{2}([^*\n]+?)\*{2}/g, (_, c) => `<strong>${c}</strong>`);
+  text = text.replace(/(?<!\w)_{2}([^_\n]+?)_{2}(?!\w)/g, (_, c) => `<strong>${c}</strong>`);
+  text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
+  text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
+  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
+  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+  return text;
+}
+
+function _inline(text) {
+  // Step 0: backslash escapes (\* \_ \` \# \[ \] \( \) \> \\ \~ \|) — replaced
+  // with inert placeholders before any syntax regex below can match them, so
+  // e.g. \*not bold\* never gets treated as emphasis. Restored at the end.
+  const { text: withoutEscapes, literals } = _extractBackslashEscapes(text);
 
   // Step 1: escape raw &/</> in the plain-text parts of the string exactly
   // once, up front — none of these are markdown-syntax characters used below,
@@ -521,60 +644,13 @@ function _inline(text) {
   // (_escAttrQuotes), since & < > are already entities. Values that come from
   // _linkDefs (sourced from the raw, unescaped line array) still need the
   // full _escAttr/_esc treatment.
-  text = _esc(text);
+  let result = _esc(withoutEscapes);
 
-  // Images before links (they share [] syntax)
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
-    `<img src="${_escAttrQuotes(src)}" alt="${_escAttrQuotes(alt)}" class="an-image">`);
-  // Links
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
-    `<a href="${_escAttrQuotes(href)}">${label}</a>`);
-  // Reference-style links  [text][ref]  and shortcut  [text][]
-  text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
-    const def = _linkDefs.get(_unescAmpLtGt(ref || label).trim().toLowerCase());
-    if (!def) return m;
-    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
-    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
-  });
-  // Bare/implicit reference link  [text]  — only when a definition exists
-  text = text.replace(/\[([^\]]+)\]/g, (m, label) => {
-    const def = _linkDefs.get(_unescAmpLtGt(label).trim().toLowerCase());
-    if (!def) return m;
-    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
-    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
-  });
-  // Footnote reference marker  [^id]  — run last of the bracket-based steps
-  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(_unescAmpLtGt(id)) ? `<sup>[${id}]</sup>` : m));
-  // Autolinks — angle-bracket <https://...> and bare https://... in prose.
-  // Runs after the explicit/reference/footnote link steps above (so an
-  // already-linked URL isn't reprocessed) and before emphasis.
-  text = text.replace(/&lt;(https?:\/\/[^\s&]+?)&gt;/g, (_, url) => `<a href="${_escAttrQuotes(url)}">${url}</a>`);
-  text = text.replace(/(^|[\s(])(https?:\/\/[^\s()]+)/g, (m, pre, rawUrl) => {
-    const trail = /[.,;:!?)]+$/.exec(rawUrl);
-    const url = trail ? rawUrl.slice(0, -trail[0].length) : rawUrl;
-    const suffix = trail ? trail[0] : '';
-    if (!url) return m;
-    return `${pre}<a href="${_escAttrQuotes(url)}">${url}</a>${suffix}`;
-  });
-  // Bold + italic  ***text***  ___text___ (underscore form requires a
-  // non-word-character boundary — CommonMark disallows intraword _ emphasis)
-  text = text.replace(/\*{3}([^*\n]+?)\*{3}/g, (_, c) => `<strong><em>${c}</em></strong>`);
-  text = text.replace(/(?<!\w)_{3}([^_\n]+?)_{3}(?!\w)/g, (_, c) => `<strong><em>${c}</em></strong>`);
-  // Bold  **text**  __text__
-  text = text.replace(/\*{2}([^*\n]+?)\*{2}/g, (_, c) => `<strong>${c}</strong>`);
-  text = text.replace(/(?<!\w)_{2}([^_\n]+?)_{2}(?!\w)/g, (_, c) => `<strong>${c}</strong>`);
-  // Italic  *text*  _text_
-  text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
-  text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
-  // Strikethrough  ~~text~~
-  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
-  // Inline code  `code`
-  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+  result = _resolveLinksAndFootnotes(result);
+  result = _applyAutolinks(result);
+  result = _applyEmphasisAndCode(result);
 
-  // Restore backslash-escaped literals (HTML-escaped, since they're inserted
-  // directly into the output — e.g. an escaped \> needs to render as &gt;).
-  text = text.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_, idx) => _esc(literals[Number(idx)]));
-  return text;
+  return _restoreBackslashEscapes(result, literals);
 }
 
 function _esc(v) {
