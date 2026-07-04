@@ -260,7 +260,10 @@ function _parseBlocks(lines) {
     const hMatch = /^(#{1,6})\s+(.+)$/.exec(line);
     if (hMatch) {
       const level = hMatch[1].length;
-      out.push(`<h${level}>${_inline(hMatch[2])}</h${level}>`);
+      // Strip an optional closing sequence of #'s (e.g. "## Heading ##"),
+      // only when preceded by whitespace — "Heading#" (no space) is untouched.
+      const content = hMatch[2].replace(/(?:^|\s)#+\s*$/, '');
+      out.push(`<h${level}>${_inline(content)}</h${level}>`);
       i++;
       continue;
     }
@@ -488,6 +491,11 @@ function _parseListBlock(lines, startIdx) {
       if (!/^\s*(?:[-*+]|\d+\.) /.test(line)) break;
       if (/^\s*\d+\. /.test(line) !== isOL) break;
       const raw = isOL ? line.replace(/^\s*\d+\. /, '') : line.replace(/^\s*[-*+] /, '');
+      // Checklists are intentionally UL-only: sanitise.js's checkbox guard,
+      // the injected checklist CSS, and every checklist-toggle command are
+      // all hardcoded to `ul.an-checklist` with no `ol` equivalent, so an
+      // ordered-list checkbox would be stripped by the sanitiser and get no
+      // styling even if parsed here — "1. [ ] item" intentionally stays plain.
       const isCB = !isOL && /^\[[ xX]\]\s+/.test(raw);
       if (firstIsCB === null) firstIsCB = isCB;
       if (isCB !== firstIsCB) break;
@@ -516,7 +524,11 @@ function _parseListBlock(lines, startIdx) {
   }
 
   const hasCB = !isOL && (firstIsCB === true);
-  const open = isOL ? '<ol>' : hasCB ? '<ul class="an-checklist">' : '<ul>';
+  const startMatch = isOL ? /^\s*(\d+)\. /.exec(lines[startIdx]) : null;
+  const startNum = startMatch ? Number.parseInt(startMatch[1], 10) : 1;
+  const open = isOL
+    ? (startNum !== 1 ? `<ol start="${startNum}">` : '<ol>')
+    : (hasCB ? '<ul class="an-checklist">' : '<ul>');
   const close = isOL ? '</ol>' : '</ul>';
   const liHTML = items.map(({ paras, isCB, checked, sub }) => {
     const cbHTML = isCB
@@ -626,6 +638,9 @@ function _applyEmphasisAndCode(text) {
   text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
+  // Double-backtick code spans first (tolerates a single literal ` inside),
+  // then single-backtick spans.
+  text = text.replace(/``([\s\S]*?)``/g, (_, c) => `<code>${c}</code>`);
   text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   return text;
 }

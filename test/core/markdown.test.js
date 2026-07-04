@@ -915,3 +915,73 @@ describe('markdownToHTML — autolinks', () => {
     expect(html).not.toContain('href="https://example.com">https://example.com<');
   });
 });
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — ordered list start number
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — ordered list start number', () => {
+  it('emits an ol start attribute when the list does not start at 1', () => {
+    const html = markdownToHTML('3. Third\n4. Fourth');
+    expect(html).toBe('<ol start="3"><li>Third</li><li>Fourth</li></ol>');
+  });
+
+  it('omits the start attribute when the list starts at 1 (regression)', () => {
+    const html = markdownToHTML('1. First\n2. Second');
+    expect(html).toBe('<ol><li>First</li><li>Second</li></ol>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — checklist syntax is intentionally UL-only
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — no ordered-list checklist support (intentional)', () => {
+  it('leaves "1. [ ] item" as plain text, not a checkbox', () => {
+    const html = markdownToHTML('1. [ ] item');
+    expect(html).toBe('<ol><li>[ ] item</li></ol>');
+    expect(html).not.toContain('input type="checkbox"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — double-backtick code spans
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — double-backtick code spans', () => {
+  it('tolerates a single literal backtick inside a double-backtick span', () => {
+    const html = markdownToHTML('``code with ` inside``');
+    expect(html).toBe('<p><code>code with ` inside</code></p>');
+  });
+
+  it('still converts a single-backtick code span (regression)', () => {
+    expect(markdownToHTML('`code`')).toBe('<p><code>code</code></p>');
+  });
+
+  it('converts two separate double-backtick spans independently', () => {
+    const html = markdownToHTML('``a`` and ``b``');
+    expect(html).toBe('<p><code>a</code> and <code>b</code></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — ATX heading trailing # stripping
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — ATX heading trailing hash stripping', () => {
+  it('strips a trailing #-run preceded by whitespace', () => {
+    expect(markdownToHTML('## Heading ##')).toBe('<h2>Heading</h2>');
+  });
+
+  it('does not strip a trailing # with no preceding space (regression)', () => {
+    expect(markdownToHTML('# Heading#')).toBe('<h1>Heading#</h1>');
+  });
+
+  it('produces an empty heading for a fully degenerate trailing-hash line', () => {
+    expect(markdownToHTML('# ###')).toBe('<h1></h1>');
+  });
+
+  it('preserves a mid-string hash run that is not at the end of the line', () => {
+    expect(markdownToHTML('### C## Programming')).toBe('<h3>C## Programming</h3>');
+  });
+});
