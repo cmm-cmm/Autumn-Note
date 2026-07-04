@@ -150,6 +150,10 @@ export function isMarkdown(text) {
 const BQ_RE = /^ {0,3}>( ?)(.*)$/;
 // Horizontal rule: 3+ of the same character (-, * or _), optionally space-separated.
 const HR_RE = /^ {0,3}([-*_])( *\1){2,}\s*$/;
+// Hard-break marker — placed between paragraph lines that end in a
+// CommonMark hard-break (trailing 2+ spaces or a trailing backslash),
+// restored to <br> after _inline() runs. Distinct from _inline()'s own MARK.
+const HARD_BREAK = String.fromCharCode(1);
 
 /**
  * Converts a Markdown string to an HTML string.
@@ -300,7 +304,7 @@ function _parseBlocks(lines) {
       i++;
     }
     if (paraLines.length) {
-      out.push(`<p>${_inline(paraLines.join(' '))}</p>`);
+      out.push(`<p>${_inline(_joinParagraphLines(paraLines)).replaceAll(HARD_BREAK, '<br>')}</p>`);
     }
   }
 
@@ -371,6 +375,25 @@ function _extractReferenceDefinitions(lines) {
     clean.push(line);
   }
   return { clean, linkDefs, footnoteIds };
+}
+
+/**
+ * Joins a paragraph's source lines into one string, converting CommonMark
+ * hard-break markers (a trailing backslash, or 2+ trailing spaces) on all
+ * but the last line into a HARD_BREAK placeholder instead of a plain space.
+ * @param {string[]} paraLines
+ * @returns {string}
+ */
+function _joinParagraphLines(paraLines) {
+  let joined = '';
+  for (let idx = 0; idx < paraLines.length; idx++) {
+    const isLast = idx === paraLines.length - 1;
+    const ln = paraLines[idx];
+    if (!isLast && /\\$/.test(ln)) { joined += ln.replace(/\\$/, '') + HARD_BREAK; continue; }
+    if (!isLast && / {2,}$/.test(ln)) { joined += ln.replace(/ {2,}$/, '') + HARD_BREAK; continue; }
+    joined += ln + (isLast ? '' : ' ');
+  }
+  return joined;
 }
 
 /**
@@ -472,42 +495,85 @@ function _parseListBlock(lines, startIdx) {
   return { html: `${open}${liHTML}${close}`, endIdx: i };
 }
 
+// Backslash-escapable inline punctuation (CommonMark-ish, narrowed to the
+// syntax characters this converter actually uses).
+const ESCAPABLE_RE = /\\([*_`#[\]()>\\~|])/g;
+// Placeholder marker for escaped literals — a NUL character can't appear in
+// real markdown text, so it's safe as a delimiter. Built at runtime (not
+// written as a literal escape) to avoid embedding a raw NUL byte in this file.
+const MARK = String.fromCharCode(0);
+
 function _inline(text) {
+  // Step 0: backslash escapes (\* \_ \` \# \[ \] \( \) \> \\ \~ \|) — replace
+  // with inert placeholders before any syntax regex below can match them, so
+  // e.g. \*not bold\* never gets treated as emphasis. Restored at the end.
+  const literals = [];
+  text = text.replace(ESCAPABLE_RE, (_, ch) => {
+    literals.push(ch);
+    return `${MARK}${literals.length - 1}${MARK}`;
+  });
+
+  // Step 1: escape raw &/</> in the plain-text parts of the string exactly
+  // once, up front — none of these are markdown-syntax characters used below,
+  // so this doesn't interfere with matching. Capture-group content in the
+  // steps below is therefore ALREADY escaped and must NOT be re-escaped;
+  // attribute values captured from `text` only need quotes escaped
+  // (_escAttrQuotes), since & < > are already entities. Values that come from
+  // _linkDefs (sourced from the raw, unescaped line array) still need the
+  // full _escAttr/_esc treatment.
+  text = _esc(text);
+
   // Images before links (they share [] syntax)
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
-    `<img src="${_escAttr(src)}" alt="${_escAttr(alt)}" class="an-image">`);
+    `<img src="${_escAttrQuotes(src)}" alt="${_escAttrQuotes(alt)}" class="an-image">`);
   // Links
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
-    `<a href="${_escAttr(href)}">${_esc(label)}</a>`);
+    `<a href="${_escAttrQuotes(href)}">${label}</a>`);
   // Reference-style links  [text][ref]  and shortcut  [text][]
   text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
-    const def = _linkDefs.get((ref || label).trim().toLowerCase());
+    const def = _linkDefs.get(_unescAmpLtGt(ref || label).trim().toLowerCase());
     if (!def) return m;
     const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
-    return `<a href="${_escAttr(def.href)}"${titleAttr}>${_esc(label)}</a>`;
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
   });
   // Bare/implicit reference link  [text]  — only when a definition exists
   text = text.replace(/\[([^\]]+)\]/g, (m, label) => {
-    const def = _linkDefs.get(label.trim().toLowerCase());
+    const def = _linkDefs.get(_unescAmpLtGt(label).trim().toLowerCase());
     if (!def) return m;
     const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
-    return `<a href="${_escAttr(def.href)}"${titleAttr}>${_esc(label)}</a>`;
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
   });
-  // Footnote reference marker  [^id]  — run last
-  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(id) ? `<sup>[${_esc(id)}]</sup>` : m));
-  // Bold + italic  ***text***
-  text = text.replace(/\*{3}([^*\n]+?)\*{3}/g, (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
-  text = text.replace(/_{3}([^_\n]+?)_{3}/g,   (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
-  // Bold  **text**
-  text = text.replace(/\*{2}([^*\n]+?)\*{2}/g, (_, c) => `<strong>${_esc(c)}</strong>`);
-  text = text.replace(/_{2}([^_\n]+?)_{2}/g,   (_, c) => `<strong>${_esc(c)}</strong>`);
+  // Footnote reference marker  [^id]  — run last of the bracket-based steps
+  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(_unescAmpLtGt(id)) ? `<sup>[${id}]</sup>` : m));
+  // Autolinks — angle-bracket <https://...> and bare https://... in prose.
+  // Runs after the explicit/reference/footnote link steps above (so an
+  // already-linked URL isn't reprocessed) and before emphasis.
+  text = text.replace(/&lt;(https?:\/\/[^\s&]+?)&gt;/g, (_, url) => `<a href="${_escAttrQuotes(url)}">${url}</a>`);
+  text = text.replace(/(^|[\s(])(https?:\/\/[^\s()]+)/g, (m, pre, rawUrl) => {
+    const trail = /[.,;:!?)]+$/.exec(rawUrl);
+    const url = trail ? rawUrl.slice(0, -trail[0].length) : rawUrl;
+    const suffix = trail ? trail[0] : '';
+    if (!url) return m;
+    return `${pre}<a href="${_escAttrQuotes(url)}">${url}</a>${suffix}`;
+  });
+  // Bold + italic  ***text***  ___text___ (underscore form requires a
+  // non-word-character boundary — CommonMark disallows intraword _ emphasis)
+  text = text.replace(/\*{3}([^*\n]+?)\*{3}/g, (_, c) => `<strong><em>${c}</em></strong>`);
+  text = text.replace(/(?<!\w)_{3}([^_\n]+?)_{3}(?!\w)/g, (_, c) => `<strong><em>${c}</em></strong>`);
+  // Bold  **text**  __text__
+  text = text.replace(/\*{2}([^*\n]+?)\*{2}/g, (_, c) => `<strong>${c}</strong>`);
+  text = text.replace(/(?<!\w)_{2}([^_\n]+?)_{2}(?!\w)/g, (_, c) => `<strong>${c}</strong>`);
   // Italic  *text*  _text_
-  text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${_esc(c)}</em>`);
-  text = text.replace(/_([^_\n]+?)_/g,   (_, c) => `<em>${_esc(c)}</em>`);
+  text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
+  text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
   // Strikethrough  ~~text~~
-  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${_esc(c)}</del>`);
+  text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
   // Inline code  `code`
-  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${_esc(c)}</code>`);
+  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+
+  // Restore backslash-escaped literals (HTML-escaped, since they're inserted
+  // directly into the output — e.g. an escaped \> needs to render as &gt;).
+  text = text.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_, idx) => _esc(literals[Number(idx)]));
   return text;
 }
 
@@ -525,4 +591,14 @@ function _escAttr(v) {
     .replaceAll("'", '&#39;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
+}
+
+/** Escapes only quote characters — for attribute values already run through _esc(). */
+function _escAttrQuotes(v) {
+  return String(v).replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+}
+
+/** Reverses _esc()'s &amp;/&lt;/&gt; substitutions, for matching against un-escaped _linkDefs/_footnoteIds keys. */
+function _unescAmpLtGt(v) {
+  return String(v).replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
 }

@@ -690,3 +690,149 @@ describe('markdownToHTML — table escaped pipe', () => {
     expect(html).toContain('<th>b</th>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — underscore emphasis word-boundary
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — underscore emphasis word boundary', () => {
+  it('does not emphasize underscores inside an identifier', () => {
+    expect(markdownToHTML('snake_case_word')).toBe('<p>snake_case_word</p>');
+  });
+
+  it('does not bold underscores inside an identifier', () => {
+    expect(markdownToHTML('snake__case__word')).toBe('<p>snake__case__word</p>');
+  });
+
+  it('emphasizes a leading _word_ at sentence start', () => {
+    expect(markdownToHTML('_word_ rest of sentence')).toBe('<p><em>word</em> rest of sentence</p>');
+  });
+
+  it('emphasizes _word_ surrounded by spaces', () => {
+    expect(markdownToHTML('foo _bar_ baz')).toBe('<p>foo <em>bar</em> baz</p>');
+  });
+
+  it('bolds __word__ surrounded by spaces', () => {
+    expect(markdownToHTML('foo __bar__ baz')).toBe('<p>foo <strong>bar</strong> baz</p>');
+  });
+
+  it('still allows intraword asterisk emphasis (regression)', () => {
+    expect(markdownToHTML('foo*bar*baz')).toBe('<p>foo<em>bar</em>baz</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — hard line breaks
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — hard line breaks', () => {
+  it('converts a trailing two-space line break to <br>', () => {
+    expect(markdownToHTML('Line one  \nLine two')).toBe('<p>Line one<br>Line two</p>');
+  });
+
+  it('converts a trailing backslash line break to <br>', () => {
+    expect(markdownToHTML('Line one\\\nLine two')).toBe('<p>Line one<br>Line two</p>');
+  });
+
+  it('joins lines with a plain space when there is no hard-break marker (regression)', () => {
+    expect(markdownToHTML('Line one\nLine two')).toBe('<p>Line one Line two</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — backslash escapes
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — backslash escapes', () => {
+  it('escapes asterisks so they are not treated as emphasis', () => {
+    expect(markdownToHTML('\\*not bold\\*')).toBe('<p>*not bold*</p>');
+  });
+
+  it('escapes underscores so they are not treated as emphasis', () => {
+    expect(markdownToHTML('\\_not italic\\_')).toBe('<p>_not italic_</p>');
+  });
+
+  it('escapes a backtick so it is not treated as inline code', () => {
+    expect(markdownToHTML('\\`not code\\`')).toBe('<p>`not code`</p>');
+  });
+
+  it('escapes brackets so they are not treated as a link', () => {
+    expect(markdownToHTML('\\[not a link\\]')).toBe('<p>[not a link]</p>');
+  });
+
+  it('escapes a hash inside prose', () => {
+    expect(markdownToHTML('See \\#hashtag here')).toBe('<p>See #hashtag here</p>');
+  });
+
+  it('escapes a pipe outside of a table', () => {
+    expect(markdownToHTML('a \\| b')).toBe('<p>a | b</p>');
+  });
+
+  it('resolves a double backslash to a single literal backslash', () => {
+    expect(markdownToHTML('literal \\\\ backslash')).toBe('<p>literal \\ backslash</p>');
+  });
+
+  it('leaves a fenced code block unaffected by escape sequences', () => {
+    const html = markdownToHTML('```\n\\*text\\*\n```');
+    expect(html).toContain('\\*text\\*');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — whole-string HTML escaping of raw <, >, &
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — raw HTML character escaping', () => {
+  it('escapes a raw script-like tag in prose instead of passing it through', () => {
+    const html = markdownToHTML('Use <script>alert(1)</script> here');
+    expect(html).toBe('<p>Use &lt;script&gt;alert(1)&lt;/script&gt; here</p>');
+  });
+
+  it('does not double-escape an ampersand inside bold text', () => {
+    const html = markdownToHTML('**A & B** and <em>fake</em>');
+    expect(html).toBe('<p><strong>A &amp; B</strong> and &lt;em&gt;fake&lt;/em&gt;</p>');
+  });
+
+  it('does not double-escape an ampersand inside a link URL', () => {
+    const html = markdownToHTML('[A & B](http://x.com?a=1&b=2)');
+    expect(html).toBe('<p><a href="http://x.com?a=1&amp;b=2">A &amp; B</a></p>');
+  });
+
+  it('escapes a raw angle bracket inside a code span', () => {
+    const html = markdownToHTML('`if x < 5`');
+    expect(html).toBe('<p><code>if x &lt; 5</code></p>');
+  });
+
+  it('resolves a reference link whose label contains an ampersand', () => {
+    const html = markdownToHTML('[A & B][]\n\n[A & B]: https://example.com');
+    expect(html).toBe('<p><a href="https://example.com">A &amp; B</a></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — autolinks
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — autolinks', () => {
+  it('converts a bare URL in prose to a link', () => {
+    const html = markdownToHTML('Visit https://example.com today');
+    expect(html).toBe('<p>Visit <a href="https://example.com">https://example.com</a> today</p>');
+  });
+
+  it('converts an angle-bracket autolink to a link', () => {
+    const html = markdownToHTML('See <https://example.com> for details');
+    expect(html).toBe('<p>See <a href="https://example.com">https://example.com</a> for details</p>');
+  });
+
+  it('trims trailing sentence punctuation from a bare URL', () => {
+    const html = markdownToHTML('Visit https://x.com.');
+    expect(html).toBe('<p>Visit <a href="https://x.com">https://x.com</a>.</p>');
+  });
+
+  it('does not double-process a URL already inside an explicit link', () => {
+    const html = markdownToHTML('[Already](https://example.com) plus bare https://other.com');
+    expect(html).toContain('<a href="https://example.com">Already</a>');
+    expect(html).toContain('<a href="https://other.com">https://other.com</a>');
+    expect(html).not.toContain('href="https://example.com">https://example.com<');
+  });
+});
