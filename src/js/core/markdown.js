@@ -139,12 +139,17 @@ function _domToMd(node, depth = 0) {
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
 export function isMarkdown(text) {
-  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text)
+  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> ?[^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text)
     || /^.+\n=+\s*$/m.test(text)
     || /^.+\n-{2,}\s*$/m.test(text)
     || /^---\s*\n(?:[\s\S]*?\n)?(?:---|\.\.\.)\s*(?:\n|$)/.test(text)
     || /^\|.+\|[ \t]*\n\|[ \t:|-]+\|/m.test(text);
 }
+
+// Blockquote line: optional up-to-3 leading spaces, '>', optional single space, rest of line.
+const BQ_RE = /^ {0,3}>( ?)(.*)$/;
+// Horizontal rule: 3+ of the same character (-, * or _), optionally space-separated.
+const HR_RE = /^ {0,3}([-*_])( *\1){2,}\s*$/;
 
 /**
  * Converts a Markdown string to an HTML string.
@@ -158,6 +163,17 @@ export function markdownToHTML(text) {
   lines = refs.clean;
   _linkDefs = refs.linkDefs;
   _footnoteIds = refs.footnoteIds;
+  return _parseBlocks(lines);
+}
+
+/**
+ * Parses a line array into block-level HTML. Called recursively for content
+ * nested inside a blockquote so nested quotes and block content (lists,
+ * headings, etc.) inside `>` are parsed the same as top-level content.
+ * @param {string[]} lines
+ * @returns {string}
+ */
+function _parseBlocks(lines) {
   const out = [];
   let i = 0;
 
@@ -181,7 +197,7 @@ export function markdownToHTML(text) {
     }
 
     // ---- Setext headings (Title\n=== or Title\n---) -------------------------
-    if (line.trim() && !/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line) && !/^#{1,6} /.test(line) && i + 1 < lines.length) {
+    if (line.trim() && !HR_RE.test(line) && !/^#{1,6} /.test(line) && i + 1 < lines.length) {
       if (/^=+\s*$/.test(lines[i + 1])) {
         out.push(`<h1>${_inline(line.trim())}</h1>`);
         i += 2;
@@ -194,8 +210,8 @@ export function markdownToHTML(text) {
       }
     }
 
-    // ---- Horizontal rule --- / *** / _________________________________________
-    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+    // ---- Horizontal rule --- / *** / ___ / - - - / * * * ----------------------
+    if (HR_RE.test(line)) {
       out.push('<hr>');
       i++;
       continue;
@@ -211,13 +227,13 @@ export function markdownToHTML(text) {
     }
 
     // ---- Blockquote  > text --------------------------------------------------
-    if (line.startsWith('> ')) {
+    if (BQ_RE.test(line)) {
       const bqLines = [];
-      while (i < lines.length && lines[i].startsWith('> ')) {
-        bqLines.push(lines[i].slice(2));
+      while (i < lines.length && BQ_RE.test(lines[i])) {
+        bqLines.push(BQ_RE.exec(lines[i])[2]);
         i++;
       }
-      out.push(`<blockquote>${bqLines.map(_inline).join('<br>')}</blockquote>`);
+      out.push(`<blockquote>${_parseBlocks(bqLines)}</blockquote>`);
       continue;
     }
 
@@ -273,7 +289,9 @@ export function markdownToHTML(text) {
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{1,6} |> |[-*+] |\d+\. |```|---\s*$|\*{3}\s*$|_{3}\s*$)/.test(lines[i]) &&
+      !/^(#{1,6} |[-*+] |\d+\. |```)/.test(lines[i]) &&
+      !BQ_RE.test(lines[i]) &&
+      !HR_RE.test(lines[i]) &&
       !/^\|.+\|/.test(lines[i]) &&
       !(i + 1 < lines.length && /^=+\s*$/.test(lines[i + 1])) &&
       !(i + 1 < lines.length && /^-{2,}\s*$/.test(lines[i + 1]))
@@ -356,17 +374,23 @@ function _extractReferenceDefinitions(lines) {
 }
 
 /**
- * Splits a GFM table row string into trimmed cell strings.
- * '| a | b | c |' → ['a', 'b', 'c']
+ * Splits a GFM table row string into trimmed cell strings, treating an
+ * escaped pipe (`\|`) as a literal character rather than a cell separator.
+ * '| a | b | c |' → ['a', 'b', 'c']; '| a\|b | c |' → ['a|b', 'c']
  * @param {string} row
  * @returns {string[]}
  */
 function _parseTableRow(row) {
-  return row
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((c) => c.trim());
+  const trimmed = row.replace(/^\|/, '').replace(/\|$/, '');
+  const cells = [];
+  let cur = '';
+  for (let i = 0; i < trimmed.length; i++) {
+    if (trimmed[i] === '\\' && trimmed[i + 1] === '|') { cur += '|'; i++; continue; }
+    if (trimmed[i] === '|') { cells.push(cur); cur = ''; continue; }
+    cur += trimmed[i];
+  }
+  cells.push(cur);
+  return cells.map((c) => c.trim());
 }
 
 function _parseListBlock(lines, startIdx) {
@@ -374,11 +398,31 @@ function _parseListBlock(lines, startIdx) {
   const isOL = /^\s*\d+\. /.test(lines[startIdx]);
   const items = [];
   let firstIsCB = null;
+  let loose = false;
+  let pendingBlank = false;
   let i = startIdx;
 
   while (i < lines.length) {
     const line = lines[i];
-    if (line.trim() === '') break;
+
+    if (line.trim() === '') {
+      // A blank line only ends the list if what follows isn't a continuation
+      // of it (another item at the same marker/indent, or indented text
+      // belonging to the current item) — otherwise it marks a "loose" list.
+      const next = lines[i + 1];
+      const nextIndent = next !== undefined ? (next.match(/^(\s*)/)[1]).length : -1;
+      const nextIsSameItem = next !== undefined &&
+        /^\s*(?:[-*+]|\d+\.) /.test(next) &&
+        (/^\s*\d+\. /.test(next) === isOL) &&
+        nextIndent === baseIndent;
+      const nextIsContinuation = next !== undefined && next.trim() !== '' && nextIndent > baseIndent;
+      if (!items.length || (!nextIsSameItem && !nextIsContinuation)) break;
+      loose = true;
+      pendingBlank = true;
+      i++;
+      continue;
+    }
+
     const indent = (line.match(/^(\s*)/)[1]).length;
     if (indent < baseIndent) break;
 
@@ -391,7 +435,8 @@ function _parseListBlock(lines, startIdx) {
       if (isCB !== firstIsCB) break;
       const checked = isCB && raw[1].toLowerCase() === 'x';
       const text = isCB ? raw.replace(/^\[[ xX]\]\s+/, '') : raw;
-      items.push({ text, isCB, checked, sub: '' });
+      items.push({ paras: [text], isCB, checked, sub: '' });
+      pendingBlank = false;
       i++;
     } else {
       if (!items.length) { i++; continue; }
@@ -399,8 +444,14 @@ function _parseListBlock(lines, startIdx) {
         const nested = _parseListBlock(lines, i);
         items[items.length - 1].sub += nested.html;
         i = nested.endIdx;
+        pendingBlank = false;
+      } else if (pendingBlank) {
+        items[items.length - 1].paras.push(line.trim());
+        pendingBlank = false;
+        i++;
       } else {
-        items[items.length - 1].text += ' ' + line.trim();
+        const paras = items[items.length - 1].paras;
+        paras[paras.length - 1] += ' ' + line.trim();
         i++;
       }
     }
@@ -409,11 +460,14 @@ function _parseListBlock(lines, startIdx) {
   const hasCB = !isOL && (firstIsCB === true);
   const open = isOL ? '<ol>' : hasCB ? '<ul class="an-checklist">' : '<ul>';
   const close = isOL ? '</ol>' : '</ul>';
-  const liHTML = items.map(({ text, isCB, checked, sub }) => {
+  const liHTML = items.map(({ paras, isCB, checked, sub }) => {
     const cbHTML = isCB
       ? `<input type="checkbox" contenteditable="false"${checked ? ' checked' : ''}>`
       : '';
-    return `<li>${cbHTML}${_inline(text)}${sub}</li>`;
+    const body = loose
+      ? paras.map((p, idx) => `<p>${idx === 0 ? cbHTML : ''}${_inline(p)}</p>`).join('')
+      : `${cbHTML}${_inline(paras[0])}`;
+    return `<li>${body}${sub}</li>`;
   }).join('');
   return { html: `${open}${liHTML}${close}`, endIdx: i };
 }

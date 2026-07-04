@@ -556,3 +556,137 @@ describe('markdownToHTML — reference links and footnotes', () => {
     expect(html).toContain('<a href="https://example.com/ref">ref</a>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// isMarkdown — blockquote without a space after '>'
+// ---------------------------------------------------------------------------
+
+describe('isMarkdown — blockquote no-space', () => {
+  it('detects a blockquote with no space after >', () => {
+    expect(isMarkdown('>Hello')).toBe(true);
+  });
+
+  it('does not false-positive on a bare > with nothing after it', () => {
+    expect(isMarkdown('>')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — blockquotes: no-space, nesting, block content, multi-line
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — blockquote enhancements', () => {
+  it('recognizes a blockquote with no space after >', () => {
+    const html = markdownToHTML('>Hello');
+    expect(html).toBe('<blockquote><p>Hello</p></blockquote>');
+  });
+
+  it('supports nested blockquotes', () => {
+    const html = markdownToHTML('> > nested quote');
+    expect(html).toBe('<blockquote><blockquote><p>nested quote</p></blockquote></blockquote>');
+  });
+
+  it('supports a heading inside a blockquote', () => {
+    const html = markdownToHTML('> # Heading\n> more text');
+    expect(html).toBe('<blockquote><h1>Heading</h1><p>more text</p></blockquote>');
+  });
+
+  it('supports a list inside a blockquote', () => {
+    const html = markdownToHTML('> - item1\n> - item2');
+    expect(html).toBe('<blockquote><ul><li>item1</li><li>item2</li></ul></blockquote>');
+  });
+
+  it('joins consecutive quoted lines into one paragraph', () => {
+    const html = markdownToHTML('> Line one\n> Line two');
+    expect(html).toBe('<blockquote><p>Line one Line two</p></blockquote>');
+  });
+
+  it('still converts a simple single-line blockquote', () => {
+    const html = markdownToHTML('> A quote');
+    expect(html).toBe('<blockquote><p>A quote</p></blockquote>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — horizontal rule spaced forms
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — horizontal rule spaced forms', () => {
+  it('converts spaced dashes (- - -) to <hr>', () => {
+    expect(markdownToHTML('- - -')).toBe('<hr>');
+  });
+
+  it('converts spaced asterisks (* * *) to <hr>', () => {
+    expect(markdownToHTML('* * *')).toBe('<hr>');
+  });
+
+  it('converts spaced underscores (_ _ _) to <hr>', () => {
+    expect(markdownToHTML('_ _ _')).toBe('<hr>');
+  });
+
+  it('still converts unspaced --- to <hr>', () => {
+    expect(markdownToHTML('---')).toBe('<hr>');
+  });
+
+  it('does not mistake a real list item "- a" for a horizontal rule', () => {
+    const html = markdownToHTML('- a');
+    expect(html).toBe('<ul><li>a</li></ul>');
+  });
+
+  it('does not mistake a list item with literal text "-" for a horizontal rule', () => {
+    const html = markdownToHTML('- -');
+    expect(html).toBe('<ul><li>-</li></ul>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — loose vs. tight lists, multi-paragraph items
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — loose and multi-paragraph lists', () => {
+  it('renders a tight list without <p> wrapping (regression)', () => {
+    const html = markdownToHTML('- Alpha\n- Beta');
+    expect(html).toBe('<ul><li>Alpha</li><li>Beta</li></ul>');
+  });
+
+  it('renders a loose list (blank line between items) with <p>-wrapped items', () => {
+    const html = markdownToHTML('- Alpha\n\n- Beta');
+    expect(html).toBe('<ul><li><p>Alpha</p></li><li><p>Beta</p></li></ul>');
+  });
+
+  it('supports a multi-paragraph list item', () => {
+    const html = markdownToHTML('- Item\n\n  more text\n\n- Item2');
+    expect(html).toBe('<ul><li><p>Item</p><p>more text</p></li><li><p>Item2</p></li></ul>');
+  });
+
+  it('still terminates the list before an unrelated trailing paragraph', () => {
+    const html = markdownToHTML('- Item 1\n\nSome unrelated paragraph.');
+    expect(html).toBe('<ul><li>Item 1</li></ul><p>Some unrelated paragraph.</p>');
+  });
+
+  it('keeps a checkbox on the first paragraph of a loose checklist item', () => {
+    const html = markdownToHTML('- [x] Done\n\n  extra detail');
+    expect(html).toContain('<input type="checkbox" contenteditable="false" checked>');
+    expect(html).toContain('<p>extra detail</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — table cell escaped pipe
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — table escaped pipe', () => {
+  it('treats an escaped pipe in a cell as a literal character, not a separator', () => {
+    const md = '| a\\|b | c |\n| --- | --- |\n| 1 | 2 |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th>a|b</th>');
+    expect(html).toContain('<th>c</th>');
+  });
+
+  it('still splits a plain table row correctly (regression)', () => {
+    const md = '| a | b |\n| --- | --- |\n| 1 | 2 |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th>a</th>');
+    expect(html).toContain('<th>b</th>');
+  });
+});
