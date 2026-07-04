@@ -459,8 +459,24 @@
   // Content styles
   p       { margin: 0 0 0.75em; }
   h1, h2, h3, h4, h5, h6 { margin: 0.5em 0; line-height: 1.3; }
+  h1 { font-size: 2em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.25em; }
+  h4 { font-size: 1.1em; }
+  h5 { font-size: 1em; }
+  h6 { font-size: 0.875em; }
   ul, ol  { margin: 0 0 0.75em 0; padding-left: 1.5em; list-style-position: inside; }
   li      { margin-bottom: 0.25em; }
+
+  // Loose lists (markdown paste wraps item text in <p>): keep the list marker
+  // on the same line as the first paragraph (list-style-position: inside puts
+  // it in the inline flow), and use tighter margins than standalone <p>.
+  li > p {
+    margin: 0 0 0.5em;
+    &:first-child { display: inline; }
+    &:last-child  { margin-bottom: 0; }
+  }
+  li:has(> p) { margin-bottom: 0.6em; }
   blockquote {
     margin: 0.5em 0 0.5em 1em;
     padding: 0.5em 1em;
@@ -475,6 +491,9 @@
   }
   pre     { padding: 0.75em 1em; overflow-x: auto; }
   code    { padding: 0.1em 0.3em; }
+  // Inside <pre> the wrapper already paints the background — reset the inner
+  // <code> so a plain (non-Prism) code fence isn't double-tinted.
+  pre > code { background: transparent; padding: 0; }
 
   // Prism-highlighted blocks — <pre> gets class="language-*" mirrored from <code>
   // Set dark background here as fallback for before Prism CSS loads from CDN.
@@ -1981,6 +2000,8 @@ $an-video-accent: #8b5cf6; // violet-500
       color: #cdd6f4;
     }
 
+    pre:not([class*='language-']) > code { background: transparent; }
+
     .an-code-line-numbers::before {
       background: rgba(255, 255, 255, 0.05);
       border-right-color: rgba(255, 255, 255, 0.1);
@@ -2446,6 +2467,8 @@ $an-video-accent: #8b5cf6; // violet-500
         background: #313244;
         color: #cdd6f4;
       }
+
+      pre:not([class*='language-']) > code { background: transparent; }
 
       hr { border-color: #3f3f5f; }
 
