@@ -518,6 +518,39 @@ describe('Clipboard._onPaste', () => {
     expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('h1'));
   });
 
+  it('strips YAML frontmatter from a raw .md paste', () => {
+    const { cb } = makeClipboard();
+    const md = '---\ntitle: My Post\nauthor: Jane\n---\n\n# Heading';
+    const event = makePasteEvent(['text/plain'], { 'text/plain': md });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[2]).toContain('h1');
+    expect(call[2]).not.toContain('title');
+    expect(call[2]).not.toContain('hr');
+  });
+
+  it('converts a bare GFM table with no other markdown markers', () => {
+    const { cb } = makeClipboard();
+    const md = '| A | B |\n| --- | --- |\n| 1 | 2 |';
+    const event = makePasteEvent(['text/plain'], { 'text/plain': md });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[2]).toContain('table');
+    expect(call[2]).toContain('th');
+    expect(call[2]).toContain('td');
+  });
+
+  it('resolves reference links and footnotes in a raw .md paste', () => {
+    const { cb } = makeClipboard();
+    const md = '# Notes\n\nSee [ref link][1] and a footnote[^a].\n\n[1]: https://example.com\n[^a]: footnote body';
+    const event = makePasteEvent(['text/plain'], { 'text/plain': md });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[2]).toContain('href="https://example.com"');
+    expect(call[2]).toContain('sup');
+    expect(call[2]).not.toContain('footnote body');
+  });
+
   it('sanitises HTML when text/html is in clipboard (pasteCleanHTML default)', () => {
     const { cb } = makeClipboard();
     const event = makePasteEvent(['text/html', 'text/plain'], {

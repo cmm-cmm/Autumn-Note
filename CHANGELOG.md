@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-07-02
+
+### Added
+- **Raw `.md` paste — YAML frontmatter stripping** — a `.md` file starting with `---\ntitle: x\n---\n...` (Jekyll/Hugo/Obsidian style) previously rendered as garbage (the delimiters became stray `<hr>` tags with the frontmatter body dumped into a bogus paragraph); frontmatter is now stripped invisibly before conversion, matching how rendered markdown views never display it. A YAML-shape check disambiguates real frontmatter from an actual horizontal rule followed by prose, so no existing HR/paragraph behavior regresses
+- **Raw `.md` paste — bare GFM table detection** — `isMarkdown()` now recognises a `.md` file whose only content is a GFM table (no heading/list/bold/blockquote elsewhere), so it converts to `<table>` instead of pasting as literal text
+- **Raw `.md` paste — reference-style links and footnotes** — `[text][ref]`, shortcut `[text][]`, and bare `[text]` reference links (resolved against `[ref]: url "title"` definitions) and `[^id]` footnote markers (resolved against `[^id]: text` definitions, rendered as `<sup>[id]</sup>`) are now parsed instead of leaking into the document as literal bracket text or stray definition-line paragraphs
+
+---
+
 ## [1.9.1] - 2026-07-02
 
 ### Fixed

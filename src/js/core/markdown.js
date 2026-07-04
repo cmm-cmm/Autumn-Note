@@ -141,7 +141,9 @@ function _domToMd(node, depth = 0) {
 export function isMarkdown(text) {
   return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> [^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text)
     || /^.+\n=+\s*$/m.test(text)
-    || /^.+\n-{2,}\s*$/m.test(text);
+    || /^.+\n-{2,}\s*$/m.test(text)
+    || /^---\s*\n(?:[\s\S]*?\n)?(?:---|\.\.\.)\s*(?:\n|$)/.test(text)
+    || /^\|.+\|[ \t]*\n\|[ \t:|-]+\|/m.test(text);
 }
 
 /**
@@ -150,7 +152,12 @@ export function isMarkdown(text) {
  * @returns {string}
  */
 export function markdownToHTML(text) {
-  const lines = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+  let lines = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+  lines = _stripFrontmatter(lines);
+  const refs = _extractReferenceDefinitions(lines);
+  lines = refs.clean;
+  _linkDefs = refs.linkDefs;
+  _footnoteIds = refs.footnoteIds;
   const out = [];
   let i = 0;
 
@@ -286,6 +293,68 @@ export function markdownToHTML(text) {
 // Inline formatting
 // ---------------------------------------------------------------------------
 
+/** Reference-link and footnote definitions collected per markdownToHTML() call. */
+let _linkDefs = new Map();
+let _footnoteIds = new Set();
+
+/**
+ * Strips a leading YAML frontmatter block (--- ... --- or --- ... ...) from
+ * the line array, only when it is the very first line and the enclosed body
+ * looks like YAML (key: value / list items / indented continuations) — this
+ * disambiguates real frontmatter from a horizontal rule followed by prose.
+ * @param {string[]} lines
+ * @returns {string[]}
+ */
+function _stripFrontmatter(lines) {
+  if ((lines[0] || '').trim() !== '---') return lines;
+  let closeIdx = -1;
+  for (let j = 1; j < lines.length; j++) {
+    const t = lines[j].trim();
+    if (t === '---' || t === '...') { closeIdx = j; break; }
+  }
+  if (closeIdx === -1) return lines;
+
+  const body = lines.slice(1, closeIdx);
+  const looksLikeYAML = body.every((l) =>
+    l.trim() === '' ||
+    /^[ \t]*[\w$.-]+\s*:(\s|$)/.test(l) ||
+    /^[ \t]*-\s+\S/.test(l) ||
+    /^[ \t]+\S/.test(l));
+  if (!looksLikeYAML) return lines;
+
+  let start = closeIdx + 1;
+  if (lines[start] !== undefined && lines[start].trim() === '') start++;
+  return lines.slice(start);
+}
+
+/**
+ * Extracts GFM reference-link definitions (`[ref]: url "title"`) and footnote
+ * definitions (`[^id]: text`) from the line array, skipping fenced code
+ * regions. Returns the definition-free line array plus lookup maps.
+ * @param {string[]} lines
+ * @returns {{ clean: string[], linkDefs: Map<string, {href: string, title?: string}>, footnoteIds: Set<string> }}
+ */
+function _extractReferenceDefinitions(lines) {
+  const linkDefs = new Map();
+  const footnoteIds = new Set();
+  const clean = [];
+  let inFence = false;
+  const linkDefRe = /^\[([^\]]+)\]:\s*(\S+)(?:\s+"([^"]*)")?\s*$/;
+  const footnoteDefRe = /^\[\^([^\]]+)\]:\s*(.+)$/;
+
+  for (const line of lines) {
+    if (/^```/.test(line)) { inFence = !inFence; clean.push(line); continue; }
+    if (!inFence) {
+      const fm = footnoteDefRe.exec(line);
+      if (fm) { footnoteIds.add(fm[1]); continue; }
+      const lm = linkDefRe.exec(line);
+      if (lm) { linkDefs.set(lm[1].trim().toLowerCase(), { href: lm[2], title: lm[3] }); continue; }
+    }
+    clean.push(line);
+  }
+  return { clean, linkDefs, footnoteIds };
+}
+
 /**
  * Splits a GFM table row string into trimmed cell strings.
  * '| a | b | c |' → ['a', 'b', 'c']
@@ -356,6 +425,22 @@ function _inline(text) {
   // Links
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
     `<a href="${_escAttr(href)}">${_esc(label)}</a>`);
+  // Reference-style links  [text][ref]  and shortcut  [text][]
+  text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
+    const def = _linkDefs.get((ref || label).trim().toLowerCase());
+    if (!def) return m;
+    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${_esc(label)}</a>`;
+  });
+  // Bare/implicit reference link  [text]  — only when a definition exists
+  text = text.replace(/\[([^\]]+)\]/g, (m, label) => {
+    const def = _linkDefs.get(label.trim().toLowerCase());
+    if (!def) return m;
+    const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
+    return `<a href="${_escAttr(def.href)}"${titleAttr}>${_esc(label)}</a>`;
+  });
+  // Footnote reference marker  [^id]  — run last
+  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(id) ? `<sup>[${_esc(id)}]</sup>` : m));
   // Bold + italic  ***text***
   text = text.replace(/\*{3}([^*\n]+?)\*{3}/g, (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
   text = text.replace(/_{3}([^_\n]+?)_{3}/g,   (_, c) => `<strong><em>${_esc(c)}</em></strong>`);
