@@ -195,6 +195,20 @@ export class Clipboard {
   }
 
   /**
+   * Checks whether an HTML payload has no semantic markup beyond plain
+   * wrapper elements (e.g. a bare <div>/<p>). Used to decide whether a
+   * markdown-shaped plain-text paste should win over an accompanying HTML
+   * payload that isn't actually carrying any real rich-text formatting.
+   * @param {string} html
+   * @returns {boolean}
+   */
+  _isTriviallyPlainHtml(html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
+    const SIGNIFICANT = 'a,img,table,ul,ol,li,blockquote,pre,code,h1,h2,h3,h4,h5,h6,strong,b,em,i,u,s,del,strike,hr,br';
+    return !doc.body.querySelector(SIGNIFICANT);
+  }
+
+  /**
    * Forces the next paste operation to strip all HTML formatting.
    * Called by Editor when Ctrl+Shift+V is pressed.
    * @param {boolean} val
@@ -219,6 +233,9 @@ export class Clipboard {
       const size = Math.max(text.length, html.length);
       if (size > maxBytes) {
         event.preventDefault();
+        const message = `Pasted content (${size} bytes) exceeds the ${this.options.maxPasteSize ?? 5} MB paste size limit.`;
+        this.context.triggerEvent('pasteError', { size, maxBytes, message });
+        console.warn(`[AutumnNote] ${message}`);
         return;
       }
     }
@@ -257,13 +274,20 @@ export class Clipboard {
       return;
     }
 
-    // 3. Markdown paste — only when no HTML is on the clipboard (pure text source)
-    if (this.options.markdownPaste !== false && !clipboardData.types.includes('text/html')) {
+    // 3. Markdown paste — when there's no HTML on the clipboard, or the
+    // accompanying HTML has no semantic markup (e.g. some terminal/clipboard
+    // tools put both a markdown-shaped text/plain and a trivial <div>-wrapped
+    // text/html on the clipboard). Real rich-text sources (Word, Docs, etc.)
+    // always have semantic tags after cleaning, so this is unaffected.
+    if (this.options.markdownPaste !== false) {
+      const hasHtml = clipboardData.types.includes('text/html');
+      const html = hasHtml ? clipboardData.getData('text/html') : '';
+      const htmlTriviallyPlain = !hasHtml || this._isTriviallyPlainHtml(html);
       const text = clipboardData.getData('text/plain');
-      if (text && isMarkdown(text)) {
+      if (text && htmlTriviallyPlain && isMarkdown(text)) {
         event.preventDefault();
-        const html = sanitiseHTML(markdownToHTML(text));
-        execCommand('insertHTML', html);
+        const converted = sanitiseHTML(markdownToHTML(text));
+        execCommand('insertHTML', converted);
         this.context.invoke('editor.afterCommand');
         return;
       }
@@ -307,14 +331,48 @@ export class Clipboard {
     if (!dt?.files?.length) return;
 
     const imageFiles = Array.from(dt.files).filter((f) => f.type.startsWith('image/'));
-    if (imageFiles.length === 0) return;
+    if (imageFiles.length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      // Place the caret at the drop coordinates before inserting
+      this._placeCaretAtPoint(event.clientX, event.clientY);
+      this._insertImageFiles(imageFiles);
+      return;
+    }
 
-    event.preventDefault();
-    event.stopPropagation();
+    if (this.options.markdownPaste !== false) {
+      const mdFile = Array.from(dt.files).find((f) => /\.md$/i.test(f.name) || f.type === 'text/markdown');
+      if (mdFile) {
+        event.preventDefault();
+        event.stopPropagation();
+        this._placeCaretAtPoint(event.clientX, event.clientY);
+        this._insertMarkdownFile(mdFile);
+      }
+    }
+  }
 
-    // Place the caret at the drop coordinates before inserting
-    this._placeCaretAtPoint(event.clientX, event.clientY);
-    this._insertImageFiles(imageFiles);
+  /**
+   * Reads a dropped `.md` File and inserts it converted to HTML at the
+   * current caret. Skips the isMarkdown() heuristic — an explicit `.md`
+   * extension/MIME type is an unambiguous signal, unlike pasted plain text.
+   * @param {File} file
+   */
+  _insertMarkdownFile(file) {
+    const maxBytes = (this.options.maxPasteSize ?? 5) * 1024 * 1024;
+    if (maxBytes > 0 && file.size > maxBytes) {
+      const message = `Dropped file "${file.name}" (${file.size} bytes) exceeds the ${this.options.maxPasteSize ?? 5} MB paste size limit.`;
+      this.context.triggerEvent('pasteError', { size: file.size, maxBytes, message });
+      console.warn(`[AutumnNote] ${message}`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const html = sanitiseHTML(markdownToHTML(/** @type {string} */ (e.target.result) || ''));
+      execCommand('insertHTML', html);
+      this.context.invoke('editor.afterCommand');
+    };
+    reader.onerror = () => console.warn('[AutumnNote] Failed to read dropped markdown file', file.name);
+    reader.readAsText(file);
   }
 
   // ---------------------------------------------------------------------------

@@ -457,6 +457,67 @@ describe('Clipboard._onDrop', () => {
     expect(event.preventDefault).toHaveBeenCalled();
     expect(onImageUpload).toHaveBeenCalledWith([imgFile]);
   });
+
+  it('converts a dropped .md file to HTML and inserts it', async () => {
+    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+    const { cb } = makeClipboard();
+    const mdFile = new File(['# Heading'], 'notes.md', { type: 'text/markdown' });
+    const event = {
+      dataTransfer: { files: [mdFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    const callsBefore = document.execCommand.mock.calls.length;
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    await vi.waitFor(() => expect(document.execCommand.mock.calls.length).toBeGreaterThan(callsBefore));
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call).toEqual(['insertHTML', false, expect.stringContaining('<h1>Heading</h1>')]);
+  });
+
+  it('is a no-op for a dropped file that is neither an image nor a .md file (regression)', () => {
+    const { cb } = makeClipboard();
+    const textFile = new File(['plain text'], 'notes.txt', { type: 'text/plain' });
+    const event = {
+      dataTransfer: { files: [textFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    cb._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('does not handle a dropped .md file when markdownPaste is false', () => {
+    const { cb } = makeClipboard({ markdownPaste: false });
+    const mdFile = new File(['# Heading'], 'notes.md', { type: 'text/markdown' });
+    const event = {
+      dataTransfer: { files: [mdFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    cb._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('fires a pasteError event for an oversized dropped .md file', () => {
+    const { cb, ctx } = makeClipboard({ maxPasteSize: 0.000001 });
+    const mdFile = new File(['#'.repeat(1000)], 'notes.md', { type: 'text/markdown' });
+    const event = {
+      dataTransfer: { files: [mdFile] },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 100,
+      clientY: 100,
+    };
+    cb._onDrop(event);
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', expect.objectContaining({ size: mdFile.size }));
+  });
 });
 
 // ── _onPaste ──────────────────────────────────────────────────────────────────
@@ -480,8 +541,9 @@ describe('Clipboard._onPaste', () => {
 
   it('returns early when no clipboardData', () => {
     const { cb } = makeClipboard();
+    const callsBefore = document.execCommand.mock.calls.length;
     expect(() => cb._onPaste({ clipboardData: null })).not.toThrow();
-    expect(document.execCommand).not.toHaveBeenCalled();
+    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
   });
 
   it('pastes as plain text when forcePlain is true', () => {
@@ -506,7 +568,7 @@ describe('Clipboard._onPaste', () => {
     const { cb } = makeClipboard({ pasteAsPlainText: true });
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'Line 1\nLine 2' });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.find(([cmd]) => cmd === 'insertHTML');
+    const call = document.execCommand.mock.calls.at(-1);
     expect(call[2]).toContain('<p>');
   });
 
@@ -549,6 +611,39 @@ describe('Clipboard._onPaste', () => {
     expect(call[2]).toContain('href="https://example.com"');
     expect(call[2]).toContain('sup');
     expect(call[2]).not.toContain('footnote body');
+  });
+
+  it('prefers markdown conversion when accompanying HTML has no semantic markup', () => {
+    const { cb } = makeClipboard();
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<div># Heading</div>',
+      'text/plain': '# Heading',
+    });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[2]).toContain('<h1>Heading</h1>');
+  });
+
+  it('still prefers the HTML branch when the HTML has real semantic markup (regression)', () => {
+    const { cb } = makeClipboard();
+    const event = makePasteEvent(['text/html', 'text/plain'], {
+      'text/html': '<table><tr><td>cell</td></tr></table>',
+      'text/plain': '# Heading',
+    });
+    cb._onPaste(event);
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[2]).toContain('<table');
+    expect(call[2]).not.toContain('<h1>');
+  });
+
+  it('fires a pasteError event and does not insert when paste content exceeds maxPasteSize', () => {
+    const { cb, ctx } = makeClipboard({ maxPasteSize: 0.000001 });
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'a'.repeat(1000) });
+    const callsBefore = document.execCommand.mock.calls.length;
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', expect.objectContaining({ size: 1000 }));
+    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
   });
 
   it('sanitises HTML when text/html is in clipboard (pasteCleanHTML default)', () => {
