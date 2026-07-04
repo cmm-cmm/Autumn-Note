@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.11.0] - 2026-07-04
+
+### Added
+- **Markdown parser — blockquote nesting and block content** — `>text` (no space) is now recognised; `markdownToHTML()`'s block loop was factored into a recursive `_parseBlocks()`, so nested blockquotes (`> > quote`) and block content inside quotes (`> # heading`, `> - list`) parse as real nested blocks instead of flattened inline text
+- **Markdown parser — loose lists and multi-paragraph items** — a blank line between list items (or before indented continuation text) now keeps the list intact with `<p>`-wrapped item content per CommonMark, instead of splitting into separate sibling lists
+- **Markdown parser — inline escaping and autolinks** — backslash escapes (`\*`, `\_`, `` \` ``, …) suppress markdown meaning; underscore emphasis requires a word boundary (`snake_case_word` is no longer italicised); trailing two-space/backslash hard line breaks become `<br>`; raw `<`/`>`/`&` in prose is escaped exactly once; `<https://…>` and bare `https://…` URLs autolink
+- **Markdown parser — smaller gaps** — horizontal-rule spaced forms (`- - -`, `* * *`), escaped pipes (`\|`) in table cells, `<ol start="N">` for lists not starting at 1, double-backtick code spans, and ATX heading trailing `#` stripping
+- **Markdown export (`htmlToMarkdown`) fidelity** — `<u>` and colour/background/font-size styled `<span>`s export as raw HTML passthrough instead of silently losing formatting; headerless tables no longer promote the first data row to a header; a checkbox in a `<ul>` missing the `an-checklist` class still exports as `- [ ]`/`- [x]`; blockquote export collapses redundant blank lines
+- **Clipboard integration** — markdown-shaped plain text now wins over an accompanying `text/html` payload that has no semantic markup; dropping a `.md` file onto the editor converts and inserts it (previously silently ignored); oversized paste/drop fires a `pasteError` event instead of silently doing nothing
+- **Playground "Markdown" snippet** — loads raw markdown source through `editor.setMarkdown()`, exercising the real conversion pipeline (frontmatter, setext headings, nested blockquotes, checklists, loose lists, table alignment, footnotes, …) for visual verification
+
+### Fixed
+- **Nested list export duplication** — `_domToMd()` used the `:scope > li` CSS combinator to find direct child items, which resolves incorrectly in some DOM implementations (matches descendants at any depth); a nested list's inner item was silently duplicated as an extra top-level item on every markdown export. Replaced with an `element.children`-based helper
+- **Loose-list display** — `<li><p>…</p></li>` items inherited the editable's generic paragraph margin with no reset, and `list-style-position: inside` dropped the list marker onto its own line; new `li > p` rules keep the marker inline with the first paragraph with consistent spacing
+- **Plain code-fence double tint** — `<pre>` and its inner `<code>` both painted the toolbar background; the inner `<code>` is now transparent/unpadded inside `<pre>`, with dark and auto theme variants
+
+### Changed
+- **Headings in the editable** — `h1`–`h6` now declare an explicit font-size scale instead of relying on browser defaults
+- **`_inline()` internals** — sequential regex steps extracted into named helper functions (no behavior change; keeps cognitive complexity under the SonarCloud quality gate)
+
+---
+
 ## [1.10.0] - 2026-07-02
 
 ### Added

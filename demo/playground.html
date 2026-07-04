@@ -417,7 +417,7 @@
     <a class="brand" href="./" aria-label="AutumnNote home">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.10.0</span>
+      <span class="brand-version">v1.11.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -536,6 +536,9 @@
             </button>
             <button class="snippet-btn" onclick="loadSnippet('formatting')">
               <span class="snippet-icon">🎨</span>Formatting
+            </button>
+            <button class="snippet-btn" onclick="loadSnippet('markdown')">
+              <span class="snippet-icon">📄</span>Markdown
             </button>
             <button class="snippet-btn" onclick="loadSnippet('empty')">
               <span class="snippet-icon">🗑</span>Clear
@@ -697,6 +700,56 @@ const editor = AutumnNote.create('#editor', {
 <ol><li>First ordered step</li><li>Second ordered step</li><li>Third ordered step</li></ol>`,
 };
 
+// Raw markdown source — loaded via editor.setMarkdown() to exercise the same
+// conversion pipeline used when pasting .md text or dropping a .md file.
+const MARKDOWN_SNIPPET = `---
+title: Markdown Import Demo
+---
+
+Markdown Import
+===============
+
+This content was loaded from **raw markdown**, not HTML — the same pipeline used when you paste markdown text or drop a \`.md\` file. The frontmatter above was stripped automatically.
+
+## Inline formatting ##
+
+**Bold**, _italic_, ~~strikethrough~~, \`inline code\`, escaped \\*literals\\*, an autolink https://autumn.konexforge.com, a [reference link][repo], and a footnote[^1].
+
+> Blockquotes nest:
+> > with **block content** inside
+> > - even lists
+
+### Task list
+
+- [x] Parse frontmatter
+- [x] Align table columns
+- [ ] Ship the next release
+
+### Loose list
+
+- First item
+
+  with a second paragraph
+- Second item
+
+5. Ordered lists can start at any number
+6. like this one
+
+| Feature | Status | Notes |
+| :------ | :----: | ----: |
+| Tables | OK | aligned left / center / right |
+| Escaped pipe | OK | a\\|b stays one cell |
+
+- - -
+
+\`\`\`js
+// fenced code with language
+const editor = AutumnNote.create('#editor');
+\`\`\`
+
+[repo]: https://github.com/cmm-cmm/Autumn-Note "AutumnNote repository"
+[^1]: Footnotes render as superscript markers.`;
+
 // ── State ─────────────────────────────────────────────────
 let editor = null;
 let currentTab = 'html';
@@ -785,7 +838,10 @@ function updateOutput() {
 // ── Public helpers (called from inline onclick) ────────────
 window.applyConfig = () => createEditor();
 window.loadSnippet = (key) => {
-  if (editor) editor.setHTML(SNIPPETS[key] || '');
+  if (editor) {
+    if (key === 'markdown') editor.setMarkdown(MARKDOWN_SNIPPET);
+    else editor.setHTML(SNIPPETS[key] || '');
+  }
   updateOutput();
 };
 window.switchTab = (tab) => {

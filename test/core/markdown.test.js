@@ -339,26 +339,105 @@ describe('htmlToMarkdown', () => {
     expect(htmlToMarkdown('')).toBe('');
   });
 
-  it('indents nested <ul> lists correctly', () => {
+  it('indents nested <ul> lists correctly, without duplicating the nested item at the top level', () => {
     const html = '<ul><li>parent<ul><li>child</li></ul></li></ul>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('- parent');
-    expect(md).toContain('  - child');
+    expect(md).toBe('- parent\n  - child');
   });
 
-  it('indents deeply nested lists (3 levels)', () => {
+  it('indents deeply nested lists (3 levels), without duplicating nested items', () => {
     const html = '<ul><li>a<ul><li>b<ul><li>c</li></ul></li></ul></li></ul>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('- a');
-    expect(md).toContain('  - b');
-    expect(md).toContain('    - c');
+    expect(md).toBe('- a\n  - b\n    - c');
   });
 
-  it('indents nested <ol> lists correctly', () => {
+  it('indents nested <ol> lists correctly, without duplicating the nested item at the top level', () => {
     const html = '<ol><li>first<ol><li>nested</li></ol></li></ol>';
     const md = htmlToMarkdown(html);
-    expect(md).toContain('1. first');
-    expect(md).toContain('  1. nested');
+    expect(md).toBe('1. first\n  1. nested');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — underline and styled span export
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — underline and styled span', () => {
+  it('exports <u> as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<u>text</u>')).toBe('<u>text</u>');
+  });
+
+  it('exports a color-styled span as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<span style="color:red">x</span>')).toBe('<span style="color:red">x</span>');
+  });
+
+  it('exports a font-size-styled span as raw HTML passthrough', () => {
+    expect(htmlToMarkdown('<span style="font-size:18px">big</span>')).toBe('<span style="font-size:18px">big</span>');
+  });
+
+  it('unwraps a plain span with no style to plain text', () => {
+    expect(htmlToMarkdown('<span>plain</span>')).toBe('plain');
+  });
+
+  it('unwraps a span with an unrelated style to plain text', () => {
+    expect(htmlToMarkdown('<span style="cursor:pointer">x</span>')).toBe('x');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — headerless table export
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — headerless table', () => {
+  it('emits an empty header row for a tbody-only table with no <th> row', () => {
+    const html = '<table><tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2</td></tr></tbody></table>';
+    expect(htmlToMarkdown(html)).toBe('|  |  |\n| --- | --- |\n| a | b |\n| 1 | 2 |');
+  });
+
+  it('still treats a table with a real <thead> as having a header (regression)', () => {
+    const html = '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>';
+    expect(htmlToMarkdown(html)).toBe('| A | B |\n| --- | --- |\n| 1 | 2 |');
+  });
+
+  it('treats a table with an all-<th> first row as headered even without a <thead> wrapper', () => {
+    const html = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
+    expect(htmlToMarkdown(html)).toBe('| A | B |\n| --- | --- |\n| 1 | 2 |');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — checkbox export without an-checklist class
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — stray checkbox export', () => {
+  it('exports a checked checkbox even when the ul lacks the an-checklist class', () => {
+    const html = '<ul><li><input type="checkbox" checked>Done</li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- [x] Done');
+  });
+
+  it('exports an unchecked checkbox even when the ul lacks the an-checklist class', () => {
+    const html = '<ul><li><input type="checkbox">Todo</li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- [ ] Todo');
+  });
+
+  it('does not misattribute a nested sublist checkbox to its ancestor <li>', () => {
+    const html = '<ul><li>Parent<ul><li><input type="checkbox" checked>Nested</li></ul></li></ul>';
+    expect(htmlToMarkdown(html)).toBe('- Parent\n  - [x] Nested');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — blockquote blank-line collapsing
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — blockquote blank-line collapsing', () => {
+  it('collapses multiple blank lines between blockquote paragraphs into one', () => {
+    const html = '<blockquote><p>Para one</p><p>Para two</p></blockquote>';
+    expect(htmlToMarkdown(html)).toBe('> Para one\n>\n> Para two');
+  });
+
+  it('still converts a simple single-line blockquote (regression)', () => {
+    expect(htmlToMarkdown('<blockquote>Quote text</blockquote>')).toBe('> Quote text');
   });
 });
 
@@ -554,5 +633,355 @@ describe('markdownToHTML — reference links and footnotes', () => {
     const html = markdownToHTML(md);
     expect(html).toContain('<a href="https://example.com">Click</a>');
     expect(html).toContain('<a href="https://example.com/ref">ref</a>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isMarkdown — blockquote without a space after '>'
+// ---------------------------------------------------------------------------
+
+describe('isMarkdown — blockquote no-space', () => {
+  it('detects a blockquote with no space after >', () => {
+    expect(isMarkdown('>Hello')).toBe(true);
+  });
+
+  it('does not false-positive on a bare > with nothing after it', () => {
+    expect(isMarkdown('>')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — blockquotes: no-space, nesting, block content, multi-line
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — blockquote enhancements', () => {
+  it('recognizes a blockquote with no space after >', () => {
+    const html = markdownToHTML('>Hello');
+    expect(html).toBe('<blockquote><p>Hello</p></blockquote>');
+  });
+
+  it('supports nested blockquotes', () => {
+    const html = markdownToHTML('> > nested quote');
+    expect(html).toBe('<blockquote><blockquote><p>nested quote</p></blockquote></blockquote>');
+  });
+
+  it('supports a heading inside a blockquote', () => {
+    const html = markdownToHTML('> # Heading\n> more text');
+    expect(html).toBe('<blockquote><h1>Heading</h1><p>more text</p></blockquote>');
+  });
+
+  it('supports a list inside a blockquote', () => {
+    const html = markdownToHTML('> - item1\n> - item2');
+    expect(html).toBe('<blockquote><ul><li>item1</li><li>item2</li></ul></blockquote>');
+  });
+
+  it('joins consecutive quoted lines into one paragraph', () => {
+    const html = markdownToHTML('> Line one\n> Line two');
+    expect(html).toBe('<blockquote><p>Line one Line two</p></blockquote>');
+  });
+
+  it('still converts a simple single-line blockquote', () => {
+    const html = markdownToHTML('> A quote');
+    expect(html).toBe('<blockquote><p>A quote</p></blockquote>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — horizontal rule spaced forms
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — horizontal rule spaced forms', () => {
+  it('converts spaced dashes (- - -) to <hr>', () => {
+    expect(markdownToHTML('- - -')).toBe('<hr>');
+  });
+
+  it('converts spaced asterisks (* * *) to <hr>', () => {
+    expect(markdownToHTML('* * *')).toBe('<hr>');
+  });
+
+  it('converts spaced underscores (_ _ _) to <hr>', () => {
+    expect(markdownToHTML('_ _ _')).toBe('<hr>');
+  });
+
+  it('still converts unspaced --- to <hr>', () => {
+    expect(markdownToHTML('---')).toBe('<hr>');
+  });
+
+  it('does not mistake a real list item "- a" for a horizontal rule', () => {
+    const html = markdownToHTML('- a');
+    expect(html).toBe('<ul><li>a</li></ul>');
+  });
+
+  it('does not mistake a list item with literal text "-" for a horizontal rule', () => {
+    const html = markdownToHTML('- -');
+    expect(html).toBe('<ul><li>-</li></ul>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — loose vs. tight lists, multi-paragraph items
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — loose and multi-paragraph lists', () => {
+  it('renders a tight list without <p> wrapping (regression)', () => {
+    const html = markdownToHTML('- Alpha\n- Beta');
+    expect(html).toBe('<ul><li>Alpha</li><li>Beta</li></ul>');
+  });
+
+  it('renders a loose list (blank line between items) with <p>-wrapped items', () => {
+    const html = markdownToHTML('- Alpha\n\n- Beta');
+    expect(html).toBe('<ul><li><p>Alpha</p></li><li><p>Beta</p></li></ul>');
+  });
+
+  it('supports a multi-paragraph list item', () => {
+    const html = markdownToHTML('- Item\n\n  more text\n\n- Item2');
+    expect(html).toBe('<ul><li><p>Item</p><p>more text</p></li><li><p>Item2</p></li></ul>');
+  });
+
+  it('still terminates the list before an unrelated trailing paragraph', () => {
+    const html = markdownToHTML('- Item 1\n\nSome unrelated paragraph.');
+    expect(html).toBe('<ul><li>Item 1</li></ul><p>Some unrelated paragraph.</p>');
+  });
+
+  it('keeps a checkbox on the first paragraph of a loose checklist item', () => {
+    const html = markdownToHTML('- [x] Done\n\n  extra detail');
+    expect(html).toContain('<input type="checkbox" contenteditable="false" checked>');
+    expect(html).toContain('<p>extra detail</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — table cell escaped pipe
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — table escaped pipe', () => {
+  it('treats an escaped pipe in a cell as a literal character, not a separator', () => {
+    const md = '| a\\|b | c |\n| --- | --- |\n| 1 | 2 |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th>a|b</th>');
+    expect(html).toContain('<th>c</th>');
+  });
+
+  it('still splits a plain table row correctly (regression)', () => {
+    const md = '| a | b |\n| --- | --- |\n| 1 | 2 |';
+    const html = markdownToHTML(md);
+    expect(html).toContain('<th>a</th>');
+    expect(html).toContain('<th>b</th>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — underscore emphasis word-boundary
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — underscore emphasis word boundary', () => {
+  it('does not emphasize underscores inside an identifier', () => {
+    expect(markdownToHTML('snake_case_word')).toBe('<p>snake_case_word</p>');
+  });
+
+  it('does not bold underscores inside an identifier', () => {
+    expect(markdownToHTML('snake__case__word')).toBe('<p>snake__case__word</p>');
+  });
+
+  it('emphasizes a leading _word_ at sentence start', () => {
+    expect(markdownToHTML('_word_ rest of sentence')).toBe('<p><em>word</em> rest of sentence</p>');
+  });
+
+  it('emphasizes _word_ surrounded by spaces', () => {
+    expect(markdownToHTML('foo _bar_ baz')).toBe('<p>foo <em>bar</em> baz</p>');
+  });
+
+  it('bolds __word__ surrounded by spaces', () => {
+    expect(markdownToHTML('foo __bar__ baz')).toBe('<p>foo <strong>bar</strong> baz</p>');
+  });
+
+  it('still allows intraword asterisk emphasis (regression)', () => {
+    expect(markdownToHTML('foo*bar*baz')).toBe('<p>foo<em>bar</em>baz</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — hard line breaks
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — hard line breaks', () => {
+  it('converts a trailing two-space line break to <br>', () => {
+    expect(markdownToHTML('Line one  \nLine two')).toBe('<p>Line one<br>Line two</p>');
+  });
+
+  it('converts a trailing backslash line break to <br>', () => {
+    expect(markdownToHTML('Line one\\\nLine two')).toBe('<p>Line one<br>Line two</p>');
+  });
+
+  it('joins lines with a plain space when there is no hard-break marker (regression)', () => {
+    expect(markdownToHTML('Line one\nLine two')).toBe('<p>Line one Line two</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — backslash escapes
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — backslash escapes', () => {
+  it('escapes asterisks so they are not treated as emphasis', () => {
+    expect(markdownToHTML('\\*not bold\\*')).toBe('<p>*not bold*</p>');
+  });
+
+  it('escapes underscores so they are not treated as emphasis', () => {
+    expect(markdownToHTML('\\_not italic\\_')).toBe('<p>_not italic_</p>');
+  });
+
+  it('escapes a backtick so it is not treated as inline code', () => {
+    expect(markdownToHTML('\\`not code\\`')).toBe('<p>`not code`</p>');
+  });
+
+  it('escapes brackets so they are not treated as a link', () => {
+    expect(markdownToHTML('\\[not a link\\]')).toBe('<p>[not a link]</p>');
+  });
+
+  it('escapes a hash inside prose', () => {
+    expect(markdownToHTML('See \\#hashtag here')).toBe('<p>See #hashtag here</p>');
+  });
+
+  it('escapes a pipe outside of a table', () => {
+    expect(markdownToHTML('a \\| b')).toBe('<p>a | b</p>');
+  });
+
+  it('resolves a double backslash to a single literal backslash', () => {
+    expect(markdownToHTML('literal \\\\ backslash')).toBe('<p>literal \\ backslash</p>');
+  });
+
+  it('leaves a fenced code block unaffected by escape sequences', () => {
+    const html = markdownToHTML('```\n\\*text\\*\n```');
+    expect(html).toContain('\\*text\\*');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — whole-string HTML escaping of raw <, >, &
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — raw HTML character escaping', () => {
+  it('escapes a raw script-like tag in prose instead of passing it through', () => {
+    const html = markdownToHTML('Use <script>alert(1)</script> here');
+    expect(html).toBe('<p>Use &lt;script&gt;alert(1)&lt;/script&gt; here</p>');
+  });
+
+  it('does not double-escape an ampersand inside bold text', () => {
+    const html = markdownToHTML('**A & B** and <em>fake</em>');
+    expect(html).toBe('<p><strong>A &amp; B</strong> and &lt;em&gt;fake&lt;/em&gt;</p>');
+  });
+
+  it('does not double-escape an ampersand inside a link URL', () => {
+    const html = markdownToHTML('[A & B](http://x.com?a=1&b=2)');
+    expect(html).toBe('<p><a href="http://x.com?a=1&amp;b=2">A &amp; B</a></p>');
+  });
+
+  it('escapes a raw angle bracket inside a code span', () => {
+    const html = markdownToHTML('`if x < 5`');
+    expect(html).toBe('<p><code>if x &lt; 5</code></p>');
+  });
+
+  it('resolves a reference link whose label contains an ampersand', () => {
+    const html = markdownToHTML('[A & B][]\n\n[A & B]: https://example.com');
+    expect(html).toBe('<p><a href="https://example.com">A &amp; B</a></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — autolinks
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — autolinks', () => {
+  it('converts a bare URL in prose to a link', () => {
+    const html = markdownToHTML('Visit https://example.com today');
+    expect(html).toBe('<p>Visit <a href="https://example.com">https://example.com</a> today</p>');
+  });
+
+  it('converts an angle-bracket autolink to a link', () => {
+    const html = markdownToHTML('See <https://example.com> for details');
+    expect(html).toBe('<p>See <a href="https://example.com">https://example.com</a> for details</p>');
+  });
+
+  it('trims trailing sentence punctuation from a bare URL', () => {
+    const html = markdownToHTML('Visit https://x.com.');
+    expect(html).toBe('<p>Visit <a href="https://x.com">https://x.com</a>.</p>');
+  });
+
+  it('does not double-process a URL already inside an explicit link', () => {
+    const html = markdownToHTML('[Already](https://example.com) plus bare https://other.com');
+    expect(html).toContain('<a href="https://example.com">Already</a>');
+    expect(html).toContain('<a href="https://other.com">https://other.com</a>');
+    expect(html).not.toContain('href="https://example.com">https://example.com<');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — ordered list start number
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — ordered list start number', () => {
+  it('emits an ol start attribute when the list does not start at 1', () => {
+    const html = markdownToHTML('3. Third\n4. Fourth');
+    expect(html).toBe('<ol start="3"><li>Third</li><li>Fourth</li></ol>');
+  });
+
+  it('omits the start attribute when the list starts at 1 (regression)', () => {
+    const html = markdownToHTML('1. First\n2. Second');
+    expect(html).toBe('<ol><li>First</li><li>Second</li></ol>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — checklist syntax is intentionally UL-only
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — no ordered-list checklist support (intentional)', () => {
+  it('leaves "1. [ ] item" as plain text, not a checkbox', () => {
+    const html = markdownToHTML('1. [ ] item');
+    expect(html).toBe('<ol><li>[ ] item</li></ol>');
+    expect(html).not.toContain('input type="checkbox"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — double-backtick code spans
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — double-backtick code spans', () => {
+  it('tolerates a single literal backtick inside a double-backtick span', () => {
+    const html = markdownToHTML('``code with ` inside``');
+    expect(html).toBe('<p><code>code with ` inside</code></p>');
+  });
+
+  it('still converts a single-backtick code span (regression)', () => {
+    expect(markdownToHTML('`code`')).toBe('<p><code>code</code></p>');
+  });
+
+  it('converts two separate double-backtick spans independently', () => {
+    const html = markdownToHTML('``a`` and ``b``');
+    expect(html).toBe('<p><code>a</code> and <code>b</code></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// markdownToHTML — ATX heading trailing # stripping
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — ATX heading trailing hash stripping', () => {
+  it('strips a trailing #-run preceded by whitespace', () => {
+    expect(markdownToHTML('## Heading ##')).toBe('<h2>Heading</h2>');
+  });
+
+  it('does not strip a trailing # with no preceding space (regression)', () => {
+    expect(markdownToHTML('# Heading#')).toBe('<h1>Heading#</h1>');
+  });
+
+  it('produces an empty heading for a fully degenerate trailing-hash line', () => {
+    expect(markdownToHTML('# ###')).toBe('<h1></h1>');
+  });
+
+  it('preserves a mid-string hash run that is not at the end of the line', () => {
+    expect(markdownToHTML('### C## Programming')).toBe('<h3>C## Programming</h3>');
   });
 });
