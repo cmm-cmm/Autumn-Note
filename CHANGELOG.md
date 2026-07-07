@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.11.1] - 2026-07-07
+
+### Security
+- **`<template>` sanitiser bypass** — `sanitiseHTML()`'s single `querySelectorAll('*')` pass never traversed into a `<template>`'s `content` (a separate `DocumentFragment` tree), so any dangerous element nested inside one — `<script>`, `<iframe>`, `on*` handlers — survived untouched. `template` added to `PROHIBITED_TAGS`
+- **`style` attribute CSS injection** — the `style` attribute was never checked, allowing data exfiltration via auto-fetched `background:url(...)` and full-page phishing overlays via `position:fixed`. Rather than stripping `style` entirely (which would have regressed table cell sizing/border/padding/alignment, text color/highlight/font-size, and markdown table alignment — all of which persist via inline styles), added an allowlist of the specific CSS properties those features use, with any declaration containing `url()`, `expression()`, an `import` rule, `javascript:`/`vbscript:`, or legacy IE `behavior`/`-moz-binding` dropped regardless of property
+- **`<link>`/`<meta>` sanitiser bypass** — `<link rel="stylesheet">` enabled CSS-based exfiltration and `<meta http-equiv="refresh">` enabled unwanted redirects; both tags added to `PROHIBITED_TAGS`
+- **`xlink:href` XSS bypass** — the legacy SVG XLink-namespaced attribute was not covered by the `javascript:`/`vbscript:` URL check already applied to plain `href`; `xlink:href` added to `URL_ATTRS`
+
+---
+
 ## [1.11.0] - 2026-07-04
 
 ### Added

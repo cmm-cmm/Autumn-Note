@@ -1,6 +1,6 @@
 {
   "name": "autumnnote-vue",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "description": "Official Vue 3 wrapper for AutumnNote — zero-dependency WYSIWYG editor. Mount the editor with a single component and access the full Context API via ref.",
   "type": "module",
   "main": "dist/index.cjs",
