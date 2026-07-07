@@ -6,13 +6,24 @@
  */
 
 /** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base'];
+const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta'];
 
 /** Tags whose element wrapper is stripped but content (child nodes) is preserved. */
 const UNWRAP_TAGS = new Set(['button']);
 
 /** Attributes whose values must be sanitised as URLs. */
-const URL_ATTRS = ['href', 'src', 'action', 'formaction'];
+const URL_ATTRS = ['href', 'src', 'action', 'formaction', 'xlink:href'];
+
+/** Inline style properties the editor's own toolbar/table features persist on saved content. */
+const ALLOWED_STYLE_PROPS = new Set([
+  'color', 'background-color', 'font-size', 'line-height',
+  'text-align', 'vertical-align',
+  'width', 'min-width', 'height', 'min-height',
+  'border-width', 'border-style', 'border-color', 'padding',
+]);
+
+/** Value patterns that are never safe regardless of property. */
+const DANGEROUS_STYLE_VALUE_RE = /url\s*\(|expression\s*\(|@import|javascript:|vbscript:|behavior\s*:|-moz-binding/i;
 
 /** Trusted hosts for iframe embeds when allowIframes is enabled. */
 const TRUSTED_IFRAME_HOSTS = new Set([
@@ -70,6 +81,17 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
         el.removeAttribute(attr.name);
         continue;
       }
+      // Filter the style attribute down to an allowlisted set of safe
+      // properties (see ALLOWED_STYLE_PROPS) — not a blanket strip, since
+      // the editor's own toolbar/table features persist inline styles
+      // (text color/highlight, font size, line height, table alignment/
+      // sizing/borders) that must survive sanitisation.
+      if (attr.name === 'style') {
+        const cleaned = sanitiseStyleValue(attr.value);
+        if (cleaned) el.setAttribute('style', cleaned);
+        else el.removeAttribute('style');
+        continue;
+      }
       // Sanitise URL attributes
       if (URL_ATTRS.includes(attr.name)) {
         const val = attr.value.trim();
@@ -111,6 +133,29 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
   }
 
   return doc.body.innerHTML;
+}
+
+/**
+ * Filters a style attribute value down to an allowlisted set of CSS
+ * properties (ALLOWED_STYLE_PROPS), dropping any declaration whose value
+ * contains a dangerous construct — url(), expression(), an "import" rule,
+ * javascript:/vbscript:, IE behavior/-moz-binding — regardless of property.
+ * @param {string} value
+ * @returns {string} The filtered declaration list, or '' if nothing survives.
+ */
+function sanitiseStyleValue(value) {
+  const kept = [];
+  for (const decl of (value || '').split(';')) {
+    const idx = decl.indexOf(':');
+    if (idx === -1) continue;
+    const prop = decl.slice(0, idx).trim().toLowerCase();
+    const val = decl.slice(idx + 1).trim();
+    if (!prop || !val) continue;
+    if (!ALLOWED_STYLE_PROPS.has(prop)) continue;
+    if (DANGEROUS_STYLE_VALUE_RE.test(val)) continue;
+    kept.push(`${prop}: ${val}`);
+  }
+  return kept.join('; ');
 }
 
 /**
