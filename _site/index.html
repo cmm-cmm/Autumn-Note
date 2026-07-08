@@ -34,7 +34,20 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://autumn.konexforge.com/#website",
+    "name": "AutumnNote",
+    "url": "https://autumn.konexforge.com/",
+    "description": "Zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.",
+    "publisher": { "@type": "Person", "name": "Minh Pham" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": "https://autumn.konexforge.com/#software",
+    "isPartOf": { "@id": "https://autumn.konexforge.com/#website" },
     "name": "AutumnNote",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Text Editor",
@@ -355,6 +368,28 @@
     }
 
     /* =========================================================
+       FAQ SECTION
+    ========================================================= */
+    .faq-section { padding: 52px 24px 60px; }
+    .faq-inner { max-width: 780px; margin: 0 auto; }
+    .faq-list { display: grid; gap: 10px; margin-top: 20px; }
+    .faq-item {
+      border: 1px solid #e7e5e4; border-radius: 10px; padding: 14px 18px; background: #fff;
+    }
+    .faq-item summary {
+      cursor: pointer; font-weight: 600; font-size: 15px; color: #1c1917;
+      list-style: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::before { content: '+ '; color: #e8751a; font-weight: 700; }
+    .faq-item[open] summary::before { content: '– '; }
+    .faq-item p { margin-top: 10px; font-size: 14px; color: #57534e; line-height: 1.6; }
+    .faq-item code {
+      background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+      font-size: .9em; color: #44403c;
+    }
+
+    /* =========================================================
        INSTALL / QUICK START SECTION
     ========================================================= */
     .install-section {
@@ -410,8 +445,8 @@
       .demo-section { padding: 36px 16px 40px; }
     }
   </style>
-  <script type="module" crossorigin src="/assets/main-C1HLrN4w.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/js-DYmwo0jo.js">
+  <script type="module" crossorigin src="/assets/main-C4D2Jsgp.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/js-Dgy1QAeH.js">
   <link rel="stylesheet" crossorigin href="/assets/js-DCvYl1Kc.css">
 </head>
 <body>
@@ -421,7 +456,7 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="https://autumn.konexforge.com/" aria-label="AutumnNote home">
-        <img src="/image/banner.png" width="30" height="30" alt="" />
+        <img src="/image/banner.png" width="30" height="30" alt="AutumnNote logo" />
         <span class="brand-name">AutumnNote</span>
         <span class="brand-version">v1.11.1</span>
       </a>
@@ -434,10 +469,11 @@
     </div>
   </header>
 
+  <main>
   <!-- ===================== HERO ===================== -->
   <section class="hero">
     <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v1.11.1</span>
-    <h1 class="hero-title">Fast. Lightweight.<br>Reliable. Efficient.</h1>
+    <h1 class="hero-title">Fast, Lightweight WYSIWYG Editor<br>for Vanilla JavaScript</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
       no jQuery, zero runtime dependencies, full TypeScript support out of the box.
@@ -508,7 +544,7 @@
 
   <!-- ===================== LIVE DEMO ===================== -->
   <div id="demo-outer">
-  <main id="demo" class="demo-section">
+  <div id="demo" class="demo-section">
     <div class="section-header">
       <h2 class="section-title">Live Demo</h2>
       <p class="section-sub">
@@ -569,7 +605,7 @@
         </div>
       </div>
     </div>
-  </main>
+  </div>
   </div><!-- /#demo-outer -->
 
   <!-- ===================== QUICK START ===================== -->
@@ -634,6 +670,35 @@ const editor = AutumnNote.create('#my-editor', {
       </div>
     </div>
   </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="faq-inner">
+      <div class="section-header">
+        <h2 class="section-title" id="faq-heading">Frequently asked questions</h2>
+        <p class="section-sub">Common questions about the AutumnNote WYSIWYG editor.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>What is AutumnNote?</summary>
+          <p>AutumnNote is a zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). It has no jQuery or runtime dependencies and offers features such as bubble toolbar, @mention, markdown shortcuts, dark mode, table editing, image and video resize, and a Plugin API. It ships as ES Module and UMD builds and includes official React and Vue 3 wrappers.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is AutumnNote free to use?</summary>
+          <p>Yes. AutumnNote is open-source and published under the MIT License. It is free for personal and commercial use.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What alternatives to Summernote, Quill, and TinyMCE does AutumnNote replace?</summary>
+          <p>AutumnNote is a modern alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate. Unlike most of these, it has zero runtime dependencies and no jQuery requirement.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How do I install AutumnNote?</summary>
+          <p>Install via npm: <code>npm install autumnnote</code>. Then import the library and CSS: <code>import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';</code>. Create an editor with <code>AutumnNote.create('#my-editor')</code>.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+  </main>
 
   <!-- ===================== FOOTER ===================== -->
   <footer class="site-footer">
