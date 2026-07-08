@@ -24,6 +24,7 @@ export default defineConfig({
         main:       resolve(__dirname, 'demo/index.html'),
         docs:       resolve(__dirname, 'demo/docs.html'),
         playground: resolve(__dirname, 'demo/playground.html'),
+        notFound:   resolve(__dirname, 'demo/404.html'),
       },
     },
   },
