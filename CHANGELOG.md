@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.12.0] - 2026-07-08
+
+### Added
+- Visible FAQ section on the Live Demo homepage, mirroring the existing `FAQPage` JSON-LD copy (what is AutumnNote, licensing, competitor alternatives, install) so structured data and on-page content match
+- `WebSite` schema.org JSON-LD entity, linked via `@id`/`isPartOf` from the `SoftwareApplication` (homepage), `TechArticle` (docs), and `WebApplication` (playground) blocks
+- Branded `demo/404.html`, wired into the demo build (`vite.demo.config.js`) and Cloudflare Workers Assets (`wrangler.toml`'s `not_found_handling = "404-page"`), so broken links land on a real page instead of a blank default
+- `public/_headers` — short `Cache-Control` TTL for HTML pages, long immutable TTL for hashed `/assets/*`, for faster re-crawl pickup of edited pages
+- `<lastmod>` on all 3 `sitemap.xml` entries
+
+### Changed
+- Homepage H1 now carries real keywords (`Fast, Lightweight WYSIWYG Editor for Vanilla JavaScript`) instead of a keyword-free tagline
+- `<main>` landmark widened on the homepage to wrap all marketing content (hero, features, demo, quick-start, FAQ) instead of just the demo widget; added the missing `<main>` on the playground page
+- Playground's crawler-fallback copy now includes "rich text editor" alongside "WYSIWYG editor"; its footer gained a Home link for nav consistency with the other pages
+- Header logo images across all 3 demo pages now have descriptive alt text
+
+---
+
 ## [1.11.1] - 2026-07-07
 
 ### Security
