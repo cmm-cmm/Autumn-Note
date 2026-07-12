@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.13.0] - 2026-07-12
+
+### Added
+- Vietnamese localization of the live demo site (`demo/vi/index.html`, `demo/vi/docs.html`, `demo/vi/playground.html`) — full translations of the marketing copy, homepage FAQ, and API reference prose, with code samples, option/parameter names, and type signatures left in English per standard technical-docs convention
+- `hreflang` alternate links (`en`/`vi`/`x-default`) and a language switcher (`EN` / `VI`) in the header nav on all 6 pages
+- `og:locale`, `twitter:url`, and `apple-touch-icon` meta tags on all 3 English pages
+- A proper 1200×630 OG/Twitter banner image, replacing the previous 512×512 square logo
+
+### Fixed
+- 21 instances of mangled UTF-8 (`—`, `→`, `✓`) plus 5 resulting broken HTML closing tags in `docs.html`, left over from an earlier encoding corruption
+- A duplicate `id="tab-stats"` HTML attribute in `playground.html`
+- `sonar.cpd.exclusions` glob pattern in `sonar-project.properties`, which previously only matched HTML files in the repo root and never applied to any file under `demo/`
+
+### Changed
+- Extracted each page's shared `<style>` block into `demo/assets/*.css`, linked from both the English and Vietnamese version of each page, instead of duplicating ~13KB of inline CSS per locale pair
+
+---
+
 ## [1.12.0] - 2026-07-08
 
 ### Added
