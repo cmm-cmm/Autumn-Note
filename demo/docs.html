@@ -10,23 +10,28 @@
   <meta name="author" content="Minh Pham" />
   <link rel="canonical" href="https://autumn.konexforge.com/docs.html" />
   <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+  <link rel="alternate" hreflang="en" href="https://autumn.konexforge.com/docs.html" />
+  <link rel="alternate" hreflang="vi" href="https://autumn.konexforge.com/vi/docs.html" />
+  <link rel="alternate" hreflang="x-default" href="https://autumn.konexforge.com/docs.html" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="AutumnNote — API Reference" />
   <meta property="og:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor. Options, methods, events, plugins, and toolbar configuration." />
   <meta property="og:url" content="https://autumn.konexforge.com/docs.html" />
-  <meta property="og:image" content="https://autumn.konexforge.com/image/banner.png" />
-  <meta property="og:image:width" content="512" />
-  <meta property="og:image:height" content="512" />
+  <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="AutumnNote — WYSIWYG editor banner" />
   <meta property="og:site_name" content="AutumnNote" />
+  <meta property="og:locale" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://autumn.konexforge.com/docs.html" />
   <meta name="twitter:title" content="AutumnNote — API Reference" />
   <meta name="twitter:description" content="Complete API reference for AutumnNote — the zero-dependency vanilla JS WYSIWYG editor." />
-  <meta name="twitter:image" content="https://autumn.konexforge.com/image/banner.png" />
+  <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
   <script type="application/ld+json">
@@ -39,6 +44,7 @@
     "datePublished": "2026-01-01",
     "dateModified": "2026-06-30",
     "keywords": "wysiwyg editor api, autumnnote options, plugin api, toolbar configuration, typescript",
+    "inLanguage": "en",
     "author": { "@type": "Person", "name": "Minh Pham" },
     "isPartOf": { "@id": "https://autumn.konexforge.com/#software" },
     "articleSection": ["Installation", "Options", "Static Methods", "Instance Methods", "Callbacks", "Toolbar Configuration", "Plugin API", "TypeScript"]
@@ -46,6 +52,7 @@
   </script>
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="/image/banner.png" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" />
@@ -90,6 +97,17 @@
     }
     .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
     .nav-link.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .lang-switch {
+      display: flex; align-items: center; gap: 2px;
+      margin-left: 6px; padding-left: 10px;
+      border-left: 1px solid rgba(255,255,255,.15);
+    }
+    .lang-switch a {
+      color: #a8a29e; font-size: 12px; font-weight: 600;
+      padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s;
+    }
+    .lang-switch a:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .lang-switch a.active { color: #fb923c; background: rgba(232,117,26,.15); }
 
     /* ── Layout ── */
     .docs-layout {
@@ -274,6 +292,10 @@
       <a class="nav-link" href="playground.html">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+      <span class="lang-switch" aria-label="Language">
+        <a href="./docs.html" class="active" lang="en" hreflang="en">EN</a>
+        <a href="/vi/docs.html" lang="vi" hreflang="vi">VI</a>
+      </span>
     </nav>
   </div>
 </header>
@@ -343,7 +365,7 @@
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-bash">npm install autumnnote</code></pre>
       </div>
-      <p class="docs-p">Or use the CDN  Eno build step needed:</p>
+      <p class="docs-p">Or use the CDN — no build step needed:</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
@@ -521,7 +543,7 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">maxChars</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Max character count. <code>0</code> = unlimited. Shows warning in statusbar near limit.</td></tr>
             <tr><td class="opt-name">maxWords</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Max word count. <code>0</code> = unlimited.</td></tr>
             <tr><td class="opt-name">historyLimit</td><td class="opt-type">number</td><td class="opt-default">100</td><td class="opt-desc">Maximum undo/redo history steps.</td></tr>
-            <tr><td class="opt-name">pasteAsPlainText</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Force plain-text paste  Estrip all HTML.</td></tr>
+            <tr><td class="opt-name">pasteAsPlainText</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Force plain-text paste — strip all HTML.</td></tr>
             <tr><td class="opt-name">pasteCleanHTML</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Sanitise HTML on paste (removes scripts, event handlers, etc.).</td></tr>
             <tr><td class="opt-name">pasteStripAttributes</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Strip <code>class</code>, <code>style</code>, and <code>data-*</code> attributes from pasted HTML.</td></tr>
             <tr><td class="opt-name">markdownPaste</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Convert pasted Markdown to HTML.</td></tr>
@@ -572,7 +594,7 @@ editor.destroy(); // clean up when done</code></pre>
       <p class="docs-p">Methods on the <code>AutumnNote</code> object itself (not on an editor instance).</p>
 
       <h3 class="method-h"><code>AutumnNote.create(selector, options?)</code></h3>
-      <p class="docs-p">Creates one or more editor instances. Returns a single <code>Context</code> when <code>selector</code> matches one element, or an array when it matches several. Caches instances in a <code>WeakMap</code>  Ecalling <code>create</code> on the same element twice returns the cached instance.</p>
+      <p class="docs-p">Creates one or more editor instances. Returns a single <code>Context</code> when <code>selector</code> matches one element, or an array when it matches several. Caches instances in a <code>WeakMap</code> — calling <code>create</code> on the same element twice returns the cached instance.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">const editor = AutumnNote.create('#my-editor', {
   height: 350,
@@ -589,7 +611,7 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
       <p class="docs-p">Returns the <code>Context</code> for a given element, or <code>null</code> if none exists.</p>
 
       <h3 class="method-h"><code>AutumnNote.setDefaults(options)</code></h3>
-      <p class="docs-p">Merges options into the global defaults  Eapplied to every future <code>create()</code> call.</p>
+      <p class="docs-p">Merges options into the global defaults — applied to every future <code>create()</code> call.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">AutumnNote.setDefaults({
   theme: 'dark',
@@ -741,7 +763,7 @@ editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
     <!-- ── Toolbar ── -->
     <section class="docs-section" id="toolbar" aria-label="Toolbar">
       <h2 class="section-h">Toolbar Configuration</h2>
-      <p class="docs-p">The <code>toolbar</code> option is a 2D array  Eeach inner array is a button group (separated by a divider). Items can be <code>ButtonDef</code> objects imported from the library, or string names of registered buttons.</p>
+      <p class="docs-p">The <code>toolbar</code> option is a 2D array — each inner array is a button group (separated by a divider). Items can be <code>ButtonDef</code> objects imported from the library, or string names of registered buttons.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">import AutumnNote, {
   boldBtn, italicBtn, underlineBtn,
@@ -860,7 +882,7 @@ AutumnNote.create('#editor', {
     <!-- ── Plugin API ── -->
     <section class="docs-section" id="plugin-api" aria-label="Plugin API">
       <h2 class="section-h">Plugin API <span class="badge">v1.4.1</span></h2>
-      <p class="docs-p">The Plugin API lets you package editor extensions  Ecustom modules, toolbar buttons, and event handlers  Einto a reusable, installable object. Plugins can be distributed as npm packages and installed in one line.</p>
+      <p class="docs-p">The Plugin API lets you package editor extensions — custom modules, toolbar buttons, and event handlers — into a reusable, installable object. Plugins can be distributed as npm packages and installed in one line.</p>
 
       <!-- Plugin descriptor -->
       <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Plugin descriptor</h3>
@@ -870,11 +892,11 @@ AutumnNote.create('#editor', {
         <table class="docs-table">
           <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td class="opt-name">name</td><td class="opt-type">string</td><td>✁E/td><td class="opt-desc">Unique plugin identifier. Used as key for <code>getPlugin(name)</code> and <code>hasPlugin(name)</code>.</td></tr>
-            <tr><td class="opt-name">version</td><td class="opt-type">string</td><td> E/td><td class="opt-desc">Semantic version string  Einformational only, not validated by the runtime.</td></tr>
-            <tr><td class="opt-name">buttons</td><td class="opt-type">ToolbarItemDef[]</td><td> E/td><td class="opt-desc">Button definitions registered to the global button registry <em>immediately</em> when <code>AutumnNote.use()</code> is called  Ebefore any editor is created, so they are available by name string in toolbar config.</td></tr>
-            <tr><td class="opt-name">install</td><td class="opt-type">(ctx, opts) ↁET</td><td> E/td><td class="opt-desc">Called after all 27 built-in modules have initialised. Receives the <code>Context</code> and the options object passed to <code>use()</code>. The return value becomes the plugin's public API accessible via <code>ctx.getPlugin(name)</code>.</td></tr>
-            <tr><td class="opt-name">uninstall</td><td class="opt-type">(ctx) ↁEvoid</td><td> E/td><td class="opt-desc">Called when the editor instance is destroyed. Use this to release timers, remove external DOM, or disconnect external state.</td></tr>
+            <tr><td class="opt-name">name</td><td class="opt-type">string</td><td>✓</td><td class="opt-desc">Unique plugin identifier. Used as key for <code>getPlugin(name)</code> and <code>hasPlugin(name)</code>.</td></tr>
+            <tr><td class="opt-name">version</td><td class="opt-type">string</td><td>—</td><td class="opt-desc">Semantic version string — informational only, not validated by the runtime.</td></tr>
+            <tr><td class="opt-name">buttons</td><td class="opt-type">ToolbarItemDef[]</td><td>—</td><td class="opt-desc">Button definitions registered to the global button registry <em>immediately</em> when <code>AutumnNote.use()</code> is called — before any editor is created, so they are available by name string in toolbar config.</td></tr>
+            <tr><td class="opt-name">install</td><td class="opt-type">(ctx, opts) → T</td><td>—</td><td class="opt-desc">Called after all 27 built-in modules have initialised. Receives the <code>Context</code> and the options object passed to <code>use()</code>. The return value becomes the plugin's public API accessible via <code>ctx.getPlugin(name)</code>.</td></tr>
+            <tr><td class="opt-name">uninstall</td><td class="opt-type">(ctx) → void</td><td>—</td><td class="opt-desc">Called when the editor instance is destroyed. Use this to release timers, remove external DOM, or disconnect external state.</td></tr>
           </tbody>
         </table>
       </div>
@@ -884,7 +906,7 @@ AutumnNote.create('#editor', {
   name: 'my-plugin',   // required
   version: '1.0.0',   // optional
 
-  buttons: [           // registered BEFORE create()  Eusable by name in toolbar
+  buttons: [           // registered BEFORE create() — usable by name in toolbar
     {
       name: 'highlight',
       icon: 'highlighter',          // SVG id or FontAwesome class suffix
@@ -896,7 +918,7 @@ AutumnNote.create('#editor', {
   ],
 
   install(context, options) {
-    // Full context API available here  Eall modules are ready
+    // Full context API available here — all modules are ready
     context.on('change', (html) =&gt; { /* react to content changes */ });
     context.registerModule('myModule', MyModule);
     return { getLimit: () =&gt; options.limit ?? 0 }; // public API
@@ -914,15 +936,15 @@ AutumnNote.create('#editor', {
 
       <h3 class="method-h" style="margin-top:16px">Event subscription</h3>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-js">// Subscribe  Ereturns an unsubscribe function
+        <pre><code class="language-js">// Subscribe — returns an unsubscribe function
 const unsub = context.on('change', (html) =&gt; {
   console.log('word count:', context.getWordCount());
 });
 
 // Available event names:
-// 'change'           Econtent changed (debounced ~400 ms)
-// 'focus'            Eeditor gained focus
-// 'blur'             Eeditor lost focus
+// 'change'          — content changed (debounced ~400 ms)
+// 'focus'           — editor gained focus
+// 'blur'            — editor lost focus
 
 // Unsubscribe in uninstall() to avoid leaks
 uninstall(ctx) { unsub(); }</code></pre>
@@ -978,7 +1000,7 @@ uninstall(ctx) { unsub(); }</code></pre>
     return this;
   }
 
-  // Public method  Ecallable via ctx.invoke('wordBadge.getCount')
+  // Public method — callable via ctx.invoke('wordBadge.getCount')
   getCount() {
     return this.context.getWordCount();
   }
@@ -999,7 +1021,7 @@ uninstall(ctx) { unsub(); }</code></pre>
 install(context) {
   context.registerModule('wordBadge', WordBadgeModule);
   // Now callable anywhere:
-  context.invoke('wordBadge.getCount'); // ↁEnumber
+  context.invoke('wordBadge.getCount'); // → number
 }</code></pre>
       </div>
 
@@ -1008,13 +1030,13 @@ install(context) {
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">// ── Global (applies to every future create() call) ─────────────────────────
 AutumnNote.use(MyPlugin, { limit: 500 });
-AutumnNote.hasPlugin('my-plugin'); // ↁEtrue
+AutumnNote.hasPlugin('my-plugin'); // → true
 
 const editor = AutumnNote.create('#editor', {
   toolbar: [[boldBtn, 'highlight']], // 'highlight' resolved from plugin.buttons
 });
 
-editor.getPlugin('my-plugin').getLimit(); // ↁE500
+editor.getPlugin('my-plugin').getLimit(); // → 500
 
 // ── Per-instance (this editor only) ────────────────────────────────────────
 const editor2 = AutumnNote.create('#editor2');
@@ -1033,7 +1055,7 @@ AutumnNote.registerButton({
       </div>
 
       <div class="callout">
-        <strong>Timing:</strong> <code>AutumnNote.use(plugin)</code> registers <code>plugin.buttons</code> <em>immediately</em> (synchronously) so they are available when Toolbar builds during <code>create()</code>. <code>plugin.install()</code> is called <em>after</em> all 27 built-in modules are ready  Esafe to call <code>ctx.invoke()</code>, <code>ctx.registerModule()</code>, and any content methods.
+        <strong>Timing:</strong> <code>AutumnNote.use(plugin)</code> registers <code>plugin.buttons</code> <em>immediately</em> (synchronously) so they are available when Toolbar builds during <code>create()</code>. <code>plugin.install()</code> is called <em>after</em> all 27 built-in modules are ready — safe to call <code>ctx.invoke()</code>, <code>ctx.registerModule()</code>, and any content methods.
       </div>
     </section>
 
@@ -1125,7 +1147,7 @@ function copyCode(btn) {
   const code = btn.nextElementSibling.textContent;
   navigator.clipboard.writeText(code).then(() => {
     const orig = btn.textContent;
-    btn.textContent = '✁ECopied';
+    btn.textContent = '✓ Copied';
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }).catch(() => {});
 }
