@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutumnNote — Tài liệu API | WYSIWYG Editor Docs</title>
+  <meta name="description" content="Tài liệu API đầy đủ cho trình soạn thảo WYSIWYG AutumnNote. Tùy chọn, phương thức, sự kiện, cấu hình toolbar, Plugin API, và kiểu TypeScript." />
+  <meta name="keywords" content="wysiwyg api, rich text editor api, tùy chọn autumnnote, contenteditable api, cấu hình toolbar, plugin api, typescript types" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Minh Pham" />
+  <link rel="canonical" href="https://autumn.konexforge.com/vi/docs.html" />
+  <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+  <link rel="alternate" hreflang="en" href="https://autumn.konexforge.com/docs.html" />
+  <link rel="alternate" hreflang="vi" href="https://autumn.konexforge.com/vi/docs.html" />
+  <link rel="alternate" hreflang="x-default" href="https://autumn.konexforge.com/docs.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AutumnNote — Tài liệu API" />
+  <meta property="og:description" content="Tài liệu API đầy đủ cho AutumnNote — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Tùy chọn, phương thức, sự kiện, plugin, và cấu hình toolbar." />
+  <meta property="og:url" content="https://autumn.konexforge.com/vi/docs.html" />
+  <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="AutumnNote — banner trình soạn thảo WYSIWYG" />
+  <meta property="og:site_name" content="AutumnNote" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:locale:alternate" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://autumn.konexforge.com/vi/docs.html" />
+  <meta name="twitter:title" content="AutumnNote — Tài liệu API" />
+  <meta name="twitter:description" content="Tài liệu API đầy đủ cho AutumnNote — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
+  <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "name": "Tài liệu API AutumnNote",
+    "description": "Tài liệu API đầy đủ cho AutumnNote — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Bao gồm tất cả tùy chọn, phương thức tĩnh, phương thức instance, sự kiện, cấu hình toolbar, Plugin API, và kiểu TypeScript.",
+    "url": "https://autumn.konexforge.com/docs.html",
+    "datePublished": "2026-01-01",
+    "dateModified": "2026-07-11",
+    "keywords": "wysiwyg editor api, tùy chọn autumnnote, plugin api, cấu hình toolbar, typescript",
+    "inLanguage": "vi",
+    "author": { "@type": "Person", "name": "Minh Pham" },
+    "isPartOf": { "@id": "https://autumn.konexforge.com/#software" },
+    "articleSection": ["Installation", "Options", "Static Methods", "Instance Methods", "Callbacks", "Toolbar Configuration", "Plugin API", "TypeScript"]
+  }
+  </script>
+
+  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="/image/banner.png" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" />
+  <link rel="stylesheet" crossorigin href="/assets/docs-BkwJPq7w.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="./" aria-label="Trang chủ AutumnNote">
+      <img src="/image/banner.png" width="26" height="26" alt="" />
+      <span class="brand-name">AutumnNote</span>
+      <span class="brand-version">v1.12.0</span>
+    </a>
+    <nav class="header-nav" aria-label="Liên kết trang">
+      <a class="nav-link" href="./">Trang chủ</a>
+      <a class="nav-link active" href="docs.html" aria-current="page">Tài liệu</a>
+      <a class="nav-link" href="playground.html">Playground</a>
+      <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+      <span class="lang-switch" aria-label="Ngôn ngữ">
+        <a href="/docs.html" lang="en" hreflang="en">EN</a>
+        <a href="./docs.html" class="active" lang="vi" hreflang="vi">VI</a>
+      </span>
+    </nav>
+  </div>
+</header>
+
+<div class="docs-layout">
+  <!-- Sidebar -->
+  <aside class="docs-sidebar" aria-label="Điều hướng tài liệu">
+    <div class="sidebar-search">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Tìm kiếm…" id="sidebar-search" oninput="filterSidebar(this.value)" />
+    </div>
+
+    <nav id="sidebar-nav" aria-label="Điều hướng tài liệu">
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Bắt đầu</div>
+        <a class="sidebar-link" href="#installation">Cài đặt</a>
+        <a class="sidebar-link" href="#framework-wrappers">Framework Wrapper</a>
+        <a class="sidebar-link sub" href="#framework-wrappers">↳ React</a>
+        <a class="sidebar-link sub" href="#framework-wrappers">↳ Vue 3</a>
+        <a class="sidebar-link" href="#quick-start">Bắt đầu nhanh</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Cấu hình</div>
+        <a class="sidebar-link" href="#options">Tất cả tùy chọn</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">API</div>
+        <a class="sidebar-link" href="#static-api">Phương thức tĩnh</a>
+        <a class="sidebar-link" href="#instance-api">Phương thức Instance</a>
+        <a class="sidebar-link sub" href="#content-api">↳ Nội dung</a>
+        <a class="sidebar-link sub" href="#state-api">↳ Trạng thái &amp; Thông tin</a>
+        <a class="sidebar-link sub" href="#events-api">↳ Sự kiện</a>
+        <a class="sidebar-link sub" href="#plugin-instance">↳ Plugin</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Tính năng</div>
+        <a class="sidebar-link" href="#whats-new">Có gì mới v1.8.0</a>
+        <a class="sidebar-link" href="#events">Callback &amp; Sự kiện</a>
+        <a class="sidebar-link" href="#toolbar">Toolbar</a>
+        <a class="sidebar-link" href="#plugin-api">Plugin API</a>
+        <a class="sidebar-link sub" href="#plugin-api">↳ Trường mô tả</a>
+        <a class="sidebar-link sub" href="#plugin-api">↳ API context của install()</a>
+        <a class="sidebar-link sub" href="#plugin-api">↳ Đường dẫn invoke()</a>
+        <a class="sidebar-link sub" href="#plugin-api">↳ Module tùy chỉnh</a>
+        <a class="sidebar-link" href="#i18n">i18n</a>
+        <a class="sidebar-link" href="#typescript">TypeScript</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Tài nguyên</div>
+        <a class="sidebar-link" href="playground.html">Playground</a>
+        <a class="sidebar-link" href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="docs-main" id="docs-main">
+
+    <h1 class="page-title">Tài liệu API</h1>
+    <p class="page-sub">AutumnNote v1.12.0 — Nhanh. Nhẹ. Đáng tin cậy. Hiệu quả.</p>
+
+    <!-- ── Installation ── -->
+    <section class="docs-section" id="installation" aria-label="Cài đặt">
+      <h2 class="section-h">Cài đặt</h2>
+      <p class="docs-p">Cài đặt qua npm (hoặc pnpm / yarn):</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-bash">npm install autumnnote</code></pre>
+      </div>
+      <p class="docs-p">Hoặc dùng CDN — không cần bước build:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;</code></pre>
+      </div>
+    </section>
+
+    <!-- ── Framework Wrappers ── -->
+    <section class="docs-section" id="framework-wrappers" aria-label="Framework Wrapper">
+      <h2 class="section-h">Framework Wrapper <span class="badge">v1.6.0</span></h2>
+      <p class="docs-p">
+        Wrapper React và Vue 3 chính thức được phát hành dưới dạng các package riêng trong cùng pnpm workspace.
+        Mỗi wrapper là một lớp cầu nối lifecycle mỏng — nó mount một instance editor lên phần tử host và
+        expose object <code>Context</code> cho component cha thông qua <code>ref</code>.
+      </p>
+
+      <h3 class="method-h">React — <code>autumnnote-react</code></h3>
+      <p class="docs-p">Cài đặt wrapper cùng với core:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-bash">npm install autumnnote autumnnote-react</code></pre>
+      </div>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-jsx">import { useRef } from 'react';
+import AutumnNoteEditor from 'autumnnote-react';
+import 'autumnnote/dist/autumnnote.css';
+
+function MyEditor() {
+  const editorRef = useRef(null);
+
+  function handleSave() {
+    const html = editorRef.current.getHTML();
+    console.log(html);
+  }
+
+  return (
+    &lt;&gt;
+      &lt;AutumnNoteEditor
+        ref={editorRef}
+        options={{
+          placeholder: 'Bắt đầu gõ…',
+          height: 300,
+          bubbleToolbar: true,
+          onChange: (html) => console.log(html),
+        }}
+      /&gt;
+      &lt;button onClick={handleSave}&gt;Lưu&lt;/button&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+      </div>
+      <p class="docs-p">
+        Component sử dụng <code>forwardRef</code> + <code>useImperativeHandle</code> để expose
+        instance <code>Context</code> bên dưới. Tất cả <a href="#instance-api">phương thức instance</a>
+        (<code>getHTML</code>, <code>setHTML</code>, <code>invoke</code>, v.v.) đều truy cập được qua ref.
+        Editor khởi tạo một lần khi mount; để khởi tạo lại với tùy chọn mới, truyền một prop <code>key</code> mới.
+      </p>
+      <p class="docs-p"><strong>Props:</strong></p>
+      <table class="opts-table">
+        <thead><tr><th>Prop</th><th>Kiểu</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td class="opt-name">options</td><td class="opt-type">AsnOptions</td><td class="opt-desc">Object cấu hình editor. Tất cả trường <a href="#options">AsnOptions</a> đều được chấp nhận.</td></tr>
+          <tr><td class="opt-name">className</td><td class="opt-type">string</td><td class="opt-desc">CSS class áp dụng cho <code>&lt;div&gt;</code> container.</td></tr>
+          <tr><td class="opt-name">style</td><td class="opt-type">CSSProperties</td><td class="opt-desc">Style inline áp dụng cho <code>&lt;div&gt;</code> container.</td></tr>
+          <tr><td class="opt-name">ref</td><td class="opt-type">React.Ref&lt;Context&gt;</td><td class="opt-desc">Forwarded ref — expose instance <code>Context</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="method-h">Vue 3 — <code>autumnnote-vue</code></h3>
+      <p class="docs-p">Cài đặt wrapper cùng với core:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-bash">npm install autumnnote autumnnote-vue</code></pre>
+      </div>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-vue">&lt;script setup&gt;
+import { ref } from 'vue';
+import AutumnNoteEditor from 'autumnnote-vue';
+import 'autumnnote/dist/autumnnote.css';
+
+const editorRef = ref(null);
+
+function handleSave() {
+  const html = editorRef.value.editor.value.getHTML();
+  console.log(html);
+}
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;AutumnNoteEditor
+    ref="editorRef"
+    :options="{ placeholder: 'Bắt đầu gõ…', height: 300 }"
+  /&gt;
+  &lt;button @click="handleSave"&gt;Lưu&lt;/button&gt;
+&lt;/template&gt;</code></pre>
+      </div>
+      <p class="docs-p">
+        Component sử dụng <code>defineExpose({ editor })</code> trong đó <code>editor</code> là một
+        Vue <code>ref&lt;Context | null&gt;</code>. Truy cập instance qua
+        <code>editorRef.value.editor.value</code>. Editor được tạo trong <code>onMounted</code>
+        và hủy trong <code>onUnmounted</code>. Dùng <code>v-if</code> để buộc remount khi tùy chọn thay đổi.
+      </p>
+      <p class="docs-p"><strong>Props:</strong></p>
+      <table class="opts-table">
+        <thead><tr><th>Prop</th><th>Kiểu</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td class="opt-name">options</td><td class="opt-type">AsnOptions</td><td class="opt-desc">Object cấu hình editor. Tất cả trường <a href="#options">AsnOptions</a> đều được chấp nhận.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── Quick Start ── -->
+    <section class="docs-section" id="quick-start" aria-label="Bắt đầu nhanh">
+      <h2 class="section-h">Bắt đầu nhanh</h2>
+      <p class="docs-p">Bọc bất kỳ <code>&lt;textarea&gt;</code> hoặc <code>&lt;div&gt;</code> nào trong HTML của bạn:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">import AutumnNote from 'autumnnote';
+import 'autumnnote/dist/autumnnote.css';
+
+const editor = AutumnNote.create('#editor', {
+  placeholder: 'Bắt đầu gõ…',
+  height: 300,
+  bubbleToolbar: true,
+  onChange(html) {
+    console.log('content changed:', html);
+  },
+});</code></pre>
+      </div>
+      <p class="docs-p">Lấy và đặt nội dung:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">editor.setHTML('&lt;p&gt;Hello &lt;strong&gt;world&lt;/strong&gt;&lt;/p&gt;');
+const html = editor.getHTML();
+const markdown = editor.getMarkdown();
+editor.destroy(); // clean up when done</code></pre>
+      </div>
+    </section>
+
+    <!-- ── Options ── -->
+    <section class="docs-section" id="options" aria-label="Tùy chọn">
+      <h2 class="section-h">Tất cả tùy chọn <span class="badge">50+ tùy chọn</span></h2>
+      <p class="docs-p">Truyền các tùy chọn này vào <code>AutumnNote.create(selector, options)</code> hoặc <code>AutumnNote.setDefaults(options)</code>.</p>
+
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr><th>Tùy chọn</th><th>Kiểu</th><th>Mặc định</th><th>Mô tả</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="opt-name">placeholder</td><td class="opt-type">string</td><td class="opt-default">''</td><td class="opt-desc">Văn bản placeholder khi editor rỗng.</td></tr>
+            <tr><td class="opt-name">height</td><td class="opt-type">number</td><td class="opt-default">200</td><td class="opt-desc">Chiều cao tối thiểu của editor (px).</td></tr>
+            <tr><td class="opt-name">minHeight</td><td class="opt-type">number</td><td class="opt-default">100</td><td class="opt-desc">Chiều cao tối thiểu của vùng soạn thảo.</td></tr>
+            <tr><td class="opt-name">maxHeight</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Chiều cao tối đa (px). <code>0</code> = không giới hạn.</td></tr>
+            <tr><td class="opt-name">focus</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Tự động focus editor khi khởi tạo.</td></tr>
+            <tr><td class="opt-name">resizable</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Hiện tay cầm kéo trong statusbar để thay đổi kích thước editor.</td></tr>
+            <tr><td class="opt-name">readOnly</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Bắt đầu ở chế độ chỉ đọc (không chỉnh sửa). Bật/tắt lúc runtime bằng <code>setDisabled()</code>.</td></tr>
+            <tr><td class="opt-name">spellcheck</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Bật kiểm tra chính tả của trình duyệt.</td></tr>
+            <tr><td class="opt-name">toolbar</td><td class="opt-type">Array&lt;Array&lt;…&gt;&gt;</td><td class="opt-default">defaultToolbar</td><td class="opt-desc">Mảng 2 chiều gồm các nhóm nút. Mỗi phần tử là object <code>ButtonDef</code> hoặc tên chuỗi của một nút đã đăng ký.</td></tr>
+            <tr><td class="opt-name">stickyToolbar</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Dính toolbar vào đầu viewport khi cuộn trang.</td></tr>
+            <tr><td class="opt-name">stickyToolbarOffset</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Khoảng cách từ trên (px) cho toolbar dính (ví dụ: chiều cao thanh nav cố định).</td></tr>
+            <tr><td class="opt-name">toolbarOverflow</td><td class="opt-type">'wrap' | 'scroll'</td><td class="opt-default">'wrap'</td><td class="opt-desc">Chiến lược tràn toolbar khi các nút không vừa một hàng.</td></tr>
+            <tr><td class="opt-name">bubbleToolbar</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Hiện thanh công cụ nổi nhỏ phía trên văn bản được chọn.</td></tr>
+            <tr><td class="opt-name">bubbleToolbarItems</td><td class="opt-type">string[]</td><td class="opt-default">xem bên dưới</td><td class="opt-desc">Tên các nút trong thanh công cụ nổi. Mặc định: <code>['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']</code>.</td></tr>
+            <tr><td class="opt-name">theme</td><td class="opt-type">'light' | 'dark'</td><td class="opt-default">'light'</td><td class="opt-desc">Giao diện màu. Dùng <code>'dark'</code> hoặc bật/tắt qua <code>container.classList.add('an-theme-dark')</code>.</td></tr>
+            <tr><td class="opt-name">focusColor</td><td class="opt-type">string | null</td><td class="opt-default">null</td><td class="opt-desc">Màu viền focus tùy chỉnh (ví dụ: <code>'#f97316'</code>).</td></tr>
+            <tr><td class="opt-name">direction</td><td class="opt-type">'ltr' | 'rtl'</td><td class="opt-default">'ltr'</td><td class="opt-desc">Hướng văn bản cho vùng soạn thảo.</td></tr>
+            <tr><td class="opt-name">defaultFontFamily</td><td class="opt-type">string</td><td class="opt-default">'Arial'</td><td class="opt-desc">Font mặc định áp dụng cho editor khi khởi tạo.</td></tr>
+            <tr><td class="opt-name">defaultFontSize</td><td class="opt-type">string</td><td class="opt-default">'14px'</td><td class="opt-desc">Cỡ chữ mặc định.</td></tr>
+            <tr><td class="opt-name">fontFamilies</td><td class="opt-type">string[]</td><td class="opt-default">10 font</td><td class="opt-desc">Các tùy chọn hiển thị trong dropdown chọn font.</td></tr>
+            <tr><td class="opt-name">colorSwatches</td><td class="opt-type">string[]</td><td class="opt-default">[]</td><td class="opt-desc">Các mã màu hex tùy chỉnh thêm vào đầu mọi color picker.</td></tr>
+            <tr><td class="opt-name">tabSize</td><td class="opt-type">number</td><td class="opt-default">4</td><td class="opt-desc">Số khoảng trắng chèn vào mỗi lần nhấn Tab (trong khối mã).</td></tr>
+            <tr><td class="opt-name">maxChars</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Số ký tự tối đa. <code>0</code> = không giới hạn. Hiện cảnh báo trong statusbar khi gần đạt giới hạn.</td></tr>
+            <tr><td class="opt-name">maxWords</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Số từ tối đa. <code>0</code> = không giới hạn.</td></tr>
+            <tr><td class="opt-name">historyLimit</td><td class="opt-type">number</td><td class="opt-default">100</td><td class="opt-desc">Số bước tối đa trong lịch sử hoàn tác/làm lại.</td></tr>
+            <tr><td class="opt-name">pasteAsPlainText</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Ép paste dạng văn bản thuần — loại bỏ toàn bộ HTML.</td></tr>
+            <tr><td class="opt-name">pasteCleanHTML</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Làm sạch HTML khi paste (loại bỏ script, event handler, v.v.).</td></tr>
+            <tr><td class="opt-name">pasteStripAttributes</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Loại bỏ thuộc tính <code>class</code>, <code>style</code>, và <code>data-*</code> khỏi HTML được paste.</td></tr>
+            <tr><td class="opt-name">markdownPaste</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Chuyển đổi Markdown được paste thành HTML.</td></tr>
+            <tr><td class="opt-name">markdownShortcuts</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Kích hoạt Markdown nội dòng: <code>**bold**</code>, <code>## heading</code>, <code>- item</code>, v.v.</td></tr>
+            <tr><td class="opt-name">allowImageUpload</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Cho phép tải file lên trong hộp thoại chèn ảnh.</td></tr>
+            <tr><td class="opt-name">maxImageSize</td><td class="opt-type">number</td><td class="opt-default">5</td><td class="opt-desc">Kích thước tối đa của ảnh tải lên (MB).</td></tr>
+            <tr><td class="opt-name">codeHighlight</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Tự động tải Prism.js để tô sáng cú pháp trong khối mã.</td></tr>
+            <tr><td class="opt-name">codeHighlightCDN</td><td class="opt-type">string</td><td class="opt-default">Prism 1.29 CDN</td><td class="opt-desc">URL gốc CDN của Prism (ghi đè để tự host).</td></tr>
+            <tr><td class="opt-name">autoSave</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Lưu nội dung vào <code>localStorage</code> mỗi khi thay đổi.</td></tr>
+            <tr><td class="opt-name">autoSaveKey</td><td class="opt-type">string</td><td class="opt-default">'autumnnote-autosave'</td><td class="opt-desc">Key <code>localStorage</code> cho auto-save.</td></tr>
+            <tr><td class="opt-name">autoSaveRestore</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Hiện banner khôi phục khi có bản nháp (yêu cầu <code>autoSave: true</code>).</td></tr>
+            <tr><td class="opt-name">autoSaveRestoreTimeout</td><td class="opt-type">number</td><td class="opt-default">7</td><td class="opt-desc">Tuổi bản nháp tối đa (ngày) để khôi phục. <code>0</code> = không hết hạn.</td></tr>
+            <tr><td class="opt-name">useBootstrap</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Áp dụng class nút Bootstrap cho các nút toolbar.</td></tr>
+            <tr><td class="opt-name">useFontAwesome</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Hiển thị icon toolbar dạng Font Awesome glyph (yêu cầu CSS FA).</td></tr>
+            <tr><td class="opt-name">fontAwesomeClass</td><td class="opt-type">string</td><td class="opt-default">'fas'</td><td class="opt-desc">Class prefix FA (<code>'fas'</code> cho v5, <code>'fa-solid'</code> cho v6).</td></tr>
+            <tr><td class="opt-name">tableHeaderRow</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Chèn dòng <code>&lt;thead&gt;</code> khi tạo bảng.</td></tr>
+            <tr><td class="opt-name">mention</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Cấu hình tự động gợi ý @mention. Xem <a href="#mention-options">tùy chọn mention</a>.</td></tr>
+            <tr><td class="opt-name">lang</td><td class="opt-type">string | object</td><td class="opt-default">'en'</td><td class="opt-desc">Ngôn ngữ giao diện. Có sẵn: <code>'en'</code> <code>'vi'</code> <code>'ja'</code> <code>'zh'</code> <code>'fr'</code> <code>'de'</code> <code>'es'</code> <code>'ko'</code>. Truyền một object để ghi đè từng chuỗi riêng lẻ.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="callbacks-table" style="font-size:14px;font-weight:700;color:#111827;margin:24px 0 8px">Tùy chọn callback</h3>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead><tr><th>Tùy chọn</th><th>Signature</th><th>Mô tả</th></tr></thead>
+          <tbody>
+            <tr><td class="opt-name">onChange</td><td class="opt-type"><code>(html: string) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi nội dung thay đổi (có debounce).</td></tr>
+            <tr><td class="opt-name">onFocus</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi editor nhận focus.</td></tr>
+            <tr><td class="opt-name">onBlur</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi editor mất focus.</td></tr>
+            <tr><td class="opt-name">onInit</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt sau khi tất cả module đã khởi tạo xong.</td></tr>
+            <tr><td class="opt-name">onDestroy</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt trước khi editor bị hủy.</td></tr>
+            <tr><td class="opt-name">onSelectionChange</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi con trỏ hoặc vùng chọn thay đổi.</td></tr>
+            <tr><td class="opt-name">onPaste</td><td class="opt-type"><code>(data: {text, html}) =&gt; void</code></td><td class="opt-desc">Kích hoạt sau mỗi lần paste.</td></tr>
+            <tr><td class="opt-name">onImageUpload</td><td class="opt-type"><code>(files: File[]) =&gt; void</code></td><td class="opt-desc">Handler tải ảnh tùy chỉnh (thay thế nhúng inline mặc định).</td></tr>
+            <tr><td class="opt-name">onImageError</td><td class="opt-type"><code>(err) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi tải ảnh thất bại.</td></tr>
+            <tr><td class="opt-name">onCharLimitReached</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi đạt <code>maxChars</code>.</td></tr>
+            <tr><td class="opt-name">onWordLimitReached</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi đạt <code>maxWords</code>.</td></tr>
+            <tr><td class="opt-name">onAutoSaveRestore</td><td class="opt-type"><code>(html, ctx) =&gt; void</code></td><td class="opt-desc">Kích hoạt sau khi người dùng khôi phục bản nháp.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Static API ── -->
+    <section class="docs-section" id="static-api" aria-label="Static API">
+      <h2 class="section-h">Phương thức tĩnh</h2>
+      <p class="docs-p">Các phương thức trên chính object <code>AutumnNote</code> (không phải trên instance editor).</p>
+
+      <h3 class="method-h"><code>AutumnNote.create(selector, options?)</code></h3>
+      <p class="docs-p">Tạo một hoặc nhiều instance editor. Trả về một <code>Context</code> đơn khi <code>selector</code> khớp một phần tử, hoặc một mảng khi khớp nhiều phần tử. Lưu cache các instance trong <code>WeakMap</code> — gọi <code>create</code> hai lần trên cùng một phần tử sẽ trả về instance đã cache.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">const editor = AutumnNote.create('#my-editor', {
+  height: 350,
+  bubbleToolbar: true,
+});
+// Multiple elements
+const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
+      </div>
+
+      <h3 class="method-h"><code>AutumnNote.destroy(selector)</code></h3>
+      <p class="docs-p">Hủy tất cả instance editor khớp với <code>selector</code> và khôi phục phần tử gốc.</p>
+
+      <h3 class="method-h"><code>AutumnNote.getInstance(selector)</code></h3>
+      <p class="docs-p">Trả về <code>Context</code> của một phần tử cho trước, hoặc <code>null</code> nếu không có.</p>
+
+      <h3 class="method-h"><code>AutumnNote.setDefaults(options)</code></h3>
+      <p class="docs-p">Gộp các tùy chọn vào mặc định toàn cục — áp dụng cho mọi lần gọi <code>create()</code> tiếp theo.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">AutumnNote.setDefaults({
+  theme: 'dark',
+  bubbleToolbar: true,
+  lang: 'vi',
+});</code></pre>
+      </div>
+
+      <h3 class="method-h"><code>AutumnNote.resetDefaults()</code></h3>
+      <p class="docs-p">Khôi phục mặc định toàn cục về giá trị gốc.</p>
+
+      <h3 class="method-h"><code>AutumnNote.registerModule(name, ModuleClass)</code></h3>
+      <p class="docs-p">Đăng ký một module tùy chỉnh sẽ được đưa vào mọi instance editor tiếp theo. Module nhận object <code>Context</code> trong constructor và phải implement <code>initialize()</code>, tùy chọn <code>destroy()</code>.</p>
+
+      <h3 class="method-h"><code>AutumnNote.use(plugin, options?)</code></h3>
+      <p class="docs-p">Cài đặt một plugin toàn cục. Các <code>buttons</code> của plugin được đăng ký ngay lập tức (trước <code>create()</code>); <code>install()</code> được gọi sau khi tất cả module có sẵn khởi tạo xong. Xem <a href="#plugin-api">Plugin API</a>.</p>
+
+      <h3 class="method-h"><code>AutumnNote.hasPlugin(name)</code></h3>
+      <p class="docs-p">Trả về <code>true</code> nếu một plugin với tên đã cho được đăng ký toàn cục.</p>
+
+      <h3 class="method-h"><code>AutumnNote.registerButton(btnDef)</code></h3>
+      <p class="docs-p">Đăng ký một định nghĩa nút đơn vào registry toàn cục để có thể tham chiếu bằng tên chuỗi trong cấu hình toolbar. Gọi <code>ctx.invoke('toolbar.rebuild')</code> sau khi đăng ký trên một editor đang chạy.</p>
+
+      <h3 class="method-h"><code>AutumnNote.version</code></h3>
+      <p class="docs-p">Chuỗi chứa phiên bản thư viện, ví dụ <code>'1.3.0'</code>.</p>
+    </section>
+
+    <!-- ── Instance API ── -->
+    <section class="docs-section" id="instance-api" aria-label="Instance API">
+      <h2 class="section-h">Phương thức Instance</h2>
+      <p class="docs-p">Các phương thức trên object <code>Context</code> trả về từ <code>AutumnNote.create()</code>.</p>
+
+      <h3 class="method-h" id="content-api">Nội dung</h3>
+
+      <h3 class="method-h"><code>editor.getHTML()</code></h3>
+      <p class="docs-p">Trả về nội dung hiện tại dưới dạng chuỗi HTML.</p>
+
+      <h3 class="method-h"><code>editor.setHTML(html)</code></h3>
+      <p class="docs-p">Đặt nội dung editor. HTML được làm sạch trước khi chèn.</p>
+
+      <h3 class="method-h"><code>editor.getText()</code></h3>
+      <p class="docs-p">Trả về nội dung dạng văn bản thuần (không thẻ HTML).</p>
+
+      <h3 class="method-h"><code>editor.setText(text)</code></h3>
+      <p class="docs-p">Đặt nội dung văn bản thuần (đã escape HTML, bọc trong <code>&lt;p&gt;</code>).</p>
+
+      <h3 class="method-h"><code>editor.getMarkdown()</code></h3>
+      <p class="docs-p">Chuyển nội dung hiện tại sang Markdown và trả về chuỗi.</p>
+
+      <h3 class="method-h"><code>editor.setMarkdown(md)</code></h3>
+      <p class="docs-p">Chuyển Markdown sang HTML và đặt làm nội dung editor.</p>
+
+      <h3 class="method-h"><code>editor.insertHTML(html)</code></h3>
+      <p class="docs-p">Chèn HTML tại vị trí con trỏ hiện tại.</p>
+
+      <h3 class="method-h"><code>editor.insertText(text)</code></h3>
+      <p class="docs-p">Chèn văn bản thuần tại vị trí con trỏ hiện tại.</p>
+
+      <h3 class="method-h"><code>editor.clear()</code></h3>
+      <p class="docs-p">Xóa toàn bộ nội dung editor.</p>
+
+      <h3 class="method-h"><code>editor.clearHistory()</code></h3>
+      <p class="docs-p">Đặt lại stack lịch sử hoàn tác/làm lại.</p>
+
+      <h3 class="method-h"><code>editor.isEmpty()</code></h3>
+      <p class="docs-p">Trả về <code>true</code> khi editor không có nội dung có ý nghĩa.</p>
+
+      <h3 class="method-h" id="state-api">Trạng thái &amp; Thông tin</h3>
+
+      <h3 class="method-h"><code>editor.getWordCount()</code></h3>
+      <p class="docs-p">Trả về số từ hiện tại (hỗ trợ CJK qua <code>Intl.Segmenter</code>).</p>
+
+      <h3 class="method-h"><code>editor.getCharCount()</code></h3>
+      <p class="docs-p">Trả về số ký tự hiện tại (không tính xuống dòng).</p>
+
+      <h3 class="method-h"><code>editor.setDisabled(disabled)</code></h3>
+      <p class="docs-p">Bật hoặc tắt editor. <code>true</code> = chỉ đọc, ẩn toolbar.</p>
+
+      <h3 class="method-h"><code>editor.downloadHTML(filename?)</code> / <code>.downloadText()</code> / <code>.downloadMarkdown()</code></h3>
+      <p class="docs-p">Kích hoạt tải nội dung xuống trình duyệt theo định dạng chỉ định. Tên file mặc định: <code>'document.html'</code>, <code>'document.txt'</code>, <code>'document.md'</code>.</p>
+
+      <h3 class="method-h"><code>editor.print(title?)</code></h3>
+      <p class="docs-p">Mở nội dung trong cửa sổ mới và kích hoạt hộp thoại in của trình duyệt.</p>
+
+      <h3 class="method-h"><code>editor.invoke(path, ...args)</code></h3>
+      <p class="docs-p">Gọi một phương thức trên module đã đăng ký. Định dạng: <code>'moduleName.methodName'</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">editor.invoke('toolbar.rebuild');       // Rebuild toolbar after button registration
+editor.invoke('editor.bold');           // Apply bold
+editor.invoke('findReplace.show');      // Open Find dialog
+editor.invoke('fullscreen.toggle');     // Toggle fullscreen</code></pre>
+      </div>
+
+      <h3 class="method-h" id="events-api">Sự kiện</h3>
+
+      <h3 class="method-h"><code>editor.on(eventName, handler)</code></h3>
+      <p class="docs-p">Đăng ký lắng nghe một sự kiện editor. Trả về hàm hủy đăng ký.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">const unsub = editor.on('change', (html) => {
+  console.log('changed:', html);
+});
+// Later:
+unsub(); // unsubscribe</code></pre>
+      </div>
+
+      <h3 class="method-h"><code>editor.off(eventName, handler)</code></h3>
+      <p class="docs-p">Hủy đăng ký một handler cụ thể khỏi sự kiện.</p>
+
+      <h3 class="method-h"><code>editor.registerModule(name, ModuleClass)</code></h3>
+      <p class="docs-p">Đăng ký và khởi tạo một module tùy chỉnh chỉ trên instance cụ thể này.</p>
+
+      <h3 class="method-h" id="plugin-instance">Plugin</h3>
+
+      <h3 class="method-h"><code>editor.use(plugin, options?)</code></h3>
+      <p class="docs-p">Cài đặt một plugin chỉ trên instance này. Các nút của plugin được đăng ký ngay lập tức; nếu toolbar đã render, gọi <code>editor.invoke('toolbar.rebuild')</code>.</p>
+
+      <h3 class="method-h"><code>editor.getPlugin&lt;T&gt;(name)</code></h3>
+      <p class="docs-p">Trả về API công khai mà <code>plugin.install()</code> trả về, hoặc <code>null</code>.</p>
+
+      <h3 class="method-h"><code>editor.destroy()</code></h3>
+      <p class="docs-p">Xóa toàn bộ DOM của editor, kích hoạt <code>onDestroy</code>, gọi <code>plugin.uninstall()</code> trên mọi plugin, và khôi phục phần tử gốc.</p>
+    </section>
+
+    <!-- ── Events ── -->
+    <section class="docs-section" id="events" aria-label="Sự kiện">
+      <h2 class="section-h">Callback &amp; Sự kiện</h2>
+      <p class="docs-p">Sự kiện có thể được đăng ký theo hai cách: qua <strong>callback tùy chọn</strong> (truyền vào <code>create()</code>) hoặc qua <code>editor.on()</code>.</p>
+      <div class="callout">
+        <strong>Mẹo:</strong> Callback tùy chọn và listener <code>on()</code> đều kích hoạt cho cùng một sự kiện. Dùng callback cho thiết lập một lần; dùng <code>on()</code> khi cần hủy đăng ký sau này.
+      </div>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">// Option callback
+const editor = AutumnNote.create('#editor', {
+  onChange(html) { /* ... */ },
+  onFocus(ctx)   { /* ... */ },
+  onBlur(ctx)    { /* ... */ },
+  onInit(ctx)    { /* editor is ready */ },
+  onDestroy(ctx) { /* cleanup */ },
+});
+
+// Programmatic subscription
+const unsub = editor.on('change', (html) => { /* ... */ });
+editor.on('selectionChange', (ctx) => { /* cursor moved */ });
+editor.on('focus', (ctx) => { /* ... */ });
+editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
+      </div>
+    </section>
+
+    <!-- ── Toolbar ── -->
+    <section class="docs-section" id="toolbar" aria-label="Toolbar">
+      <h2 class="section-h">Cấu hình Toolbar</h2>
+      <p class="docs-p">Tùy chọn <code>toolbar</code> là một mảng 2 chiều — mỗi mảng con là một nhóm nút (ngăn cách bằng dấu phân cách). Phần tử có thể là object <code>ButtonDef</code> import từ thư viện, hoặc tên chuỗi của nút đã đăng ký.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">import AutumnNote, {
+  boldBtn, italicBtn, underlineBtn,
+  ulBtn, olBtn, linkBtn, imageBtn,
+  undoBtn, redoBtn,
+  defaultToolbar, // full default toolbar
+} from 'autumnnote';
+
+// Custom toolbar
+const editor = AutumnNote.create('#editor', {
+  toolbar: [
+    [boldBtn, italicBtn, underlineBtn],
+    [ulBtn, olBtn],
+    [linkBtn, imageBtn],
+    [undoBtn, redoBtn],
+  ],
+});</code></pre>
+      </div>
+
+      <p class="docs-p">Hoặc kết hợp object nút có tên với tên chuỗi (sau khi đăng ký nút tùy chỉnh):</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">AutumnNote.registerButton({
+  name: 'myButton',
+  icon: 'star',          // SVG id or FontAwesome class name
+  tooltip: 'My Action',
+  action: (ctx) =&gt; { ctx.insertHTML('&lt;mark&gt;highlighted&lt;/mark&gt;'); },
+  isActive: (ctx) =&gt; false,
+});
+
+const editor = AutumnNote.create('#editor', {
+  toolbar: [[boldBtn, italicBtn, 'myButton']],
+});</code></pre>
+      </div>
+
+      <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px">Tất cả nút được export</h3>
+      <div class="docs-table-wrap"><table class="docs-table">
+        <thead><tr><th>Export</th><th>Tooltip</th><th>Kiểu</th></tr></thead>
+        <tbody>
+          <tr><td class="opt-name">boldBtn</td><td>Bold (Ctrl+B)</td><td>button</td></tr>
+          <tr><td class="opt-name">italicBtn</td><td>Italic (Ctrl+I)</td><td>button</td></tr>
+          <tr><td class="opt-name">underlineBtn</td><td>Underline (Ctrl+U)</td><td>button</td></tr>
+          <tr><td class="opt-name">strikeBtn</td><td>Strikethrough</td><td>button</td></tr>
+          <tr><td class="opt-name">inlineCodeBtn</td><td>Inline Code (Ctrl+`)</td><td>button</td></tr>
+          <tr><td class="opt-name">superscriptBtn</td><td>Superscript</td><td>button</td></tr>
+          <tr><td class="opt-name">subscriptBtn</td><td>Subscript</td><td>button</td></tr>
+          <tr><td class="opt-name">alignLeftBtn / alignCenterBtn / alignRightBtn / alignJustifyBtn</td><td>Alignment</td><td>button</td></tr>
+          <tr><td class="opt-name">ulBtn / olBtn / checklistBtn</td><td>Lists</td><td>button</td></tr>
+          <tr><td class="opt-name">indentBtn / outdentBtn</td><td>Indent / Outdent</td><td>button</td></tr>
+          <tr><td class="opt-name">undoBtn / redoBtn</td><td>Undo / Redo</td><td>button</td></tr>
+          <tr><td class="opt-name">hrBtn</td><td>Horizontal Rule</td><td>button</td></tr>
+          <tr><td class="opt-name">linkBtn / imageBtn / videoBtn</td><td>Insert dialogs</td><td>button</td></tr>
+          <tr><td class="opt-name">tableBtn</td><td>Insert Table</td><td>grid</td></tr>
+          <tr><td class="opt-name">emojiBtn / iconBtn</td><td>Emoji / FA Icon</td><td>button</td></tr>
+          <tr><td class="opt-name">foreColorBtn / backColorBtn</td><td>Text / Highlight Color</td><td>colorpicker</td></tr>
+          <tr><td class="opt-name">paragraphStyleBtn</td><td>Paragraph Style</td><td>select</td></tr>
+          <tr><td class="opt-name">fontFamilyBtn / fontSizeBtn / lineHeightBtn</td><td>Typography</td><td>select</td></tr>
+          <tr><td class="opt-name">removeFormatBtn / directionBtn</td><td>Utilities</td><td>button</td></tr>
+          <tr><td class="opt-name">codeviewBtn / fullscreenBtn</td><td>View</td><td>button</td></tr>
+          <tr><td class="opt-name">findBtn / findReplaceBtn / printBtn / shortcutsBtn</td><td>Tools</td><td>button</td></tr>
+          <tr><td class="opt-name">defaultToolbar</td><td>Full default toolbar array</td><td>array</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ── What's New v1.8.0 ── -->
+    <section class="docs-section" id="whats-new" aria-label="Có gì mới">
+      <h2 class="section-h">Có gì mới <span class="badge">v1.8.0</span></h2>
+      <p class="docs-p">Phiên bản 1.8.0 mở rộng API công khai với các phương thức Context mới, thêm định nghĩa nút UMD, tìm kiếm nguyên từ, giới hạn kích thước paste, kích thước tối thiểu khi thay đổi ảnh có thể cấu hình, cải tiến i18n, và nhiều hơn nữa.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Sắp xếp bảng, xuất CSV &amp; đệm ô</h3>
+      <p class="docs-p">Table Tooltip giờ có thêm ba thao tác quản lý dữ liệu mới:</p>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li><strong>Sắp xếp Tăng dần / Giảm dần</strong> — sắp xếp tất cả các dòng theo cột đang chọn; giá trị số được so sánh dạng số, văn bản dùng so sánh theo locale; bố cục ô gộp được xử lý đúng.</li>
+        <li><strong>Xuất dạng CSV</strong> — tải toàn bộ bảng dưới dạng file <code>.csv</code> UTF-8 (BOM) với escape dấu ngoặc kép đúng cho ô chứa dấu phẩy hoặc xuống dòng.</li>
+        <li><strong>Đệm ô</strong> — mở popover kích thước để áp dụng đệm đồng nhất (px) cho tất cả ô đã chọn.</li>
+      </ul>
+      <p class="docs-p">Nút <strong>Bật/tắt dòng tiêu đề</strong> cũng chuyển đổi dòng đầu tiên giữa <code>&lt;thead&gt;&lt;th&gt;</code> (tiêu đề) và <code>&lt;tbody&gt;&lt;td&gt;</code> (dữ liệu), tạo hoặc xóa bọc <code>&lt;thead&gt;</code> khi cần.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Tìm &amp; Thay thế — Chế độ Regex</h3>
+      <p class="docs-p">Một nút chuyển đổi <code>.*</code> mới trong panel Tìm &amp; Thay thế kích hoạt <strong>tìm kiếm bằng regular expression JavaScript</strong>. Regex đã biên dịch được cache qua các lần gõ phím để tăng hiệu năng. Trường hợp sử dụng: tìm tất cả từ khớp một pattern, xác định địa chỉ email, thay thế số đã định dạng, v.v. Hoạt động cùng chế độ phân biệt hoa/thường; lỗi biên dịch regex được xử lý an toàn.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Số dòng khối mã</h3>
+      <p class="docs-p">Code Tooltip giờ có thêm nút <strong>Bật/tắt số dòng</strong>. Khi bật, một CSS counter tạo ra một cột đánh số bên trái khối mã — không cần đếm bằng JavaScript, không thay đổi DOM nội dung. Trạng thái tự động đồng bộ khi chuyển giữa các khối mã.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Giao diện Tối-Tự động</h3>
+      <p class="docs-p">Tùy chọn <code>theme: 'auto'</code> mới giúp editor tự động theo tùy chọn chế độ tối của hệ điều hành:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">AutumnNote.create('#editor', { theme: 'auto' });</code></pre>
+      </div>
+      <p class="docs-p">CSS <code>@media (prefers-color-scheme: dark)</code> kích hoạt bảng màu tối đầy đủ khi hệ điều hành ở chế độ tối; editor giữ giao diện sáng trong trường hợp ngược lại. <code>theme: 'dark'</code> và <code>theme: 'light'</code> vẫn buộc một giao diện cụ thể bất kể tùy chọn hệ điều hành.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">API đếm Undo / Redo</h3>
+      <p class="docs-p">Hai phương thức instance mới cho phép ứng dụng host truy vấn độ sâu stack undo/redo:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">editor.getUndoCount();  // → number of available undo steps
+editor.getRedoCount();  // → number of available redo steps</code></pre>
+      </div>
+      <p class="docs-p">Hữu ích để vô hiệu hóa nút Undo/Redo trong UI tùy chỉnh, hoặc hiển thị badge đếm bước trong ứng dụng host.</p>
+
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Tìm kiếm @mention dựa trên Promise</h3>
+      <p class="docs-p">Callback <code>mention.onSearch</code> giờ chấp nhận cả kiểu callback và <strong>Promise / async</strong>:</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">// Async / Promise style (new in 1.8.0)
+AutumnNote.create('#editor', {
+  mention: {
+    onSearch: async (query) => {
+      const res = await fetch(`/api/users?q=${query}`);
+      return res.json();  // returns MentionItem[]
+    }
+  }
+});</code></pre>
+      </div>
+      <p class="docs-p">Nếu Promise reject, dropdown tự động đóng. Kiểu callback gốc vẫn được hỗ trợ đầy đủ.</p>
+    </section>
+
+    <!-- ── Plugin API ── -->
+    <section class="docs-section" id="plugin-api" aria-label="Plugin API">
+      <h2 class="section-h">Plugin API <span class="badge">v1.4.1</span></h2>
+      <p class="docs-p">Plugin API cho phép bạn đóng gói phần mở rộng editor — module tùy chỉnh, nút toolbar, và event handler — thành một object có thể tái sử dụng, cài đặt được. Plugin có thể phân phối dưới dạng package npm và cài đặt chỉ trong một dòng.</p>
+
+      <!-- Plugin descriptor -->
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Descriptor plugin</h3>
+      <p class="docs-p">Một plugin là một object đơn giản với các trường sau:</p>
+
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead><tr><th>Trường</th><th>Kiểu</th><th>Bắt buộc</th><th>Mô tả</th></tr></thead>
+          <tbody>
+            <tr><td class="opt-name">name</td><td class="opt-type">string</td><td>✓</td><td class="opt-desc">Định danh plugin duy nhất. Dùng làm key cho <code>getPlugin(name)</code> và <code>hasPlugin(name)</code>.</td></tr>
+            <tr><td class="opt-name">version</td><td class="opt-type">string</td><td>—</td><td class="opt-desc">Chuỗi phiên bản semantic — chỉ mang tính thông tin, không được runtime kiểm tra.</td></tr>
+            <tr><td class="opt-name">buttons</td><td class="opt-type">ToolbarItemDef[]</td><td>—</td><td class="opt-desc">Định nghĩa nút đăng ký vào registry nút toàn cục <em>ngay lập tức</em> khi <code>AutumnNote.use()</code> được gọi — trước khi bất kỳ editor nào được tạo, nên chúng có sẵn theo tên chuỗi trong cấu hình toolbar.</td></tr>
+            <tr><td class="opt-name">install</td><td class="opt-type">(ctx, opts) → T</td><td>—</td><td class="opt-desc">Được gọi sau khi tất cả 27 module có sẵn đã khởi tạo. Nhận <code>Context</code> và object tùy chọn truyền vào <code>use()</code>. Giá trị trả về trở thành API công khai của plugin, truy cập qua <code>ctx.getPlugin(name)</code>.</td></tr>
+            <tr><td class="opt-name">uninstall</td><td class="opt-type">(ctx) → void</td><td>—</td><td class="opt-desc">Được gọi khi instance editor bị hủy. Dùng để giải phóng timer, xóa DOM bên ngoài, hoặc ngắt kết nối trạng thái bên ngoài.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">const MyPlugin = {
+  name: 'my-plugin',   // required
+  version: '1.0.0',   // optional
+
+  buttons: [           // registered BEFORE create() — usable by name in toolbar
+    {
+      name: 'highlight',
+      icon: 'highlighter',          // SVG id or FontAwesome class suffix
+      tooltip: 'Highlight selection',
+      action:     (ctx) =&gt; ctx.invoke('editor.hiliteColor', '#fef08a'),
+      isActive:   (ctx) =&gt; false,
+      isDisabled: (ctx) =&gt; ctx.isEmpty(),
+    },
+  ],
+
+  install(context, options) {
+    // Full context API available here — all modules are ready
+    context.on('change', (html) =&gt; { /* react to content changes */ });
+    context.registerModule('myModule', MyModule);
+    return { getLimit: () =&gt; options.limit ?? 0 }; // public API
+  },
+
+  uninstall(context) {
+    // Clean up side-effects (timers, external DOM, subscriptions…)
+  },
+};</code></pre>
+      </div>
+
+      <!-- install() context API -->
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Bên trong <code style="background:#1e293b;color:#7dd3fc;padding:2px 8px;border-radius:4px;font-size:14px">install(context, options)</code></h3>
+      <p class="docs-p">Tham số <code>context</code> chính là <a href="#instance-api">object Context</a> đầy đủ. Tất cả phương thức được mô tả trong phần Instance API đều khả dụng. Hữu ích nhất bên trong plugin:</p>
+
+      <h3 class="method-h" style="margin-top:16px">Đăng ký sự kiện</h3>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">// Subscribe — returns an unsubscribe function
+const unsub = context.on('change', (html) =&gt; {
+  console.log('word count:', context.getWordCount());
+});
+
+// Available event names:
+// 'change'           — content changed (debounced ~400 ms)
+// 'focus'            — editor gained focus
+// 'blur'             — editor lost focus
+
+// Unsubscribe in uninstall() to avoid leaks
+uninstall(ctx) { unsub(); }</code></pre>
+      </div>
+
+      <h3 class="method-h">Gọi phương thức module có sẵn</h3>
+      <p class="docs-p"><code>context.invoke('module.method', ...args)</code> gọi bất kỳ phương thức công khai nào trên module đã đăng ký. Các đường dẫn phổ biến:</p>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead><tr><th>Đường dẫn</th><th>Mô tả</th></tr></thead>
+          <tbody>
+            <tr><td class="opt-name">editor.bold / italic / underline / strikethrough</td><td class="opt-desc">Bật/tắt định dạng văn bản tại con trỏ.</td></tr>
+            <tr><td class="opt-name">editor.inlineCode</td><td class="opt-desc">Bật/tắt <code>&lt;code&gt;</code> nội dòng tại con trỏ.</td></tr>
+            <tr><td class="opt-name">editor.foreColor / hiliteColor</td><td class="opt-desc">Áp dụng màu chữ / màu tô sáng. Truyền chuỗi màu làm tham số thứ 2: <code>ctx.invoke('editor.foreColor', '#e11d48')</code>.</td></tr>
+            <tr><td class="opt-name">editor.insertHTML</td><td class="opt-desc">Chèn HTML tại vị trí con trỏ hiện tại.</td></tr>
+            <tr><td class="opt-name">editor.insertText</td><td class="opt-desc">Chèn văn bản thuần tại vị trí con trỏ hiện tại.</td></tr>
+            <tr><td class="opt-name">editor.getHTML</td><td class="opt-desc">Trả về chuỗi HTML hiện tại.</td></tr>
+            <tr><td class="opt-name">editor.setHTML</td><td class="opt-desc">Thay thế toàn bộ nội dung.</td></tr>
+            <tr><td class="opt-name">editor.undo / redo</td><td class="opt-desc">Duyệt qua lịch sử.</td></tr>
+            <tr><td class="opt-name">editor.focus</td><td class="opt-desc">Focus vào vùng soạn thảo.</td></tr>
+            <tr><td class="opt-name">editor.afterCommand</td><td class="opt-desc">Chụp ảnh lịch sử undo và kích hoạt <code>onChange</code>. Gọi hàm này sau bất kỳ thay đổi DOM trực tiếp nào.</td></tr>
+            <tr><td class="opt-name">toolbar.refresh</td><td class="opt-desc">Đánh giá lại <code>isActive</code> / <code>isDisabled</code> trên mọi nút toolbar (debounce qua rAF).</td></tr>
+            <tr><td class="opt-name">toolbar.rebuild</td><td class="opt-desc">Gỡ bỏ và render lại toàn bộ toolbar. Dùng sau khi đăng ký nút sau khi tạo.</td></tr>
+            <tr><td class="opt-name">linkDialog.show</td><td class="opt-desc">Mở hộp thoại Chèn liên kết.</td></tr>
+            <tr><td class="opt-name">imageDialog.show</td><td class="opt-desc">Mở hộp thoại Chèn ảnh.</td></tr>
+            <tr><td class="opt-name">findReplace.show</td><td class="opt-desc">Mở hộp thoại Tìm kiếm.</td></tr>
+            <tr><td class="opt-name">fullscreen.toggle</td><td class="opt-desc">Bật/tắt chế độ toàn màn hình.</td></tr>
+            <tr><td class="opt-name">codeview.toggle</td><td class="opt-desc">Bật/tắt xem mã HTML.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="method-h">Đăng ký một module tùy chỉnh</h3>
+      <p class="docs-p">Một module là một class với <code>initialize()</code> (bắt buộc) và <code>destroy()</code> (tùy chọn). Nó nhận <code>Context</code> trong constructor và có thể expose các phương thức gọi được qua <code>context.invoke()</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">class WordBadgeModule {
+  constructor(context) {
+    this.context = context;
+    this._el = null;
+    this._unsub = null;
+  }
+
+  initialize() {
+    // Build UI
+    this._el = document.createElement('div');
+    this._el.className = 'word-badge';
+    this._el.textContent = '0 words';
+    this.context.layoutInfo.container.appendChild(this._el);
+
+    // React to content changes
+    this._unsub = this.context.on('change', () =&gt; this._update());
+    this._update();
+    return this;
+  }
+
+  // Public method — callable via ctx.invoke('wordBadge.getCount')
+  getCount() {
+    return this.context.getWordCount();
+  }
+
+  _update() {
+    const n = this.context.getWordCount();
+    this._el.textContent = `${n} word${n !== 1 ? 's' : ''}`;
+  }
+
+  destroy() {
+    this._unsub?.();
+    this._el?.remove();
+    this._el = null;
+  }
+}
+
+// Register inside install():
+install(context) {
+  context.registerModule('wordBadge', WordBadgeModule);
+  // Now callable anywhere:
+  context.invoke('wordBadge.getCount'); // → number
+}</code></pre>
+      </div>
+
+      <!-- Installation -->
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Cài đặt</h3>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">// ── Global (applies to every future create() call) ─────────────────────────
+AutumnNote.use(MyPlugin, { limit: 500 });
+AutumnNote.hasPlugin('my-plugin'); // → true
+
+const editor = AutumnNote.create('#editor', {
+  toolbar: [[boldBtn, 'highlight']], // 'highlight' resolved from plugin.buttons
+});
+
+editor.getPlugin('my-plugin').getLimit(); // → 500
+
+// ── Per-instance (this editor only) ────────────────────────────────────────
+const editor2 = AutumnNote.create('#editor2');
+editor2.use(MyPlugin, { limit: 200 });
+editor2.invoke('toolbar.rebuild'); // surface new buttons in already-rendered toolbar
+
+// ── Standalone button registration ─────────────────────────────────────────
+AutumnNote.registerButton({
+  name: 'timestamp',
+  icon: 'clock',
+  tooltip: 'Insert current timestamp',
+  action: (ctx) =&gt; ctx.invoke('editor.insertText', new Date().toLocaleString()),
+});
+// Then reference by name in any toolbar config:
+// toolbar: [[boldBtn, 'timestamp']]</code></pre>
+      </div>
+
+      <div class="callout">
+        <strong>Thời điểm gọi:</strong> <code>AutumnNote.use(plugin)</code> đăng ký <code>plugin.buttons</code> <em>ngay lập tức</em> (đồng bộ) để chúng có sẵn khi Toolbar được xây dựng trong <code>create()</code>. <code>plugin.install()</code> được gọi <em>sau</em> khi tất cả 27 module có sẵn đã sẵn sàng — an toàn để gọi <code>ctx.invoke()</code>, <code>ctx.registerModule()</code>, và bất kỳ phương thức nội dung nào.
+      </div>
+    </section>
+
+    <!-- ── i18n ── -->
+    <section class="docs-section" id="i18n" aria-label="Đa ngôn ngữ">
+      <h2 class="section-h">Đa ngôn ngữ (i18n)</h2>
+      <p class="docs-p">Truyền một mã ngôn ngữ vào tùy chọn <code>lang</code>. Các locale có sẵn: <code>en</code> (mặc định), <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">const editor = AutumnNote.create('#editor', { lang: 'vi' });
+
+// Override specific strings
+const editor2 = AutumnNote.create('#editor2', {
+  lang: {
+    toolbar: { bold: 'Đậm (Ctrl+B)' },
+    findReplace: { noResults: 'Không tìm thấy' },
+  },
+});
+
+// Switch language at runtime (re-create editor)
+const html = editor.getHTML();
+editor.destroy();
+const editor3 = AutumnNote.create('#editor', { lang: 'ja' });
+editor3.setHTML(html);</code></pre>
+      </div>
+    </section>
+
+    <!-- ── TypeScript ── -->
+    <section class="docs-section" id="typescript" aria-label="TypeScript">
+      <h2 class="section-h">TypeScript</h2>
+      <p class="docs-p">AutumnNote đi kèm định nghĩa TypeScript có sẵn (<code>types/index.d.ts</code>). Không cần package <code>@types</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-ts">import AutumnNote, {
+  Context,
+  AsnOptions,
+  AsnPlugin,
+  ButtonDef,
+  ToolbarItemDef,
+  AsnLocale,
+} from 'autumnnote';
+
+// Typed options
+const options: AsnOptions = {
+  height: 300,
+  bubbleToolbar: true,
+  onChange(html: string) { /* ... */ },
+};
+
+// Typed plugin
+const myPlugin: AsnPlugin&lt;{ version: string }&gt; = {
+  name: 'typed-plugin',
+  install(ctx: Context, opts) {
+    return { version: '1.0.0' };
+  },
+};
+
+AutumnNote.use(myPlugin);
+const editor = AutumnNote.create('#editor', options);
+
+// Cast plugin API to typed interface
+const api = editor.getPlugin&lt;{ version: string }&gt;('typed-plugin');
+console.log(api?.version); // '1.0.0'</code></pre>
+      </div>
+    </section>
+
+  </main><!-- .docs-main -->
+</div><!-- .docs-layout -->
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>Giấy phép MIT · © 2026 Minh Pham · AutumnNote v1.12.0</span>
+    <nav class="footer-links" aria-label="Liên kết chân trang">
+      <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+      <a href="playground.html">Playground</a>
+      <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" integrity="sha512-jwrwRWZWW9J6bjmBOJxPcbRvEBSQeY4Ad0NEXSfP0vwYi/Yu9x5VhDBl3wz6Pnxs8Rx/t1P8r9/OHCRciHcT7Q==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js" integrity="sha512-uOw7XYETzS/DPmmirpP5UCMihSDNMeyTS965J0/456OSPfxn9xEtHHjj5Q/5WefVdqyMfN/afmQnNpZd/tpkcA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYhDwtTmlC/NpZlCr6PSsAaLOrfjVg/iXAnC4H/dtiHawpShhT2SlIMbpIhT/IL/NrpdMm+Hq2C13+VKpHTYw==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js" integrity="sha512-Ei5Vokmnc/f7vIt31aodVMuavT/xp2Lt5vGDYLgCzgBX/z5ghbZQfxt/9FkNs+RyG8IfBKAkdRsQQk4PZyHq5g==" crossorigin="anonymous"></script>
+
+<script>
+// ── Copy code blocks ──────────────────────────────────────
+function copyCode(btn) {
+  const code = btn.nextElementSibling.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Đã sao chép';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }).catch(() => {});
+}
+
+// ── Sidebar search ────────────────────────────────────────
+function filterSidebar(q) {
+  const links = document.querySelectorAll('#sidebar-nav .sidebar-link');
+  const term = q.trim().toLowerCase();
+  links.forEach(link => {
+    link.style.display = (!term || link.textContent.toLowerCase().includes(term)) ? '' : 'none';
+  });
+}
+
+// ── Active sidebar link on scroll ────────────────────────
+const sections = document.querySelectorAll('.docs-section[id]');
+const sideLinks = document.querySelectorAll('#sidebar-nav .sidebar-link[href^="#"]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      sideLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+  });
+}, { rootMargin: '-52px 0px -60% 0px', threshold: 0 });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
