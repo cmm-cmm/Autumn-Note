@@ -227,6 +227,13 @@
       border-color: #45475a; background: #1e1e2e;
     }
 
+    /* Reserve space matching the mounted editor's height so the page
+       doesn't jump once the deferred module script replaces the plain
+       <textarea> with the full toolbar + editable area (avoids CLS). */
+    #editor-wrapper {
+      min-height: 403px;
+    }
+
     .output-row {
       display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
     }
@@ -252,6 +259,7 @@
     }
     #readonly-editor-wrapper {
       border: 2px solid #fcd34d; border-radius: 8px; overflow: hidden; background: #fff;
+      min-height: 330px;
     }
 
     /* =========================================================
