@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playground AutumnNote — Thử trình soạn thảo trực tiếp</title>
-  <meta name="description" content="Playground tương tác cho trình soạn thảo WYSIWYG AutumnNote. Cấu hình tùy chọn, tải mẫu, và xuất HTML hoặc Markdown theo thời gian thực." />
+  <title>Playground Autumn Note — Thử trình soạn thảo trực tiếp</title>
+  <meta name="description" content="Playground tương tác cho trình soạn thảo WYSIWYG Autumn Note. Cấu hình tùy chọn, tải mẫu, và xuất HTML hoặc Markdown theo thời gian thực." />
   <meta name="keywords" content="demo trình soạn thảo wysiwyg, playground rich text editor, dùng thử autumnnote, kiểm thử trình soạn thảo online" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Minh Pham" />
@@ -16,22 +16,22 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="AutumnNote — Playground tương tác" />
-  <meta property="og:description" content="Dùng thử AutumnNote trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Cấu hình tùy chọn, thử giao diện, khám phá API theo thời gian thực." />
+  <meta property="og:title" content="Autumn Note — Playground tương tác" />
+  <meta property="og:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Cấu hình tùy chọn, thử giao diện, khám phá API theo thời gian thực." />
   <meta property="og:url" content="https://autumn.konexforge.com/vi/playground.html" />
   <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="AutumnNote — banner trình soạn thảo WYSIWYG" />
-  <meta property="og:site_name" content="AutumnNote" />
+  <meta property="og:image:alt" content="Autumn Note — banner trình soạn thảo WYSIWYG" />
+  <meta property="og:site_name" content="Autumn Note" />
   <meta property="og:locale" content="vi_VN" />
   <meta property="og:locale:alternate" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://autumn.konexforge.com/vi/playground.html" />
-  <meta name="twitter:title" content="AutumnNote — Playground tương tác" />
-  <meta name="twitter:description" content="Dùng thử AutumnNote trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
+  <meta name="twitter:title" content="Autumn Note — Playground tương tác" />
+  <meta name="twitter:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
   <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
@@ -39,8 +39,8 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "AutumnNote Playground",
-    "description": "Playground tương tác để dùng thử trình soạn thảo WYSIWYG AutumnNote trực tiếp. Cấu hình toolbar, thử giao diện (sáng/tối), gõ phím tắt markdown, thử @mention, và xuất nội dung dạng HTML hoặc Markdown.",
+    "name": "Autumn Note Playground",
+    "description": "Playground tương tác để dùng thử trình soạn thảo WYSIWYG Autumn Note trực tiếp. Cấu hình toolbar, thử giao diện (sáng/tối), gõ phím tắt markdown, thử @mention, và xuất nội dung dạng HTML hoặc Markdown.",
     "url": "https://autumn.konexforge.com/playground.html",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Text Editor",
@@ -55,8 +55,8 @@
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
-  <script type="module" crossorigin src="/assets/viPlayground-BU6oO6k6.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/js-DbHa3v0z.js">
+  <script type="module" crossorigin src="/assets/viPlayground-COmiKRNz.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/js-DGUr9y0I.js">
   <link rel="stylesheet" crossorigin href="/assets/js-DCvYl1Kc.css">
   <link rel="stylesheet" crossorigin href="/assets/playground-BYFbSwrs.css">
 </head>
@@ -64,10 +64,10 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" href="./" aria-label="Trang chủ AutumnNote">
+    <a class="brand" href="./" aria-label="Trang chủ Autumn Note">
       <img src="/image/banner.png" width="26" height="26" alt="" />
-      <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.13.0</span>
+      <span class="brand-name">Autumn Note</span>
+      <span class="brand-version">v1.14.0</span>
     </a>
     <nav class="header-nav" aria-label="Liên kết trang">
       <a class="nav-link" href="./">Trang chủ</a>
@@ -91,7 +91,7 @@
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Chào mừng đến với <strong>AutumnNote Playground</strong>! ✨</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
+      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>! ✨</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -272,7 +272,7 @@
     <li><strong>Xuất nội dung</strong> — tải nội dung editor dưới dạng HTML hoặc Markdown</li>
     <li><strong>Thanh công cụ nổi</strong> — chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
   </ul>
-  <p>AutumnNote là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
+  <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
 </section>
 </body>
 </html>
