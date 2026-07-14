@@ -236,6 +236,20 @@
   </div><!-- .pg-panels -->
 </main><!-- .pg-layout -->
 
+<!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
+<section class="pg-about" aria-label="About this playground">
+  <h2>What can you try in this playground?</h2>
+  <ul>
+    <li><strong>Toolbar configuration</strong> — toggle individual buttons or swap to a custom toolbar layout</li>
+    <li><strong>Themes</strong> — switch between light, dark, and auto (system preference) themes</li>
+    <li><strong>Markdown shortcuts</strong> — type <code>**bold**</code>, <code># Heading</code>, <code>- list</code> and watch them transform instantly</li>
+    <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
+    <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
+    <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
+  </ul>
+  <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
+</section>
+
 <footer class="site-footer">
   <div class="footer-inner">
     <span>Built with ❤️ by KonexForge</span>
@@ -593,18 +607,5 @@ document.body.classList.toggle('dark', document.getElementById('cfg-theme').valu
 createEditor(hashHtml || undefined);
 </script>
 
-<!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
-<section class="pg-about" aria-label="About this playground">
-  <h2>What can you try in this playground?</h2>
-  <ul>
-    <li><strong>Toolbar configuration</strong> — toggle individual buttons or swap to a custom toolbar layout</li>
-    <li><strong>Themes</strong> — switch between light, dark, and auto (system preference) themes</li>
-    <li><strong>Markdown shortcuts</strong> — type <code>**bold**</code>, <code># Heading</code>, <code>- list</code> and watch them transform instantly</li>
-    <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
-    <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
-    <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
-  </ul>
-  <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
-</section>
 </body>
 </html>
