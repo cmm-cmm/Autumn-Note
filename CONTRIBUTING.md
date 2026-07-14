@@ -1,4 +1,4 @@
-# Contributing to AutumnNote
+# Contributing to Autumn Note
 
 Thank you for your interest in contributing! 🎉  
 Every contribution — bug reports, feature suggestions, code, or documentation — is welcome.
@@ -69,7 +69,7 @@ npm run build      # build library
 ## Reporting bugs
 
 Use the [Bug Report template](https://github.com/cmm-cmm/Autumn-Note/issues/new?template=bug_report.md) and include:
-- AutumnNote version
+- Autumn Note version
 - Browser & OS
 - Minimal reproduction steps
 

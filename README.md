@@ -1,6 +1,6 @@
-# AutumnNote — WYSIWYG Rich Text Editor
+# Autumn Note — WYSIWYG Rich Text Editor
 
-<p align="center"><img src="public/image/banner.png" width="120" alt="AutumnNote Banner"/></p>
+<p align="center"><img src="public/image/banner.png" width="120" alt="Autumn Note Banner"/></p>
 
 [![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
@@ -18,7 +18,7 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 
 [Live Demo](https://autumn.konexforge.com/) · [Docs](https://autumn.konexforge.com/docs.html) · [Playground](https://autumn.konexforge.com/playground.html)
 
-<p align="center"><img src="examples/Screenshot.png" alt="AutumnNote Screenshot"/></p>
+<p align="center"><img src="examples/Screenshot.png" alt="Autumn Note Screenshot"/></p>
 
 ---
 
@@ -770,9 +770,9 @@ Build output in `dist/`:
 
 ## Comparison
 
-The table below compares AutumnNote against popular WYSIWYG editors: **Summernote**, **Quill**, and **TinyMCE**. Comparison is based on publicly documented feature sets.
+The table below compares Autumn Note against popular WYSIWYG editors: **Summernote**, **Quill**, and **TinyMCE**. Comparison is based on publicly documented feature sets.
 
-| Feature | Summernote | Quill | TinyMCE | **AutumnNote** |
+| Feature | Summernote | Quill | TinyMCE | **Autumn Note** |
 |---|---|---|---|---|
 | jQuery dependency | Required | Required | Optional | **None** |
 | Runtime dependencies | Several | Several | 1–2 | **Zero** |
