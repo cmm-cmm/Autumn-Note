@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutumnNote Playground — Try the Editor Live</title>
-  <meta name="description" content="Interactive playground for AutumnNote WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
+  <title>Autumn Note Playground — Try the Editor Live</title>
+  <meta name="description" content="Interactive playground for Autumn Note WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
   <meta name="keywords" content="wysiwyg editor demo, rich text editor playground, autumnnote try, online editor test" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Minh Pham" />
@@ -16,21 +16,21 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="AutumnNote — Interactive Playground" />
-  <meta property="og:description" content="Try AutumnNote live — the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
+  <meta property="og:title" content="Autumn Note — Interactive Playground" />
+  <meta property="og:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
   <meta property="og:url" content="https://autumn.konexforge.com/playground.html" />
   <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="AutumnNote — WYSIWYG editor banner" />
-  <meta property="og:site_name" content="AutumnNote" />
+  <meta property="og:image:alt" content="Autumn Note — WYSIWYG editor banner" />
+  <meta property="og:site_name" content="Autumn Note" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://autumn.konexforge.com/playground.html" />
-  <meta name="twitter:title" content="AutumnNote — Interactive Playground" />
-  <meta name="twitter:description" content="Try AutumnNote live — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:title" content="Autumn Note — Interactive Playground" />
+  <meta name="twitter:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor." />
   <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
@@ -38,8 +38,8 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "AutumnNote Playground",
-    "description": "Interactive playground to try AutumnNote WYSIWYG editor live. Configure toolbar, test themes (light/dark), write in markdown shortcuts, try @mention, and export content as HTML or Markdown.",
+    "name": "Autumn Note Playground",
+    "description": "Interactive playground to try Autumn Note WYSIWYG editor live. Configure toolbar, test themes (light/dark), write in markdown shortcuts, try @mention, and export content as HTML or Markdown.",
     "url": "https://autumn.konexforge.com/playground.html",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Text Editor",
@@ -61,10 +61,10 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" href="./" aria-label="AutumnNote home">
+    <a class="brand" href="./" aria-label="Autumn Note home">
       <img src="/image/banner.png" width="26" height="26" alt="" />
-      <span class="brand-name">AutumnNote</span>
-      <span class="brand-version">v1.13.0</span>
+      <span class="brand-name">Autumn Note</span>
+      <span class="brand-version">v1.14.0</span>
     </a>
     <nav class="header-nav" aria-label="Site links">
       <a class="nav-link" href="./">Home</a>
@@ -88,7 +88,7 @@
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Welcome to the <strong>AutumnNote Playground</strong>! ✨</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
+      <textarea id="editor-el"><p>Welcome to the <strong>Autumn Note Playground</strong>! ✨</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -272,8 +272,8 @@ const MENTION_USERS = [
 // ── Snippets ──────────────────────────────────────────────
 const SNIPPETS = {
   empty: '',
-  article: `<h1>Getting Started with AutumnNote</h1>
-<p>AutumnNote is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
+  article: `<h1>Getting Started with Autumn Note</h1>
+<p>Autumn Note is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
 <h2>Basic Setup</h2>
 <p>Add a <em>textarea</em> or <em>div</em> to your HTML, then call <code>AutumnNote.create()</code>:</p>
@@ -341,7 +341,7 @@ const editor = AutumnNote.create('#editor', {
 });</code></pre>`,
 
   formatting: `<h1>Rich Formatting Demo</h1>
-<p>AutumnNote supports <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>, and <code>inline code</code>.</p>
+<p>Autumn Note supports <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>, and <code>inline code</code>.</p>
 <p>You can also use <sup>superscript</sup> and <sub>subscript</sub>.</p>
 <h2>Text Colours</h2>
 <p><span style="color:#e11d48">Red text</span>, <span style="color:#2563eb">blue text</span>, <span style="background-color:#fef08a">highlighted text</span>.</p>
@@ -399,7 +399,7 @@ This content was loaded from **raw markdown**, not HTML — the same pipeline us
 const editor = AutumnNote.create('#editor');
 \`\`\`
 
-[repo]: https://github.com/cmm-cmm/Autumn-Note "AutumnNote repository"
+[repo]: https://github.com/cmm-cmm/Autumn-Note "Autumn Note repository"
 [^1]: Footnotes render as superscript markers.`;
 
 // ── State ─────────────────────────────────────────────────
@@ -604,7 +604,7 @@ createEditor(hashHtml || undefined);
     <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
     <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
   </ul>
-  <p>AutumnNote is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
+  <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
 </section>
 </body>
 </html>
