@@ -29,7 +29,7 @@ import 'autumnnote/dist/autumnnote.css';
 const editorRef = ref(null);
 
 function handleSave() {
-  const html = editorRef.value.editor.value.getHTML();
+  const html = editorRef.value.editor?.getHTML();
   console.log(html);
 }
 </script>
@@ -55,17 +55,17 @@ function handleSave() {
 
 ## Accessing the editor instance
 
-The component uses `defineExpose({ editor })` where `editor` is a Vue `ref<Context | null>`. Access the instance via:
+The component exposes the current `Context` as `editor`. Vue automatically unwraps the internal shallow ref on the public component instance:
 
 ```js
-editorRef.value.editor.value.getHTML();
-editorRef.value.editor.value.setHTML('<p>Hello <strong>world</strong></p>');
-editorRef.value.editor.value.getMarkdown();
-editorRef.value.editor.value.invoke('toolbar.rebuild');
-editorRef.value.editor.value.on('change', (html) => console.log(html));
+editorRef.value.editor?.getHTML();
+editorRef.value.editor?.setHTML('<p>Hello <strong>world</strong></p>');
+editorRef.value.editor?.getMarkdown();
+editorRef.value.editor?.invoke('toolbar.rebuild');
+editorRef.value.editor?.on('change', (html) => console.log(html));
 ```
 
-The `editor` ref is `null` before mount — use it inside `onMounted` or after the component is mounted.
+The exposed `editor` property is `null` before mount — use it inside `onMounted` or after the component is mounted.
 
 ## Reinitialising with new options
 

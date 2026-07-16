@@ -497,8 +497,7 @@ export class Editor {
 
   undo() {
     if (this._history) {
-      clearTimeout(this._snapshotTimer);
-      this._snapshotTimer = null;
+      this._flushPendingSnapshot();
       this._history.undo();
       this.context.invoke('toolbar.refresh');
       this.context.invoke('statusbar.update');
@@ -508,13 +507,20 @@ export class Editor {
 
   redo() {
     if (this._history) {
-      clearTimeout(this._snapshotTimer);
-      this._snapshotTimer = null;
+      this._flushPendingSnapshot();
       this._history.redo();
       this.context.invoke('toolbar.refresh');
       this.context.invoke('statusbar.update');
       this.context.triggerEvent('change', this.getHTML());
     }
+  }
+
+  /** Records a debounced change before an immediate undo/redo command. */
+  _flushPendingSnapshot() {
+    if (this._snapshotTimer === null) return;
+    clearTimeout(this._snapshotTimer);
+    this._snapshotTimer = null;
+    this._history?.recordUndo();
   }
 
   canUndo() {

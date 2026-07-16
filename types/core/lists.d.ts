@@ -1,0 +1,10 @@
+export function last<T>(arr: T[]): T | undefined;
+export function first<T>(arr: T[]): T | undefined;
+export function initial<T>(arr: T[], n?: number): T[];
+export function tail<T>(arr: T[], n?: number): T[];
+export function flatten<T>(arr: T[][]): T[];
+export function unique<T>(arr: T[]): T[];
+export function chunk<T>(arr: T[], n: number): T[][];
+export function groupBy<T>(arr: T[], keyFn: (item: T) => string): Record<string, T[]>;
+export function all<T>(arr: T[], predicate: (item: T) => boolean): boolean;
+export function any<T>(arr: T[], predicate: (item: T) => boolean): boolean;

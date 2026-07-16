@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---|---|
-| 1.0.x | ✅ |
+| 1.14.x | ✅ |
+| < 1.14 | ❌ |
 
 ---
 
@@ -31,9 +32,10 @@ You will receive a response within **72 hours**. We ask that you give us reasona
 
 Autumn Note includes a built-in DOM-based HTML sanitiser applied to all user input:
 
-- Strips `<script>`, `<iframe>`, `<object>`, `<embed>` elements
+- Strips `<script>`, `<object>`, `<embed>` and other active-content elements
 - Removes all `on*` event handler attributes (e.g. `onclick`, `onerror`)
-- Rejects `javascript:` and `data:` URIs in `href` and `src` attributes
+- Allows only HTTP(S), `mailto:`, `tel:`, safe relative links, and approved raster image data
+- Preserves HTTPS YouTube/Vimeo iframes only when iframe support is explicitly enabled
 - Sanitisation runs on: paste, `setHTML()`, and code-view output
 
 Despite these measures, **Autumn Note is a client-side editor** — always sanitise content server-side before storing or rendering it to other users.

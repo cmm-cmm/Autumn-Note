@@ -5,6 +5,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: ['test/**/*.test.js'],
+    exclude: ['test/browser/**'],
     pool: 'forks',
     coverage: {
       provider: 'v8',

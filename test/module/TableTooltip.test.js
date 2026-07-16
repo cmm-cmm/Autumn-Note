@@ -931,6 +931,14 @@ describe('TableTooltip._toggleHeaderRow', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 
+  it('creates tbody when demoting a header-only table', () => {
+    const { tt, ctx } = makeTooltip('<table class="an-table"><thead><tr><th>Only</th></tr></thead></table>');
+    activateTable(tt, ctx);
+    tt._toggleHeaderRow();
+    expect(ctx.layoutInfo.editable.querySelector('tbody td')?.textContent).toBe('Only');
+    expect(ctx.layoutInfo.editable.querySelector('thead')).toBeNull();
+  });
+
   it('does nothing when no active table', () => {
     const { tt } = makeTooltip();
     tt._activeTable = null;
@@ -954,5 +962,16 @@ describe('TableTooltip._applyBorderColor', () => {
     const { tt } = makeTooltip();
     tt._activeTable = null;
     expect(() => tt._applyBorderColor('#000')).not.toThrow();
+  });
+
+  it('syncs and clears the visible border color strip', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    table.querySelector('td').style.borderColor = '#00ff00';
+    tt._el.style.display = 'block';
+    tt._syncBorderColorStrip();
+    expect(tt._borderColorStrip.style.background).toContain('0, 255, 0');
+    tt._applyBorderColor('');
+    expect(tt._borderColorStrip.style.background).toBe('transparent');
   });
 });

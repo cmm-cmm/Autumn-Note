@@ -1,5 +1,8 @@
 packages:
   - packages/*
+overrides:
+  form-data: 4.0.6
+  ws: 8.21.0
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true

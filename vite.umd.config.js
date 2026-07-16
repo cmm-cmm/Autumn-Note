@@ -2,6 +2,8 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Library bundles must not copy demo-site assets into the npm package.
+  publicDir: false,
   build: {
     lib: {
       entry: resolve(__dirname, 'src/js/index.umd.js'),

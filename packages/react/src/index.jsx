@@ -1,5 +1,7 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import AutumnNote from 'autumnnote';
+
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**
  * React wrapper for AutumnNote WYSIWYG editor.
@@ -21,7 +23,7 @@ const AutumnNoteEditor = forwardRef(function AutumnNoteEditor(
   const containerRef = useRef(null);
   const editorRef    = useRef(null);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     editorRef.current = AutumnNote.create(containerRef.current, options);
     return () => {
       editorRef.current?.destroy();

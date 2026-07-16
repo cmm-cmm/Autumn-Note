@@ -1,9 +1,12 @@
 name: Publish to npm
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+
+concurrency:
+  group: npm-release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -14,7 +17,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 11.1.3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,10 +27,46 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test:coverage
+      - name: Verify release tag and package versions
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          test "$TAG" = "v$VERSION"
+          test "$(node -p "require('./package.json').version")" = "$VERSION"
+          test "$(node -p "require('./packages/react/package.json').version")" = "$VERSION"
+          test "$(node -p "require('./packages/vue/package.json').version")" = "$VERSION"
+
+      - name: Run release checks
+        run: pnpm check
+
+      - name: Install release browser matrix
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Run Chromium smoke tests
+        run: pnpm test:browser
+        env:
+          BROWSER: chromium
+
+      - name: Run Firefox smoke tests
+        run: pnpm test:browser
+        env:
+          BROWSER: firefox
+
+      - name: Run WebKit smoke tests
+        run: pnpm test:browser
+        env:
+          BROWSER: webkit
+
+      - name: Audit high-severity dependencies
+        run: pnpm audit --audit-level high
+
+      - name: Validate all package contents before publishing
+        run: |
+          npm pack --dry-run --ignore-scripts
+          npm pack ./packages/react --dry-run --ignore-scripts
+          npm pack ./packages/vue --dry-run --ignore-scripts
 
       - name: Verify npm auth
         run: |
@@ -38,11 +77,6 @@ jobs:
           npm whoami || { echo "::error::npm token is invalid or expired. Regenerate it at https://www.npmjs.com/settings/<user>/tokens and update the NPM_TOKEN secret."; exit 1; }
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # ── Build core first (wrapper builds mark autumnnote as external but
-      #    npm run build ensures dist/ is fresh for any non-external consumers) ──
-      - name: Build core library
-        run: npm run build
 
       # ──────────────────────────────────────────────────────────────
       # autumnnote (core)

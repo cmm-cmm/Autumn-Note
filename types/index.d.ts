@@ -337,13 +337,13 @@ export declare const locales: Record<string, AsnLocale>;
 export declare function resolveLocale(lang: string | Partial<AsnLocale> | null | undefined): AsnLocale;
 
 // Re-export core utility modules exposed by the package entry-point.
-export * from '../src/js/core/dom.js';
-export * from '../src/js/core/range.js';
-export * from '../src/js/core/func.js';
-export * from '../src/js/core/key.js';
-export * from '../src/js/core/lists.js';
-export * from '../src/js/core/env.js';
-export * from '../src/js/core/sanitise.js';
+export * from './core/dom.js';
+export * from './core/range.js';
+export * from './core/func.js';
+export * from './core/key.js';
+export * from './core/lists.js';
+export * from './core/env.js';
+export * from './core/sanitise.js';
 
 // ---------------------------------------------------------------------------
 // Context — per-instance editor hub
