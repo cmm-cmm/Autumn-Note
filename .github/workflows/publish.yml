@@ -3,9 +3,10 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  workflow_dispatch: {}
 
 concurrency:
-  group: npm-release-${{ github.event.release.tag_name }}
+  group: npm-release
   cancel-in-progress: false
 
 jobs:
@@ -32,6 +33,9 @@ jobs:
       - name: Verify release tag and package versions
         run: |
           TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="v$(node -p "require('./package.json').version")"
+          fi
           VERSION="${TAG#v}"
           test "$TAG" = "v$VERSION"
           test "$(node -p "require('./package.json').version")" = "$VERSION"

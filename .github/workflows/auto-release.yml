@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   tag-and-release:
@@ -43,12 +44,25 @@ jobs:
           fi
 
       - name: Create GitHub Release if missing
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping."
+            echo "created=false" >> "$GITHUB_OUTPUT"
           else
             gh release create "$TAG" --title "$TAG" --generate-notes
+            echo "created=true" >> "$GITHUB_OUTPUT"
           fi
+
+      # A release created by this workflow's own GITHUB_TOKEN does not
+      # trigger other workflows' `release` events (GitHub's built-in
+      # anti-recursion guard) — explicitly dispatch publish.yml instead,
+      # which IS exempt from that restriction.
+      - name: Trigger npm publish
+        if: steps.release.outputs.created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run publish.yml --ref main
