@@ -38,7 +38,7 @@
     "test:wrappers": "pnpm --filter autumnnote-react test && pnpm --filter autumnnote-vue test",
     "build:wrappers": "pnpm --filter autumnnote-react build && pnpm --filter autumnnote-vue build",
     "check:bundle": "node scripts/check-bundle-size.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm test:wrappers && pnpm build && pnpm check:bundle && pnpm build:demo && pnpm build:wrappers"
+    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm build:demo && pnpm build:wrappers"
   },
   "keywords": [
     "wysiwyg",
