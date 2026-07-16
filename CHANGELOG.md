@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flush pending debounced snapshots before undo/redo so immediate Undo after a toolbar command restores the previous state.
 - Avoid React `useLayoutEffect` warnings during server rendering and correct the Vue wrapper's exposed `editor` type and examples.
 - Replace JavaScript re-exports in the public declaration package with self-contained core `.d.ts` modules.
+- Emit and document `pasteError` when a dropped Markdown file cannot be read, with regression coverage for the failure path.
 
 ---
 

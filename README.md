@@ -447,6 +447,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `imageUpload` | `files: FileList` | Fired when images are dropped or pasted (when `onImageUpload` is provided). |
 | `imageError` | `{ file, message }` | Fired when an image is rejected (e.g. over `maxImageSize`). |
 | `paste` | `{ text, html }` | Fired after every paste event. |
+| `pasteError` | `{ message, size?, maxBytes? }` | Fired when paste/drop exceeds `maxPasteSize` or a dropped Markdown file cannot be read. |
 | `selectionChange` | `context` | Fired when the cursor or selection changes. |
 | `destroy` | `context` | Fired just before the editor is destroyed. |
 | `charLimitReached` | `context` | Fired when `maxChars` is hit. |
@@ -513,6 +514,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `onImageUpload` | `Function` | `null` | `(files: FileList) => void` — custom upload handler. Overrides base64 embed. |
 | `onImageError` | `Function` | `null` | `({ file, message }) => void` — called when an image is rejected. |
 | `onPaste` | `Function` | `null` | `({ text, html }) => void` — called after every paste event. |
+| `onPasteError` | `Function` | `null` | `({ message, size?, maxBytes? }) => void` — called when pasted or dropped content cannot be processed. |
 | `onSelectionChange` | `Function` | `null` | `(context) => void` — called when cursor or selection changes. |
 | `onDestroy` | `Function` | `null` | `(context) => void` — called just before the editor is destroyed. |
 | `onCharLimitReached` | `Function` | `null` | `(context) => void` — called when `maxChars` is hit. |

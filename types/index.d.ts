@@ -7,6 +7,15 @@
 // Options
 // ---------------------------------------------------------------------------
 
+export interface PasteErrorData {
+  /** Human-readable description of the rejected paste or drop. */
+  message: string;
+  /** Payload size in bytes, when the failure is caused by a configured limit. */
+  size?: number;
+  /** Maximum permitted payload size in bytes, when applicable. */
+  maxBytes?: number;
+}
+
 export interface AsnOptions {
   /** Placeholder text when the editor is empty. */
   placeholder?: string;
@@ -102,6 +111,8 @@ export interface AsnOptions {
   tableHeaderRow?: boolean;
   /** Callback fired after every paste event. */
   onPaste?: (data: { text: string; html: string | null }) => void;
+  /** Callback fired when pasted or dropped content cannot be processed. */
+  onPasteError?: (error: PasteErrorData) => void;
   /** Additional color swatches shown at the top of the color picker. */
   colorSwatches?: string[];
   /** Custom focus ring colour — overrides the default blue. Accepts any valid CSS colour string, e.g. '#f97316'. */
