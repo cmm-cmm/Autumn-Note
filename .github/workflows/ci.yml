@@ -64,32 +64,6 @@ jobs:
         if: runner.os == 'Linux'
         run: pnpm audit --audit-level high
 
-      - name: Upload Node 18 runtime artifact
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: runtime-packages
-          path: |
-            dist/
-            package.json
-          if-no-files-found: error
-
-  runtime-node18:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: runtime-packages
-          path: .
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Import ESM entry
-        run: node -e "import('autumnnote').then(m => { if (!m.default?.create) { console.error('No create fn; keys:', Object.keys(m)); process.exit(1) } else console.log('ESM OK - version:', m.default.version) }).catch(e => { console.error('ESM import failed:', e.message); process.exit(1) })"
-      - name: Require CommonJS entry
-        run: node -e "const m=require('autumnnote'); if (!m.create) { console.error('No create fn'); process.exit(1) } else console.log('CJS OK - version:', m.version)"
-
   browser:
     strategy:
       fail-fast: false

@@ -6,7 +6,7 @@ Core editor code lives in `src/js/`. Shared DOM and utility logic is under `src/
 
 ## Build, Test, and Development Commands
 
-Development requires Node 20.19 or newer and pnpm 11.1.3; CI uses Node 22. The published runtime remains compatible with Node 18 or newer.
+Development and package usage require Node 20.19 or newer and pnpm 11.1.3; CI uses Node 22.
 
 - `pnpm install` installs workspace dependencies.
 - `pnpm dev` starts the Vite development server.
