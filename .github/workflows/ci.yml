@@ -38,14 +38,14 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
-      - name: Test framework wrappers
-        run: pnpm test:wrappers
-
       - name: Build library
         run: pnpm build
 
       - name: Enforce bundle budget
         run: pnpm check:bundle
+
+      - name: Test framework wrappers
+        run: pnpm test:wrappers
 
       - name: Build demo site
         run: pnpm build:demo
