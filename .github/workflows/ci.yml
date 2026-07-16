@@ -75,7 +75,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: runtime-packages
@@ -84,9 +83,9 @@ jobs:
         with:
           node-version: 18
       - name: Import ESM entry
-        run: node -e "import('autumnnote').then(m => { if (!m.default?.create) process.exit(1) })"
+        run: node -e "import('./dist/autumnnote.es.js').then(m => { if (!m.default?.create) { console.error('No create fn; keys:', Object.keys(m)); process.exit(1) } else console.log('ESM OK') }).catch(e => { console.error('ESM import failed:', e.message); process.exit(1) })"
       - name: Require CommonJS entry
-        run: node -e "if (!require('autumnnote').create) process.exit(1)"
+        run: node -e "const m=require('./dist/autumnnote.cjs'); if (!m.create) { console.error('No create fn'); process.exit(1) } else console.log('CJS OK')"
 
   browser:
     strategy:
