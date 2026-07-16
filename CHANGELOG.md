@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Minify production ESM, UMD, and CommonJS bundles with OXC and enforce a 110 KiB gzip budget.
+- Add focused coverage gates for complex image crop, icon dialog, and table tooltip modules.
+- Exercise clipboard paste through Chromium browser automation while retaining cross-browser sanitizer coverage.
+
 ### Security
 - Canonicalise URL protocols before validation, closing an XSS bypass where encoded tabs or newlines made `javascript:` URLs evade the sanitizer.
 - Restrict links and media to an explicit protocol allowlist, reject SVG data URIs, and remove invalid iframe embeds entirely.

@@ -1,5 +1,6 @@
 import AutumnNote from '../../src/js/index.js';
 import { sanitiseHTML } from '../../src/js/core/sanitise.js';
+import { userEvent } from 'vitest/browser';
 
 describe('Autumn Note in a real browser', () => {
   let target;
@@ -99,4 +100,34 @@ describe('Autumn Note in a real browser', () => {
     expect(editable.innerHTML).toContain('safe');
     expect(editable.innerHTML).not.toContain('onclick');
   });
+
+  it.runIf(navigator.userAgent.includes('Chrome'))(
+    'sanitises HTML copied and pasted through Chromium clipboard automation',
+    async () => {
+      const editable = mount();
+      const source = document.createElement('div');
+      source.contentEditable = 'true';
+      source.innerHTML = '<p>clipboard <span onclick="alert(1)">content</span></p>';
+      document.body.appendChild(source);
+
+      const sourceRange = document.createRange();
+      sourceRange.selectNodeContents(source);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(sourceRange);
+      await userEvent.copy();
+
+      editable.focus();
+      const targetRange = document.createRange();
+      targetRange.selectNodeContents(editable);
+      targetRange.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(targetRange);
+      await userEvent.paste();
+
+      expect(editable.textContent.replaceAll('\u00a0', ' ')).toContain('clipboard content');
+      expect(editable.innerHTML).not.toContain('onclick');
+      source.remove();
+    },
+  );
 });

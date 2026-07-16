@@ -43,6 +43,8 @@ describe('ImageCropOverlay', () => {
   afterEach(() => {
     overlay.destroy();
     ctx.layoutInfo.editable.remove();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('initialize() returns instance', () => {
@@ -158,5 +160,127 @@ describe('ImageCropOverlay', () => {
     vi.advanceTimersByTime(4000);
     expect(document.querySelector('[role="alert"]')).toBeNull();
     vi.useRealTimers();
+  });
+
+  it('runs handle, crop-box, toolbar, and scrim DOM handlers', () => {
+    const img = makeImg();
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+    const move = vi.spyOn(overlay, '_startBoxMove');
+    const resize = vi.spyOn(overlay, '_startHandleDrag');
+
+    overlay._cropBox.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 30, clientY: 30 }));
+    overlay._handles.e.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
+    expect(move).toHaveBeenCalledOnce();
+    expect(resize).toHaveBeenCalledWith(expect.any(MouseEvent), 'e');
+
+    const confirm = vi.spyOn(overlay, '_confirm').mockResolvedValue();
+    const [confirmBtn, cancelBtn] = overlay._toolbar.querySelectorAll('button');
+    confirmBtn.dispatchEvent(new MouseEvent('mouseover'));
+    expect(confirmBtn.style.background).not.toBe('none');
+    confirmBtn.dispatchEvent(new MouseEvent('mouseout'));
+    confirmBtn.click();
+    expect(confirm).toHaveBeenCalledOnce();
+    cancelBtn.click();
+    expect(overlay._scrim).toBeNull();
+
+    overlay.open(img);
+    overlay._scrim.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(overlay._scrim).toBeNull();
+  });
+
+  it('moves and resizes through touch events and cleans drag listeners', () => {
+    const img = makeImg();
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+
+    const touchStart = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(touchStart, 'touches', { value: [{ clientX: 50, clientY: 60 }] });
+    overlay._cropBox.dispatchEvent(touchStart);
+    const touchMove = new Event('touchmove', { bubbles: true, cancelable: true });
+    Object.defineProperty(touchMove, 'touches', { value: [{ clientX: 70, clientY: 80 }] });
+    document.dispatchEvent(touchMove);
+    document.dispatchEvent(new Event('touchend'));
+    expect(document.body.style.userSelect).toBe('');
+
+    const handleTouch = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(handleTouch, 'touches', { value: [{ clientX: 100, clientY: 100 }] });
+    overlay._handles.nw.dispatchEvent(handleTouch);
+    const resizeMove = new Event('touchmove', { bubbles: true, cancelable: true });
+    Object.defineProperty(resizeMove, 'touches', { value: [{ clientX: 110, clientY: 115 }] });
+    document.dispatchEvent(resizeMove);
+    document.dispatchEvent(new Event('touchend'));
+    expect(overlay._box.w).toBeGreaterThanOrEqual(20);
+  });
+
+  it('covers every resize direction and the vertical aspect-ratio branch', () => {
+    const img = makeImg();
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+    for (const id of ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']) {
+      overlay._startHandleDrag({ clientX: 100, clientY: 100 }, id);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 95, clientY: 125 }));
+      document.dispatchEvent(new MouseEvent('mouseup'));
+    }
+    overlay._arCheck.checked = true;
+    overlay._startHandleDrag({ clientX: 100, clientY: 100 }, 'nw');
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 98, clientY: 125 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(overlay._box.x).toBeGreaterThanOrEqual(10);
+  });
+
+  it('positions the toolbar above a crop near the viewport bottom', () => {
+    const img = makeImg();
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+    const originalHeight = globalThis.innerHeight;
+    Object.defineProperty(globalThis, 'innerHeight', { value: 180, configurable: true });
+    overlay._updateDOM();
+    expect(parseFloat(overlay._toolbar.style.top)).toBeLessThan(overlay._box.y);
+    Object.defineProperty(globalThis, 'innerHeight', { value: originalHeight, configurable: true });
+  });
+
+  it('applies a successful crop and records the edit', async () => {
+    const drawImage = vi.fn();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage,
+      getImageData: vi.fn(() => new Uint8ClampedArray(4)),
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,cropped');
+    const img = makeImg();
+    img.setAttribute('width', '200');
+    img.setAttribute('height', '150');
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+
+    await overlay._confirm();
+    expect(drawImage).toHaveBeenCalledOnce();
+    expect(img.src).toContain('data:image/png;base64,cropped');
+    expect(img.hasAttribute('width')).toBe(false);
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+    expect(ctx.invoke).toHaveBeenCalledWith('imageResizer.updateOverlay');
+  });
+
+  it('reports canvas failures and closes without changing the image', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const error = vi.spyOn(overlay, '_showCropError');
+    const img = makeImg();
+    const original = img.src;
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+    await overlay._confirm();
+    expect(error).toHaveBeenCalledOnce();
+    expect(img.src).toBe(original);
+    expect(overlay._scrim).toBeNull();
+  });
+
+  it('closes safely when confirm has no image or an empty crop', async () => {
+    await overlay._confirm();
+    const img = makeImg();
+    ctx.layoutInfo.editable.appendChild(img);
+    overlay.open(img);
+    overlay._box.w = 0;
+    await overlay._confirm();
+    expect(overlay._scrim).toBeNull();
   });
 });

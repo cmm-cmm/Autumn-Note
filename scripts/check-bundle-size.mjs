@@ -2,9 +2,9 @@ import { gzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 
 const budgets = new Map([
-  ['dist/autumnnote.es.js', 140 * 1024],
-  ['dist/autumnnote.umd.js', 140 * 1024],
-  ['dist/autumnnote.cjs', 140 * 1024],
+  ['dist/autumnnote.es.js', 110 * 1024],
+  ['dist/autumnnote.umd.js', 110 * 1024],
+  ['dist/autumnnote.cjs', 110 * 1024],
 ]);
 
 let failed = false;

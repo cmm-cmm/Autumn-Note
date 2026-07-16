@@ -239,6 +239,7 @@ export class TableTooltip {
           !this._activeTable.contains(et) &&
           !this._el.contains(et) &&
           !this._sizePopover?.contains(et) &&
+          !this._shadePopover?.contains(et) &&
           !this._borderColorPopover?.contains(et)) {
           this._hide();
         }
@@ -1058,7 +1059,7 @@ export class TableTooltip {
 
     const d1 = on(applyBtn, 'click', () => {
       const val = Number.parseInt(this._sizeInputEl.value, 10);
-      if (val > 0 && typeof this._sizeApply === 'function') this._sizeApply(val);
+      if (val >= 0 && typeof this._sizeApply === 'function') this._sizeApply(val);
       this._hideSizePopover();
     });
     const d2 = on(cancelBtn, 'click', () => this._hideSizePopover());

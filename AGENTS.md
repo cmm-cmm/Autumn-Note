@@ -10,11 +10,11 @@ Development requires Node 20.19 or newer and pnpm 11.1.3; CI uses Node 22. The p
 
 - `pnpm install` installs workspace dependencies.
 - `pnpm dev` starts the Vite development server.
-- `pnpm build` creates ESM and UMD library bundles.
+- `pnpm build` creates minified ESM, UMD, and CommonJS library bundles with source maps.
 - `pnpm build:demo` builds the documentation/demo site.
 - `pnpm test` runs the Vitest suite once; `pnpm test:watch` runs it interactively.
 - `pnpm test:coverage` runs tests and enforces coverage thresholds.
-- `pnpm lint` checks `src/` with ESLint; `pnpm typecheck` validates JavaScript/JSDoc against the declarations.
+- `pnpm lint` checks `src/` and `test/` with ESLint; `pnpm typecheck` validates JavaScript/JSDoc and wrapper consumers against the declarations.
 
 ## Coding Style & Naming Conventions
 

@@ -24,7 +24,7 @@ export default defineConfig({
     },
     emptyOutDir: false,
     sourcemap: true,
-    minify: false,
+    minify: 'oxc',
   },
   css: {
     preprocessorOptions: {

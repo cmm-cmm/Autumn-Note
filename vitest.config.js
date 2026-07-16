@@ -16,6 +16,21 @@ export default defineConfig({
         statements: 83,
         functions: 80,
         branches: 70,
+        'src/js/module/ImageCropOverlay.js': {
+          lines: 80,
+          functions: 75,
+          branches: 55,
+        },
+        'src/js/module/IconDialog.js': {
+          lines: 95,
+          functions: 80,
+          branches: 65,
+        },
+        'src/js/module/TableTooltip.js': {
+          lines: 85,
+          functions: 75,
+          branches: 60,
+        },
       },
     },
   },
