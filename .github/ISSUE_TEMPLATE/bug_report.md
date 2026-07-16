@@ -22,7 +22,7 @@ What you expected to happen.
 If applicable, add screenshots to help explain the problem.
 
 **Environment**
-- AutumnNote version: [e.g. 1.0.0]
+- Autumn Note version: [e.g. 1.0.0]
 - Browser: [e.g. Chrome 123, Firefox 115]
 - OS: [e.g. Windows 11, macOS 14]
 - Integration: [e.g. plain HTML, Vue 3, React 18]

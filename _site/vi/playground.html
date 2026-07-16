@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Autumn Note Playground — Try the Editor Live</title>
-  <meta name="description" content="Interactive playground for Autumn Note WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
-  <meta name="keywords" content="wysiwyg editor demo, rich text editor playground, autumnnote try, online editor test" />
+  <title>Playground Autumn Note — Thử trình soạn thảo trực tiếp</title>
+  <meta name="description" content="Playground tương tác cho trình soạn thảo WYSIWYG Autumn Note. Cấu hình tùy chọn, tải mẫu, và xuất HTML hoặc Markdown theo thời gian thực." />
+  <meta name="keywords" content="demo trình soạn thảo wysiwyg, playground rich text editor, dùng thử autumnnote, kiểm thử trình soạn thảo online" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Minh Pham" />
-  <link rel="canonical" href="https://autumn.konexforge.com/playground.html" />
+  <link rel="canonical" href="https://autumn.konexforge.com/vi/playground.html" />
   <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
   <link rel="alternate" hreflang="en" href="https://autumn.konexforge.com/playground.html" />
   <link rel="alternate" hreflang="vi" href="https://autumn.konexforge.com/vi/playground.html" />
@@ -16,21 +16,22 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Autumn Note — Interactive Playground" />
-  <meta property="og:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
-  <meta property="og:url" content="https://autumn.konexforge.com/playground.html" />
+  <meta property="og:title" content="Autumn Note — Playground tương tác" />
+  <meta property="og:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Cấu hình tùy chọn, thử giao diện, khám phá API theo thời gian thực." />
+  <meta property="og:url" content="https://autumn.konexforge.com/vi/playground.html" />
   <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Autumn Note — WYSIWYG editor banner" />
+  <meta property="og:image:alt" content="Autumn Note — banner trình soạn thảo WYSIWYG" />
   <meta property="og:site_name" content="Autumn Note" />
-  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:locale:alternate" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://autumn.konexforge.com/playground.html" />
-  <meta name="twitter:title" content="Autumn Note — Interactive Playground" />
-  <meta name="twitter:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:url" content="https://autumn.konexforge.com/vi/playground.html" />
+  <meta name="twitter:title" content="Autumn Note — Playground tương tác" />
+  <meta name="twitter:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
   <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
@@ -39,14 +40,14 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Autumn Note Playground",
-    "description": "Interactive playground to try Autumn Note WYSIWYG editor live. Configure toolbar, test themes (light/dark), write in markdown shortcuts, try @mention, and export content as HTML or Markdown.",
+    "description": "Playground tương tác để dùng thử trình soạn thảo WYSIWYG Autumn Note trực tiếp. Cấu hình toolbar, thử giao diện (sáng/tối), gõ phím tắt markdown, thử @mention, và xuất nội dung dạng HTML hoặc Markdown.",
     "url": "https://autumn.konexforge.com/playground.html",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "Text Editor",
     "operatingSystem": "Web Browser",
     "isAccessibleForFree": true,
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "inLanguage": "en",
+    "inLanguage": "vi",
     "author": { "@type": "Person", "name": "Minh Pham" },
     "isPartOf": { "@id": "https://autumn.konexforge.com/#software" }
   }
@@ -54,7 +55,7 @@
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
-  <script type="module" crossorigin src="/assets/playground-rUPNcUW5.js"></script>
+  <script type="module" crossorigin src="/assets/viPlayground-COmiKRNz.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/js-DGUr9y0I.js">
   <link rel="stylesheet" crossorigin href="/assets/js-DCvYl1Kc.css">
   <link rel="stylesheet" crossorigin href="/assets/playground-BYFbSwrs.css">
@@ -63,20 +64,20 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" href="./" aria-label="Autumn Note home">
+    <a class="brand" href="./" aria-label="Trang chủ Autumn Note">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">Autumn Note</span>
       <span class="brand-version">v1.14.0</span>
     </a>
-    <nav class="header-nav" aria-label="Site links">
-      <a class="nav-link" href="./">Home</a>
-      <a class="nav-link" href="docs.html">Docs</a>
+    <nav class="header-nav" aria-label="Liên kết trang">
+      <a class="nav-link" href="./">Trang chủ</a>
+      <a class="nav-link" href="docs.html">Tài liệu</a>
       <a class="nav-link active" href="playground.html" aria-current="page">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-      <span class="lang-switch" aria-label="Language">
-        <a href="./playground.html" class="active" lang="en" hreflang="en">EN</a>
-        <a href="/vi/playground.html" lang="vi" hreflang="vi">VI</a>
+      <span class="lang-switch" aria-label="Ngôn ngữ">
+        <a href="/playground.html" lang="en" hreflang="en">EN</a>
+        <a href="./playground.html" class="active" lang="vi" hreflang="vi">VI</a>
       </span>
     </nav>
   </div>
@@ -84,13 +85,13 @@
 
 <main class="pg-layout">
   <div class="pg-toolbar-bar">
-    <h1>Playground <span>— try the editor live</span></h1>
+    <h1>Playground <span>— thử trình soạn thảo trực tiếp</span></h1>
   </div>
 
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Welcome to the <strong>Autumn Note Playground</strong>! ✨</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
+      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>! ✨</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -99,22 +100,22 @@
       <!-- Config card -->
       <div class="card">
         <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
-          <span class="card-title">⚙ Options</span>
+          <span class="card-title">⚙ Tùy chọn</span>
           <span class="card-toggle open">▶</span>
         </div>
         <div class="card-body" id="cfg-body">
           <div class="cfg-row">
-            <span class="cfg-label">Theme</span>
+            <span class="cfg-label">Giao diện</span>
             <select id="cfg-theme" class="cfg-select">
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
+              <option value="light">Sáng</option>
+              <option value="dark">Tối</option>
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Language</span>
+            <span class="cfg-label">Ngôn ngữ</span>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
-              <option value="vi">Tiếng Việt</option>
+              <option value="vi" selected>Tiếng Việt</option>
               <option value="ja">日本語</option>
               <option value="zh">中文</option>
               <option value="fr">Français</option>
@@ -124,77 +125,77 @@
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Bubble toolbar</span>
+            <span class="cfg-label">Thanh công cụ nổi</span>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-bubble" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Markdown shortcuts</span>
+            <span class="cfg-label">Phím tắt Markdown</span>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-markdown" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Sticky toolbar</span>
+            <span class="cfg-label">Thanh công cụ dính</span>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-sticky" />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Read only</span>
+            <span class="cfg-label">Chỉ đọc</span>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-readonly" />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <label class="cfg-label" for="cfg-maxchars">Max chars</label>
+            <label class="cfg-label" for="cfg-maxchars">Số ký tự tối đa</label>
             <input type="number" id="cfg-maxchars" class="cfg-input" value="0" min="0" step="100" />
           </div>
           <div class="cfg-row">
-            <label class="cfg-label" for="cfg-color">Focus color</label>
+            <label class="cfg-label" for="cfg-color">Màu focus</label>
             <input type="color" id="cfg-color" class="cfg-input" value="#e8751a" />
           </div>
           <div class="cfg-row">
-            <label class="cfg-label" for="cfg-height">Height (px)</label>
+            <label class="cfg-label" for="cfg-height">Chiều cao (px)</label>
             <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
-          <button class="apply-btn" onclick="applyConfig()">↺ Apply Options</button>
+          <button class="apply-btn" onclick="applyConfig()">↺ Áp dụng tùy chọn</button>
         </div>
       </div>
 
       <!-- Snippet card -->
       <div class="card">
         <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
-          <span class="card-title">📄 Load Snippet</span>
+          <span class="card-title">📄 Tải mẫu</span>
           <span class="card-toggle open">▶</span>
         </div>
         <div class="card-body" id="snip-body">
           <div class="snippet-grid">
             <button class="snippet-btn" onclick="loadSnippet('article')">
-              <span class="snippet-icon">📝</span>Article
+              <span class="snippet-icon">📝</span>Bài viết
             </button>
             <button class="snippet-btn" onclick="loadSnippet('checklist')">
-              <span class="snippet-icon">✅</span>Checklist
+              <span class="snippet-icon">✅</span>Danh sách việc
             </button>
             <button class="snippet-btn" onclick="loadSnippet('table')">
-              <span class="snippet-icon">📊</span>Table
+              <span class="snippet-icon">📊</span>Bảng
             </button>
             <button class="snippet-btn" onclick="loadSnippet('code')">
-              <span class="snippet-icon">💻</span>Code block
+              <span class="snippet-icon">💻</span>Khối mã
             </button>
             <button class="snippet-btn" onclick="loadSnippet('formatting')">
-              <span class="snippet-icon">🎨</span>Formatting
+              <span class="snippet-icon">🎨</span>Định dạng
             </button>
             <button class="snippet-btn" onclick="loadSnippet('markdown')">
               <span class="snippet-icon">📄</span>Markdown
             </button>
             <button class="snippet-btn" onclick="loadSnippet('empty')">
-              <span class="snippet-icon">🗑</span>Clear
+              <span class="snippet-icon">🗑</span>Xóa
             </button>
           </div>
         </div>
@@ -205,7 +206,7 @@
         <div class="output-tabs">
           <button class="output-tab active" data-tab="html" onclick="switchTab('html')">HTML</button>
           <button class="output-tab" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
-          <button class="output-tab" data-tab="stats" onclick="switchTab('stats')">Stats</button>
+          <button class="output-tab" data-tab="stats" onclick="switchTab('stats')">Thống kê</button>
         </div>
         <div class="output-body">
           <div class="output-pane active" id="tab-html">
@@ -215,21 +216,21 @@
             <code class="output-html" id="out-markdown"></code>
           </div>
           <div class="output-pane" id="tab-stats">
-            <div class="stats-row"><span class="stats-key">Words</span><span class="stats-val" id="stat-words">0</span></div>
-            <div class="stats-row"><span class="stats-key">Characters</span><span class="stats-val" id="stat-chars">0</span></div>
-            <div class="stats-row"><span class="stats-key">Reading time</span><span class="stats-val" id="stat-read">0 min</span></div>
-            <div class="stats-row"><span class="stats-key">Paragraphs</span><span class="stats-val" id="stat-para">0</span></div>
+            <div class="stats-row"><span class="stats-key">Số từ</span><span class="stats-val" id="stat-words">0</span></div>
+            <div class="stats-row"><span class="stats-key">Số ký tự</span><span class="stats-val" id="stat-chars">0</span></div>
+            <div class="stats-row"><span class="stats-key">Thời gian đọc</span><span class="stats-val" id="stat-read">0 phút</span></div>
+            <div class="stats-row"><span class="stats-key">Số đoạn văn</span><span class="stats-val" id="stat-para">0</span></div>
           </div>
         </div>
         <div class="action-row">
-          <button class="act-btn" onclick="copyOutput()" title="Copy output to clipboard">
-            📋 Copy
+          <button class="act-btn" onclick="copyOutput()" title="Sao chép kết quả vào clipboard">
+            📋 Sao chép
           </button>
-          <button class="act-btn" onclick="downloadOutput()" title="Download file">
-            ⬇ Download
+          <button class="act-btn" onclick="downloadOutput()" title="Tải file xuống">
+            ⬇ Tải xuống
           </button>
-          <button class="act-btn primary" onclick="sharePlayground()" title="Share this configuration">
-            🔗 Share
+          <button class="act-btn primary" onclick="sharePlayground()" title="Chia sẻ cấu hình này">
+            🔗 Chia sẻ
           </button>
         </div>
       </div>
@@ -239,26 +240,26 @@
 </main><!-- .pg-layout -->
 
 <!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
-<section class="pg-about" aria-label="About this playground">
-  <h2>What can you try in this playground?</h2>
+<section class="pg-about" aria-label="Giới thiệu playground này">
+  <h2>Bạn có thể thử gì trong playground này?</h2>
   <ul>
-    <li><strong>Toolbar configuration</strong> — toggle individual buttons or swap to a custom toolbar layout</li>
-    <li><strong>Themes</strong> — switch between light, dark, and auto (system preference) themes</li>
-    <li><strong>Markdown shortcuts</strong> — type <code>**bold**</code>, <code># Heading</code>, <code>- list</code> and watch them transform instantly</li>
-    <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
-    <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
-    <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
+    <li><strong>Cấu hình toolbar</strong> — bật/tắt từng nút hoặc chuyển sang bố cục toolbar tùy chỉnh</li>
+    <li><strong>Giao diện</strong> — chuyển đổi giữa chế độ sáng, tối, và tự động (theo hệ thống)</li>
+    <li><strong>Phím tắt Markdown</strong> — gõ <code>**đậm**</code>, <code># Tiêu đề</code>, <code>- danh sách</code> và xem chuyển đổi ngay lập tức</li>
+    <li><strong>@mention</strong> — gõ <code>@</code> để kích hoạt gợi ý tự động</li>
+    <li><strong>Xuất nội dung</strong> — tải nội dung editor dưới dạng HTML hoặc Markdown</li>
+    <li><strong>Thanh công cụ nổi</strong> — chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
   </ul>
-  <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
+  <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
 </section>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <span>Built with ❤️ by KonexForge</span>
     <nav class="footer-links">
-      <a href="./">Home</a>
+      <a href="./">Trang chủ</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="docs.html">Docs</a>
+      <a href="docs.html">Tài liệu</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note/issues" target="_blank" rel="noopener noreferrer">Issues</a>
     </nav>
   </div>

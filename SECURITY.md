@@ -29,11 +29,11 @@ You will receive a response within **72 hours**. We ask that you give us reasona
 
 ## Security design
 
-AutumnNote includes a built-in DOM-based HTML sanitiser applied to all user input:
+Autumn Note includes a built-in DOM-based HTML sanitiser applied to all user input:
 
 - Strips `<script>`, `<iframe>`, `<object>`, `<embed>` elements
 - Removes all `on*` event handler attributes (e.g. `onclick`, `onerror`)
 - Rejects `javascript:` and `data:` URIs in `href` and `src` attributes
 - Sanitisation runs on: paste, `setHTML()`, and code-view output
 
-Despite these measures, **AutumnNote is a client-side editor** — always sanitise content server-side before storing or rendering it to other users.
+Despite these measures, **Autumn Note is a client-side editor** — always sanitise content server-side before storing or rendering it to other users.

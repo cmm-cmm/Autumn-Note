@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/autumnnote-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-vue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official **Vue 3 wrapper** for [AutumnNote](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
+Official **Vue 3 wrapper** for [Autumn Note](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
 
 ## Installation
 

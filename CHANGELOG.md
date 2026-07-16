@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.14.0] - 2026-07-14
+
+### Changed
+- **Rebranded display name from "AutumnNote" to "Autumn Note"** (with a space) across all visible/prose text — page titles, headings, meta descriptions, Open Graph/Twitter tags, JSON-LD `name`/`description` fields, README, CHANGELOG, CONTRIBUTING, SECURITY, issue templates, and the framework wrapper READMEs. The npm package names (`autumnnote`, `autumnnote-react`, `autumnnote-vue`), the JavaScript API (`AutumnNote.create()`, `import AutumnNote from 'autumnnote'`, the UMD global), and all code samples/API references are unaffected — these cannot contain a space and remain unchanged
+- Regenerated the 1200×630 OG/Twitter banner image with the corrected "Autumn Note" wordmark
+- Footer credit line and all `<title>`/meta descriptions on the live demo (English and Vietnamese) now consistently read "Autumn Note"
+
+---
+
+## [1.13.0] - 2026-07-12
+
+### Added
+- Vietnamese localization of the live demo site (`demo/vi/index.html`, `demo/vi/docs.html`, `demo/vi/playground.html`) — full translations of the marketing copy, homepage FAQ, and API reference prose, with code samples, option/parameter names, and type signatures left in English per standard technical-docs convention
+- `hreflang` alternate links (`en`/`vi`/`x-default`) and a language switcher (`EN` / `VI`) in the header nav on all 6 pages
+- `og:locale`, `twitter:url`, and `apple-touch-icon` meta tags on all 3 English pages
+- A proper 1200×630 OG/Twitter banner image, replacing the previous 512×512 square logo
+
+### Fixed
+- 21 instances of mangled UTF-8 (`—`, `→`, `✓`) plus 5 resulting broken HTML closing tags in `docs.html`, left over from an earlier encoding corruption
+- A duplicate `id="tab-stats"` HTML attribute in `playground.html`
+- `sonar.cpd.exclusions` glob pattern in `sonar-project.properties`, which previously only matched HTML files in the repo root and never applied to any file under `demo/`
+
+### Changed
+- Extracted each page's shared `<style>` block into `demo/assets/*.css`, linked from both the English and Vietnamese version of each page, instead of duplicating ~13KB of inline CSS per locale pair
+
+---
+
+## [1.12.0] - 2026-07-08
+
+### Added
+- Visible FAQ section on the Live Demo homepage, mirroring the existing `FAQPage` JSON-LD copy (what is Autumn Note, licensing, competitor alternatives, install) so structured data and on-page content match
+- `WebSite` schema.org JSON-LD entity, linked via `@id`/`isPartOf` from the `SoftwareApplication` (homepage), `TechArticle` (docs), and `WebApplication` (playground) blocks
+- Branded `demo/404.html`, wired into the demo build (`vite.demo.config.js`) and Cloudflare Workers Assets (`wrangler.toml`'s `not_found_handling = "404-page"`), so broken links land on a real page instead of a blank default
+- `public/_headers` — short `Cache-Control` TTL for HTML pages, long immutable TTL for hashed `/assets/*`, for faster re-crawl pickup of edited pages
+- `<lastmod>` on all 3 `sitemap.xml` entries
+
+### Changed
+- Homepage H1 now carries real keywords (`Fast, Lightweight WYSIWYG Editor for Vanilla JavaScript`) instead of a keyword-free tagline
+- `<main>` landmark widened on the homepage to wrap all marketing content (hero, features, demo, quick-start, FAQ) instead of just the demo widget; added the missing `<main>` on the playground page
+- Playground's crawler-fallback copy now includes "rich text editor" alongside "WYSIWYG editor"; its footer gained a Home link for nav consistency with the other pages
+- Header logo images across all 3 demo pages now have descriptive alt text
+
+---
+
 ## [1.11.1] - 2026-07-07
 
 ### Security
@@ -294,7 +338,7 @@ AutumnNote.create('#editor', {
 ## [1.4.1] - 2026-05-19
 
 ### Fixed
-- **Playground — Apply Options crash** — `editor.destroy()` tears down the Context but does not remove the entry from AutumnNote's internal `WeakMap`; the subsequent `AutumnNote.create()` call returned the stale destroyed instance. Fixed by using `AutumnNote.destroy(targetEl)` which removes the entry before re-creating.
+- **Playground — Apply Options crash** — `editor.destroy()` tears down the Context but does not remove the entry from Autumn Note's internal `WeakMap`; the subsequent `AutumnNote.create()` call returned the stale destroyed instance. Fixed by using `AutumnNote.destroy(targetEl)` which removes the entry before re-creating.
 - **Playground — editor panel corners missing border** — `.an-container` carries its own `border` and `border-radius` from `autumnnote.css`; inside `.panel-editor` (which has `border-radius: 10px; overflow: hidden`) the two borders overlapped and the outer panel border was visually covered at the corners. Fixed by suppressing `.an-container`'s border and radius inside the panel, letting `.panel-editor` own the visual boundary.
 - **Playground — layout shift on focus** — switching from `border: none` (0 px) to the focus border (1 px) on `.an-focused` caused a 1 px layout jump. Fixed by using `border-color: transparent` so border-width stays constant at 1 px in both states.
 - **Playground — focus ring clipped at corners** — `.an-container` has `border-radius: 0` inside the panel, so the orange focus ring appeared only on straight edges; corners remained gray because `overflow: hidden` on `.panel-editor` clipped the inner border. Fixed by fully suppressing `.an-container`'s border/shadow and propagating focus state to `.panel-editor` via `onFocus`/`onBlur` callbacks so the ring draws on the element that owns `border-radius: 10px`.
