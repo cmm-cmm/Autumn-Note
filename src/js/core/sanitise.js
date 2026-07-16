@@ -6,7 +6,7 @@
  */
 
 /** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta'];
+const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta', 'noscript', 'portal', 'frame', 'frameset', 'applet'];
 
 /** Tags whose element wrapper is stripped but content (child nodes) is preserved. */
 const UNWRAP_TAGS = new Set(['button']);

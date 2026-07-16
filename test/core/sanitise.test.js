@@ -181,6 +181,21 @@ describe('sanitiseHTML', () => {
     expect(result).not.toContain('xlink:href');
   });
 
+  it('strips <noscript> elements and their content', () => {
+    const input = '<noscript><img src="x" onerror="alert(1)"></noscript>';
+    expect(sanitiseHTML(input)).not.toContain('<noscript');
+    expect(sanitiseHTML(input)).not.toContain('onerror');
+  });
+
+  it('strips <portal> elements', () => {
+    expect(sanitiseHTML('<portal src="https://evil.com"></portal>')).not.toContain('<portal');
+  });
+
+  it('strips legacy frame elements (<frame>, <frameset>, <applet>)', () => {
+    expect(sanitiseHTML('<frameset><frame src="https://evil.com"></frameset>')).not.toContain('<frame');
+    expect(sanitiseHTML('<applet code="Evil.class"></applet>')).not.toContain('<applet');
+  });
+
   describe('style attribute filtering (#65)', () => {
     it('strips a style attribute containing url() (data exfiltration)', () => {
       const input = '<p style="background:url(https://evil.com/steal)">Hello</p>';
