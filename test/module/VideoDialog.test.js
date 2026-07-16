@@ -116,6 +116,17 @@ describe('VideoDialog._parseVideoUrl', () => {
     expect(vd._parseVideoUrl('vbscript:msgbox(1)')).toBeNull();
   });
 
+  it.each([
+    'java\nscript:alert(1)',
+    'file:///tmp/video.mp4',
+    'ftp://example.com/video.mp4',
+    'custom:video.mp4',
+  ])('returns null for disallowed media URL %s', (url) => {
+    const { vd } = makeDialog();
+    expect(vd._parseVideoUrl(url)).toBeNull();
+    expect(vd._buildEmbedHtml(url, 560)).toBeNull();
+  });
+
   it('parses YouTube watch URL', () => {
     const { vd } = makeDialog();
     const result = vd._parseVideoUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');

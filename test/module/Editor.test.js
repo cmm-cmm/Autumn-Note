@@ -235,6 +235,25 @@ describe('Editor history API', () => {
     editor.destroy();
   });
 
+  it('undo flushes a pending debounced snapshot and redo restores it', () => {
+    vi.useFakeTimers();
+    const context = makeContext('<p>before</p>');
+    context.layoutInfo.container = document.createElement('div');
+    context.layoutInfo.container.appendChild(context.layoutInfo.editable);
+    const editor = new Editor(context);
+    editor.initialize();
+
+    context.layoutInfo.editable.innerHTML = '<p>after</p>';
+    editor.afterCommand();
+    editor.undo();
+    expect(context.layoutInfo.editable.innerHTML).toBe('<p>before</p>');
+    editor.redo();
+    expect(context.layoutInfo.editable.innerHTML).toBe('<p>after</p>');
+
+    editor.destroy();
+    vi.useRealTimers();
+  });
+
   it('canUndo() uses history.canUndo() when initialized', () => {
     const context = makeContext('<p>hello</p>');
     context.layoutInfo.container = document.createElement('div');

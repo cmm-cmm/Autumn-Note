@@ -8,6 +8,7 @@ if (typeof document.execCommand !== 'function') {
 afterEach(() => {
   document.body.innerHTML = '';
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 const makeContext = (opts = {}) => {
@@ -517,6 +518,31 @@ describe('Clipboard._onDrop', () => {
     };
     cb._onDrop(event);
     expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', expect.objectContaining({ size: mdFile.size }));
+  });
+
+  it('fires pasteError without inserting content when a dropped .md file cannot be read', () => {
+    class FailingFileReader {
+      readAsText() {
+        this.onerror?.(new ProgressEvent('error'));
+      }
+    }
+    vi.stubGlobal('FileReader', FailingFileReader);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { cb, ctx } = makeClipboard();
+    const mdFile = new File(['# Heading'], 'broken.md', { type: 'text/markdown' });
+    const callsBefore = document.execCommand.mock.calls.length;
+
+    cb._insertMarkdownFile(mdFile);
+
+    expect(warn).toHaveBeenCalledWith(
+      '[AutumnNote] Failed to read dropped markdown file "broken.md".',
+    );
+    expect(ctx.triggerEvent).toHaveBeenCalledOnce();
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', {
+      message: 'Failed to read dropped markdown file "broken.md".',
+    });
+    expect(ctx.invoke).not.toHaveBeenCalledWith('editor.afterCommand');
+    expect(document.execCommand.mock.calls).toHaveLength(callsBefore);
   });
 });
 

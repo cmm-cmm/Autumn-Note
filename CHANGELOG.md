@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+---
+
+## [1.15.0] - 2026-07-16
+
+- Minify production ESM, UMD, and CommonJS bundles with OXC and enforce a 110 KiB gzip budget.
+- Add focused coverage gates for complex image crop, icon dialog, and table tooltip modules.
+- Exercise clipboard paste through Chromium browser automation while retaining cross-browser sanitizer coverage.
+
+### Security
+- Canonicalise URL protocols before validation, closing an XSS bypass where encoded tabs or newlines made `javascript:` URLs evade the sanitizer.
+- Restrict links and media to an explicit protocol allowlist, reject SVG data URIs, and remove invalid iframe embeds entirely.
+- Block `noscript`, `portal`, `frame`, `frameset`, and `applet` elements in `sanitiseHTML` to close residual embedding vectors.
+
+### Added
+- `pasteError` event and `onPasteError` callback option — fired when pasted or dropped content exceeds `maxPasteSize` or a dropped Markdown file cannot be read; includes `message`, optional `size`, and optional `maxBytes` fields. `PasteErrorData` TypeScript interface exported from the package.
+
+### Changed
+- Standardise development and CI on a pinned pnpm release and patched Vite/Vitest dependencies.
+- Add framework-wrapper lifecycle tests, bundle-size budgets, and stronger CI/release gates.
+- Align framework builds on Vite 8, add strict consumer type checks, and provide a dedicated CommonJS entry while preserving the browser UMD path.
+- Document Node 20.19+ as the development requirement while retaining a Node 18 runtime smoke test.
+- Wire CI to trigger on `dev` branch pushes and pull requests in addition to `main`.
+
+### Fixed
+- Flush pending debounced snapshots before undo/redo so immediate Undo after a toolbar command restores the previous state.
+- Avoid React `useLayoutEffect` warnings during server rendering and correct the Vue wrapper's exposed `editor` type and examples.
+- Replace JavaScript re-exports in the public declaration package with self-contained core `.d.ts` modules.
+
+---
+
 ## [1.14.0] - 2026-07-14
 
 ### Changed

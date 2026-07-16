@@ -50,6 +50,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxWords]             - Maximum word count (0 = unlimited). Shows warning in statusbar.
  * @property {boolean}  [tableHeaderRow]       - Insert a header row (<thead><th>) when creating tables
  * @property {Function} [onPaste]              - Callback fired on every paste: ({ text, html }) => void
+ * @property {Function} [onPasteError]         - Callback fired when pasted or dropped content cannot be processed
  * @property {Function} [onSelectionChange]    - Callback fired on cursor/selection change: (context) => void
  * @property {string[]} [colorSwatches]        - Custom brand colour swatches prepended to the colour-picker palette
  * @property {Function} [onDestroy]            - Callback fired when the editor is destroyed: (context) => void
@@ -143,6 +144,8 @@ export const defaultOptions = {
   colorSwatches: [],
   // Callback fired after a paste event: function({ text, html })
   onPaste: null,
+  // Callback fired for rejected/failed paste and drop payloads: function({ message, size?, maxBytes? })
+  onPasteError: null,
   // Callback fired just before the editor instance is destroyed
   onDestroy: null,
   // Callback fired when the character limit is reached: function(context)

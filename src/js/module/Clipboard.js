@@ -371,7 +371,11 @@ export class Clipboard {
       execCommand('insertHTML', html);
       this.context.invoke('editor.afterCommand');
     };
-    reader.onerror = () => console.warn('[AutumnNote] Failed to read dropped markdown file', file.name);
+    reader.onerror = () => {
+      const message = `Failed to read dropped markdown file "${file.name}".`;
+      console.warn(`[AutumnNote] ${message}`);
+      this.context.triggerEvent('pasteError', { message });
+    };
     reader.readAsText(file);
   }
 

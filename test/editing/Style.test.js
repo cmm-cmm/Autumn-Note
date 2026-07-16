@@ -347,6 +347,48 @@ describe('toggleChecklist — range selection (existing behaviour)', () => {
   });
 });
 
+describe('toggleChecklist — existing lists', () => {
+  it('converts an ordered list into a checklist and adds missing checkboxes', () => {
+    const ol = document.createElement('ol');
+    ol.setAttribute('data-source', 'existing');
+    ol.innerHTML = '<li>First</li><li><input type="checkbox">Second</li>';
+    document.body.appendChild(ol);
+    const range = document.createRange();
+    range.setStart(ol.firstElementChild.firstChild, 0);
+    range.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    const checklist = document.querySelector('ul.an-checklist');
+    expect(checklist.getAttribute('data-source')).toBe('existing');
+    expect(checklist.querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
+    expect(window.getSelection().anchorNode.closest?.('li') || window.getSelection().anchorNode.parentElement.closest('li'))
+      .not.toBeNull();
+  });
+
+  it('converts a checklist back into paragraphs and preserves empty items', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox">First</li><li><input type="checkbox"></li>';
+    document.body.appendChild(ul);
+    const range = document.createRange();
+    range.setStart(ul.firstElementChild, 1);
+    range.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    toggleChecklist();
+
+    const paragraphs = document.querySelectorAll('p');
+    expect(paragraphs).toHaveLength(2);
+    expect(paragraphs[0].textContent).toBe('First');
+    expect(paragraphs[1].textContent).toBe('\u00a0');
+    expect(document.querySelector('ul.an-checklist')).toBeNull();
+  });
+});
+
 describe('toggleChecklist — range selection including the editable root (#33)', () => {
   beforeEach(() => {
     document.execCommand = () => false;

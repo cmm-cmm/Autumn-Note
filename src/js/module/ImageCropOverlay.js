@@ -444,6 +444,7 @@ export class ImageCropOverlay {
    * @param {(e: MouseEvent) => void} onMove
    */
   _attachDocDrag(onMove) {
+    this._dragDisposers?.();
     const onTouchMove = (e) => {
       e.preventDefault();
       const te3 = /** @type {TouchEvent} */ (e); onMove(/** @type {MouseEvent} */ (/** @type {unknown} */ ({ clientX: te3.touches[0].clientX, clientY: te3.touches[0].clientY })));
@@ -455,7 +456,9 @@ export class ImageCropOverlay {
       document.removeEventListener('touchend',  cleanup);
       document.body.style.userSelect = '';
       document.body.style.cursor     = '';
+      this._dragDisposers = null;
     };
+    this._dragDisposers = cleanup;
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   cleanup, { once: true });
@@ -561,6 +564,8 @@ export class ImageCropOverlay {
    * @param {boolean} _committed - reserved for future use
    */
   _close(_committed) {
+    this._dragDisposers?.();
+    this._dragDisposers = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
 

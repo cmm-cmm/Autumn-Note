@@ -1,0 +1,11 @@
+export function clamp(val: number, min: number, max: number): number;
+export function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): (...args: Parameters<T>) => void;
+export function throttle<T extends (...args: any[]) => any>(fn: T, limit: number): (...args: Parameters<T>) => void;
+export function compose(...fns: Function[]): Function;
+export function identity<T>(x: T): T;
+export function isNil(val: unknown): val is null | undefined;
+export function isString(val: unknown): val is string;
+export function isFunction(val: unknown): val is Function;
+export function mergeDeep<T extends object, U extends object>(target: T, source: U): T & U;
+export function isPlainObject(val: unknown): val is Record<string, unknown>;
+export function rect2bnd(rect: DOMRect | null | undefined): Pick<DOMRect, 'top' | 'left' | 'width' | 'height' | 'bottom' | 'right'> | null;

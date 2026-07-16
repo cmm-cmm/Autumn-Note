@@ -6,7 +6,7 @@
  */
 
 /** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta'];
+const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta', 'noscript', 'portal', 'frame', 'frameset', 'applet'];
 
 /** Tags whose element wrapper is stripped but content (child nodes) is preserved. */
 const UNWRAP_TAGS = new Set(['button']);
@@ -34,6 +34,11 @@ const TRUSTED_IFRAME_HOSTS = new Set([
   'youtube-nocookie.com',
   'player.vimeo.com',
 ]);
+
+const SAFE_LINK_PROTOCOLS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+const SAFE_MEDIA_PROTOCOLS = new Set(['http:', 'https:', 'blob:']);
+const SAFE_RASTER_DATA_RE = /^data:image\/(?:png|jpe?g|gif|webp|avif|bmp);base64,[a-z0-9+/=\s]+$/i;
+const URL_BASE = 'https://autumnnote.invalid/';
 
 /**
  * Produce a sanitized HTML string with dangerous elements and attributes removed.
@@ -74,6 +79,15 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
       continue;
     }
 
+    // Invalid embeds are removed rather than retained as empty iframes.
+    if (tag === 'iframe') {
+      const src = el.getAttribute('src');
+      if (!src || !isTrustedIframeSrc(src)) {
+        el.remove();
+        continue;
+      }
+    }
+
     // Strip dangerous attributes
     for (const attr of Array.from(el.attributes)) {
       // Remove all event handlers (onclick, onload, onerror, …)
@@ -95,13 +109,11 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
       // Sanitise URL attributes
       if (URL_ATTRS.includes(attr.name)) {
         const val = attr.value.trim();
-        if (/^(javascript|vbscript):/i.test(val)) {
+        const isMediaSource = attr.name === 'src' &&
+          ['IMG', 'VIDEO', 'AUDIO', 'SOURCE'].includes(el.tagName);
+        if (!isSafeUrl(val, { media: isMediaSource, allowData: el.tagName === 'IMG' })) {
           el.removeAttribute(attr.name);
           continue;
-        }
-        // Allow data: URIs only on img[src] (base64 image uploads); block elsewhere
-        if (/^data:/i.test(val) && !(attr.name === 'src' && el.tagName === 'IMG')) {
-          el.removeAttribute(attr.name);
         }
       }
       // Strip iframe HTML-injection vectors; limit src to trusted hosts
@@ -114,6 +126,10 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
           el.removeAttribute(attr.name);
         }
       }
+    }
+
+    if (tag === 'a' && el.getAttribute('target') === '_blank') {
+      el.setAttribute('rel', 'noopener noreferrer');
     }
 
     // Allow only input[type="checkbox"] inside ul.an-checklist li
@@ -184,12 +200,32 @@ function isTrustedIframeSrc(src) {
  * Optionally blocked: data: (safe to allow for img/src base64 embeds)
  *
  * @param {string} url
- * @param {{ allowData?: boolean }} [opts]
+ * @param {{ allowData?: boolean, media?: boolean }} [opts]
  * @returns {string|null} The original URL if safe, null if rejected.
  */
-export function sanitiseUrl(url, { allowData = false } = {}) {
+export function sanitiseUrl(url, { allowData = false, media = allowData } = {}) {
   const trimmed = (url || '').trim();
-  if (/^(javascript|vbscript):/i.test(trimmed)) return null;
-  if (!allowData && /^data:/i.test(trimmed)) return null;
-  return url;
+  if (!trimmed && url == null) return null;
+  return isSafeUrl(trimmed, { media, allowData }) ? url : null;
+}
+
+/**
+ * Validate a URL using the browser URL parser so ASCII whitespace/control
+ * characters cannot disguise a dangerous protocol (for example java\nscript:).
+ * @param {string} value
+ * @param {{media?: boolean, allowData?: boolean}} [options]
+ * @returns {boolean}
+ */
+function isSafeUrl(value, { media = false, allowData = false } = {}) {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return true;
+  if (allowData && SAFE_RASTER_DATA_RE.test(trimmed)) return true;
+
+  try {
+    const parsed = new URL(trimmed, URL_BASE);
+    const protocols = media ? SAFE_MEDIA_PROTOCOLS : SAFE_LINK_PROTOCOLS;
+    return protocols.has(parsed.protocol);
+  } catch {
+    return false;
+  }
 }

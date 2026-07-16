@@ -139,11 +139,10 @@ describe('sanitiseHTML', () => {
     expect(result).toContain('src="https://www.youtube.com/embed/abcdefghijk"');
   });
 
-  it('removes untrusted iframe src when allowIframes is true', () => {
+  it('removes untrusted iframe when allowIframes is true', () => {
     const input = '<iframe src="https://evil.example/embed/1"></iframe>';
     const result = sanitiseHTML(input, { allowIframes: true });
-    expect(result).toContain('<iframe');
-    expect(result).not.toContain('src="https://evil.example/embed/1"');
+    expect(result).not.toContain('<iframe');
   });
 
   it('strips iframe srcdoc payloads when allowIframes is true', () => {
@@ -180,6 +179,21 @@ describe('sanitiseHTML', () => {
     const result = sanitiseHTML(input);
     expect(result).not.toContain('javascript:');
     expect(result).not.toContain('xlink:href');
+  });
+
+  it('strips <noscript> elements and their content', () => {
+    const input = '<noscript><img src="x" onerror="alert(1)"></noscript>';
+    expect(sanitiseHTML(input)).not.toContain('<noscript');
+    expect(sanitiseHTML(input)).not.toContain('onerror');
+  });
+
+  it('strips <portal> elements', () => {
+    expect(sanitiseHTML('<portal src="https://evil.com"></portal>')).not.toContain('<portal');
+  });
+
+  it('strips legacy frame elements (<frame>, <frameset>, <applet>)', () => {
+    expect(sanitiseHTML('<frameset><frame src="https://evil.com"></frameset>')).not.toContain('<frame');
+    expect(sanitiseHTML('<applet code="Evil.class"></applet>')).not.toContain('<applet');
   });
 
   describe('style attribute filtering (#65)', () => {
@@ -265,6 +279,20 @@ describe('sanitiseUrl', () => {
     expect(sanitiseUrl('  javascript:alert(1)')).toBeNull();
   });
 
+  it.each([
+    'java\nscript:alert(1)',
+    'jav\tascript:alert(1)',
+    'file:///etc/passwd',
+    'ftp://example.com/file',
+    'custom:payload',
+  ])('returns null for disallowed or obfuscated protocol %s', (url) => {
+    expect(sanitiseUrl(url)).toBeNull();
+  });
+
+  it.each(['mailto:hello@example.com', 'tel:+123456789'])('allows safe link protocol %s', (url) => {
+    expect(sanitiseUrl(url)).toBe(url);
+  });
+
   it('returns null for data: URLs by default', () => {
     expect(sanitiseUrl('data:image/png;base64,abc')).toBeNull();
   });
@@ -274,8 +302,47 @@ describe('sanitiseUrl', () => {
     expect(sanitiseUrl(url, { allowData: true })).toBe(url);
   });
 
+  it('rejects data SVG and non-image data even when allowData is true', () => {
+    expect(sanitiseUrl('data:image/svg+xml,<svg onload=alert(1)>', { allowData: true })).toBeNull();
+    expect(sanitiseUrl('data:text/html,<script>alert(1)</script>', { allowData: true })).toBeNull();
+  });
+
+  it('allows blob media URLs only in media mode', () => {
+    const url = 'blob:https://example.com/5b5d1b2a';
+    expect(sanitiseUrl(url)).toBeNull();
+    expect(sanitiseUrl(url, { allowData: true })).toBe(url);
+  });
+
   it('returns null for null/empty input', () => {
     expect(sanitiseUrl(null)).toBeNull();
     expect(sanitiseUrl('')).toBe('');
+  });
+});
+
+describe('URL protocol canonicalisation', () => {
+  it.each([
+    '<a href="java&#x0A;script:alert(1)">newline</a>',
+    '<a href="jav&#x09;ascript:alert(1)">tab</a>',
+    '<a href="file:///etc/passwd">file</a>',
+  ])('removes unsafe encoded href from %s', (html) => {
+    expect(sanitiseHTML(html)).not.toContain('href=');
+  });
+
+  it('blocks SVG data images but keeps raster data images', () => {
+    const svg = sanitiseHTML('<img src="data:image/svg+xml,<svg onload=alert(1)></svg>">');
+    const png = sanitiseHTML('<img src="data:image/png;base64,abc">');
+    expect(svg).not.toContain('src=');
+    expect(png).toContain('data:image/png;base64,abc');
+  });
+
+  it('removes an iframe when its trusted HTTPS source is missing or invalid', () => {
+    expect(sanitiseHTML('<iframe src="https://evil.example/video"></iframe>', { allowIframes: true }))
+      .not.toContain('<iframe');
+    expect(sanitiseHTML('<iframe></iframe>', { allowIframes: true })).not.toContain('<iframe');
+  });
+
+  it('adds safe rel values to links that open a new tab', () => {
+    const result = sanitiseHTML('<a href="https://example.com" target="_blank">safe</a>');
+    expect(result).toContain('rel="noopener noreferrer"');
   });
 });

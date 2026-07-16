@@ -121,7 +121,7 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 ### Security
 - All HTML (pasted content, `setHTML()`, or code-view output) passes through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes
 - `<iframe>` elements are permitted in `setHTML()` with src restricted to trusted CDN hosts; `srcdoc` is stripped
-- `javascript:` and `data:` URLs are rejected in links and images
+- Links use an HTTP(S)/`mailto:`/`tel:` allowlist; images additionally allow approved raster data URIs, while SVG data URIs are rejected
 - Clipboard paste sanitises rich content to remove XSS vectors before inserting
 - `pasteStripAttributes` option strips `class`, `style`, and `data-*` from pasted HTML
 
@@ -231,7 +231,7 @@ const editorRef = ref(null);
 </template>
 ```
 
-Access the editor instance via `editorRef.value.editor.value` (the `editor` reactive ref exposed by `defineExpose`).
+Access the editor instance via `editorRef.value.editor`; Vue unwraps the component's internal shallow ref.
 
 ---
 
@@ -409,7 +409,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | Method | Description |
 |---|---|
 | `editor.getHTML()` | Returns the current HTML. Zero-width spaces from the icon picker are stripped automatically. |
-| `editor.setHTML(html)` | Sets HTML content (sanitised). `<iframe>` elements are preserved. |
+| `editor.setHTML(html)` | Sets HTML content (sanitised). Only trusted HTTPS YouTube/Vimeo `<iframe>` sources are preserved. |
 | `editor.getText()` | Returns plain text with no markup. |
 | `editor.setText(text)` | Replaces the content with plain text (escaped, no markup). |
 | `editor.getMarkdown()` | Returns the current content converted to Markdown. |
@@ -447,6 +447,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `imageUpload` | `files: FileList` | Fired when images are dropped or pasted (when `onImageUpload` is provided). |
 | `imageError` | `{ file, message }` | Fired when an image is rejected (e.g. over `maxImageSize`). |
 | `paste` | `{ text, html }` | Fired after every paste event. |
+| `pasteError` | `{ message, size?, maxBytes? }` | Fired when paste/drop exceeds `maxPasteSize` or a dropped Markdown file cannot be read. |
 | `selectionChange` | `context` | Fired when the cursor or selection changes. |
 | `destroy` | `context` | Fired just before the editor is destroyed. |
 | `charLimitReached` | `context` | Fired when `maxChars` is hit. |
@@ -513,6 +514,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `onImageUpload` | `Function` | `null` | `(files: FileList) => void` — custom upload handler. Overrides base64 embed. |
 | `onImageError` | `Function` | `null` | `({ file, message }) => void` — called when an image is rejected. |
 | `onPaste` | `Function` | `null` | `({ text, html }) => void` — called after every paste event. |
+| `onPasteError` | `Function` | `null` | `({ message, size?, maxBytes? }) => void` — called when pasted or dropped content cannot be processed. |
 | `onSelectionChange` | `Function` | `null` | `(context) => void` — called when cursor or selection changes. |
 | `onDestroy` | `Function` | `null` | `(context) => void` — called just before the editor is destroyed. |
 | `onCharLimitReached` | `Function` | `null` | `(context) => void` — called when `maxChars` is hit. |
@@ -746,16 +748,18 @@ autumn-note-ce/
 
 ### Development commands
 
+Development requires Node 20.19+ and pnpm 11.1.3. The published package keeps its Node 18+ runtime compatibility.
+
 ```bash
 pnpm install                           # install all workspace packages
-npm run dev                            # start Vite dev server with HMR
-npm run build                          # build core ES + UMD + CSS to dist/
+pnpm dev                               # start Vite dev server with HMR
+pnpm build                             # build core ES + UMD + CSS to dist/
 pnpm --filter autumnnote-react build   # build React wrapper
 pnpm --filter autumnnote-vue build     # build Vue wrapper
-npm test                               # run Vitest test suite once
-npm run test:watch                     # run tests in watch mode
-npm run lint                           # ESLint
-npm run typecheck                      # TypeScript type check (tsconfig.json)
+pnpm test                              # run Vitest test suite once
+pnpm test:watch                        # run tests in watch mode
+pnpm lint                              # ESLint
+pnpm typecheck                         # TypeScript type check (tsconfig.json)
 ```
 
 Build output in `dist/`:
@@ -763,7 +767,8 @@ Build output in `dist/`:
 | File | Format | Use |
 |---|---|---|
 | `autumnnote.es.js` | ES Module | `import` in bundlers (tree-shakeable) |
-| `autumnnote.umd.js` | UMD | `<script>` tag / CommonJS |
+| `autumnnote.umd.js` | UMD | Browser `<script>` tag |
+| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
 | `autumnnote.css` | CSS | Styles for both builds |
 
 ---

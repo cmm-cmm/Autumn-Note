@@ -931,6 +931,14 @@ describe('TableTooltip._toggleHeaderRow', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 
+  it('creates tbody when demoting a header-only table', () => {
+    const { tt, ctx } = makeTooltip('<table class="an-table"><thead><tr><th>Only</th></tr></thead></table>');
+    activateTable(tt, ctx);
+    tt._toggleHeaderRow();
+    expect(ctx.layoutInfo.editable.querySelector('tbody td')?.textContent).toBe('Only');
+    expect(ctx.layoutInfo.editable.querySelector('thead')).toBeNull();
+  });
+
   it('does nothing when no active table', () => {
     const { tt } = makeTooltip();
     tt._activeTable = null;
@@ -954,5 +962,137 @@ describe('TableTooltip._applyBorderColor', () => {
     const { tt } = makeTooltip();
     tt._activeTable = null;
     expect(() => tt._applyBorderColor('#000')).not.toThrow();
+  });
+
+  it('syncs and clears the visible border color strip', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    table.querySelector('td').style.borderColor = '#00ff00';
+    tt._el.style.display = 'block';
+    tt._syncBorderColorStrip();
+    expect(tt._borderColorStrip.style.background).toContain('0, 255, 0');
+    tt._applyBorderColor('');
+    expect(tt._borderColorStrip.style.background).toBe('transparent');
+  });
+});
+
+// ── Integrated DOM event paths ───────────────────────────────────────────────
+
+describe('TableTooltip integrated event paths', () => {
+  it('selects a rectangular cell region through mouse dragging', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cells = table.querySelectorAll('td');
+    tt._toggleSelectMode();
+    cells[0].dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    cells[4].dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(tt._selectedCells).toHaveLength(4);
+    expect(cells[4].classList.contains('an-cell-selected')).toBe(true);
+  });
+
+  it('shows from table hover and hides on outside click, scroll, and resize', () => {
+    vi.useFakeTimers();
+    const { tt, ctx } = makeTooltip();
+    const table = ctx.layoutInfo.editable.querySelector('table');
+    table.getBoundingClientRect = () => ({ top: 100, bottom: 300, left: 50, right: 400, width: 350, height: 200 });
+    table.querySelector('td').dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    vi.advanceTimersByTime(120);
+    expect(tt._el.style.display).toBe('flex');
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tt._el.style.display).toBe('none');
+
+    activateTable(tt, ctx);
+    globalThis.dispatchEvent(new Event('scroll'));
+    expect(tt._activeTable).toBeNull();
+    activateTable(tt, ctx);
+    globalThis.dispatchEvent(new Event('resize'));
+    expect(tt._activeTable).toBeNull();
+  });
+
+  it('does not show on hover when the editor is disabled', () => {
+    vi.useFakeTimers();
+    const { tt, ctx } = makeTooltip();
+    ctx.layoutInfo.container.classList.add('an-disabled');
+    ctx.layoutInfo.editable.querySelector('td').dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    vi.runAllTimers();
+    expect(tt._activeTable).toBeNull();
+  });
+
+  it('opens, positions, applies, and dismisses cell shading controls', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    tt._activeCell = cell;
+    tt._openCellShadePopover();
+    expect(tt._shadePopover.style.display).toBe('block');
+    expect(tt._shadeTitleEl.textContent).toBeTruthy();
+
+    tt._shadePopover.querySelector('[title="#ff0000"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(cell.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    tt._openCellShadePopover();
+    tt._shadeNoBtn.click();
+    expect(cell.style.backgroundColor).toBe('');
+
+    tt._openCellShadePopover();
+    const custom = tt._shadePopover.querySelector('input[type="color"]');
+    custom.value = '#00ff00';
+    custom.dispatchEvent(new Event('change'));
+    expect(cell.style.backgroundColor).toBe('rgb(0, 255, 0)');
+    tt._openCellShadePopover();
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tt._shadePopover.style.display).toBe('none');
+  });
+
+  it('opens, applies, and dismisses border-color controls', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    tt._openBorderColorPopover();
+    expect(tt._borderColorPopover.style.display).toBe('block');
+    tt._borderColorPopover.querySelector('[title="#4a86e8"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    table.querySelectorAll('td').forEach((cell) => expect(cell.style.borderColor).toBe('rgb(74, 134, 232)'));
+
+    tt._openBorderColorPopover();
+    tt._borderColorNoBtn.click();
+    table.querySelectorAll('td').forEach((cell) => expect(cell.style.borderColor).toBe(''));
+    tt._openBorderColorPopover();
+    const custom = tt._borderColorPopover.querySelector('input[type="color"]');
+    custom.value = '#ff0000';
+    custom.dispatchEvent(new Event('change'));
+    expect(table.querySelector('td').style.borderColor).toBe('rgb(255, 0, 0)');
+    tt._openBorderColorPopover();
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tt._borderColorPopover.style.display).toBe('none');
+  });
+
+  it('handles size-popover Escape, outside click, and zero border', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+    tt._openSizePopover('border');
+    tt._sizeInputEl.value = '0';
+    tt._sizePopover.querySelector('.an-btn-primary').click();
+    ctx.layoutInfo.editable.querySelectorAll('td').forEach((cell) => {
+      expect(cell.style.borderWidth).toBe('0px');
+    });
+
+    tt._openSizePopover('cellPadding');
+    tt._sizeInputEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(tt._sizePopover.style.display).toBe('none');
+    tt._openSizePopover('row');
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(tt._sizePopover.style.display).toBe('none');
+  });
+
+  it('resizes a column through editor and document mouse events', () => {
+    const { tt, ctx } = makeTooltip();
+    const cell = ctx.layoutInfo.editable.querySelector('td');
+    cell.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 40, width: 100, height: 40 });
+    Object.defineProperty(cell, 'offsetWidth', { value: 100, configurable: true });
+    cell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 99, clientY: 10 }));
+    expect(cell.style.cursor).toBe('col-resize');
+    cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: 99, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 129, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 });

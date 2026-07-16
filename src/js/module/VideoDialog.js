@@ -8,6 +8,7 @@
  */
 
 import { createElement, on } from '../core/dom.js';
+import { sanitiseUrl } from '../core/sanitise.js';
 import { BaseDialog } from './BaseDialog.js';
 
 const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
@@ -115,12 +116,7 @@ export class VideoDialog extends BaseDialog {
    */
   _parseVideoUrl(url) {
     if (!url) return null;
-
-    // Validate — block javascript: and other dangerous protocols
-    try {
-      const parsed = new URL(url);
-      if (/^javascript:/i.test(parsed.protocol) || /^vbscript:/i.test(parsed.protocol)) return null;
-    } catch { return null; }
+    if (!sanitiseUrl(url, { media: true })) return null;
 
     // YouTube watch: https://www.youtube.com/watch?v=ID
     const ytWatch = /(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(url);
@@ -182,13 +178,7 @@ export class VideoDialog extends BaseDialog {
     }
 
     // Unknown URL — let the user try as a direct video
-    const safeSrc = (() => {
-      try {
-        const p = new URL(url);
-        if (/^javascript:/i.test(p.protocol) || /^vbscript:/i.test(p.protocol)) return null;
-        return url;
-      } catch { return null; }
-    })();
+    const safeSrc = sanitiseUrl(url, { media: true });
     if (!safeSrc) return null;
 
     const escapedSrc = safeSrc.replaceAll('"', '%22');

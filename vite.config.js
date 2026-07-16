@@ -33,7 +33,7 @@ export default defineConfig(async () => {
         },
       },
       sourcemap: true,
-      minify: false,
+      minify: 'oxc',
     },
     plugins,
     css: {
