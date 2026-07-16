@@ -748,7 +748,7 @@ autumn-note-ce/
 
 ### Development commands
 
-Development requires Node 20.19+ and pnpm 11.1.3. The published package keeps its Node 18+ runtime compatibility.
+Development and package usage require Node 20.19+ and pnpm 11.1.3.
 
 ```bash
 pnpm install                           # install all workspace packages

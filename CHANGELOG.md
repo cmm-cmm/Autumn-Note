@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standardise development and CI on a pinned pnpm release and patched Vite/Vitest dependencies.
 - Add framework-wrapper lifecycle tests, bundle-size budgets, and stronger CI/release gates.
 - Align framework builds on Vite 8, add strict consumer type checks, and provide a dedicated CommonJS entry while preserving the browser UMD path.
-- Document Node 20.19+ as the development requirement while retaining a Node 18 runtime smoke test.
+- Require Node 20.19+ for development and package usage.
 - Wire CI to trigger on `dev` branch pushes and pull requests in addition to `main`.
 
 ### Fixed
