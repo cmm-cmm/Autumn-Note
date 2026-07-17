@@ -1,4 +1,4 @@
-import{t as e}from"./js-DGUr9y0I.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Bắt đầu với Autumn Note</h1>
+import{t as e}from"./js-as-_3U49.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Bắt đầu với Autumn Note</h1>
 <p>Autumn Note là một <strong>trình soạn thảo WYSIWYG không phụ thuộc</strong>, được xây dựng bằng vanilla JavaScript. Cài đặt chỉ trong vài giây:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
 <h2>Thiết lập cơ bản</h2>
