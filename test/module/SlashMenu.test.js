@@ -288,7 +288,7 @@ describe('SlashMenu selection', () => {
       { query: 'code block', id: 'code', expect: ['editor.formatBlock', 'pre'] },
       { query: 'horizontal rule', id: 'hr', expect: ['editor.insertHr'] },
       { query: 'table', id: 'table', expect: ['editor.insertTable', 3, 3] },
-      { query: 'image', id: 'image', expect: ['imageDialog.show'] },
+      { query: 'image', id: 'image', expect: ['imageDialog.show', expect.objectContaining({ beforeInsert: expect.any(Function) })] },
     ];
 
     for (const { id, expect: expectedArgs } of cases) {
@@ -317,6 +317,23 @@ describe('SlashMenu selection', () => {
 
     expect(() => sm._select(999)).not.toThrow();
     expect(ctx.invoke).not.toHaveBeenCalled();
+  });
+
+  it('defers removing /image until the image dialog commits insertion', () => {
+    const ctx = makeContext();
+    const sm = new SlashMenu(ctx);
+    sm.initialize();
+    stubCaretRect(sm);
+    const textNode = typeIntoNewParagraph(ctx.layoutInfo.editable, '/image');
+    sm._onInput();
+    const index = sm._filtered.findIndex((c) => c.id === 'image');
+
+    sm._select(index);
+
+    expect(textNode.textContent).toBe('/image');
+    const [, hooks] = ctx.invoke.mock.calls.at(-1);
+    hooks.beforeInsert();
+    expect(textNode.textContent).toBe('');
   });
 
   it('clicking a menu item selects it', () => {

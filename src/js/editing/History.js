@@ -149,12 +149,13 @@ export class History {
 
     // Evict oldest states first, whichever budget (step count or byte size)
     // is exceeded — always keep at least the just-pushed current state.
-    let evicted = false;
     while (this.stack.length > 1 && (this.stack.length > this._limit || this._bytes > this._maxBytes)) {
       this._bytes -= this._entrySize(this.stack.shift());
-      evicted = true;
     }
-    if (!evicted) this.stackOffset++;
+    // The newly-pushed current state is always the final entry. Recompute the
+    // offset from the resulting stack instead of incrementing conditionally:
+    // a single oversized snapshot may evict several older entries at once.
+    this.stackOffset = this.stack.length - 1;
   }
 
   _restore(point) {

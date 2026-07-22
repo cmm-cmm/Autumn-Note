@@ -234,6 +234,24 @@ describe('ImageDialog — show / open / close', () => {
 
     dialog.destroy();
   });
+
+  it('runs beforeInsert only when insertion is committed', () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+    const beforeInsert = vi.fn();
+
+    dialog.show({ beforeInsert });
+    dialog._close();
+    expect(beforeInsert).not.toHaveBeenCalled();
+
+    dialog.show({ beforeInsert });
+    dialog._urlInput.value = 'https://example.com/committed.png';
+    dialog._onInsert();
+    expect(beforeInsert).toHaveBeenCalledOnce();
+
+    dialog.destroy();
+  });
 });
 
 // ---------------------------------------------------------------------------

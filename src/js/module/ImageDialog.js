@@ -13,7 +13,11 @@ export class ImageDialog extends BaseDialog {
   // Public API
   // ---------------------------------------------------------------------------
 
-  show() {
+  /**
+   * @param {{ beforeInsert?: () => void }} [hooks]
+   */
+  show({ beforeInsert } = {}) {
+    this._beforeInsert = typeof beforeInsert === 'function' ? beforeInsert : null;
     this._saveRange();
     this._urlInput.value = '';
     this._altInput.value = '';
@@ -171,7 +175,19 @@ export class ImageDialog extends BaseDialog {
       this._savedRange.select();
     }
 
+    // Let callers make a deferred DOM change only after the user commits the
+    // dialog. SlashMenu uses this to keep "/image" intact when the dialog is
+    // cancelled and remove it atomically immediately before image insertion.
+    const beforeInsert = this._beforeInsert;
+    this._beforeInsert = null;
+    beforeInsert?.();
+
     this.context.invoke('editor.insertImage', src, alt, align);
     this._close();
+  }
+
+  _close() {
+    this._beforeInsert = null;
+    super._close();
   }
 }

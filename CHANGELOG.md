@@ -16,11 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SonarCloud static analysis now runs in CI (`ci.yml`), uploading coverage via the new `lcov` reporter.
 
 ### Fixed
+- Keep undo/redo offsets valid when one oversized snapshot evicts multiple history entries under `historyMaxBytes`.
+- Preserve `/image` command text when the image dialog is cancelled, removing it only when insertion is committed.
+- Make the optional SonarCloud step test `SONAR_TOKEN` through the supported environment-variable context.
+- Prevent the CDN build from copying demo-site assets into the published npm package.
+- Update ESLint, Sass, and Vite to pull patched `brace-expansion` and `immutable` releases and clear high-severity dependency audit findings.
 - Image files chosen through the Insert Image dialog's file picker are now resized/compressed via the same canvas pipeline already used for pasted/dropped images, instead of being embedded untouched.
 - `[ ] ` markdown shortcut now correctly converts to a checklist item (was calling a non-existent `editor.checklist` method instead of `editor.toggleChecklist`).
 - `---` markdown shortcut now correctly inserts a horizontal rule (was calling a non-existent `editor.insertHR` method instead of `editor.insertHr`).
 - Statusbar word/character count no longer runs twice per keystroke (an undebounced call from `Editor.afterCommand` plus a redundant, separately-debounced listener in `Statusbar`).
-- `check-bundle-size.mjs` now fails clearly if a dist file is missing (instead of an uncaught `ENOENT`) and enforces a lower-bound sanity floor so a broken/near-empty build no longer silently passes.
+- `check-bundle-size.mjs` now fails clearly if a dist file is missing (instead of an uncaught `ENOENT`), enforces a lower-bound sanity floor, and covers the CDN bundle.
 
 ### Changed
 - CI step order now matches the `check` script (`build` → `test:wrappers` → `check:bundle`), so `ci.yml` actually exercises the order used at release time.

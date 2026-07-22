@@ -359,6 +359,22 @@ describe('History byte-budget eviction', () => {
     expect(h.canUndo()).toBeDefined();
   });
 
+  it('keeps stackOffset valid when one large snapshot evicts several entries', () => {
+    const h = new History(el, 100, 200);
+    for (let i = 0; i < 5; i++) {
+      el.innerHTML = `<p>step-${i}-${'x'.repeat(10)}</p>`;
+      h.recordUndo();
+    }
+
+    el.innerHTML = `<p>${'y'.repeat(300)}</p>`;
+    h.recordUndo();
+
+    expect(h.stack).toHaveLength(1);
+    expect(h.stackOffset).toBe(0);
+    expect(h.canUndo()).toBe(false);
+    expect(h.getUndoCount()).toBe(0);
+  });
+
   it('_bytes tracks the actual serialized size of the stack', () => {
     const h = new History(el, 100, 10 * 1024 * 1024);
     const expected = h.stack.reduce((sum, entry) => sum + h._entrySize(entry), 0);

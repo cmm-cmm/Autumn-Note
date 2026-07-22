@@ -319,9 +319,37 @@ export class SlashMenu {
     sel.addRange(range);
   }
 
+  _makeTriggerRemover() {
+    const node = this._textNode;
+    const triggerOffset = this._triggerOffset;
+    const query = this._query;
+    return () => {
+      if (!node?.isConnected) return;
+      const before = node.textContent.slice(0, triggerOffset);
+      const after = node.textContent.slice(triggerOffset + 1 + query.length);
+      node.textContent = before + after;
+
+      const sel = globalThis.getSelection();
+      if (!sel) return;
+      const range = document.createRange();
+      range.setStart(node, triggerOffset);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    };
+  }
+
   _select(index) {
     const item = this._filtered[index];
     if (!item) return;
+
+    if (item.id === 'image') {
+      const beforeInsert = this._makeTriggerRemover();
+      this._close();
+      this.context.invoke('imageDialog.show', { beforeInsert });
+      return;
+    }
+
     this._deleteTriggerText();
     this._close();
     // Editor.* methods invoked by commands already call afterCommand()

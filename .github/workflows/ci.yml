@@ -9,6 +9,8 @@ on:
 
 jobs:
   build:
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -42,10 +44,10 @@ jobs:
         run: pnpm test:coverage
 
       - name: SonarCloud scan
-        if: runner.os == 'Linux' && secrets.SONAR_TOKEN != ''
+        if: runner.os == 'Linux' && env.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
       - name: Build library
