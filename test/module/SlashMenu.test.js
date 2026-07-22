@@ -263,6 +263,23 @@ describe('SlashMenu keyboard navigation', () => {
 // ── Selection / command execution ────────────────────────────────────────────
 
 describe('SlashMenu selection', () => {
+  it('renders custom commands with listbox accessibility state', () => {
+    const run = vi.fn();
+    const ctx = makeContext({ slashCommands: [{ id: 'callout', label: 'Callout', keywords: 'note', run }] });
+    const sm = new SlashMenu(ctx);
+    sm.initialize();
+    stubCaretRect(sm);
+    typeIntoNewParagraph(ctx.layoutInfo.editable, '/call');
+    sm._onInput();
+
+    const option = sm._menu.querySelector('#an-slash-option-callout');
+    expect(option).not.toBeNull();
+    expect(option.getAttribute('aria-selected')).toBe('true');
+    expect(sm._menu.getAttribute('aria-activedescendant')).toBe(option.id);
+    sm._select(0);
+    expect(run).toHaveBeenCalledWith(ctx);
+  });
+
   it('removes the "/query" text from the DOM before running the command', () => {
     const ctx = makeContext();
     const sm = new SlashMenu(ctx);

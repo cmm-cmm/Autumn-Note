@@ -97,6 +97,17 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .an-container *,
+  .an-dialog-overlay *,
+  .an-slash-menu * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 // =============================================================================
 // Toolbar
 // =============================================================================

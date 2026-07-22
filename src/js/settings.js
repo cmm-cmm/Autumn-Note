@@ -47,6 +47,8 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {string}   [toolbarOverflow]      - Toolbar overflow strategy: 'wrap' (default) | 'scroll'
  * @property {boolean}  [autoSave]             - Auto-save content to localStorage on change
  * @property {string}   [autoSaveKey]          - localStorage key used for auto-save (default: 'autumnnote-autosave')
+ * @property {number}   [autoSaveDelay]        - Debounce delay for auto-save writes in milliseconds
+ * @property {object|null} [autoSaveAdapter]   - Optional async persistence adapter with save/load/remove methods
  * @property {number}   [maxChars]             - Maximum character count (0 = unlimited). Shows warning in statusbar.
  * @property {number}   [maxWords]             - Maximum word count (0 = unlimited). Shows warning in statusbar.
  * @property {boolean}  [tableHeaderRow]       - Insert a header row (<thead><th>) when creating tables
@@ -138,6 +140,8 @@ export const defaultOptions = {
   autoSave: false,
   // localStorage key used when autoSave is enabled
   autoSaveKey: 'autumnnote-autosave',
+  autoSaveDelay: 400,
+  autoSaveAdapter: null,
   // Maximum character count (0 = unlimited)
   maxChars: 0,
   // Maximum word count (0 = unlimited)
@@ -180,6 +184,19 @@ export const defaultOptions = {
   // "/" command palette for quick block insertion (headings, lists, table, image, ...).
   // Triggers only when "/" is the first character typed on an otherwise-empty line.
   slashMenu: true,
+  // Additional slash-menu commands supplied by applications/plugins.
+  slashCommands: [],
+
+  // Optional import/export adapters keyed by format name.
+  documentAdapters: {},
+  // Optional collaboration bridge notified with local HTML changes.
+  collaborationAdapter: null,
+
+  // Optional image processor (for example a Web Worker bridge). Receives a
+  // File and returns a data URL; Clipboard's canvas pipeline remains fallback.
+  imageProcessor: null,
+  // Add stable data-an-block-id attributes to top-level document blocks.
+  blockIds: false,
 
   // Maximum paste size in bytes (default 5 MB). Pastes larger than this are silently dropped.
   maxPasteSize: 5 * 1024 * 1024,

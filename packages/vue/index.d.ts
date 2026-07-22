@@ -4,6 +4,10 @@ import type { DefineComponent } from 'vue';
 export interface AutumnNoteEditorProps {
   /** Editor configuration object. All AsnOptions fields are accepted. */
   options?: AsnOptions;
+  /** Controlled HTML value used by v-model. */
+  modelValue?: string;
+  /** Initial HTML value for uncontrolled usage. */
+  defaultValue?: string;
 }
 
 export interface AutumnNoteEditorExpose {
@@ -19,7 +23,7 @@ export interface AutumnNoteEditorExpose {
  * <AutumnNoteEditor ref="editorRef" :options="{ height: 300 }" />
  * // editorRef.value.editor?.getHTML()
  * ```
- * Use `v-if` to force remount on options change.
+ * Supports `v-model` and applies runtime-safe option changes without remounting.
  */
 declare const AutumnNoteEditor: DefineComponent<
   AutumnNoteEditorProps,

@@ -543,6 +543,16 @@ export class Editor {
     return this._history ? this._history.getRedoCount() : 0;
   }
 
+  getSelectionBookmark() {
+    return this._history?._serializeSelection() ?? null;
+  }
+
+  restoreSelectionBookmark(bookmark) {
+    if (!bookmark || !this._history) return false;
+    this._history._restoreSelection(bookmark);
+    return true;
+  }
+
   // ---------------------------------------------------------------------------
   // Style commands (delegated to Style module)
   // ---------------------------------------------------------------------------

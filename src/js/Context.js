@@ -73,6 +73,9 @@ export class Context {
 
     this._disposers = [];
     this._alive = false;
+    this._autoSaveTimer = null;
+    this._pendingAutoSave = null;
+    this._suppressedRemoteHTML = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -154,11 +157,11 @@ export class Context {
     register('shortcutsDialog', ShortcutsDialog);
     register('findReplace', FindReplace);
     register('imageCropOverlay', ImageCropOverlay);
-    register('autoSaveRestore', AutoSaveRestore);
-    register('markdownShortcuts', MarkdownShortcuts);
-    register('bubbleToolbar', BubbleToolbar);
-    register('mention', Mention);
-    register('slashMenu', SlashMenu);
+    if (this.options.autoSaveRestore) register('autoSaveRestore', AutoSaveRestore);
+    if (this.options.markdownShortcuts !== false) register('markdownShortcuts', MarkdownShortcuts);
+    if (this.options.bubbleToolbar) register('bubbleToolbar', BubbleToolbar);
+    if (this.options.mention) register('mention', Mention);
+    if (this.options.slashMenu !== false) register('slashMenu', SlashMenu);
 
     // Custom modules registered via AutumnNote.registerModule()
     if (_customModules.size > 0) {
@@ -179,6 +182,18 @@ export class Context {
     const instance = new ModuleClass(this);
     instance.initialize();
     this._modules.set(name, instance);
+    return this;
+  }
+
+  registerSlashCommand(command) {
+    if (!command?.id || typeof command.run !== 'function') {
+      throw new TypeError('[AutumnNote] Slash command requires an id and run(context) function.');
+    }
+    const commands = this.options.slashCommands || (this.options.slashCommands = []);
+    const index = commands.findIndex((item) => item.id === command.id);
+    if (index >= 0) commands[index] = command;
+    else commands.push(command);
+    this.invoke('slashMenu.refresh');
     return this;
   }
 
@@ -248,20 +263,55 @@ export class Context {
       }
     });
     // Sync textarea/input value on every change so form.submit() always gets fresh content
-    const d3 = this.on('change', () => this._syncToTarget());
-    this._disposers.push(d0, d1, d2, d3);
+    const d3 = this.on('change', (html) => this._syncToTarget(html));
+    const dRemote = this.on('change', (html) => {
+      if (this.options.blockIds) { this.ensureBlockIds(); html = this.getHTML(); }
+      if (html === this._suppressedRemoteHTML) { this._suppressedRemoteHTML = null; return; }
+      this.options.collaborationAdapter?.onLocalChange?.(html, this);
+    });
+    this._disposers.push(d0, d1, d2, d3, dRemote);
 
     // Auto-save to localStorage on every change (also writes :asrmeta for restore banner)
     if (this.options.autoSave && this.options.autoSaveKey) {
-      const d4 = this.on('change', () => {
-        try {
-          const key = this.options.autoSaveKey;
-          localStorage.setItem(key, this.getHTML());
-          localStorage.setItem(key + ':asrmeta', JSON.stringify({ savedAt: Date.now() }));
-        } catch (_) { void _; }
-      });
+      const d4 = this.on('change', (html) => this._scheduleAutoSave(html));
       this._disposers.push(d4);
     }
+  }
+
+  _scheduleAutoSave(html) {
+    this._pendingAutoSave = html;
+    clearTimeout(this._autoSaveTimer);
+    this._autoSaveTimer = setTimeout(() => this.flushAutoSave(), this.options.autoSaveDelay ?? 400);
+  }
+
+  async flushAutoSave() {
+    clearTimeout(this._autoSaveTimer);
+    this._autoSaveTimer = null;
+    if (this._pendingAutoSave == null) return;
+    const html = this._pendingAutoSave;
+    this._pendingAutoSave = null;
+    const key = this.options.autoSaveKey;
+    const savedAt = Date.now();
+    try {
+      const adapter = this.options.autoSaveAdapter;
+      if (typeof adapter?.save === 'function') {
+        await adapter.save({ key, html, savedAt, context: this });
+      } else {
+        localStorage.setItem(key, html);
+        localStorage.setItem(key + ':asrmeta', JSON.stringify({ savedAt }));
+      }
+      this.triggerEvent('autoSave', { key, html, savedAt });
+    } catch (error) {
+      this.triggerEvent('autoSaveError', { key, error });
+    }
+  }
+
+  async loadAutoSave() {
+    const adapter = this.options.autoSaveAdapter;
+    if (typeof adapter?.load === 'function') {
+      return adapter.load({ key: this.options.autoSaveKey, context: this });
+    }
+    try { return localStorage.getItem(this.options.autoSaveKey); } catch (_) { return null; }
   }
 
   // ---------------------------------------------------------------------------
@@ -338,6 +388,34 @@ export class Context {
   // ---------------------------------------------------------------------------
   // Public editor API
   // ---------------------------------------------------------------------------
+
+  /** Updates runtime-safe options without recreating the editor. */
+  updateOptions(overrides = {}) {
+    const next = mergeDeep(this.options, overrides);
+    Object.keys(this.options).forEach((key) => delete this.options[key]);
+    Object.assign(this.options, next);
+
+    const { container, editable } = this.layoutInfo;
+    if (Object.hasOwn(overrides, 'readOnly')) this.setDisabled(Boolean(this.options.readOnly));
+    if (Object.hasOwn(overrides, 'spellcheck')) editable.spellcheck = this.options.spellcheck !== false;
+    if (Object.hasOwn(overrides, 'placeholder')) editable.dataset.placeholder = this.options.placeholder || '';
+    if (Object.hasOwn(overrides, 'direction')) {
+      const rtl = this.options.direction === 'rtl';
+      editable.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+      container.classList.toggle('an-dir-rtl', rtl);
+    }
+    if (Object.hasOwn(overrides, 'height') || Object.hasOwn(overrides, 'minHeight')) {
+      const height = this.options.height || this.options.minHeight || 0;
+      editable.style.minHeight = height ? `${height}px` : '';
+    }
+    if (Object.hasOwn(overrides, 'maxHeight')) {
+      editable.style.maxHeight = this.options.maxHeight ? `${this.options.maxHeight}px` : '';
+    }
+    if (Object.hasOwn(overrides, 'toolbar')) this.invoke('toolbar.rebuild');
+    this.invoke('statusbar.update');
+    this.triggerEvent('optionsChange', { ...overrides });
+    return this;
+  }
 
   /**
    * Returns the current HTML content of the editor.
@@ -444,6 +522,64 @@ export class Context {
    */
   getMarkdown() {
     return this.invoke('editor.getMarkdown');
+  }
+
+  getSelectionBookmark() {
+    return this.invoke('editor.getSelectionBookmark') ?? null;
+  }
+
+  restoreSelectionBookmark(bookmark) {
+    return this.invoke('editor.restoreSelectionBookmark', bookmark);
+  }
+
+  async importDocument(format, data) {
+    const adapter = this.options.documentAdapters?.[format];
+    let html;
+    if (typeof adapter?.import === 'function') html = await adapter.import(data, this);
+    else if (format === 'html') html = String(data ?? '');
+    else if (format === 'markdown') { this.setMarkdown(String(data ?? '')); return this; }
+    else if (format === 'text') { this.setText(String(data ?? '')); return this; }
+    else throw new Error(`[AutumnNote] No importer registered for "${format}".`);
+    this.setHTML(html);
+    return this;
+  }
+
+  async exportDocument(format) {
+    const adapter = this.options.documentAdapters?.[format];
+    if (typeof adapter?.export === 'function') return adapter.export(this, this.getHTML());
+    if (format === 'html') return this.getHTML();
+    if (format === 'markdown') return this.getMarkdown();
+    if (format === 'text') return this.getText();
+    throw new Error(`[AutumnNote] No exporter registered for "${format}".`);
+  }
+
+  ensureBlockIds() {
+    const blocks = this.layoutInfo.editable.children;
+    for (const block of blocks) {
+      if (!block.hasAttribute('data-an-block-id')) {
+        const id = globalThis.crypto?.randomUUID?.() || `an-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        block.setAttribute('data-an-block-id', id);
+      }
+    }
+    return this;
+  }
+
+  getDocument() {
+    if (this.options.blockIds) this.ensureBlockIds();
+    return { version: 1, html: this.getHTML(), markdown: this.getMarkdown() };
+  }
+
+  loadDocument(documentData) {
+    this.setHTML(documentData?.html || '');
+    this.clearHistory();
+    return this;
+  }
+
+  applyRemoteHTML(html) {
+    this.setHTML(html);
+    this._suppressedRemoteHTML = this.getHTML();
+    this.clearHistory();
+    return this;
   }
 
   /**
@@ -603,6 +739,7 @@ export class Context {
   destroy() {
     if (!this._alive) return;
 
+    if (this._pendingAutoSave != null) void this.flushAutoSave();
     this._modules.forEach((module) => {
       if (typeof module.destroy === 'function') module.destroy();
     });
@@ -649,9 +786,9 @@ export class Context {
   /**
    * Syncs editor HTML back into the original textarea/input for form submission.
    */
-  _syncToTarget() {
+  _syncToTarget(html) {
     if (this.targetEl.tagName === 'TEXTAREA' || this.targetEl.tagName === 'INPUT') {
-      /** @type {HTMLInputElement} */ (this.targetEl).value = this.getHTML();
+      /** @type {HTMLInputElement} */ (this.targetEl).value = typeof html === 'string' ? html : this.getHTML();
     }
   }
 }

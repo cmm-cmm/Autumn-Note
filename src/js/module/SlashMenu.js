@@ -60,7 +60,7 @@ export class SlashMenu {
   _commands() {
     const L = this.context.locale.slashMenu;
     const ctx = this.context;
-    return [
+    const builtIns = [
       { id: 'h1', label: L.heading1, keywords: 'h1 heading title', run: () => ctx.invoke('editor.formatBlock', 'h1') },
       { id: 'h2', label: L.heading2, keywords: 'h2 heading subtitle', run: () => ctx.invoke('editor.formatBlock', 'h2') },
       { id: 'h3', label: L.heading3, keywords: 'h3 heading', run: () => ctx.invoke('editor.formatBlock', 'h3') },
@@ -73,6 +73,17 @@ export class SlashMenu {
       { id: 'table', label: L.table, keywords: 'table grid', run: () => ctx.invoke('editor.insertTable', 3, 3) },
       { id: 'image', label: L.image, keywords: 'image picture photo upload', run: () => ctx.invoke('imageDialog.show') },
     ];
+    const custom = (this.options.slashCommands || []).map((command) => ({
+      id: command.id,
+      label: command.label || command.id,
+      keywords: command.keywords || '',
+      run: () => command.run(ctx),
+    }));
+    return [...builtIns, ...custom];
+  }
+
+  refresh() {
+    if (this._open) this._filterAndRender();
   }
 
   // ---------------------------------------------------------------------------
@@ -120,6 +131,7 @@ export class SlashMenu {
       const row = document.createElement('div');
       row.className = 'an-slash-menu-item';
       row.setAttribute('role', 'option');
+      row.id = `an-slash-option-${item.id}`;
       row.dataset.index = String(i);
       row.textContent = item.label;
       frag.appendChild(row);
@@ -132,7 +144,10 @@ export class SlashMenu {
   _highlight(index) {
     if (!this._menu) return;
     this._menu.querySelectorAll('.an-slash-menu-item').forEach((el, i) => {
-      el.classList.toggle('an-slash-menu-active', i === index);
+      const active = i === index;
+      el.classList.toggle('an-slash-menu-active', active);
+      el.setAttribute('aria-selected', String(active));
+      if (active) this._menu.setAttribute('aria-activedescendant', el.id);
     });
     this._activeIndex = index;
   }
@@ -170,6 +185,7 @@ export class SlashMenu {
     this._open = false;
     this._filtered = [];
     this._activeIndex = -1;
+    this._menu?.removeAttribute('aria-activedescendant');
     this._textNode = null;
     this._caretRect = null;
     this._query = '';

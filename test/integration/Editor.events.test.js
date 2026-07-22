@@ -393,6 +393,67 @@ describe('Editor onChange callback', () => {
   });
 });
 
+describe('Runtime options and adapters', () => {
+  it('updates runtime-safe options without recreating the editor', () => {
+    const { editor } = makeEditor();
+    editor.updateOptions({ readOnly: true, direction: 'rtl', height: 333 });
+    expect(editor.layoutInfo.editable.getAttribute('contenteditable')).toBe('false');
+    expect(editor.layoutInfo.editable.getAttribute('dir')).toBe('rtl');
+    expect(editor.layoutInfo.editable.style.minHeight).toBe('333px');
+    editor.destroy();
+  });
+
+  it('debounces adapter-backed auto-save and reuses change HTML', async () => {
+    vi.useFakeTimers();
+    const save = vi.fn();
+    const { editor } = makeEditor({
+      autoSave: true,
+      autoSaveKey: 'adapter-key',
+      autoSaveDelay: 50,
+      autoSaveAdapter: { save },
+    });
+    editor.triggerEvent('change', '<p>saved once</p>');
+    await vi.advanceTimersByTimeAsync(60);
+    expect(save).toHaveBeenCalledOnce();
+    expect(save.mock.calls[0][0]).toEqual(expect.objectContaining({
+      key: 'adapter-key', html: '<p>saved once</p>', context: editor,
+    }));
+    editor.destroy();
+    vi.useRealTimers();
+  });
+
+  it('supports built-in and custom document adapters', async () => {
+    const customExport = vi.fn(() => 'custom-result');
+    const { editor } = makeEditor({ documentAdapters: { custom: { export: customExport } } });
+    await editor.importDocument('markdown', '# Imported');
+    expect(editor.getHTML()).toContain('Imported');
+    expect(await editor.exportDocument('custom')).toBe('custom-result');
+    editor.destroy();
+  });
+
+  it('adds stable block ids and exposes document snapshots', () => {
+    const { editor } = makeEditor({ blockIds: true });
+    editor.setHTML('<p>Alpha</p><p>Beta</p>');
+    const snapshot = editor.getDocument();
+    const blocks = editor.layoutInfo.editable.children;
+    expect(blocks[0].getAttribute('data-an-block-id')).toBeTruthy();
+    expect(blocks[1].getAttribute('data-an-block-id')).toBeTruthy();
+    expect(snapshot).toEqual(expect.objectContaining({ version: 1, html: expect.stringContaining('Alpha') }));
+    editor.destroy();
+  });
+
+  it('does not echo remote HTML through the collaboration adapter', async () => {
+    vi.useFakeTimers();
+    const onLocalChange = vi.fn();
+    const { editor } = makeEditor({ collaborationAdapter: { onLocalChange } });
+    editor.applyRemoteHTML('<p>Remote</p>');
+    await vi.advanceTimersByTimeAsync(500);
+    expect(onLocalChange).not.toHaveBeenCalled();
+    editor.destroy();
+    vi.useRealTimers();
+  });
+});
+
 // ── Renderer options ──────────────────────────────────────────────────────────
 
 describe('Editor renderer options', () => {

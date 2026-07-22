@@ -771,6 +771,28 @@ Build output in `dist/`:
 | `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
 | `autumnnote.css` | CSS | Styles for both builds |
 
+### Runtime integrations
+
+Update safe options without remounting and plug persistence or external document formats into the editor:
+
+```js
+editor.updateOptions({ readOnly: true, direction: 'rtl' });
+editor.registerSlashCommand({
+  id: 'callout', label: 'Callout', keywords: 'note info',
+  run: (ctx) => ctx.insertHTML('<aside class="callout"><br></aside>'),
+});
+
+const editor = AutumnNote.create('#editor', {
+  autoSave: true,
+  autoSaveAdapter: { save: ({ html }) => drafts.put(html) },
+  imageProcessor: (file) => imageWorker.compress(file),
+  blockIds: true,
+  collaborationAdapter: { onLocalChange: (html) => transport.send(html) },
+});
+```
+
+The React wrapper supports `value`, `defaultValue`, and `onChange`; the Vue wrapper supports `v-model`. Use `importDocument()` / `exportDocument()` to register application-specific formats without adding runtime dependencies to the core package.
+
 ---
 
 ## Comparison

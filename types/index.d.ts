@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.15.0
+ * @version 1.16.0
  */
 
 // ---------------------------------------------------------------------------
@@ -14,6 +14,35 @@ export interface PasteErrorData {
   size?: number;
   /** Maximum permitted payload size in bytes, when applicable. */
   maxBytes?: number;
+}
+
+export interface AutoSavePayload {
+  key: string;
+  html: string;
+  savedAt: number;
+  context: Context;
+}
+
+export interface AutoSaveAdapter {
+  save(payload: AutoSavePayload): void | Promise<void>;
+  load?(payload: { key: string; context: Context }): string | null | Promise<string | null>;
+  remove?(payload: { key: string; context: Context }): void | Promise<void>;
+}
+
+export interface SlashCommand {
+  id: string;
+  label?: string;
+  keywords?: string;
+  run(context: Context): void | Promise<void>;
+}
+
+export interface DocumentAdapter {
+  import?(data: unknown, context: Context): string | Promise<string>;
+  export?(context: Context, html: string): unknown | Promise<unknown>;
+}
+
+export interface CollaborationAdapter {
+  onLocalChange?(html: string, context: Context): void | Promise<void>;
 }
 
 export interface AsnOptions {
@@ -105,6 +134,10 @@ export interface AsnOptions {
   autoSave?: boolean;
   /** localStorage key used for auto-save. */
   autoSaveKey?: string;
+  /** Debounce delay for auto-save writes. Default: 400ms. */
+  autoSaveDelay?: number;
+  /** Optional persistence adapter; localStorage remains the default. */
+  autoSaveAdapter?: AutoSaveAdapter | null;
   /** Maximum character count for the statusbar warning (0 = unlimited). */
   maxChars?: number;
   /** Maximum word count for the statusbar warning (0 = unlimited). */
@@ -160,6 +193,15 @@ export interface AsnOptions {
 
   /** Show a "/" command palette for quick block insertion (headings, lists, table, image, ...). Default: true. */
   slashMenu?: boolean;
+  /** Application/plugin-provided slash commands. */
+  slashCommands?: SlashCommand[];
+  /** Import/export adapters keyed by format. */
+  documentAdapters?: Record<string, DocumentAdapter>;
+  /** Optional external image processor, such as a Web Worker bridge. */
+  imageProcessor?: (file: File, helpers: { context: Context }) => string | Promise<string>;
+  collaborationAdapter?: CollaborationAdapter | null;
+  /** Adds stable IDs to top-level blocks for external collaboration adapters. */
+  blockIds?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -408,6 +450,15 @@ export declare class Context {
   /** Triggers an editor event. */
   triggerEvent(eventName: string, ...args: unknown[]): void;
 
+  /** Applies runtime-safe option changes without recreating the editor. */
+  updateOptions(overrides: Partial<AsnOptions>): this;
+
+  /** Flushes any pending auto-save write. */
+  flushAutoSave(): Promise<void>;
+
+  /** Loads a draft through the configured adapter or localStorage. */
+  loadAutoSave(): Promise<string | null>;
+
   /** Returns the current HTML content of the editor. */
   getHTML(): string;
 
@@ -451,6 +502,15 @@ export declare class Context {
   /** Returns the editor content as a Markdown string. */
   getMarkdown(): string;
 
+  getSelectionBookmark(): { start: number; end: number } | null;
+  restoreSelectionBookmark(bookmark: { start: number; end: number }): boolean;
+  importDocument(format: string, data: unknown): Promise<this>;
+  exportDocument(format: string): Promise<unknown>;
+  ensureBlockIds(): this;
+  getDocument(): { version: 1; html: string; markdown: string };
+  loadDocument(documentData: { html: string }): this;
+  applyRemoteHTML(html: string): this;
+
   /** Returns the current word count of the editor content. */
   getWordCount(): number;
 
@@ -490,6 +550,7 @@ export declare class Context {
    * @param ModuleClass - Class with `initialize()` and optional `destroy()`
    */
   registerModule(name: string, ModuleClass: new (ctx: Context) => object): this;
+  registerSlashCommand(command: SlashCommand): this;
 
   /**
    * Installs a plugin on this editor instance.
@@ -650,6 +711,7 @@ export interface AutumnNoteStatic {
    * referenced by string name in toolbar configuration.
    */
   registerButton(btnDef: ToolbarItemDef): this;
+  registerSlashCommand(command: SlashCommand): this;
 
   /**
    * All pre-built button definitions in a single namespace.

@@ -18,7 +18,10 @@ describe('AutumnNoteEditor', () => {
     host = document.createElement('div');
     document.body.appendChild(host);
     root = createRoot(host);
-    editor = { destroy: vi.fn() };
+    editor = {
+      destroy: vi.fn(), updateOptions: vi.fn(), setHTML: vi.fn(),
+      clearHistory: vi.fn(), getHTML: vi.fn(() => '<p>current</p>'),
+    };
     AutumnNote.create.mockReturnValue(editor);
   });
 
@@ -37,7 +40,10 @@ describe('AutumnNoteEditor', () => {
       root.render(<AutumnNoteEditor ref={ref} options={options} className="host" />);
     });
 
-    expect(AutumnNote.create).toHaveBeenCalledWith(expect.any(HTMLDivElement), options);
+    expect(AutumnNote.create).toHaveBeenCalledWith(
+      expect.any(HTMLDivElement),
+      expect.objectContaining(options),
+    );
     expect(ref.current).toBe(editor);
     expect(host.querySelector('.host')).not.toBeNull();
   });
@@ -47,5 +53,19 @@ describe('AutumnNoteEditor', () => {
     await act(async () => root.unmount());
     root = null;
     expect(editor.destroy).toHaveBeenCalledOnce();
+  });
+
+  it('supports controlled value and runtime option updates', async () => {
+    const onChange = vi.fn();
+    await act(async () => root.render(
+      <AutumnNoteEditor value="<p>one</p>" options={{ height: 200 }} onChange={onChange} />,
+    ));
+    expect(editor.setHTML).toHaveBeenCalledWith('<p>one</p>');
+
+    await act(async () => root.render(
+      <AutumnNoteEditor value="<p>two</p>" options={{ height: 300 }} onChange={onChange} />,
+    ));
+    expect(editor.setHTML).toHaveBeenCalledWith('<p>two</p>');
+    expect(editor.updateOptions).toHaveBeenCalledWith(expect.objectContaining({ height: 300 }));
   });
 });

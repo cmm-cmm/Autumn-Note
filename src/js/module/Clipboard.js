@@ -435,7 +435,10 @@ export class Clipboard {
    * @returns {Promise<string>} blob: URL usable as an <img src>
    */
   async compressAndRegister(file) {
-    const dataUrl = await this._compressImage(file);
+    const processor = this.options.imageProcessor;
+    const dataUrl = typeof processor === 'function'
+      ? await processor(file, { context: this.context })
+      : await this._compressImage(file);
     const blob = this._dataUrlToBlob(dataUrl);
     const blobUrl = URL.createObjectURL(blob);
     this._blobRegistry.set(blobUrl, dataUrl);

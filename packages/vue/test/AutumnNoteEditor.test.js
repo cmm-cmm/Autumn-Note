@@ -14,7 +14,10 @@ describe('AutumnNoteEditor', () => {
   beforeEach(() => {
     host = document.createElement('div');
     document.body.appendChild(host);
-    editor = { destroy: vi.fn() };
+    editor = {
+      destroy: vi.fn(), updateOptions: vi.fn(), setHTML: vi.fn(),
+      clearHistory: vi.fn(), getHTML: vi.fn(() => '<p>current</p>'),
+    };
     AutumnNote.create.mockReturnValue(editor);
   });
 
@@ -35,7 +38,10 @@ describe('AutumnNoteEditor', () => {
     app.mount(host);
     await nextTick();
 
-    expect(AutumnNote.create).toHaveBeenCalledWith(expect.any(HTMLDivElement), options);
+    expect(AutumnNote.create).toHaveBeenCalledWith(
+      expect.any(HTMLDivElement),
+      expect.objectContaining(options),
+    );
     expect(componentRef.value.editor).toBe(editor);
   });
 
@@ -45,5 +51,16 @@ describe('AutumnNoteEditor', () => {
     app.unmount();
     app = null;
     expect(editor.destroy).toHaveBeenCalledOnce();
+  });
+
+  it('supports modelValue as controlled HTML', async () => {
+    const componentRef = ref(null);
+    app = createApp({
+      render: () => h(AutumnNoteEditor, { ref: componentRef, modelValue: '<p>controlled</p>' }),
+    });
+    app.mount(host);
+    await nextTick();
+    expect(editor.setHTML).toHaveBeenCalledWith('<p>controlled</p>');
+    expect(editor.clearHistory).toHaveBeenCalled();
   });
 });

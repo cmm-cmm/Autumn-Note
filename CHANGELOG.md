@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.16.0] - 2026-07-22
+
 ### Added
+- Runtime `updateOptions()`, adapter-backed debounced auto-save, document import/export adapters, selection bookmarks, stable block IDs, and collaboration bridge hooks.
+- Controlled `value`/`onChange` support for React and `v-model` support for Vue, including runtime option updates without remounting.
+- Extensible slash commands through `registerSlashCommand()`, with listbox screen-reader state and reduced-motion styling.
+- Optional external `imageProcessor` hook for worker-backed image compression while retaining the canvas fallback.
 - `/` command palette (`SlashMenu` module) — typing "/" as the first character of an empty block opens a filterable list for quick-inserting headings, lists, checklist, blockquote, code block, horizontal rule, table, and image. Fully localized in all 8 languages. Disable via `slashMenu: false`.
 - `historyMaxBytes` option — caps the combined size of all stacked undo/redo snapshots (default 10 MB), evicting the oldest states first when exceeded even under the step-count limit. Guards documents with many large embedded images against unbounded undo-history memory growth.
 - CDN build (`vite.cdn.config.js`) is now produced by the default `build` script and included in published packages, instead of being a separate, never-invoked script.
