@@ -59,7 +59,7 @@
   "license": "MIT",
   "peerDependencies": {
     "autumnnote": ">=1.4.0",
-    "vue": "^3.0.0"
+    "vue": ">=3.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",

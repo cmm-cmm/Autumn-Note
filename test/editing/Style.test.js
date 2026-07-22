@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist, underline, strikethrough, lineHeight } from '../../src/js/editing/Style.js';
+import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist, underline, strikethrough, lineHeight, outdent, insertUnorderedList, insertOrderedList } from '../../src/js/editing/Style.js';
+
+const setCollapsedCursor = (node, offset) => {
+  const range = document.createRange();
+  range.setStart(node, offset);
+  range.collapse(true);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+};
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -749,5 +758,291 @@ describe('toggleChecklist — text inside inline element', () => {
     const ul = document.body.querySelector('ul.an-checklist');
     expect(ul).not.toBeNull();
     expect(ul.querySelector('li').textContent).toContain('Hello World');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// outdent() — G.5: checklist item -> <p>, falls through to execCommand otherwise
+// ---------------------------------------------------------------------------
+
+describe('outdent — checklist item to paragraph', () => {
+  it('converts a single checklist item into a <p>, removing the now-empty list', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox">Buy groceries</li>';
+    document.body.appendChild(ul);
+    const li = ul.querySelector('li');
+    const textNode = li.lastChild; // text node after the checkbox input
+
+    setCollapsedCursor(textNode, 3);
+
+    outdent();
+
+    expect(document.body.querySelector('ul.an-checklist')).toBeNull();
+    const p = document.body.querySelector('p');
+    expect(p).not.toBeNull();
+    expect(p.textContent).toBe('Buy groceries');
+    expect(p.querySelector('input')).toBeNull();
+  });
+
+  it('moves trailing items into a new checklist placed after the paragraph', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML =
+      '<li><input type="checkbox">First</li>' +
+      '<li><input type="checkbox">Second</li>' +
+      '<li><input type="checkbox">Third</li>';
+    document.body.appendChild(ul);
+    const firstLi = ul.children[0];
+    const textNode = firstLi.lastChild;
+
+    setCollapsedCursor(textNode, 0);
+
+    outdent();
+
+    // Original list is gone (only had one item before outdent, now empty)
+    const lists = document.body.querySelectorAll('ul.an-checklist');
+    expect(lists).toHaveLength(1);
+
+    const p = document.body.querySelector('p');
+    expect(p).not.toBeNull();
+    expect(p.textContent).toBe('First');
+
+    // p must come before the new checklist in document order
+    const newUl = lists[0];
+    expect(p.compareDocumentPosition(newUl) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const remainingItems = Array.from(newUl.querySelectorAll('li')).map((li) => li.textContent);
+    expect(remainingItems).toEqual(['Second', 'Third']);
+  });
+
+  it('replaces an empty checklist item with a non-breaking space', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox"></li>';
+    document.body.appendChild(ul);
+    const li = ul.querySelector('li');
+    const checkbox = li.querySelector('input');
+
+    setCollapsedCursor(li, 1); // caret positioned after the checkbox, no text sibling
+
+    outdent();
+
+    const p = document.body.querySelector('p');
+    expect(p).not.toBeNull();
+    expect(p.textContent).toBe(' ');
+    expect(checkbox.isConnected).toBe(false);
+  });
+
+  it('strips zero-width-space anchors from the converted content', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    const li = document.createElement('li');
+    li.innerHTML = '<input type="checkbox">​Tagged​';
+    ul.appendChild(li);
+    document.body.appendChild(ul);
+    const textNode = li.lastChild;
+
+    setCollapsedCursor(textNode, 1);
+
+    outdent();
+
+    const p = document.body.querySelector('p');
+    expect(p.textContent).toBe('Tagged');
+  });
+
+  it('places the caret at the start of the newly created <p>', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox">Task item</li>';
+    document.body.appendChild(ul);
+    const li = ul.querySelector('li');
+    const textNode = li.lastChild;
+
+    setCollapsedCursor(textNode, 2);
+
+    outdent();
+
+    const p = document.body.querySelector('p');
+    const sel = window.getSelection();
+    expect(sel.rangeCount).toBeGreaterThan(0);
+    expect(p.contains(sel.getRangeAt(0).startContainer)).toBe(true);
+  });
+
+  it('falls through to execCommand("outdent") when cursor is not inside a checklist item', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+
+    const p = document.createElement('p');
+    p.textContent = 'Regular paragraph';
+    document.body.appendChild(p);
+    setCollapsedCursor(p.firstChild, 3);
+
+    outdent();
+
+    expect(execMock).toHaveBeenCalledWith('outdent', false, null);
+
+    delete document.execCommand;
+  });
+
+  it('falls through to execCommand("outdent") when there is no selection', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+
+    outdent();
+
+    expect(execMock).toHaveBeenCalledWith('outdent', false, null);
+
+    vi.unstubAllGlobals();
+    delete document.execCommand;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// insertUnorderedList() / insertOrderedList() — list-type transitions
+// ---------------------------------------------------------------------------
+
+describe('insertUnorderedList — list-type transitions', () => {
+  it('checklist in a <ul> container: strips checkboxes/class, stays <ul>', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox">Item A</li>';
+    document.body.appendChild(ul);
+    setCollapsedCursor(ul.querySelector('li').lastChild, 2);
+
+    insertUnorderedList();
+
+    const result = document.body.querySelector('ul, ol');
+    expect(result.tagName).toBe('UL');
+    expect(result.classList.contains('an-checklist')).toBe(false);
+    expect(result.querySelector('input')).toBeNull();
+    expect(result.textContent).toBe('Item A');
+  });
+
+  it('checklist in an <ol> container: strips checkboxes/class and swaps to <ul>', () => {
+    const ol = document.createElement('ol');
+    ol.className = 'an-checklist';
+    ol.innerHTML = '<li><input type="checkbox">Item B</li>';
+    document.body.appendChild(ol);
+    setCollapsedCursor(ol.querySelector('li').lastChild, 2);
+
+    insertUnorderedList();
+
+    const result = document.body.querySelector('ul, ol');
+    expect(result.tagName).toBe('UL');
+    expect(result.classList.contains('an-checklist')).toBe(false);
+    expect(result.querySelector('input')).toBeNull();
+    expect(result.textContent).toBe('Item B');
+  });
+
+  it('plain <ol> (not a checklist): swaps container tag to <ul>, preserves items', () => {
+    const ol = document.createElement('ol');
+    ol.innerHTML = '<li>A</li><li>B</li>';
+    document.body.appendChild(ol);
+    setCollapsedCursor(ol.querySelectorAll('li')[0].firstChild, 0);
+
+    insertUnorderedList();
+
+    const result = document.body.querySelector('ul, ol');
+    expect(result.tagName).toBe('UL');
+    expect(Array.from(result.querySelectorAll('li')).map((li) => li.textContent)).toEqual(['A', 'B']);
+  });
+
+  it('already a plain <ul>: falls through to execCommand (toggle off)', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+
+    const ul = document.createElement('ul');
+    ul.innerHTML = '<li>A</li>';
+    document.body.appendChild(ul);
+    setCollapsedCursor(ul.querySelector('li').firstChild, 0);
+
+    insertUnorderedList();
+
+    expect(execMock).toHaveBeenCalledWith('insertUnorderedList', false, null);
+    // Direct DOM manipulation must not have run — still a plain <ul>
+    expect(document.body.querySelector('ul').classList.contains('an-checklist')).toBe(false);
+
+    delete document.execCommand;
+  });
+
+  it('cursor not in any list: falls through to execCommand', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+
+    const p = document.createElement('p');
+    p.textContent = 'plain text';
+    document.body.appendChild(p);
+    setCollapsedCursor(p.firstChild, 0);
+
+    insertUnorderedList();
+
+    expect(execMock).toHaveBeenCalledWith('insertUnorderedList', false, null);
+
+    delete document.execCommand;
+  });
+});
+
+describe('insertOrderedList — list-type transitions', () => {
+  it('checklist in a <ul> container: strips checkboxes/class and swaps to <ol>', () => {
+    const ul = document.createElement('ul');
+    ul.className = 'an-checklist';
+    ul.innerHTML = '<li><input type="checkbox">Item A</li>';
+    document.body.appendChild(ul);
+    setCollapsedCursor(ul.querySelector('li').lastChild, 2);
+
+    insertOrderedList();
+
+    const result = document.body.querySelector('ul, ol');
+    expect(result.tagName).toBe('OL');
+    expect(result.classList.contains('an-checklist')).toBe(false);
+    expect(result.querySelector('input')).toBeNull();
+    expect(result.textContent).toBe('Item A');
+  });
+
+  it('plain <ul> (not a checklist): swaps container tag to <ol>, preserves items', () => {
+    const ul = document.createElement('ul');
+    ul.innerHTML = '<li>A</li><li>B</li>';
+    document.body.appendChild(ul);
+    setCollapsedCursor(ul.querySelectorAll('li')[0].firstChild, 0);
+
+    insertOrderedList();
+
+    const result = document.body.querySelector('ul, ol');
+    expect(result.tagName).toBe('OL');
+    expect(Array.from(result.querySelectorAll('li')).map((li) => li.textContent)).toEqual(['A', 'B']);
+  });
+
+  it('already a plain <ol>: falls through to execCommand (toggle off)', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+
+    const ol = document.createElement('ol');
+    ol.innerHTML = '<li>A</li>';
+    document.body.appendChild(ol);
+    setCollapsedCursor(ol.querySelector('li').firstChild, 0);
+
+    insertOrderedList();
+
+    expect(execMock).toHaveBeenCalledWith('insertOrderedList', false, null);
+    expect(document.body.querySelector('ol').classList.contains('an-checklist')).toBe(false);
+
+    delete document.execCommand;
+  });
+
+  it('cursor not in any list: falls through to execCommand', () => {
+    const execMock = vi.fn(() => true);
+    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
+
+    const p = document.createElement('p');
+    p.textContent = 'plain text';
+    document.body.appendChild(p);
+    setCollapsedCursor(p.firstChild, 0);
+
+    insertOrderedList();
+
+    expect(execMock).toHaveBeenCalledWith('insertOrderedList', false, null);
+
+    delete document.execCommand;
   });
 });

@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - CI step order now matches the `check` script (`build` → `test:wrappers` → `check:bundle`), so `ci.yml` actually exercises the order used at release time.
 - `publish.yml`'s cross-browser smoke tests now run as a parallel matrix job instead of three sequential steps, and both `ci.yml` and `publish.yml` cache Playwright browser binaries.
+- `autumnnote-react`'s peer dependency floor raised from React 16.8 to React 18, and `autumnnote-vue`'s from Vue 3.0 to Vue 3.4, to match the versions actually exercised by CI. Older versions were never tested and this is not expected to affect real-world consumers.
+- Bumped `actions/checkout` and `actions/setup-node` to v5 in all workflows.
 
 ---
 
