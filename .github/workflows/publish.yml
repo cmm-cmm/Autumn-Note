@@ -48,6 +48,9 @@ jobs:
   publish:
     needs: browser-smoke
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -63,12 +66,19 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: pnpm
 
+      # Trusted publishing (OIDC) requires npm CLI 11.5.1+; Node 22's
+      # bundled npm may be older, so upgrade explicitly.
+      - name: Ensure npm CLI supports trusted publishing
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Verify release tag and package versions
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="$RELEASE_TAG_NAME"
           if [ -z "$TAG" ]; then
             TAG="v$(node -p "require('./package.json').version")"
           fi
@@ -90,16 +100,6 @@ jobs:
           npm pack ./packages/react --dry-run --ignore-scripts
           npm pack ./packages/vue --dry-run --ignore-scripts
 
-      - name: Verify npm auth
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::NPM_TOKEN secret is not set. Go to GitHub → Settings → Secrets → Actions and add NPM_TOKEN with a valid npm access token."
-            exit 1
-          fi
-          npm whoami || { echo "::error::npm token is invalid or expired. Regenerate it at https://www.npmjs.com/settings/<user>/tokens and update the NPM_TOKEN secret."; exit 1; }
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       # ──────────────────────────────────────────────────────────────
       # autumnnote (core)
       # ──────────────────────────────────────────────────────────────
@@ -119,8 +119,6 @@ jobs:
       - name: Publish autumnnote
         if: steps.core_check.outputs.should_publish == 'true'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Skip autumnnote
         if: steps.core_check.outputs.should_publish == 'false'
@@ -147,8 +145,6 @@ jobs:
       - name: Publish autumnnote-react
         if: steps.react_check.outputs.should_publish == 'true'
         run: pnpm --filter autumnnote-react publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Skip autumnnote-react
         if: steps.react_check.outputs.should_publish == 'false'
@@ -175,8 +171,6 @@ jobs:
       - name: Publish autumnnote-vue
         if: steps.vue_check.outputs.should_publish == 'true'
         run: pnpm --filter autumnnote-vue publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Skip autumnnote-vue
         if: steps.vue_check.outputs.should_publish == 'false'
