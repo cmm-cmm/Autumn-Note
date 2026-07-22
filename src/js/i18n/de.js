@@ -342,4 +342,19 @@ export const de = {
     restore: 'Wiederherstellen',
     discard: 'Verwerfen',
   },
+
+  slashMenu: {
+    noResults:      'Keine passenden Befehle',
+    heading1:       'Überschrift 1',
+    heading2:       'Überschrift 2',
+    heading3:       'Überschrift 3',
+    bulletList:     'Aufzählungsliste',
+    numberedList:   'Nummerierte Liste',
+    checklist:      'Checkliste',
+    blockquote:     'Zitat',
+    codeBlock:      'Codeblock',
+    horizontalRule: 'Horizontale Linie',
+    table:          'Tabelle',
+    image:          'Bild',
+  },
 };

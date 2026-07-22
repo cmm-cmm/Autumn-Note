@@ -343,4 +343,19 @@ export const vi = {
     restore: 'Khôi phục',
     discard: 'Bỏ qua',
   },
+
+  slashMenu: {
+    noResults:      'Không có lệnh phù hợp',
+    heading1:       'Tiêu đề 1',
+    heading2:       'Tiêu đề 2',
+    heading3:       'Tiêu đề 3',
+    bulletList:     'Danh sách không thứ tự',
+    numberedList:   'Danh sách có thứ tự',
+    checklist:      'Danh sách công việc',
+    blockquote:     'Trích dẫn',
+    codeBlock:      'Khối mã',
+    horizontalRule: 'Đường kẻ ngang',
+    table:          'Bảng',
+    image:          'Hình ảnh',
+  },
 };

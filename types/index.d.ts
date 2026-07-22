@@ -85,6 +85,8 @@ export interface AsnOptions {
   markdownPaste?: boolean;
   /** Maximum undo/redo history steps. */
   historyLimit?: number;
+  /** Maximum combined size (chars) of all stacked undo/redo snapshots. Default 10485760 (10 MB). */
+  historyMaxBytes?: number;
   /** Default font family applied to the editable area on init. */
   defaultFontFamily?: string;
   /** Default font size applied to the editable area on init (e.g. '14px'). */
@@ -153,6 +155,11 @@ export interface AsnOptions {
 
   /** @mention autocomplete configuration. Activated when mention.onSearch is provided. */
   mention?: MentionOptions | null;
+
+  // ---- Slash command menu ----------------------------------------------------
+
+  /** Show a "/" command palette for quick block insertion (headings, lists, table, image, ...). Default: true. */
+  slashMenu?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +340,20 @@ export interface AsnLocale {
     foundAt: string;
     restore: string;
     discard: string;
+  };
+  slashMenu: {
+    noResults: string;
+    heading1: string;
+    heading2: string;
+    heading3: string;
+    bulletList: string;
+    numberedList: string;
+    checklist: string;
+    blockquote: string;
+    codeBlock: string;
+    horizontalRule: string;
+    table: string;
+    image: string;
   };
 }
 

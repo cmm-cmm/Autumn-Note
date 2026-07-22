@@ -14,7 +14,10 @@ const makeContext = () => {
     options: {},
     layoutInfo: { editable },
     locale: en,
-    invoke: vi.fn(),
+    invoke: vi.fn((path) => {
+      if (path === 'clipboard.compressAndRegister') return Promise.resolve('blob:mock-url');
+      return undefined;
+    }),
     triggerEvent: vi.fn(),
   };
 };
@@ -117,7 +120,7 @@ describe('ImageDialog — unsupported format rejection in file input', () => {
     dialog.destroy();
   });
 
-  it('clears an existing hint and does NOT fire imageError for a valid PNG file', () => {
+  it('clears an existing hint and does NOT fire imageError for a valid PNG file', async () => {
     const context = makeContext();
     const dialog = new ImageDialog(context);
     dialog.initialize();
@@ -125,20 +128,52 @@ describe('ImageDialog — unsupported format rejection in file input', () => {
     // Pre-set a stale hint from a previous error
     dialog._fileHint.textContent = 'Old error message';
 
-    // A valid PNG — but FileReader is not available in jsdom so we just
-    // check that the hint is cleared and no imageError is triggered.
     const pngFile = new File(['data'], 'photo.png', { type: 'image/png' });
     Object.defineProperty(dialog._fileInput, 'files', { value: [pngFile], configurable: true });
 
-    // FileReader.readAsDataURL is a no-op in jsdom; we only verify the rejection
-    // guard is skipped (no error event fired, hint cleared).
     dialog._onFileChange();
+    await Promise.resolve();
+    await Promise.resolve();
 
     expect(dialog._fileHint.textContent).toBe('');
+    expect(dialog._urlInput.value).toBe('blob:mock-url');
     const errorCalls = context.triggerEvent.mock.calls.filter(([ev]) => ev === 'imageError');
     expect(errorCalls).toHaveLength(0);
 
     dialog.destroy();
+  });
+
+  it('falls back to embedding the original file when clipboard.compressAndRegister rejects', async () => {
+    class StubFileReader {
+      readAsDataURL() {
+        this.onload?.({ target: { result: 'data:image/png;base64,fallback' } });
+      }
+    }
+    vi.stubGlobal('FileReader', StubFileReader);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const context = makeContext();
+    context.invoke = vi.fn((path) => {
+      if (path === 'clipboard.compressAndRegister') return Promise.reject(new Error('canvas unavailable'));
+      return undefined;
+    });
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+
+    const pngFile = new File(['data'], 'photo.png', { type: 'image/png' });
+    Object.defineProperty(dialog._fileInput, 'files', { value: [pngFile], configurable: true });
+
+    dialog._onFileChange();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(warn).toHaveBeenCalled();
+    expect(dialog._urlInput.value).toBe('data:image/png;base64,fallback');
+
+    dialog.destroy();
+    vi.unstubAllGlobals();
+    warn.mockRestore();
   });
 });
 

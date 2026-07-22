@@ -350,4 +350,19 @@ export const en = {
     imageSize: (maxSize) =>
       `Image file is too large. Maximum allowed size is ${maxSize} MB.`,
   },
+
+  slashMenu: {
+    noResults:      'No matching commands',
+    heading1:       'Heading 1',
+    heading2:       'Heading 2',
+    heading3:       'Heading 3',
+    bulletList:     'Bullet List',
+    numberedList:   'Numbered List',
+    checklist:      'Checklist',
+    blockquote:     'Blockquote',
+    codeBlock:      'Code Block',
+    horizontalRule: 'Horizontal Rule',
+    table:          'Table',
+    image:          'Image',
+  },
 };

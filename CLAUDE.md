@@ -51,12 +51,12 @@ context.on('eventName', callback)           // subscribe to editor events
 
 ### Module Inventory (`src/js/module/`)
 
-29 modules split by responsibility:
+30 modules split by responsibility:
 - **Core UI**: `Editor`, `Toolbar`, `Buttons`, `Statusbar`
 - **Dialogs**: `BaseDialog`, `LinkDialog`, `ImageDialog`, `VideoDialog`, `EmojiDialog`, `IconDialog`, `FindReplace`, `ShortcutsDialog`
 - **Floating toolbars**: `LinkTooltip`, `ImageTooltip`, `VideoTooltip`, `TableTooltip`, `CodeTooltip`, `BubbleToolbar`
 - **Editing behaviors**: `Clipboard`, `ContextMenu`, `MarkdownShortcuts`, `Codeview`, `Fullscreen`, `ImageResizer`, `ImageCropOverlay`, `VideoResizer`
-- **UX**: `Placeholder`, `AutoSaveRestore`, `Mention`
+- **UX**: `Placeholder`, `AutoSaveRestore`, `Mention`, `SlashMenu`
 
 ### Core Utilities (`src/js/core/`)
 

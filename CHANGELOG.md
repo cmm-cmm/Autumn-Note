@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `/` command palette (`SlashMenu` module) — typing "/" as the first character of an empty block opens a filterable list for quick-inserting headings, lists, checklist, blockquote, code block, horizontal rule, table, and image. Fully localized in all 8 languages. Disable via `slashMenu: false`.
+- `historyMaxBytes` option — caps the combined size of all stacked undo/redo snapshots (default 10 MB), evicting the oldest states first when exceeded even under the step-count limit. Guards documents with many large embedded images against unbounded undo-history memory growth.
+- CDN build (`vite.cdn.config.js`) is now produced by the default `build` script and included in published packages, instead of being a separate, never-invoked script.
+- SonarCloud static analysis now runs in CI (`ci.yml`), uploading coverage via the new `lcov` reporter.
+
+### Fixed
+- Image files chosen through the Insert Image dialog's file picker are now resized/compressed via the same canvas pipeline already used for pasted/dropped images, instead of being embedded untouched.
+- `[ ] ` markdown shortcut now correctly converts to a checklist item (was calling a non-existent `editor.checklist` method instead of `editor.toggleChecklist`).
+- `---` markdown shortcut now correctly inserts a horizontal rule (was calling a non-existent `editor.insertHR` method instead of `editor.insertHr`).
+- Statusbar word/character count no longer runs twice per keystroke (an undebounced call from `Editor.afterCommand` plus a redundant, separately-debounced listener in `Statusbar`).
+- `check-bundle-size.mjs` now fails clearly if a dist file is missing (instead of an uncaught `ENOENT`) and enforces a lower-bound sanity floor so a broken/near-empty build no longer silently passes.
+
+### Changed
+- CI step order now matches the `check` script (`build` → `test:wrappers` → `check:bundle`), so `ci.yml` actually exercises the order used at release time.
+- `publish.yml`'s cross-browser smoke tests now run as a parallel matrix job instead of three sequential steps, and both `ci.yml` and `publish.yml` cache Playwright browser binaries.
+
 ---
 
 ## [1.15.0] - 2026-07-16

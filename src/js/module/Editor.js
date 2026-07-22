@@ -34,7 +34,11 @@ export class Editor {
 
   initialize() {
     const editable = this.context.layoutInfo.editable;
-    this._history = new History(editable, this.options.historyLimit || 100);
+    this._history = new History(
+      editable,
+      this.options.historyLimit || 100,
+      this.options.historyMaxBytes || 10 * 1024 * 1024,
+    );
     this._bindEvents(editable);
     return this;
   }

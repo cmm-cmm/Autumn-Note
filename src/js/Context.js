@@ -39,6 +39,7 @@ import { AutoSaveRestore } from './module/AutoSaveRestore.js';
 import { MarkdownShortcuts } from './module/MarkdownShortcuts.js';
 import { BubbleToolbar } from './module/BubbleToolbar.js';
 import { Mention } from './module/Mention.js';
+import { SlashMenu } from './module/SlashMenu.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
@@ -157,6 +158,7 @@ export class Context {
     register('markdownShortcuts', MarkdownShortcuts);
     register('bubbleToolbar', BubbleToolbar);
     register('mention', Mention);
+    register('slashMenu', SlashMenu);
 
     // Custom modules registered via AutumnNote.registerModule()
     if (_customModules.size > 0) {

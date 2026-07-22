@@ -137,11 +137,23 @@ export class ImageDialog extends BaseDialog {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this._urlInput.value = /** @type {string} */ (e.target.result);
-    };
-    reader.readAsDataURL(file);
+    // Resize/compress via Clipboard's shared canvas pipeline so a file chosen
+    // through this dialog gets the same treatment as a pasted/dropped image
+    // instead of embedding the original (potentially multi-MB) file untouched.
+    this.context.invoke('clipboard.compressAndRegister', file).then((blobUrl) => {
+      if (this.context._alive === false) return;
+      this._urlInput.value = blobUrl;
+    }).catch((err) => {
+      if (this.context._alive === false) return;
+      // Compression failed (e.g. canvas unavailable) — fall back to embedding
+      // the original file directly.
+      console.warn('[AutumnNote] ImageDialog: image compression failed, using original file.', err);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this._urlInput.value = /** @type {string} */ (e.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   _onInsert() {

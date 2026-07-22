@@ -343,4 +343,19 @@ export const zh = {
     restore: '恢复',
     discard: '放弃',
   },
+
+  slashMenu: {
+    noResults:      '没有匹配的命令',
+    heading1:       '标题 1',
+    heading2:       '标题 2',
+    heading3:       '标题 3',
+    bulletList:     '项目符号列表',
+    numberedList:   '编号列表',
+    checklist:      '检查清单',
+    blockquote:     '引用',
+    codeBlock:      '代码块',
+    horizontalRule: '水平线',
+    table:          '表格',
+    image:          '图片',
+  },
 };

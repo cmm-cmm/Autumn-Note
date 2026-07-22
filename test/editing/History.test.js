@@ -323,3 +323,79 @@ describe('History.getUndoCount / getRedoCount', () => {
     expect(h.getUndoCount() + h.getRedoCount()).toBe(h.stack.length - 1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Byte-budget eviction (historyMaxBytes)
+// ---------------------------------------------------------------------------
+describe('History byte-budget eviction', () => {
+  let el;
+  beforeEach(() => {
+    el = document.createElement('div');
+    el.contentEditable = 'true';
+    el.innerHTML = '<p>initial</p>';
+    document.body.appendChild(el);
+  });
+  afterEach(() => { el.remove(); });
+
+  it('evicts the oldest snapshot once the combined byte budget is exceeded, even under the step limit', () => {
+    // limit=100 (never hit), maxBytes tiny so every recordUndo forces an eviction
+    const h = new History(el, 100, 50);
+    el.innerHTML = '<p>a somewhat longer paragraph of text</p>';
+    h.recordUndo();
+    el.innerHTML = '<p>another somewhat longer paragraph of text</p>';
+    h.recordUndo();
+
+    // Byte budget keeps the stack from growing even though the 100-step
+    // limit was nowhere near reached.
+    expect(h.stack.length).toBeLessThan(3);
+    expect(h._bytes).toBeLessThanOrEqual(h._maxBytes + h._entrySize(h.stack[h.stack.length - 1]));
+  });
+
+  it('always keeps at least the current snapshot even if it alone exceeds the byte budget', () => {
+    const h = new History(el, 100, 1);
+    el.innerHTML = '<p>content larger than a single byte</p>';
+    h.recordUndo();
+    expect(h.stack.length).toBeGreaterThanOrEqual(1);
+    expect(h.canUndo()).toBeDefined();
+  });
+
+  it('_bytes tracks the actual serialized size of the stack', () => {
+    const h = new History(el, 100, 10 * 1024 * 1024);
+    const expected = h.stack.reduce((sum, entry) => sum + h._entrySize(entry), 0);
+    expect(h._bytes).toBe(expected);
+
+    el.innerHTML = '<p>changed content</p>';
+    h.recordUndo();
+    const expectedAfter = h.stack.reduce((sum, entry) => sum + h._entrySize(entry), 0);
+    expect(h._bytes).toBe(expectedAfter);
+  });
+
+  it('reset() clears the byte counter along with the stack', () => {
+    const h = new History(el, 100, 10 * 1024 * 1024);
+    el.innerHTML = '<p>changed content</p>';
+    h.recordUndo();
+    h.reset();
+    expect(h._bytes).toBe(h._entrySize(h.stack[0]));
+  });
+
+  it('trimming redo history on a new edit also decrements the byte counter', () => {
+    const h = new History(el, 100, 10 * 1024 * 1024);
+    el.innerHTML = '<p>step1</p>';
+    h.recordUndo();
+    el.innerHTML = '<p>step2</p>';
+    h.recordUndo();
+    h.undo(); // stackOffset now points at step1, step2 is "future" redo history
+
+    el.innerHTML = '<p>branch</p>';
+    h.recordUndo(); // discards the step2 redo entry and pushes 'branch'
+
+    const expected = h.stack.reduce((sum, entry) => sum + h._entrySize(entry), 0);
+    expect(h._bytes).toBe(expected);
+    expect(h.canRedo()).toBe(false);
+  });
+
+  it('defaults historyMaxBytes to 10 MiB when not provided', () => {
+    const h = new History(el);
+    expect(h._maxBytes).toBe(10 * 1024 * 1024);
+  });
+});

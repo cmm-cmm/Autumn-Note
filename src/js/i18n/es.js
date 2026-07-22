@@ -342,4 +342,19 @@ export const es = {
     restore: 'Restaurar',
     discard: 'Descartar',
   },
+
+  slashMenu: {
+    noResults:      'No hay comandos coincidentes',
+    heading1:       'Encabezado 1',
+    heading2:       'Encabezado 2',
+    heading3:       'Encabezado 3',
+    bulletList:     'Lista con viñetas',
+    numberedList:   'Lista numerada',
+    checklist:      'Lista de verificación',
+    blockquote:     'Cita',
+    codeBlock:      'Bloque de código',
+    horizontalRule: 'Línea horizontal',
+    table:          'Tabla',
+    image:          'Imagen',
+  },
 };

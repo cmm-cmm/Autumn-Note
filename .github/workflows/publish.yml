@@ -10,7 +10,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  browser-smoke:
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+      - name: Install Playwright OS dependencies
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+
+      - run: pnpm test:browser
+        env:
+          BROWSER: ${{ matrix.browser }}
+
   publish:
+    needs: browser-smoke
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,24 +80,6 @@ jobs:
 
       - name: Run release checks
         run: pnpm check
-
-      - name: Install release browser matrix
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
-
-      - name: Run Chromium smoke tests
-        run: pnpm test:browser
-        env:
-          BROWSER: chromium
-
-      - name: Run Firefox smoke tests
-        run: pnpm test:browser
-        env:
-          BROWSER: firefox
-
-      - name: Run WebKit smoke tests
-        run: pnpm test:browser
-        env:
-          BROWSER: webkit
 
       - name: Audit high-severity dependencies
         run: pnpm audit --audit-level high

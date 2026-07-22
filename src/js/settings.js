@@ -25,6 +25,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxImageSize]         - Max upload size in MB
  * @property {number}   [tabSize]              - Spaces per tab in non-list context
  * @property {number}   [historyLimit]         - Maximum undo/redo history steps
+ * @property {number}   [historyMaxBytes]      - Maximum combined size (chars) of all stacked undo/redo snapshots
  * @property {string}   [defaultFontFamily]    - Default font family applied to the editable area on init
  * @property {string}   [defaultFontSize]      - Default font size applied to the editable area on init (e.g. '14px')
  * @property {string[]} [fontFamilies]         - Font families shown in the font-family toolbar dropdown
@@ -64,6 +65,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {boolean}  [bubbleToolbar]        - Show a mini floating toolbar above text selections
  * @property {string[]} [bubbleToolbarItems]   - Button names for the bubble toolbar
  * @property {object|null} [mention]            - @mention configuration (onSearch, minChars, ...)
+ * @property {boolean}  [slashMenu]            - Show a "/" command palette for quick block insertion (default true)
  * @property {string}   [lang]                 - Display language or partial locale object override
  */
 
@@ -103,6 +105,10 @@ export const defaultOptions = {
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
   markdownPaste: true,
   historyLimit: 100,
+  // Max combined size (chars) of all stacked undo/redo snapshots. Guards
+  // against documents with many large embedded images holding dozens of
+  // full-size copies in memory despite historyLimit.
+  historyMaxBytes: 10 * 1024 * 1024,
   // Default font family applied to the editor and shown in the dropdown when no explicit font is set
   defaultFontFamily: 'Arial',
   // Default font size applied to the editor and shown in the size dropdown when no explicit size is set
@@ -170,6 +176,10 @@ export const defaultOptions = {
   // Markdown input shortcuts: convert markdown syntax typed inline to HTML.
   // e.g. "## " at line start → <h2>, "**bold**" → <strong>
   markdownShortcuts: true,
+
+  // "/" command palette for quick block insertion (headings, lists, table, image, ...).
+  // Triggers only when "/" is the first character typed on an otherwise-empty line.
+  slashMenu: true,
 
   // Maximum paste size in bytes (default 5 MB). Pastes larger than this are silently dropped.
   maxPasteSize: 5 * 1024 * 1024,

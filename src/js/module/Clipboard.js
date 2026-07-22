@@ -416,12 +416,7 @@ export class Clipboard {
       }
 
       const alt = file.name.replace(/\.[^.]+$/, '');
-      this._compressImage(file).then((dataUrl) => {
-        // Keep the large data URL in a JS Map; insert a lightweight blob: URL
-        // into the DOM so editable.innerHTML never contains the big base64 string.
-        const blob = this._dataUrlToBlob(dataUrl);
-        const blobUrl = URL.createObjectURL(blob);
-        this._blobRegistry.set(blobUrl, dataUrl);
+      this.compressAndRegister(file).then((blobUrl) => {
         this.context.invoke('editor.insertImage', blobUrl, alt);
       }).catch((err) => {
         const message = `Image "${file.name}" could not be processed.`;
@@ -429,6 +424,22 @@ export class Clipboard {
         console.warn('[AutumnNote]', message, err);
       });
     });
+  }
+
+  /**
+   * Compresses an image File via canvas and registers the result behind a
+   * lightweight blob: URL (see `resolveImages`), so callers never have to hold
+   * the full base64 string in the DOM. Shared by paste/drop and ImageDialog's
+   * file picker so every image-insertion path gets the same compression.
+   * @param {File} file
+   * @returns {Promise<string>} blob: URL usable as an <img src>
+   */
+  async compressAndRegister(file) {
+    const dataUrl = await this._compressImage(file);
+    const blob = this._dataUrlToBlob(dataUrl);
+    const blobUrl = URL.createObjectURL(blob);
+    this._blobRegistry.set(blobUrl, dataUrl);
+    return blobUrl;
   }
 
   /**
