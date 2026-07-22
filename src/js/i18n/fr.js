@@ -343,4 +343,19 @@ export const fr = {
     restore: 'Restaurer',
     discard: 'Ignorer',
   },
+
+  slashMenu: {
+    noResults:      'Aucune commande correspondante',
+    heading1:       'Titre 1',
+    heading2:       'Titre 2',
+    heading3:       'Titre 3',
+    bulletList:     'Liste à puces',
+    numberedList:   'Liste numérotée',
+    checklist:      'Liste de contrôle',
+    blockquote:     'Citation',
+    codeBlock:      'Bloc de code',
+    horizontalRule: 'Ligne horizontale',
+    table:          'Tableau',
+    image:          'Image',
+  },
 };

@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 
 // CDN build: minified UMD for direct <script> tag usage
 export default defineConfig({
+  // CDN library builds must not copy demo-site assets into the npm package.
+  publicDir: false,
   build: {
     lib: {
       entry: resolve(__dirname, 'src/js/index.umd.js'),

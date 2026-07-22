@@ -4,7 +4,6 @@
  */
 
 import { createElement, on } from '../core/dom.js';
-import { debounce } from '../core/func.js';
 
 // Cache the segmenter instance at module level to avoid per-call allocation
 const _segmenter =
@@ -97,7 +96,6 @@ export class Statusbar {
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);
 
-    this._bindContentEvents();
     this.update();
     return this;
   }
@@ -202,13 +200,9 @@ export class Statusbar {
   // Counter update
   // ---------------------------------------------------------------------------
 
-  _bindContentEvents() {
-    const editable = this.context.layoutInfo.editable;
-    const updateDebounced = debounce(() => this.update(), 200);
-    const d = on(editable, 'input', /** @type {EventListener} */ (updateDebounced));
-    this._disposers.push(d);
-  }
-
+  // Editor.afterCommand() already invokes 'statusbar.update' on every native
+  // 'input' event and after every toolbar/formatting command, so a separate
+  // content listener here would just re-run this on the same keystroke.
   update() {
     if (!this._wordCountEl || !this._charCountEl) return;
     const editable = this.context.layoutInfo.editable;

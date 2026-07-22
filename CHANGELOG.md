@@ -11,6 +11,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.16.0] - 2026-07-22
+
+### Added
+- Runtime `updateOptions()`, adapter-backed debounced auto-save, document import/export adapters, selection bookmarks, stable block IDs, and collaboration bridge hooks.
+- Controlled `value`/`onChange` support for React and `v-model` support for Vue, including runtime option updates without remounting.
+- Extensible slash commands through `registerSlashCommand()`, with listbox screen-reader state and reduced-motion styling.
+- Optional external `imageProcessor` hook for worker-backed image compression while retaining the canvas fallback.
+- `/` command palette (`SlashMenu` module) — typing "/" as the first character of an empty block opens a filterable list for quick-inserting headings, lists, checklist, blockquote, code block, horizontal rule, table, and image. Fully localized in all 8 languages. Disable via `slashMenu: false`.
+- `historyMaxBytes` option — caps the combined size of all stacked undo/redo snapshots (default 10 MB), evicting the oldest states first when exceeded even under the step-count limit. Guards documents with many large embedded images against unbounded undo-history memory growth.
+- CDN build (`vite.cdn.config.js`) is now produced by the default `build` script and included in published packages, instead of being a separate, never-invoked script.
+- SonarCloud static analysis now runs in CI (`ci.yml`), uploading coverage via the new `lcov` reporter.
+
+### Fixed
+- Keep undo/redo offsets valid when one oversized snapshot evicts multiple history entries under `historyMaxBytes`.
+- Preserve `/image` command text when the image dialog is cancelled, removing it only when insertion is committed.
+- Make the optional SonarCloud step test `SONAR_TOKEN` through the supported environment-variable context.
+- Prevent the CDN build from copying demo-site assets into the published npm package.
+- Update ESLint, Sass, and Vite to pull patched `brace-expansion` and `immutable` releases and clear high-severity dependency audit findings.
+- Image files chosen through the Insert Image dialog's file picker are now resized/compressed via the same canvas pipeline already used for pasted/dropped images, instead of being embedded untouched.
+- `[ ] ` markdown shortcut now correctly converts to a checklist item (was calling a non-existent `editor.checklist` method instead of `editor.toggleChecklist`).
+- `---` markdown shortcut now correctly inserts a horizontal rule (was calling a non-existent `editor.insertHR` method instead of `editor.insertHr`).
+- Statusbar word/character count no longer runs twice per keystroke (an undebounced call from `Editor.afterCommand` plus a redundant, separately-debounced listener in `Statusbar`).
+- `check-bundle-size.mjs` now fails clearly if a dist file is missing (instead of an uncaught `ENOENT`), enforces a lower-bound sanity floor, and covers the CDN bundle.
+
+### Changed
+- CI step order now matches the `check` script (`build` → `test:wrappers` → `check:bundle`), so `ci.yml` actually exercises the order used at release time.
+- `publish.yml`'s cross-browser smoke tests now run as a parallel matrix job instead of three sequential steps, and both `ci.yml` and `publish.yml` cache Playwright browser binaries.
+- `autumnnote-react`'s peer dependency floor raised from React 16.8 to React 18, and `autumnnote-vue`'s from Vue 3.0 to Vue 3.4, to match the versions actually exercised by CI. Older versions were never tested and this is not expected to affect real-world consumers.
+- Bumped `actions/checkout` and `actions/setup-node` to v5 in all workflows.
+
+---
+
 ## [1.15.0] - 2026-07-16
 
 - Minify production ESM, UMD, and CommonJS bundles with OXC and enforce a 110 KiB gzip budget.

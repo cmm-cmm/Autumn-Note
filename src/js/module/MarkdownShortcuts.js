@@ -167,13 +167,13 @@ export class MarkdownShortcuts {
 
   _convertToChecklist() {
     this._selectLineAndDelete();
-    this.context.invoke('editor.checklist');
+    this.context.invoke('editor.toggleChecklist');
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
   _convertToHr() {
     this._selectLineAndDelete();
-    this.context.invoke('editor.insertHR');
+    this.context.invoke('editor.insertHr');
     this.context.triggerEvent('change', this.context.getHTML());
   }
 

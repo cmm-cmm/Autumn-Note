@@ -140,11 +140,23 @@ const AutumnNote = {
    */
   registerButton(btnDef) { registerButton(btnDef); return this; },
 
+  /** Registers a slash-menu command for future editor instances. */
+  registerSlashCommand(command) {
+    if (!command?.id || typeof command.run !== 'function') {
+      throw new TypeError('[AutumnNote] Slash command requires an id and run(context) function.');
+    }
+    const commands = defaultOptions.slashCommands;
+    const index = commands.findIndex((item) => item.id === command.id);
+    if (index >= 0) commands[index] = command;
+    else commands.push(command);
+    return this;
+  },
+
   /** All pre-built button definitions — accessible in every module format including UMD/CJS. */
   buttons,
 
   /** Library version */
-  version: '1.15.0',
+  version: '1.16.0',
 };
 
 // ---------------------------------------------------------------------------

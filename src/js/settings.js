@@ -25,6 +25,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxImageSize]         - Max upload size in MB
  * @property {number}   [tabSize]              - Spaces per tab in non-list context
  * @property {number}   [historyLimit]         - Maximum undo/redo history steps
+ * @property {number}   [historyMaxBytes]      - Maximum combined size (chars) of all stacked undo/redo snapshots
  * @property {string}   [defaultFontFamily]    - Default font family applied to the editable area on init
  * @property {string}   [defaultFontSize]      - Default font size applied to the editable area on init (e.g. '14px')
  * @property {string[]} [fontFamilies]         - Font families shown in the font-family toolbar dropdown
@@ -46,6 +47,8 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {string}   [toolbarOverflow]      - Toolbar overflow strategy: 'wrap' (default) | 'scroll'
  * @property {boolean}  [autoSave]             - Auto-save content to localStorage on change
  * @property {string}   [autoSaveKey]          - localStorage key used for auto-save (default: 'autumnnote-autosave')
+ * @property {number}   [autoSaveDelay]        - Debounce delay for auto-save writes in milliseconds
+ * @property {object|null} [autoSaveAdapter]   - Optional async persistence adapter with save/load/remove methods
  * @property {number}   [maxChars]             - Maximum character count (0 = unlimited). Shows warning in statusbar.
  * @property {number}   [maxWords]             - Maximum word count (0 = unlimited). Shows warning in statusbar.
  * @property {boolean}  [tableHeaderRow]       - Insert a header row (<thead><th>) when creating tables
@@ -64,6 +67,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {boolean}  [bubbleToolbar]        - Show a mini floating toolbar above text selections
  * @property {string[]} [bubbleToolbarItems]   - Button names for the bubble toolbar
  * @property {object|null} [mention]            - @mention configuration (onSearch, minChars, ...)
+ * @property {boolean}  [slashMenu]            - Show a "/" command palette for quick block insertion (default true)
  * @property {string}   [lang]                 - Display language or partial locale object override
  */
 
@@ -103,6 +107,10 @@ export const defaultOptions = {
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
   markdownPaste: true,
   historyLimit: 100,
+  // Max combined size (chars) of all stacked undo/redo snapshots. Guards
+  // against documents with many large embedded images holding dozens of
+  // full-size copies in memory despite historyLimit.
+  historyMaxBytes: 10 * 1024 * 1024,
   // Default font family applied to the editor and shown in the dropdown when no explicit font is set
   defaultFontFamily: 'Arial',
   // Default font size applied to the editor and shown in the size dropdown when no explicit size is set
@@ -132,6 +140,8 @@ export const defaultOptions = {
   autoSave: false,
   // localStorage key used when autoSave is enabled
   autoSaveKey: 'autumnnote-autosave',
+  autoSaveDelay: 400,
+  autoSaveAdapter: null,
   // Maximum character count (0 = unlimited)
   maxChars: 0,
   // Maximum word count (0 = unlimited)
@@ -170,6 +180,23 @@ export const defaultOptions = {
   // Markdown input shortcuts: convert markdown syntax typed inline to HTML.
   // e.g. "## " at line start → <h2>, "**bold**" → <strong>
   markdownShortcuts: true,
+
+  // "/" command palette for quick block insertion (headings, lists, table, image, ...).
+  // Triggers only when "/" is the first character typed on an otherwise-empty line.
+  slashMenu: true,
+  // Additional slash-menu commands supplied by applications/plugins.
+  slashCommands: [],
+
+  // Optional import/export adapters keyed by format name.
+  documentAdapters: {},
+  // Optional collaboration bridge notified with local HTML changes.
+  collaborationAdapter: null,
+
+  // Optional image processor (for example a Web Worker bridge). Receives a
+  // File and returns a data URL; Clipboard's canvas pipeline remains fallback.
+  imageProcessor: null,
+  // Add stable data-an-block-id attributes to top-level document blocks.
+  blockIds: false,
 
   // Maximum paste size in bytes (default 5 MB). Pastes larger than this are silently dropped.
   maxPasteSize: 5 * 1024 * 1024,

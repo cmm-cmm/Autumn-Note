@@ -752,6 +752,9 @@ describe('Clipboard._insertImageFiles compress path', () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake-url');
     const file = new File(['data'], 'photo.png', { type: 'image/png' });
     cb._insertImageFiles([file]);
+    // compressAndRegister() wraps _compressImage() in an extra async function,
+    // adding one more microtask tick before editor.insertImage is invoked.
+    await Promise.resolve();
     await Promise.resolve();
     expect(cb.context.invoke).toHaveBeenCalledWith('editor.insertImage', 'blob:fake-url', 'photo');
     URL.createObjectURL.mockRestore?.();
@@ -764,10 +767,25 @@ describe('Clipboard._insertImageFiles compress path', () => {
     cb._insertImageFiles([file]);
     await Promise.resolve();
     await Promise.resolve();
+    await Promise.resolve();
     expect(cb.context.triggerEvent).toHaveBeenCalledWith(
       'imageError',
       expect.objectContaining({ file }),
     );
+  });
+
+  it('compressAndRegister exposes the compress+register step for other modules (e.g. ImageDialog)', async () => {
+    const { cb } = makeClipboard();
+    const fakeDataUrl = 'data:image/webp;base64,xyz789';
+    vi.spyOn(cb, '_compressImage').mockResolvedValue(fakeDataUrl);
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:shared-url');
+    const file = new File(['data'], 'photo.webp', { type: 'image/webp' });
+
+    const blobUrl = await cb.compressAndRegister(file);
+
+    expect(blobUrl).toBe('blob:shared-url');
+    expect(cb._blobRegistry.get('blob:shared-url')).toBe(fakeDataUrl);
+    URL.createObjectURL.mockRestore?.();
   });
 });
 

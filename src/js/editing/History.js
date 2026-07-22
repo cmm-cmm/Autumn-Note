@@ -7,14 +7,35 @@ export class History {
   /**
    * @param {HTMLElement} editable - the contenteditable element
    * @param {number} [limit=100] - maximum number of undo/redo states
+   * @param {number} [maxBytes=10485760] - maximum combined size (chars) of all
+   *   stacked snapshots (html + tokenized image data). Oldest states are
+   *   evicted first when exceeded, even if `limit` hasn't been reached —
+   *   documents with many large embedded images can otherwise hold dozens of
+   *   full-size copies in memory despite the step-count limit.
    */
-  constructor(editable, limit = 100) {
+  constructor(editable, limit = 100, maxBytes = 10 * 1024 * 1024) {
     this.editable = editable;
     this._limit = limit;
+    this._maxBytes = maxBytes;
+    this._bytes = 0;
     /** @type {Array<{html: string, images?: Record<string,string>, sel: {start: number, end: number}|null}>} */
     this.stack = [];
     this.stackOffset = -1;
     this._savePoint();
+  }
+
+  /**
+   * Approximate in-memory size (chars) of one stacked snapshot: the tokenized
+   * HTML string plus every image data URL it references.
+   * @param {{html: string, images?: Record<string,string>}} entry
+   * @returns {number}
+   */
+  _entrySize(entry) {
+    let size = entry.html.length;
+    if (entry.images) {
+      for (const key in entry.images) size += entry.images[key].length;
+    }
+    return size;
   }
 
   // ---------------------------------------------------------------------------
@@ -115,16 +136,26 @@ export class History {
   _savePoint() {
     // Trim future history if we're mid-stack
     if (this.stackOffset < this.stack.length - 1) {
+      for (const entry of this.stack.slice(this.stackOffset + 1)) {
+        this._bytes -= this._entrySize(entry);
+      }
       this.stack = this.stack.slice(0, this.stackOffset + 1);
     }
     const raw = this._serialize();
     const { html, images } = this._tokenizeImages(raw);
-    this.stack.push({ html, images, sel: this._serializeSelection() });
-    if (this.stack.length > this._limit) {
-      this.stack.shift();
-    } else {
-      this.stackOffset++;
+    const entry = { html, images, sel: this._serializeSelection() };
+    this.stack.push(entry);
+    this._bytes += this._entrySize(entry);
+
+    // Evict oldest states first, whichever budget (step count or byte size)
+    // is exceeded — always keep at least the just-pushed current state.
+    while (this.stack.length > 1 && (this.stack.length > this._limit || this._bytes > this._maxBytes)) {
+      this._bytes -= this._entrySize(this.stack.shift());
     }
+    // The newly-pushed current state is always the final entry. Recompute the
+    // offset from the resulting stack instead of incrementing conditionally:
+    // a single oversized snapshot may evict several older entries at once.
+    this.stackOffset = this.stack.length - 1;
   }
 
   _restore(point) {
@@ -209,6 +240,7 @@ export class History {
   reset() {
     this.stack = [];
     this.stackOffset = -1;
+    this._bytes = 0;
     this._savePoint();
   }
 

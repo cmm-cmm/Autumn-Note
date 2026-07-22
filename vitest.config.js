@@ -9,6 +9,7 @@ export default defineConfig({
     pool: 'forks',
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'html', 'clover', 'json', 'lcov'],
       include: ['src/js/**'],
       exclude: ['src/js/i18n/**'],
       thresholds: {

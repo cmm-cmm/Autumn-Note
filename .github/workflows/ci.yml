@@ -9,19 +9,24 @@ on:
 
 jobs:
   build:
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          # Full history so SonarCloud can compute blame / new-code analysis.
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.3
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -38,14 +43,21 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
+      - name: SonarCloud scan
+        if: runner.os == 'Linux' && env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
       - name: Build library
         run: pnpm build
 
-      - name: Enforce bundle budget
-        run: pnpm check:bundle
-
       - name: Test framework wrappers
         run: pnpm test:wrappers
+
+      - name: Enforce bundle budget
+        run: pnpm check:bundle
 
       - name: Build demo site
         run: pnpm build:demo
@@ -71,16 +83,31 @@ jobs:
         browser: [chromium, firefox, webkit]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
         with:
           version: 11.1.3
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+      - name: Install Playwright OS dependencies
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+
       - run: pnpm test:browser
         env:
           BROWSER: ${{ matrix.browser }}

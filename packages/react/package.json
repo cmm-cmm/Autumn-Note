@@ -1,6 +1,6 @@
 {
   "name": "autumnnote-react",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Official React wrapper for Autumn Note — zero-dependency WYSIWYG editor. Mount the editor with a single component and access the full Context API via ref.",
   "type": "module",
   "main": "dist/index.cjs",
@@ -58,15 +58,15 @@
   "license": "MIT",
   "peerDependencies": {
     "autumnnote": ">=1.4.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.3",
     "@types/react": "^18.3.0",
+    "@vitejs/plugin-react": "^6.0.3",
     "autumnnote": "workspace:*",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "vite": "^8.1.4"
+    "vite": "^8.1.5"
   }
 }

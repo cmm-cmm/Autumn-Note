@@ -342,4 +342,19 @@ export const ko = {
     restore: '복원',
     discard: '삭제',
   },
+
+  slashMenu: {
+    noResults:      '일치하는 명령이 없습니다',
+    heading1:       '제목 1',
+    heading2:       '제목 2',
+    heading3:       '제목 3',
+    bulletList:     '글머리 기호 목록',
+    numberedList:   '번호 매기기 목록',
+    checklist:      '체크리스트',
+    blockquote:     '인용문',
+    codeBlock:      '코드 블록',
+    horizontalRule: '가로선',
+    table:          '표',
+    image:          '이미지',
+  },
 };

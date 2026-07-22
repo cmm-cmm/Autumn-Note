@@ -343,4 +343,19 @@ export const ja = {
     restore: '復元',
     discard: '破棄',
   },
+
+  slashMenu: {
+    noResults:      '一致するコマンドがありません',
+    heading1:       '見出し1',
+    heading2:       '見出し2',
+    heading3:       '見出し3',
+    bulletList:     '箇条書きリスト',
+    numberedList:   '番号付きリスト',
+    checklist:      'チェックリスト',
+    blockquote:     '引用',
+    codeBlock:      'コードブロック',
+    horizontalRule: '水平線',
+    table:          '表',
+    image:          '画像',
+  },
 };

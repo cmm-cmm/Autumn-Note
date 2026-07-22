@@ -149,6 +149,37 @@ describe('MarkdownShortcuts block pattern matching', () => {
   });
 });
 
+// ── Block converters — real invoke() call names ──────────────────────────────
+// Regression coverage: these call through to the real _convertTo* methods
+// (not spied) so a typo in the invoke path (module.method) is caught, unlike
+// the dispatch tests above which mock _convertToChecklist itself.
+
+describe('MarkdownShortcuts block converters', () => {
+  it('_convertToChecklist invokes editor.toggleChecklist', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const textNode = document.createTextNode('[ ]');
+    ctx.layoutInfo.editable.appendChild(textNode);
+    setCursorAt(textNode, 3);
+
+    ms._convertToChecklist();
+
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.toggleChecklist');
+  });
+
+  it('_convertToHr invokes editor.insertHr', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    const textNode = document.createTextNode('---');
+    ctx.layoutInfo.editable.appendChild(textNode);
+    setCursorAt(textNode, 3);
+
+    ms._convertToHr();
+
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.insertHr');
+  });
+});
+
 // ── Enter rules — _applyEnterRule ────────────────────────────────────────────
 
 describe('MarkdownShortcuts enter rule matching', () => {

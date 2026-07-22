@@ -4,6 +4,12 @@ import type { CSSProperties, ForwardRefExoticComponent, RefAttributes } from 're
 export interface AutumnNoteEditorProps {
   /** Editor configuration object. All AsnOptions fields are accepted. */
   options?: AsnOptions;
+  /** Controlled HTML value. */
+  value?: string;
+  /** Initial HTML value for uncontrolled usage. */
+  defaultValue?: string;
+  /** Called when editor HTML changes. */
+  onChange?: (html: string) => void;
   /** CSS class applied to the container <div>. */
   className?: string;
   /** Inline styles applied to the container <div>. */
@@ -19,7 +25,7 @@ export interface AutumnNoteEditorProps {
  * <AutumnNoteEditor ref={editorRef} options={{ height: 300 }} />
  * editorRef.current?.getHTML();
  * ```
- * To reinitialise with new options, change the `key` prop.
+ * Runtime-safe option changes are applied without remounting.
  */
 declare const AutumnNoteEditor: ForwardRefExoticComponent<
   AutumnNoteEditorProps & RefAttributes<Context>

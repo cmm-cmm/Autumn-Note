@@ -34,7 +34,11 @@ export class Editor {
 
   initialize() {
     const editable = this.context.layoutInfo.editable;
-    this._history = new History(editable, this.options.historyLimit || 100);
+    this._history = new History(
+      editable,
+      this.options.historyLimit || 100,
+      this.options.historyMaxBytes || 10 * 1024 * 1024,
+    );
     this._bindEvents(editable);
     return this;
   }
@@ -537,6 +541,16 @@ export class Editor {
 
   getRedoCount() {
     return this._history ? this._history.getRedoCount() : 0;
+  }
+
+  getSelectionBookmark() {
+    return this._history?._serializeSelection() ?? null;
+  }
+
+  restoreSelectionBookmark(bookmark) {
+    if (!bookmark || !this._history) return false;
+    this._history._restoreSelection(bookmark);
+    return true;
   }
 
   // ---------------------------------------------------------------------------
