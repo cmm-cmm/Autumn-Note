@@ -75,8 +75,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify release tag and package versions
+        env:
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
+          TAG="$RELEASE_TAG_NAME"
           if [ -z "$TAG" ]; then
             TAG="v$(node -p "require('./package.json').version")"
           fi
