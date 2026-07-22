@@ -6,7 +6,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/autumnnote?label=minzipped&color=success)](https://bundlephobia.com/package/autumnnote)
 [![GitHub Stars](https://img.shields.io/github/stars/cmm-cmm/Autumn-Note?style=flat&logo=github&color=yellow)](https://github.com/cmm-cmm/Autumn-Note)
-[![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/pages.yml)
+[![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/ci.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/ci.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-brightgreen)](https://opensource.org/licenses/MIT)
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
