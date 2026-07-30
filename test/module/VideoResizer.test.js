@@ -77,7 +77,7 @@ describe('VideoResizer._select', () => {
     const { vr, ctx } = makeResizer();
     const wrapper = getWrapper(ctx);
     vr._select(wrapper);
-    expect(vr._activeWrapper).toBe(wrapper);
+    expect(vr._active).toBe(wrapper);
     expect(vr._overlay.style.display).toBe('block');
   });
 
@@ -92,7 +92,7 @@ describe('VideoResizer._select', () => {
     [wrappers[0], wrappers[1]].forEach(w => { w.getBoundingClientRect = () => ({ top: 0, left: 0, width: 100, height: 100, bottom: 100, right: 100 }); });
     vr._select(wrappers[0]);
     vr._select(wrappers[1]);
-    expect(vr._activeWrapper).toBe(wrappers[1]);
+    expect(vr._active).toBe(wrappers[1]);
   });
 });
 
@@ -101,7 +101,7 @@ describe('VideoResizer._deselect', () => {
     const { vr, ctx } = makeResizer();
     vr._select(getWrapper(ctx));
     vr._deselect();
-    expect(vr._activeWrapper).toBeNull();
+    expect(vr._active).toBeNull();
     expect(vr._overlay.style.display).toBe('none');
   });
 
@@ -130,7 +130,7 @@ describe('VideoResizer public API', () => {
     const { vr, ctx } = makeResizer();
     vr._select(getWrapper(ctx));
     vr.deselect();
-    expect(vr._activeWrapper).toBeNull();
+    expect(vr._active).toBeNull();
   });
 
   it('updateOverlay calls _updateOverlayPosition', () => {
@@ -142,13 +142,13 @@ describe('VideoResizer public API', () => {
   });
 });
 
-// ── _findWrapper ──────────────────────────────────────────────────────────────
+// ── _findTarget ──────────────────────────────────────────────────────────────
 
-describe('VideoResizer._findWrapper', () => {
+describe('VideoResizer._findTarget', () => {
   it('finds .an-video-wrapper from a child element', () => {
     const { vr, ctx } = makeResizer();
     const shield = ctx.layoutInfo.editable.querySelector('.an-video-shield');
-    const result = vr._findWrapper(shield);
+    const result = vr._findTarget(shield);
     expect(result).not.toBeNull();
     expect(result.classList.contains('an-video-wrapper')).toBe(true);
   });
@@ -157,7 +157,7 @@ describe('VideoResizer._findWrapper', () => {
     const { vr, ctx } = makeResizer();
     const p = document.createElement('p');
     ctx.layoutInfo.editable.appendChild(p);
-    expect(vr._findWrapper(p)).toBeNull();
+    expect(vr._findTarget(p)).toBeNull();
   });
 });
 
@@ -170,7 +170,7 @@ describe('VideoResizer click handlers', () => {
     const shield = wrapper.querySelector('.an-video-shield');
     const e = { target: shield, preventDefault: vi.fn() };
     vr._onEditorClick(e);
-    expect(vr._activeWrapper).toBe(wrapper);
+    expect(vr._active).toBe(wrapper);
   });
 
   it('_onDocClick deselects when clicking outside', () => {
@@ -179,7 +179,7 @@ describe('VideoResizer click handlers', () => {
     const outside = document.createElement('div');
     document.body.appendChild(outside);
     vr._onDocClick({ target: outside });
-    expect(vr._activeWrapper).toBeNull();
+    expect(vr._active).toBeNull();
   });
 
   it('_onDocClick does not deselect when clicking overlay', () => {
@@ -187,7 +187,7 @@ describe('VideoResizer click handlers', () => {
     vr._select(getWrapper(ctx));
     const handle = vr._overlay.querySelector('[data-handle]');
     vr._onDocClick({ target: handle });
-    expect(vr._activeWrapper).not.toBeNull();
+    expect(vr._active).not.toBeNull();
   });
 
   it('_onDocClick does nothing when nothing selected', () => {
@@ -234,7 +234,7 @@ describe('VideoResizer._startResize (drag)', () => {
 
   it('_startResize does nothing when no active wrapper', () => {
     const { vr } = makeResizer();
-    vr._activeWrapper = null;
+    vr._active = null;
     expect(() => vr._startResize({ clientX: 0, clientY: 0 }, 'se')).not.toThrow();
   });
 });

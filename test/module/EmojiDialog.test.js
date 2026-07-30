@@ -44,23 +44,23 @@ describe('EmojiDialog lifecycle', () => {
     expect(document.querySelector('.an-dialog-overlay')).toBeNull();
   });
 
-  it('show() builds and appends dialog to body', () => {
+  it('show() builds and appends dialog to body', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     expect(document.querySelector('.an-dialog-overlay')).not.toBeNull();
     expect(document.querySelector('.an-emoji-grid')).not.toBeNull();
   });
 
-  it('second show() reuses existing dialog', () => {
+  it('second show() reuses existing dialog', async () => {
     const { ed } = makeDialog();
-    ed.show();
-    ed.show();
+    await ed.show();
+    await ed.show();
     expect(document.querySelectorAll('.an-dialog-overlay').length).toBe(1);
   });
 
-  it('destroy removes dialog from DOM', () => {
+  it('destroy removes dialog from DOM', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed.destroy();
     expect(document.querySelector('.an-dialog-overlay')).toBeNull();
     expect(ed._dialog).toBeNull();
@@ -70,35 +70,35 @@ describe('EmojiDialog lifecycle', () => {
 // ── _buildDialog ──────────────────────────────────────────────────────────────
 
 describe('EmojiDialog._buildDialog', () => {
-  it('creates emoji cells for each emoji', () => {
+  it('creates emoji cells for each emoji', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     expect(document.querySelectorAll('.an-emoji-cell').length).toBeGreaterThan(0);
   });
 
-  it('creates category tabs', () => {
+  it('creates category tabs', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     expect(document.querySelectorAll('[data-cat]').length).toBeGreaterThan(1);
   });
 
-  it('creates search input', () => {
+  it('creates search input', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     expect(document.querySelector('.an-icon-search')).not.toBeNull();
   });
 
-  it('close button click closes dialog', () => {
+  it('close button click closes dialog', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     const closeBtn = document.querySelector('.an-icon-close');
     closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(ed._dialog.style.display).toBe('none');
   });
 
-  it('clicking overlay backdrop closes dialog', () => {
+  it('clicking overlay backdrop closes dialog', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     const overlay = document.querySelector('.an-dialog-overlay');
     const e = new MouseEvent('click', { bubbles: true });
     Object.defineProperty(e, 'target', { value: overlay, configurable: true });
@@ -106,19 +106,19 @@ describe('EmojiDialog._buildDialog', () => {
     expect(ed._dialog.style.display).toBe('none');
   });
 
-  it('category tab click filters emojis', () => {
+  it('category tab click filters emojis', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     const catBar = document.querySelector('.an-icon-cats');
     const tab = catBar.querySelectorAll('[data-cat]')[1]; // first non-"all" tab
     tab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(ed._activeCat).toBe(tab.dataset.cat);
   });
 
-  it('grid click on emoji cell calls _onEmojiClick', () => {
+  it('grid click on emoji cell calls _onEmojiClick', async () => {
     const { ed } = makeDialog();
     vi.spyOn(ed, '_onEmojiClick');
-    ed.show();
+    await ed.show();
     const cell = document.querySelector('.an-emoji-cell');
     cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(ed._onEmojiClick).toHaveBeenCalledWith(cell.dataset.char);
@@ -128,9 +128,9 @@ describe('EmojiDialog._buildDialog', () => {
 // ── _filterEmojis ─────────────────────────────────────────────────────────────
 
 describe('EmojiDialog._filterEmojis', () => {
-  it('hides cells that do not match query', () => {
+  it('hides cells that do not match query', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._filterEmojis('grin', 'all');
     const cells = document.querySelectorAll('.an-emoji-cell');
     const visible = Array.from(cells).filter((c) => c.style.display !== 'none');
@@ -138,18 +138,18 @@ describe('EmojiDialog._filterEmojis', () => {
     expect(visible.length).toBeLessThan(cells.length);
   });
 
-  it('shows empty state when no results', () => {
+  it('shows empty state when no results', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._filterEmojis('zzz_no_match_xyz', 'all');
     const empty = document.querySelector('.an-icon-empty');
     expect(empty).not.toBeNull();
     expect(empty.style.display).toBe('');
   });
 
-  it('filters by category', () => {
+  it('filters by category', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._filterEmojis('', 'food');
     const cells = document.querySelectorAll('.an-emoji-cell');
     const visible = Array.from(cells).filter((c) => c.style.display !== 'none');
@@ -157,9 +157,9 @@ describe('EmojiDialog._filterEmojis', () => {
     expect(allFood).toBe(true);
   });
 
-  it('shows all emojis when query is empty and cat is all', () => {
+  it('shows all emojis when query is empty and cat is all', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._filterEmojis('', 'all');
     const cells = document.querySelectorAll('.an-emoji-cell');
     const hidden = Array.from(cells).filter((c) => c.style.display === 'none');
@@ -170,9 +170,9 @@ describe('EmojiDialog._filterEmojis', () => {
 // ── _onEmojiClick ─────────────────────────────────────────────────────────────
 
 describe('EmojiDialog._onEmojiClick', () => {
-  it('inserts emoji into editable and calls afterCommand', () => {
+  it('inserts emoji into editable and calls afterCommand', async () => {
     const { ed, ctx } = makeDialog();
-    ed.show();
+    await ed.show();
     const p = ctx.layoutInfo.editable.querySelector('p');
     const range = document.createRange();
     range.setStart(p.firstChild, 0);
@@ -183,9 +183,9 @@ describe('EmojiDialog._onEmojiClick', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 
-  it('calls savedRange.select() when savedRange is set', () => {
+  it('calls savedRange.select() when savedRange is set', async () => {
     const { ed, ctx } = makeDialog();
-    ed.show();
+    await ed.show();
     const selectFn = vi.fn();
     ed._savedRange = { select: selectFn };
     const p = ctx.layoutInfo.editable.querySelector('p');
@@ -198,18 +198,18 @@ describe('EmojiDialog._onEmojiClick', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 
-  it('creates a new range when no selection exists', () => {
+  it('creates a new range when no selection exists', async () => {
     const { ed, ctx } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._savedRange = null;
     window.getSelection().removeAllRanges();
     expect(() => ed._onEmojiClick('🌍')).not.toThrow();
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 
-  it('closes dialog after emoji click', () => {
+  it('closes dialog after emoji click', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._savedRange = null;
     ed._onEmojiClick('⭐');
     expect(ed._dialog.style.display).toBe('none');
@@ -219,26 +219,26 @@ describe('EmojiDialog._onEmojiClick', () => {
 // ── _open / _close ────────────────────────────────────────────────────────────
 
 describe('EmojiDialog._open / _close', () => {
-  it('_open shows the dialog', () => {
+  it('_open shows the dialog', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._dialog.style.display = 'none';
     ed._open();
     expect(ed._dialog.style.display).toBe('flex');
   });
 
-  it('_close hides dialog and clears savedRange', () => {
+  it('_close hides dialog and clears savedRange', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     ed._savedRange = { select: vi.fn() };
     ed._close();
     expect(ed._dialog.style.display).toBe('none');
     expect(ed._savedRange).toBeNull();
   });
 
-  it('_close cleans up trapFocus when _removeTrap is set', () => {
+  it('_close cleans up trapFocus when _removeTrap is set', async () => {
     const { ed } = makeDialog();
-    ed.show();
+    await ed.show();
     const removeTrapFn = vi.fn();
     ed._removeTrap = removeTrapFn;
     ed._close();

@@ -11,6 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0] - 2026-07-22
+
+### Breaking
+
+- **Only English ships in the ESM bundle.** Bundling all eight locales cost every consumer ~17 KB gzip even when they only ever rendered English. Other locales are now opt-in:
+
+  ```js
+  import AutumnNote from 'autumnnote';
+  import { vi } from 'autumnnote/i18n/vi';
+
+  AutumnNote.registerLocale('vi', vi);
+  AutumnNote.create('#editor', { lang: 'vi' });
+  ```
+
+  Requesting an unregistered code falls back to English and logs a warning naming the missing import. **The UMD/CDN build is unaffected** — it pre-registers all eight locales, so `<script>`-tag users need no changes. Passing a locale object inline (`lang: { ... }`) also still works untouched.
+
+- `EmojiDialog.show()` is now async, because the emoji catalogue loads as a separate chunk on first open. Awaiting is optional unless you inspect the dialog DOM immediately afterwards.
+
+### Added
+
+- `AutumnNote.registerLocale(code, locale)` and the `autumnnote/i18n/*` subpath exports, with TypeScript declarations per locale.
+- `Context.destroy()` now returns a promise that settles once the closing auto-save finishes, so `await editor.destroy()` is available when using an async `autoSaveAdapter`.
+
+### Fixed
+
+- `updateOptions()` no longer silently ignores module toggles. Setting `bubbleToolbar`, `mention`, `slashMenu`, `autoSaveRestore` or `markdownShortcuts` at runtime now starts or stops the module, instead of changing the option while leaving the module unregistered — which also meant the React/Vue wrappers could not enable these features through a prop change.
+- The final `autoSave` / `autoSaveError` event is no longer swallowed by `destroy()`. Listeners were cleared synchronously while the closing flush was still in flight, so an async adapter's last write completed silently.
+- `VideoResizer` now skips redundant overlay writes via the same position cache `ImageResizer` already had, and `VideoTooltip` picks up `ImageTooltip`'s hide-timer reset so rapid mouseout→mouseover no longer hides the bar early. Both fell out of extracting the shared base classes.
+
+### Security
+
+- Pinned `brace-expansion` ≥5.0.8 and `postcss` ≥8.5.18 through workspace overrides, clearing two newly-published high-severity advisories reachable via dev-only transitive dependencies (`eslint`→`minimatch` and `@vitejs/plugin-vue`→`vue`). Neither package ships in the published bundle.
+
+### Changed
+
+- Bundle size reduced **101.3 → 78.3 KiB gzip (-23%)** for the ESM build, via the locale split and moving the emoji catalogue into its own lazily-loaded chunk.
+- Extracted `BaseResizer` and `BaseMediaTooltip`, mirroring the existing `BaseDialog` pattern. `ImageResizer`/`VideoResizer` and `ImageTooltip`/`VideoTooltip` were ~28% and ~22% duplicate; the four modules shrank from 1,242 to 1,115 lines.
+- Raised `Context.js` branch coverage from 53% to 66% by covering the 1.16 APIs — document import/export error paths, auto-save adapters, block IDs and selection bookmarks.
+
+---
+
 ## [1.16.0] - 2026-07-22
 
 ### Added
@@ -21,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/` command palette (`SlashMenu` module) — typing "/" as the first character of an empty block opens a filterable list for quick-inserting headings, lists, checklist, blockquote, code block, horizontal rule, table, and image. Fully localized in all 8 languages. Disable via `slashMenu: false`.
 - `historyMaxBytes` option — caps the combined size of all stacked undo/redo snapshots (default 10 MB), evicting the oldest states first when exceeded even under the step-count limit. Guards documents with many large embedded images against unbounded undo-history memory growth.
 - CDN build (`vite.cdn.config.js`) is now produced by the default `build` script and included in published packages, instead of being a separate, never-invoked script.
-- SonarCloud static analysis now runs in CI (`ci.yml`), uploading coverage via the new `lcov` reporter.
+- An optional SonarCloud scan step in `ci.yml` plus an `lcov` coverage reporter. The step is skipped unless a `SONAR_TOKEN` secret is present, so analysis still comes from SonarCloud's automatic scan and no coverage is uploaded yet.
 
 ### Fixed
 - Keep undo/redo offsets valid when one oversized snapshot evicts multiple history entries under `historyMaxBytes`.

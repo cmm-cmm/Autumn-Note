@@ -3,6 +3,11 @@ packages:
 overrides:
   form-data: 4.0.6
   ws: 8.21.0
+  # Transitive dev-only advisories: brace-expansion via eslint>minimatch,
+  # postcss via @vitejs/plugin-vue>vue>@vue/compiler-sfc. Both are patch-level
+  # bumps within the same major, so pinning forward is safe.
+  brace-expansion: '>=5.0.8'
+  postcss: '>=8.5.18'
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true

@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 1.16.0
+ * @version 2.0.0
  */
 
 // ---------------------------------------------------------------------------
@@ -154,8 +154,13 @@ export interface AsnOptions {
   focusColor?: string | null;
   /**
    * Display language for the editor UI.
-   * Built-in: 'en' (default) | 'vi' | 'ja' | 'zh' | 'fr' | 'de' | 'es' | 'ko'.
-   * Pass a partial locale object to override individual strings.
+   *
+   * `'en'` is built in. Other codes must be registered first — the ESM bundle
+   * ships English only, so import the locale from `autumnnote/i18n/<code>` and
+   * pass it to {@link registerLocale}. The UMD/CDN build pre-registers all
+   * eight ('en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko').
+   *
+   * A partial locale object works inline without registering anything.
    */
   lang?: string | Partial<AsnLocale>;
 
@@ -399,8 +404,23 @@ export interface AsnLocale {
   };
 }
 
-/** Registry of all built-in locales (keys: 'en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko'). */
+/**
+ * Registry of locales selectable by code. The ESM bundle ships `'en'` only;
+ * register others with {@link registerLocale}. The UMD/CDN build pre-registers
+ * all eight ('en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko').
+ */
 export declare const locales: Record<string, AsnLocale>;
+
+/**
+ * Registers a locale so `lang: '<code>'` can select it.
+ *
+ * ```ts
+ * import AutumnNote from 'autumnnote';
+ * import { vi } from 'autumnnote/i18n/vi';
+ * AutumnNote.registerLocale('vi', vi);
+ * ```
+ */
+export declare function registerLocale(code: string, locale: Partial<AsnLocale>): void;
 
 /**
  * Resolves a lang value to a full AsnLocale.
@@ -712,6 +732,12 @@ export interface AutumnNoteStatic {
    */
   registerButton(btnDef: ToolbarItemDef): this;
   registerSlashCommand(command: SlashCommand): this;
+
+  /**
+   * Registers a locale so `lang: '<code>'` can select it. Only English ships
+   * in the ESM bundle; import others from `autumnnote/i18n/<code>`.
+   */
+  registerLocale(code: string, locale: Partial<AsnLocale>): this;
 
   /**
    * All pre-built button definitions in a single namespace.

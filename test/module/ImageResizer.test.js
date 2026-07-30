@@ -66,7 +66,7 @@ describe('ImageResizer._select', () => {
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, left: 100, width: 200, height: 150, bottom: 200, right: 300 });
     ir._select(img);
-    expect(ir._activeImg).toBe(img);
+    expect(ir._active).toBe(img);
     expect(img.classList.contains('an-image-selected')).toBe(true);
     expect(ir._overlay.style.display).toBe('block');
   });
@@ -91,7 +91,7 @@ describe('ImageResizer._deselect', () => {
     img.getBoundingClientRect = () => ({ top: 50, left: 100, width: 200, height: 150, bottom: 200, right: 300 });
     ir._select(img);
     ir._deselect();
-    expect(ir._activeImg).toBeNull();
+    expect(ir._active).toBeNull();
     expect(img.classList.contains('an-image-selected')).toBe(false);
     expect(ir._overlay.style.display).toBe('none');
   });
@@ -124,7 +124,7 @@ describe('ImageResizer public API', () => {
     img.getBoundingClientRect = () => ({ top: 0, left: 0, width: 100, height: 100, bottom: 100, right: 100 });
     ir._select(img);
     ir.deselect();
-    expect(ir._activeImg).toBeNull();
+    expect(ir._active).toBeNull();
   });
 
   it('updateOverlay calls _updateOverlayPosition()', () => {
@@ -148,7 +148,7 @@ describe('ImageResizer click handlers', () => {
     const e = { target: img, preventDefault: vi.fn() };
     e.target.closest = (sel) => sel === 'img' ? img : null;
     ir._onEditorClick(e);
-    expect(ir._activeImg).toBe(img);
+    expect(ir._active).toBe(img);
   });
 
   it('_onEditorClick skips when container is disabled', () => {
@@ -157,7 +157,7 @@ describe('ImageResizer click handlers', () => {
     const img = ctx.layoutInfo.editable.querySelector('img');
     const e = { target: img, preventDefault: vi.fn() };
     ir._onEditorClick(e);
-    expect(ir._activeImg).toBeNull();
+    expect(ir._active).toBeNull();
     ctx.layoutInfo.container.classList.remove('an-disabled');
   });
 
@@ -169,7 +169,7 @@ describe('ImageResizer click handlers', () => {
     const outside = document.createElement('div');
     document.body.appendChild(outside);
     ir._onDocClick({ target: outside });
-    expect(ir._activeImg).toBeNull();
+    expect(ir._active).toBeNull();
   });
 
   it('_onDocClick does not deselect when clicking overlay', () => {
@@ -179,13 +179,13 @@ describe('ImageResizer click handlers', () => {
     ir._select(img);
     const handle = ir._overlay.querySelector('[data-handle]');
     ir._onDocClick({ target: handle });
-    expect(ir._activeImg).toBe(img); // still selected
+    expect(ir._active).toBe(img); // still selected
   });
 
   it('_onDocClick does nothing when no active image', () => {
     const { ir } = makeResizer();
     expect(() => ir._onDocClick({ target: document.body })).not.toThrow();
-    expect(ir._activeImg).toBeNull();
+    expect(ir._active).toBeNull();
   });
 });
 
@@ -231,7 +231,7 @@ describe('ImageResizer._startResize (drag)', () => {
 
   it('_startResize does nothing when no active image', () => {
     const { ir } = makeResizer();
-    ir._activeImg = null;
+    ir._active = null;
     expect(() => ir._startResize({ clientX: 0, clientY: 0 }, 'se')).not.toThrow();
   });
 });

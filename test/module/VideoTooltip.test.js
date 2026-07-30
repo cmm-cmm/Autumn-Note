@@ -43,7 +43,7 @@ const makeTooltip = (html) => {
 const showWrapper = (vt, ctx) => {
   const wrapper = ctx.layoutInfo.editable.querySelector('.an-video-wrapper');
   wrapper.getBoundingClientRect = () => ({ top: 100, bottom: 280, left: 50, right: 370, width: 320, height: 180 });
-  vt._activeWrapper = wrapper;
+  vt._active = wrapper;
   vt._show(wrapper);
   return wrapper;
 };
@@ -110,7 +110,7 @@ describe('VideoTooltip._hide', () => {
     showWrapper(vt, ctx);
     vt._hide();
     expect(vt._el.style.display).toBe('none');
-    expect(vt._activeWrapper).toBeNull();
+    expect(vt._active).toBeNull();
   });
 
   it('exits preview mode on hide', () => {
@@ -212,7 +212,7 @@ describe('VideoTooltip._setFloat', () => {
 
   it('does nothing when no activeWrapper', () => {
     const { vt, ctx } = makeTooltip();
-    vt._activeWrapper = null;
+    vt._active = null;
     vt._setFloat('left');
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -231,7 +231,7 @@ describe('VideoTooltip._setCenter', () => {
 
   it('does nothing when no activeWrapper', () => {
     const { vt, ctx } = makeTooltip();
-    vt._activeWrapper = null;
+    vt._active = null;
     vt._setCenter();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -252,7 +252,7 @@ describe('VideoTooltip._resetSize', () => {
 
   it('does nothing when no activeWrapper', () => {
     const { vt, ctx } = makeTooltip();
-    vt._activeWrapper = null;
+    vt._active = null;
     vt._resetSize();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -276,7 +276,7 @@ describe('VideoTooltip._delete', () => {
 
   it('does nothing when no activeWrapper', () => {
     const { vt, ctx } = makeTooltip();
-    vt._activeWrapper = null;
+    vt._active = null;
     vt._delete();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -408,7 +408,7 @@ describe('VideoTooltip DOM event handlers', () => {
     const outside = document.createElement('div');
     document.body.appendChild(outside);
     outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(vt._activeWrapper).toBeNull();
+    expect(vt._active).toBeNull();
   });
 
   it('tooltip mouseenter clears timers', () => {

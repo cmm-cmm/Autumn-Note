@@ -497,7 +497,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL for Prism assets. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
-| `lang` | `string \| object` | `'en'` | UI display language. Built-in codes: `'en'`, `'vi'`, `'ja'`, `'zh'`, `'fr'`, `'de'`, `'es'`, `'ko'`. Pass a partial locale object for custom overrides. |
+| `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |
 | `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |
 | `bubbleToolbar` | `boolean` | `false` | Show a mini floating toolbar above the text selection for quick formatting. |
 | `bubbleToolbarItems` | `string[]` | `['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']` | Buttons shown in the bubble toolbar. Available names: `'bold'`, `'italic'`, `'underline'`, `'strikethrough'`, `'link'`, `'foreColor'`, `'hiliteColor'`, `'removeFormat'`, `'inlineCode'`. |
@@ -792,6 +792,35 @@ const editor = AutumnNote.create('#editor', {
 ```
 
 The React wrapper supports `value`, `defaultValue`, and `onChange`; the Vue wrapper supports `v-model`. Use `importDocument()` / `exportDocument()` to register application-specific formats without adding runtime dependencies to the core package.
+
+### Languages
+
+Eight locales ship with the package: `en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`.
+
+**ESM / bundler** — English is built in; register any other locale you need. Bundling all eight cost every consumer ~17 KB gzip even when only English was ever rendered, so they are opt-in:
+
+```js
+import AutumnNote from 'autumnnote';
+import { vi } from 'autumnnote/i18n/vi';
+
+AutumnNote.registerLocale('vi', vi);
+AutumnNote.create('#editor', { lang: 'vi' });
+```
+
+**UMD / CDN (`<script>` tag)** — all eight locales are pre-registered, so `lang` works with no extra setup:
+
+```html
+<script src="dist/autumnnote.umd.js"></script>
+<script>
+  AutumnNote.create('#editor', { lang: 'vi' });
+</script>
+```
+
+Requesting an unregistered code falls back to English and logs a warning telling you which import is missing. A partial locale object still works inline without registering anything:
+
+```js
+AutumnNote.create('#editor', { lang: { toolbar: { bold: 'Vet' } } });
+```
 
 ---
 

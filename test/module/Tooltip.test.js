@@ -95,7 +95,7 @@ describe('ImageTooltip', () => {
     figure.appendChild(cap);
     context.layoutInfo.editable.appendChild(figure);
 
-    tooltip._activeImg = img;
+    tooltip._active = img;
     tooltip._delete();
 
     expect(context.layoutInfo.editable.querySelector('figure.an-figure')).toBeNull();
@@ -125,7 +125,7 @@ describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
     figure.appendChild(img);
     context.layoutInfo.editable.appendChild(figure);
 
-    tooltip._activeImg = img;
+    tooltip._active = img;
     tooltip._setCenter();
 
     expect(figure.style.display).toBe('block');
@@ -137,9 +137,9 @@ describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
     expect(invokedPaths).toContain('editor.afterCommand');
 
     // Null out _activeImg before destroy so the pending requestAnimationFrame
-    // guard `if (this._activeImg)` prevents _positionNear from firing on a
+    // guard `if (this._active)` prevents _positionNear from firing on a
     // nulled tooltip element.
-    tooltip._activeImg = null;
+    tooltip._active = null;
     tooltip.destroy();
   });
 
@@ -153,13 +153,13 @@ describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
     const img = document.createElement('img');
     context.layoutInfo.editable.appendChild(img);
 
-    tooltip._activeImg = img;
+    tooltip._active = img;
     tooltip._setCenter();
 
     // When target === img, width should not be set (to avoid stretching the image)
     expect(img.style.width).toBe('');
 
-    tooltip._activeImg = null;
+    tooltip._active = null;
     tooltip.destroy();
   });
 
@@ -177,13 +177,13 @@ describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
     figure.appendChild(img);
     context.layoutInfo.editable.appendChild(figure);
 
-    tooltip._activeImg = img;
+    tooltip._active = img;
     tooltip._setFloat('left');
 
     expect(figure.style.width).toBe('');
     expect(figure.style.float).toBe('left');
 
-    tooltip._activeImg = null;
+    tooltip._active = null;
     tooltip.destroy();
   });
 
@@ -202,13 +202,13 @@ describe('ImageTooltip — _setCenter / _setFloat alignment', () => {
     figure.appendChild(img);
     context.layoutInfo.editable.appendChild(figure);
 
-    tooltip._activeImg = img;
+    tooltip._active = img;
     tooltip._setFloat('');
 
     expect(figure.style.float).toBe('');
     expect(figure.style.width).toBe('');
 
-    tooltip._activeImg = null;
+    tooltip._active = null;
     tooltip.destroy();
   });
 });

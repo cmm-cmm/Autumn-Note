@@ -2,6 +2,7 @@
 // Displays a horizontal action bar below (or above) the selected image,
 // similar in appearance and interaction to LinkTooltip.
 import { createElement, on } from '../core/dom.js';
+import { BaseMediaTooltip } from './BaseMediaTooltip.js';
 
 const ICONS = {
   floatLeft:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1"/><line x1="12" y1="6" x2="22" y2="6"/><line x1="12" y1="9" x2="22" y2="9"/><line x1="12" y1="12" x2="22" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>`,
@@ -16,20 +17,7 @@ const ICONS = {
   crop:        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 2 6 18 22 18"/><polyline points="2 6 18 6 18 22"/></svg>`,
 };
 
-const SHOW_DELAY = 100;
-const HIDE_DELAY = 180;
-
-export class ImageTooltip {
-  /** @param {import('../Context.js').Context} context */
-  constructor(context) {
-    this.context = context;
-    this._el = null;
-    this._activeImg = null;
-    this._showTimer = null;
-    this._hideTimer = null;
-    this._disposers = [];
-  }
-
+export class ImageTooltip extends BaseMediaTooltip {
   initialize() {
     this._el = this._buildTooltip();
     document.body.appendChild(this._el);
@@ -54,7 +42,7 @@ export class ImageTooltip {
       // Hide when image is deselected by clicking elsewhere
       on(document, 'click', (e) => {
         const et = /** @type {Node} */ (e.target);
-        if (this._activeImg && !this._activeImg.contains(et) && !this._el.contains(et)) {
+        if (this._active && !this._active.contains(et) && !this._el.contains(et)) {
           this._hide();
         }
       }),
@@ -140,97 +128,14 @@ export class ImageTooltip {
     return el;
   }
 
-  /**
-   * @param {string} icon
-   * @param {string} title
-   * @param {Function} handler
-   * @param {boolean} [isDanger]
-   */
-  _makeBtn(icon, title, handler, isDanger = false) {
-    const btn = createElement('button', {
-      type: 'button',
-      class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
-      title,
-    });
-    btn.innerHTML = icon;
-    this._disposers.push(on(btn, 'click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handler();
-    }));
-    return btn;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Show / Hide
-  // ---------------------------------------------------------------------------
-
-  _scheduleShow(img) {
-    if (this._activeImg === img && this._el.style.display !== 'none') return;
-    clearTimeout(this._hideTimer);
-    this._hideTimer = null;
-    clearTimeout(this._showTimer);
-    this._showTimer = setTimeout(() => {
-      this._activeImg = img;
-      this._show(img);
-    }, SHOW_DELAY);
-  }
-
-  _scheduleHide() {
-    clearTimeout(this._showTimer);
-    this._showTimer = null;
-    // Always reset the hide timer so rapid mouseout→mouseover sequences
-    // don't leave a stale timer that hides the tooltip prematurely.
-    clearTimeout(this._hideTimer);
-    this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
-  }
-
-  _show(_img) {
-    this._el.style.display = 'flex';
-    // Defer positioning: offsetWidth on a newly-visible element forces layout
-    requestAnimationFrame(() => {
-      if (this._activeImg) this._positionNear(this._activeImg);
-    });
-  }
-
-  _hide() {
-    this._el.style.display = 'none';
-    this._activeImg = null;
-    this._clearTimers();
-  }
-
-  _clearTimers() {
-    clearTimeout(this._showTimer);
-    clearTimeout(this._hideTimer);
-    this._showTimer = null;
-    this._hideTimer = null;
-  }
-
-  _positionNear(img) {
-    const rect   = img.getBoundingClientRect();
-    const tipW   = this._el.offsetWidth  || 220;
-    const tipH   = this._el.offsetHeight || 32;
-    const margin = 6;
-
-    let top  = rect.bottom + margin;
-    let left = rect.left + (rect.width - tipW) / 2;
-
-    if (top + tipH > globalThis.innerHeight - margin) top = rect.top - tipH - margin;
-    if (left + tipW > globalThis.innerWidth  - margin) left = globalThis.innerWidth - tipW - margin;
-    if (left < margin) left = margin;
-
-    this._el.style.top  = `${top}px`;
-    this._el.style.left = `${left}px`;
-  }
-
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
 
   _setFloat(value) {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
-    const target = img.closest('figure.an-figure') || img;
+    const target = /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img);
     target.style.float = value;
     target.style.display = '';
     // Clear explicit width set for centering so the figure is free to float
@@ -239,13 +144,13 @@ export class ImageTooltip {
     target.style.marginRight = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _setCenter() {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
-    const target = img.closest('figure.an-figure') || img;
+    const target = /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img);
     target.style.float        = '';
     target.style.display      = 'block';
     // C1/C3: use fit-content so the block figure shrinks to the image width;
@@ -255,17 +160,17 @@ export class ImageTooltip {
     target.style.marginRight  = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _resetSize() {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
     img.style.width  = '';
     img.style.height = '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   /**
@@ -275,7 +180,7 @@ export class ImageTooltip {
    * @param {number} delta
    */
   _rotate(delta) {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
     // Parse current rotation angle from inline transform
     const current = img.style.transform || '';
@@ -291,11 +196,11 @@ export class ImageTooltip {
     }
     this.context.invoke('editor.afterCommand');
     this.context.invoke('imageResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeImg) this._positionNear(this._activeImg); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _delete() {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
     this._hide();
     this.context.invoke('imageResizer.deselect');
@@ -309,7 +214,7 @@ export class ImageTooltip {
   }
 
   _crop() {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
     // Hide the tooltip while the crop overlay is active
     this._hide();
@@ -318,7 +223,7 @@ export class ImageTooltip {
   }
 
   _toggleCaption() {
-    const img = this._activeImg;
+    const img = this._active;
     if (!img) return;
 
     // If already inside a figure, move focus to the figcaption

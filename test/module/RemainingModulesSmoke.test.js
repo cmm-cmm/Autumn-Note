@@ -34,12 +34,13 @@ const makeEditableContext = (html = '<p>x</p>') => {
 };
 
 describe('Remaining modules smoke', () => {
-  it('EmojiDialog lazy-builds on show and destroys cleanly', () => {
+  it('EmojiDialog lazy-builds on show and destroys cleanly', async () => {
     const context = makeEditableContext('<p>hello</p>');
     const em = new EmojiDialog(context);
     em.initialize();
 
-    em.show();
+    // show() awaits the dynamically imported emoji catalogue chunk
+    await em.show();
     expect(document.querySelector('.an-emoji-box')).not.toBeNull();
 
     em.destroy();

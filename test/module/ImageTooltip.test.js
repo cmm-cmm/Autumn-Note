@@ -43,7 +43,7 @@ const makeTooltip = (html) => {
 const showImg = (it2, ctx) => {
   const img = ctx.layoutInfo.editable.querySelector('img');
   img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-  it2._activeImg = img;
+  it2._active = img;
   it2._show(img);
   return img;
 };
@@ -124,7 +124,7 @@ describe('ImageTooltip._hide', () => {
     showImg(it2, ctx);
     it2._hide();
     expect(it2._el.style.display).toBe('none');
-    expect(it2._activeImg).toBeNull();
+    expect(it2._active).toBeNull();
   });
 });
 
@@ -201,7 +201,7 @@ describe('ImageTooltip._setFloat', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     it2._setFloat('left');
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -220,7 +220,7 @@ describe('ImageTooltip._setCenter', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     it2._setCenter();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -240,7 +240,7 @@ describe('ImageTooltip._delete', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     it2._delete();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -305,12 +305,12 @@ describe('ImageTooltip editable event handlers', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 0, left: 0, width: 100, height: 100, bottom: 100, right: 100 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     const outside = document.createElement('div');
     document.body.appendChild(outside);
     outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(it2._activeImg).toBeNull();
+    expect(it2._active).toBeNull();
   });
 });
 
@@ -352,7 +352,7 @@ describe('ImageTooltip._resetSize', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._resetSize();
     expect(img.style.width).toBe('');
@@ -362,7 +362,7 @@ describe('ImageTooltip._resetSize', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     expect(() => it2._resetSize()).not.toThrow();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -375,7 +375,7 @@ describe('ImageTooltip._rotate', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._rotate(90);
     expect(img.style.transform).toContain('rotate(90deg)');
@@ -388,7 +388,7 @@ describe('ImageTooltip._rotate', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._rotate(90);
     it2._rotate(90);
@@ -401,7 +401,7 @@ describe('ImageTooltip._rotate', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._rotate(90);
     it2._rotate(90);
@@ -412,7 +412,7 @@ describe('ImageTooltip._rotate', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     expect(() => it2._rotate(90)).not.toThrow();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -425,7 +425,7 @@ describe('ImageTooltip._delete (non-figure image)', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._delete();
     expect(ctx.layoutInfo.editable.querySelector('img')).toBeNull();
@@ -443,7 +443,7 @@ describe('ImageTooltip._crop', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     it2._crop();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
@@ -458,7 +458,7 @@ describe('ImageTooltip._toggleCaption', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._toggleCaption();
     expect(ctx.layoutInfo.editable.querySelector('figure.an-figure')).not.toBeNull();
@@ -472,7 +472,7 @@ describe('ImageTooltip._toggleCaption', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._toggleCaption();
     const figure = ctx.layoutInfo.editable.querySelector('figure.an-figure');
@@ -486,7 +486,7 @@ describe('ImageTooltip._toggleCaption', () => {
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
-    it2._activeImg = img;
+    it2._active = img;
     it2._show(img);
     it2._toggleCaption();
     const figure = ctx.layoutInfo.editable.querySelector('figure.an-figure');
@@ -503,7 +503,7 @@ describe('ImageTooltip._toggleCaption', () => {
 
   it('does nothing when no activeImg', () => {
     const { it2, ctx } = makeTooltip();
-    it2._activeImg = null;
+    it2._active = null;
     expect(() => it2._toggleCaption()).not.toThrow();
     expect(ctx.invoke).not.toHaveBeenCalled();
   });

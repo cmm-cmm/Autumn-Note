@@ -14,6 +14,7 @@ import '../styles/autumnnote.scss';
 import { Context, _customModules, _globalPlugins } from './Context.js';
 import { registerButton, buttons } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
+import { registerLocale } from './i18n/index.js';
 
 // Snapshot of factory defaults taken at module-load time (before any setDefaults() calls)
 const _originalDefaults = { ...defaultOptions };
@@ -29,7 +30,7 @@ export * from './core/lists.js';
 export * from './core/env.js';
 export * from './core/sanitise.js';
 export * from './module/Buttons.js';
-export { locales, resolveLocale } from './i18n/index.js';
+export { locales, resolveLocale, registerLocale } from './i18n/index.js';
 
 // ---------------------------------------------------------------------------
 // Main factory
@@ -140,6 +141,15 @@ const AutumnNote = {
    */
   registerButton(btnDef) { registerButton(btnDef); return this; },
 
+  /**
+   * Registers a locale so `lang: '<code>'` can select it.
+   * Only English ships in the ESM bundle — import others from
+   * `autumnnote/i18n/<code>` and register them here.
+   * @param {string} code
+   * @param {object} locale
+   */
+  registerLocale(code, locale) { registerLocale(code, locale); return this; },
+
   /** Registers a slash-menu command for future editor instances. */
   registerSlashCommand(command) {
     if (!command?.id || typeof command.run !== 'function') {
@@ -156,7 +166,7 @@ const AutumnNote = {
   buttons,
 
   /** Library version */
-  version: '1.16.0',
+  version: '2.0.0',
 };
 
 // ---------------------------------------------------------------------------

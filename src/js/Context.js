@@ -44,6 +44,21 @@ import { SlashMenu } from './module/SlashMenu.js';
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
 
+/**
+ * Modules whose registration depends on an option value. Declared once so the
+ * initial mount (`_registerModules`) and runtime toggles (`updateOptions`) can
+ * never drift apart — previously `updateOptions({ bubbleToolbar: true })`
+ * changed the option but silently left the module unregistered.
+ * @type {Array<{ name: string, Class: new (ctx: Context) => { initialize: () => any, destroy?: () => void }, enabled: (options: any) => boolean }>}
+ */
+const OPTIONAL_MODULES = [
+  { name: 'autoSaveRestore',   Class: AutoSaveRestore,   enabled: (o) => !!o.autoSaveRestore },
+  { name: 'markdownShortcuts', Class: MarkdownShortcuts, enabled: (o) => o.markdownShortcuts !== false },
+  { name: 'bubbleToolbar',     Class: BubbleToolbar,     enabled: (o) => !!o.bubbleToolbar },
+  { name: 'mention',           Class: Mention,           enabled: (o) => !!o.mention },
+  { name: 'slashMenu',         Class: SlashMenu,         enabled: (o) => o.slashMenu !== false },
+];
+
 /** Global plugin registry (populated via AutumnNote.use()). Applied to every new Context. */
 export const _globalPlugins = new Map();
 
@@ -76,6 +91,8 @@ export class Context {
     this._autoSaveTimer = null;
     this._pendingAutoSave = null;
     this._suppressedRemoteHTML = null;
+    /** @type {Promise<void>|null} Settles when destroy()'s closing auto-save finishes */
+    this._destroyPromise = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -157,16 +174,37 @@ export class Context {
     register('shortcutsDialog', ShortcutsDialog);
     register('findReplace', FindReplace);
     register('imageCropOverlay', ImageCropOverlay);
-    if (this.options.autoSaveRestore) register('autoSaveRestore', AutoSaveRestore);
-    if (this.options.markdownShortcuts !== false) register('markdownShortcuts', MarkdownShortcuts);
-    if (this.options.bubbleToolbar) register('bubbleToolbar', BubbleToolbar);
-    if (this.options.mention) register('mention', Mention);
-    if (this.options.slashMenu !== false) register('slashMenu', SlashMenu);
+    for (const { name, Class, enabled } of OPTIONAL_MODULES) {
+      if (enabled(this.options)) register(name, Class);
+    }
 
     // Custom modules registered via AutumnNote.registerModule()
     if (_customModules.size > 0) {
       for (const [name, ModuleClass] of _customModules) {
         register(name, ModuleClass);
+      }
+    }
+  }
+
+  /**
+   * Registers or tears down option-gated modules so they match the current
+   * option values. Called after `updateOptions()` so toggling e.g.
+   * `bubbleToolbar` at runtime actually takes effect.
+   */
+  _syncOptionalModules() {
+    for (const { name, Class, enabled } of OPTIONAL_MODULES) {
+      const shouldRun = enabled(this.options);
+      const isRunning = this._modules.has(name);
+      if (shouldRun === isRunning) continue;
+
+      if (shouldRun) {
+        const instance = new Class(this);
+        this._modules.set(name, instance);
+        instance.initialize();
+      } else {
+        const instance = this._modules.get(name);
+        if (typeof instance?.destroy === 'function') instance.destroy();
+        this._modules.delete(name);
       }
     }
   }
@@ -412,6 +450,9 @@ export class Context {
       editable.style.maxHeight = this.options.maxHeight ? `${this.options.maxHeight}px` : '';
     }
     if (Object.hasOwn(overrides, 'toolbar')) this.invoke('toolbar.rebuild');
+    // Start/stop option-gated modules (bubbleToolbar, mention, slashMenu, ...)
+    // so toggling them here behaves the same as passing them to create().
+    this._syncOptionalModules();
     this.invoke('statusbar.update');
     this.triggerEvent('optionsChange', { ...overrides });
     return this;
@@ -735,11 +776,23 @@ export class Context {
 
   /**
    * Completely removes the editor and restores the original element.
+   *
+   * Teardown itself is synchronous; the returned promise only settles once the
+   * closing auto-save has finished, so `await editor.destroy()` is worth doing
+   * when using an async `autoSaveAdapter`. Ignoring the return value is safe.
+   * @returns {Promise<void>}
    */
   destroy() {
-    if (!this._alive) return;
+    if (!this._alive) return this._destroyPromise ?? Promise.resolve();
 
-    if (this._pendingAutoSave != null) void this.flushAutoSave();
+    // Start the final auto-save before tearing anything down. `_listeners` is
+    // deliberately kept alive until this settles, otherwise the closing
+    // autoSave/autoSaveError event fires into an already-cleared listener map
+    // and an async adapter's last write completes silently.
+    const pendingFlush = this._pendingAutoSave != null
+      ? this.flushAutoSave().catch(() => {})
+      : null;
+
     this._modules.forEach((module) => {
       if (typeof module.destroy === 'function') module.destroy();
     });
@@ -776,7 +829,14 @@ export class Context {
     }
 
     this._alive = false;
-    this._listeners.clear();
+
+    // Resolves once the closing auto-save (if any) has finished. Callers using
+    // an async autoSaveAdapter can `await editor.destroy()` to be sure the last
+    // write landed before unloading.
+    this._destroyPromise = Promise.resolve(pendingFlush).then(() => {
+      this._listeners.clear();
+    });
+    return this._destroyPromise;
   }
 
   // ---------------------------------------------------------------------------

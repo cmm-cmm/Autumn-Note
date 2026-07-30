@@ -2,6 +2,7 @@
 // Displays a horizontal action bar below (or above) the selected video,
 // similar in appearance and interaction to LinkTooltip.
 import { createElement, on } from '../core/dom.js';
+import { BaseMediaTooltip } from './BaseMediaTooltip.js';
 
 const ICONS = {
   floatLeft:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="8" height="8" rx="1"/><line x1="12" y1="6" x2="22" y2="6"/><line x1="12" y1="9" x2="22" y2="9"/><line x1="12" y1="12" x2="22" y2="12"/><line x1="2" y1="16" x2="22" y2="16"/><line x1="2" y1="20" x2="18" y2="20"/></svg>`,
@@ -13,22 +14,7 @@ const ICONS = {
   preview:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
 };
 
-const SHOW_DELAY = 100;
-const HIDE_DELAY = 180;
-
-export class VideoTooltip {
-  /** @param {import('../Context.js').Context} context */
-  constructor(context) {
-    this.context = context;
-    this._el = null;
-    this._activeWrapper = null;
-    this._showTimer = null;
-    this._hideTimer = null;
-    this._disposers = [];
-    this._previewMode = false;
-    this._previewClickOff = null;
-  }
-
+export class VideoTooltip extends BaseMediaTooltip {
   initialize() {
     this._el = this._buildTooltip();
     document.body.appendChild(this._el);
@@ -54,8 +40,8 @@ export class VideoTooltip {
       on(document, 'click', (e) => {
         const target = /** @type {Node} */ (e.target);
         if (
-          this._activeWrapper &&
-          !this._activeWrapper.contains(target) &&
+          this._active &&
+          !this._active.contains(target) &&
           !this._el.contains(target)
         ) {
           this._hide();
@@ -76,6 +62,17 @@ export class VideoTooltip {
     this._disposers = [];
     this._el?.remove();
     this._el = null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Base hooks — keep the bar pinned while a preview is playing
+  // ---------------------------------------------------------------------------
+
+  /** @returns {boolean} */
+  _canHide() { return !this._previewMode; }
+
+  _beforeHide() {
+    if (this._previewMode) this._exitPreview();
   }
 
   // ---------------------------------------------------------------------------
@@ -134,96 +131,12 @@ export class VideoTooltip {
     return el;
   }
 
-  /**
-   * @param {string} icon
-   * @param {string} title
-   * @param {Function} handler
-   * @param {boolean} [isDanger]
-   */
-  _makeBtn(icon, title, handler, isDanger = false) {
-    const btn = createElement('button', {
-      type: 'button',
-      class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
-      title,
-    });
-    btn.innerHTML = icon;
-    this._disposers.push(on(btn, 'click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handler();
-    }));
-    return btn;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Show / Hide
-  // ---------------------------------------------------------------------------
-
-  _scheduleShow(wrapper) {
-    if (this._activeWrapper === wrapper && this._el.style.display !== 'none') return;
-    clearTimeout(this._hideTimer);
-    this._hideTimer = null;
-    clearTimeout(this._showTimer);
-    this._showTimer = setTimeout(() => {
-      this._activeWrapper = wrapper;
-      this._show(wrapper);
-    }, SHOW_DELAY);
-  }
-
-  _scheduleHide() {
-    // Keep tooltip alive while preview mode is active
-    if (this._previewMode) return;
-    clearTimeout(this._showTimer);
-    this._showTimer = null;
-    if (this._hideTimer) return;
-    this._hideTimer = setTimeout(() => this._hide(), HIDE_DELAY);
-  }
-
-  _show(_wrapper) {
-    this._el.style.display = 'flex';
-    // Defer: offsetWidth on a newly-visible element forces synchronous layout
-    requestAnimationFrame(() => {
-      if (this._activeWrapper) this._positionNear(this._activeWrapper);
-    });
-  }
-
-  _hide() {
-    if (this._previewMode) this._exitPreview();
-    this._el.style.display = 'none';
-    this._activeWrapper = null;
-    this._clearTimers();
-  }
-
-  _clearTimers() {
-    clearTimeout(this._showTimer);
-    clearTimeout(this._hideTimer);
-    this._showTimer = null;
-    this._hideTimer = null;
-  }
-
-  _positionNear(wrapper) {
-    const rect   = wrapper.getBoundingClientRect();
-    const tipW   = this._el.offsetWidth  || 220;
-    const tipH   = this._el.offsetHeight || 32;
-    const margin = 6;
-
-    let top  = rect.bottom + margin;
-    let left = rect.left + (rect.width - tipW) / 2;
-
-    if (top + tipH > globalThis.innerHeight - margin) top = rect.top - tipH - margin;
-    if (left + tipW > globalThis.innerWidth  - margin) left = globalThis.innerWidth - tipW - margin;
-    if (left < margin) left = margin;
-
-    this._el.style.top  = `${top}px`;
-    this._el.style.left = `${left}px`;
-  }
-
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
 
   _setFloat(value) {
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (!wrapper) return;
     wrapper.style.float        = value;
     wrapper.style.display      = value ? 'inline-block' : '';
@@ -231,11 +144,11 @@ export class VideoTooltip {
     wrapper.style.marginRight  = value === 'left'  ? '12px' : '';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _setCenter() {
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (!wrapper) return;
     wrapper.style.float       = '';
     wrapper.style.display     = 'block';
@@ -243,13 +156,13 @@ export class VideoTooltip {
     wrapper.style.marginRight = 'auto';
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _resetSize() {
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (!wrapper) return;
-    const embed = wrapper.querySelector('iframe, video');
+    const embed = /** @type {HTMLElement|null} */ (wrapper.querySelector('iframe, video'));
     wrapper.style.width  = '';
     wrapper.style.height = '';
     if (embed) {
@@ -260,11 +173,11 @@ export class VideoTooltip {
     }
     this.context.invoke('editor.afterCommand');
     this.context.invoke('videoResizer.updateOverlay');
-    requestAnimationFrame(() => { if (this._activeWrapper) this._positionNear(this._activeWrapper); });
+    requestAnimationFrame(() => { if (this._active) this._positionNear(this._active); });
   }
 
   _delete() {
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (!wrapper) return;
     this._hide();
     this.context.invoke('videoResizer.deselect');
@@ -285,12 +198,12 @@ export class VideoTooltip {
   }
 
   _enterPreview() {
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (!wrapper) return;
     this._previewMode = true;
 
     // Hide the shield so the iframe / video receives pointer events directly
-    const shield = wrapper.querySelector('.an-video-shield');
+    const shield = /** @type {HTMLElement|null} */ (wrapper.querySelector('.an-video-shield'));
     if (shield) shield.style.display = 'none';
 
     // Hide the resize overlay — it would block interaction with the embed
@@ -316,10 +229,10 @@ export class VideoTooltip {
   _exitPreview() {
     this._previewMode = false;
 
-    const wrapper = this._activeWrapper;
+    const wrapper = this._active;
     if (wrapper) {
       // Restore the shield
-      const shield = wrapper.querySelector('.an-video-shield');
+      const shield = /** @type {HTMLElement|null} */ (wrapper.querySelector('.an-video-shield'));
       if (shield) shield.style.display = '';
     }
 
