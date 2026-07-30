@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- npm publishing now authenticates through OIDC trusted publishing instead of a long-lived `NPM_TOKEN` secret. The workflow requests an `id-token` and no longer references the token anywhere, so there is no publish credential left to leak or rotate.
+
 ---
 
 ## [2.0.0] - 2026-07-22
