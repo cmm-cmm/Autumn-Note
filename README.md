@@ -11,6 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-brightgreen)](https://opensource.org/licenses/MIT)
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
+[![Provenance](https://img.shields.io/badge/npm-provenance%20attested-cb3837?logo=npm)](https://www.npmjs.com/package/autumnnote#provenance)
 
 A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES2022+) — no jQuery, no runtime dependencies. Lightweight alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate — with official React and Vue 3 wrappers.
 
@@ -118,12 +119,28 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **TypeScript definitions** — bundled `types/index.d.ts` with full JSDoc coverage
 - **@mention autocomplete** — type `@` (or any custom trigger) to open a floating dropdown backed by a user-supplied `onSearch` function (callback or `async`/Promise); inserts a non-editable mention chip; customisable chip HTML via `onInsert`
 
+### Accessibility
+- **Toolbar is a single tab stop** — it carries `role="toolbar"` and a roving tabindex, so keyboard users reach the text area with one Tab instead of stepping through every button. Left/Right move between controls and wrap at the ends, Home/End jump to the extremes, and the arrows reverse under `direction: 'rtl'`. Up/Down are left to `<select>` controls so they keep native value changing
+- **Toggle state is announced** — buttons that track an active state (bold, italic, …) expose `aria-pressed`, not just a CSS class
+- **Labelled controls** — every toolbar button carries a localised `aria-label`; the editable area is a `role="textbox"` with `aria-multiline`
+- **Dialogs trap focus** — Tab and Shift+Tab cycle inside the open dialog, Escape closes it
+- **Touch support** — image and video resize handles are driven by pointer events, so they work with mouse, touch and pen; handles get an enlarged transparent hit area
+
 ### Security
 - All HTML (pasted content, `setHTML()`, or code-view output) passes through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes
+- **SVG animation elements are removed** (`<animate>`, `<set>`, `<animateTransform>`, `<animateMotion>`) — they can rewrite an attribute *after* sanitisation finishes, which otherwise lets `<svg><a><animate attributeName="href" values="javascript:…">` survive an attribute-level filter and still navigate on click
+- **MathML HTML-integration points are removed** (`<mglyph>`, `<malignmark>`, `<annotation-xml>`) — they make the parser switch namespaces mid-tree, so a crafted fragment could re-parse into different markup than it serialised from (mXSS). Sanitising is a fixed point; ordinary formula markup is untouched
 - `<iframe>` elements are permitted in `setHTML()` with src restricted to trusted CDN hosts; `srcdoc` is stripped
 - Links use an HTTP(S)/`mailto:`/`tel:` allowlist; images additionally allow approved raster data URIs, while SVG data URIs are rejected
+- **Every URL-bearing attribute is filtered**, not just `href`/`src`: `poster`, `background` and `srcset` are validated against the media allowlist (`srcset` candidate by candidate), and `ping` is stripped outright since its only effect is an outbound beacon
+- **Inline styles are allowlisted by property**, and any value calling `url()`, `image-set()`, `src()`, `expression()` or `@import` is dropped so pasted content cannot phone home
 - Clipboard paste sanitises rich content to remove XSS vectors before inserting
 - `pasteStripAttributes` option strips `class`, `style`, and `data-*` from pasted HTML
+
+Found a vulnerability? Please follow [SECURITY.md](SECURITY.md) rather than opening a public issue.
+
+### Server-side rendering
+The package is safe to `import` in a Node/SSR context — no module reads `document`, `window` or `navigator` at import time, so the React and Vue wrappers work under Next.js and Nuxt. Editors are only created when you call `create()` in the browser.
 
 ---
 
@@ -402,7 +419,17 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `AutumnNote.create(selector, options?)` | Creates editor instance(s). `selector` can be a CSS string, `Element`, `NodeList`, or `Element[]`. Returns a `Context` or `Context[]`. |
 | `AutumnNote.destroy(selector)` | Destroys editor(s) and restores the original element. |
 | `AutumnNote.getInstance(selector)` | Returns the `Context` for a given element, or `null`. |
-| `AutumnNote.defaults` | Global default options object — mutate before calling `create()` to apply project-wide settings. |
+| `AutumnNote.defaults` | Read-only snapshot of the current default options. |
+| `AutumnNote.setDefaults(overrides)` | Merges options into the global defaults, applied to every future instance. |
+| `AutumnNote.resetDefaults()` | Restores the global defaults to their factory values. |
+| `AutumnNote.registerLocale(code, locale)` | Registers a locale so `lang: '<code>'` can select it. Only English ships in the ESM build — see [Languages](#languages). |
+| `AutumnNote.registerModule(name, Class)` | Registers a custom module included in every future instance. |
+| `AutumnNote.registerButton(btnDef)` | Adds a button to the global registry. Call `editor.invoke('toolbar.rebuild')` afterwards to render it on existing instances. |
+| `AutumnNote.registerSlashCommand(command)` | Adds or replaces a slash-menu command for future instances. |
+| `AutumnNote.use(plugin, options?)` | Installs a plugin globally — see [Plugin API](#plugin-api). |
+| `AutumnNote.hasPlugin(name)` | Returns `true` if a plugin with that name is registered globally. |
+| `AutumnNote.buttons` | All pre-built button definitions, reachable without named imports (UMD/CJS). |
+| `AutumnNote.version` | The library version string. |
 
 ### Context (instance methods)
 
@@ -431,7 +458,8 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `editor.focus()` | Moves keyboard focus to the editable area. |
 | `editor.blur()` | Removes keyboard focus from the editable area. |
 | `editor.isFullscreen()` | Returns `true` if the editor is currently in fullscreen mode. |
-| `editor.destroy()` | Removes the editor, disposes all modules, and restores the original element. |
+| `editor.destroy()` | Removes the editor, disposes all modules, and restores the original element. Returns a promise that settles once the closing auto-save has finished, so `await editor.destroy()` is meaningful with an async `autoSaveAdapter`. |
+| `editor.updateOptions(partial)` | Merges options into a live instance. Modules gated behind an option (`bubbleToolbar`, `mention`, `slashMenu`, `markdownShortcuts`, `autoSaveRestore`) are started or torn down to match. |
 | `editor.on(event, fn)` | Subscribes to an editor event. Returns an unsubscribe function. |
 | `editor.off(event, fn)` | Removes a previously registered listener. |
 | `editor.invoke('module.method', ...args)` | Calls any registered module method by dot-separated name. |
@@ -684,7 +712,8 @@ src/
 │   │   ├── func.js           General helpers (mergeDeep, debounce, ...)
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
-│   │   ├── env.js            Browser/platform detection
+│   │   ├── env.js            Browser/platform detection (lazy — SSR-safe)
+│   │   ├── detectLang.js     Code-block language detection for Prism highlighting
 │   │   ├── markdown.js       Bidirectional HTML ↔ Markdown conversion (with GFM checklists)
 │   │   └── sanitise.js       DOM-based HTML and URL sanitiser
 │   ├── editing/
@@ -693,6 +722,9 @@ src/
 │   │   ├── Table.js          Table creation and cell manipulation
 │   │   └── Typing.js         Tab/Enter/ArrowKey behaviour and FA icon caret handling
 │   ├── module/
+│   │   ├── BaseDialog.js     Shared dialog shell (focus trap, drag, Escape)
+│   │   ├── BaseResizer.js    Shared pointer-driven resize overlay (image + video)
+│   │   ├── BaseMediaTooltip.js  Shared show/hide timing for media tooltips
 │   │   ├── Editor.js         Core editing commands, getHTML/setHTML, sanitiser
 │   │   ├── Toolbar.js        Toolbar UI, button rendering (SVG + FA), dropdowns, colour picker
 │   │   ├── Buttons.js        Button/dropdown/colorpicker definitions and defaultToolbar
@@ -712,15 +744,23 @@ src/
 │   │   ├── VideoDialog.js    Video embed dialog (YouTube, Vimeo, direct file)
 │   │   ├── VideoTooltip.js   Floating toolbar for video embeds (edit/delete)
 │   │   ├── VideoResizer.js   rAF-based drag handle to resize video embeds
-│   │   ├── TableTooltip.js   Floating toolbar for tables (row/col/merge/unmerge/select mode)
+│   │   ├── TableTooltip.js   Floating toolbar for tables (row/col, merge, shade, sort, CSV)
+│   │   ├── table-grid.js     Colspan/rowspan geometry helpers (pure functions)
+│   │   ├── table-icons.js    Static SVG glyphs for the table tooltip
 │   │   ├── CodeTooltip.js    Floating toolbar for code blocks (copy/delete)
 │   │   ├── EmojiDialog.js    Unicode emoji picker (~380 emoji, 7 categories)
+│   │   ├── emoji-data.js     Emoji catalogue — a separate chunk, loaded on first open
 │   │   ├── IconDialog.js     FontAwesome icon picker (FA 6 Free Solid, 8 categories)
 │   │   ├── ShortcutsDialog.js  Keyboard shortcuts reference dialog (Shift+?)
 │   │   ├── BubbleToolbar.js  Mini floating toolbar above text selection
+│   │   ├── SlashMenu.js      Slash-command menu (`/` opens a block/insert palette)
 │   │   ├── MarkdownShortcuts.js  Inline Markdown-to-HTML input rules
 │   │   ├── AutoSaveRestore.js   Draft restore banner for localStorage drafts
 │   │   └── Mention.js        @mention autocomplete with floating dropdown
+│   ├── i18n/
+│   │   ├── index.js          Locale registry (resolveLocale, registerLocale)
+│   │   ├── all.js            Registers all eight locales — imported by the UMD build only
+│   │   └── en.js, vi.js, …   One file per locale, importable as `autumnnote/i18n/<code>`
 │   ├── Context.js            Editor instance hub: module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
 │   ├── renderer.js           DOM layout builder
@@ -828,6 +868,8 @@ AutumnNote.create('#editor', { lang: { toolbar: { bold: 'Vet' } } });
 
 The table below compares Autumn Note against popular WYSIWYG editors: **Summernote**, **Quill**, and **TinyMCE**. Comparison is based on publicly documented feature sets.
 
+The last two rows were measured rather than read off documentation, against `summernote@0.9.1`, `quill@2.0.3` and `tinymce@8.8.2`: a bare `await import('<pkg>')` in Node throws `document is not defined`, `self is not defined` and `window is not defined` respectively, and `npm view <pkg> dist.attestations` returns nothing for all three.
+
 | Feature | Summernote | Quill | TinyMCE | **Autumn Note** |
 |---|---|---|---|---|
 | jQuery dependency | Required | Required | Optional | **None** |
@@ -861,9 +903,32 @@ The table below compares Autumn Note against popular WYSIWYG editors: **Summerno
 | Custom colour swatches | No | No | No | **Yes** |
 | Code view (HTML source) | No | Yes | Yes | **Yes (sanitised)** |
 | Syntax highlighting | No | No | Partial | **Yes (Prism.js via CDN)** |
+| Keyboard-navigable toolbar | No | Partial | Yes | **Yes (ARIA toolbar pattern)** |
+| Bare `import` under SSR | No | No | No | **Yes** |
+| npm provenance attestation | No | No | No | **Yes (OIDC + SLSA)** |
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, coding conventions and PR checklist, and note that this project follows a [Code of Conduct](CODE_OF_CONDUCT.md).
+
+| I want to… | Where to go |
+|---|---|
+| Report a bug | [Open a bug report](https://github.com/cmm-cmm/Autumn-Note/issues/new?template=bug_report.md) |
+| Request a feature | [Open a feature request](https://github.com/cmm-cmm/Autumn-Note/issues/new?template=feature_request.md) |
+| Ask a question / show what you built | [Discussions](https://github.com/cmm-cmm/Autumn-Note/discussions) |
+| Report a security vulnerability | [SECURITY.md](SECURITY.md) — **not** a public issue |
+| See what changed | [CHANGELOG.md](CHANGELOG.md) |
+
+Before opening a PR, run the full gate — it is what CI runs:
+
+```bash
+pnpm check    # lint, typecheck, coverage, 4 builds, wrapper tests, bundle budget, demo build
+```
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © Minh Pham
