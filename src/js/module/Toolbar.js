@@ -128,11 +128,18 @@ export class Toolbar {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this.el = createElement('div', { class: 'an-toolbar' });
+    this.el = createElement('div', {
+      class: 'an-toolbar',
+      role: 'toolbar',
+      'aria-orientation': 'horizontal',
+      // Matches the hardcoded English label renderer.js gives the editable.
+      'aria-label': 'Editor toolbar',
+    });
     // Detect FontAwesome once at toolbar build time to avoid re-querying the DOM
     // for every button rendered.
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
+    this._initRovingFocus();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
         .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
@@ -606,6 +613,9 @@ export class Toolbar {
       title: this.context.locale.toolbar[btnDef.name] || btnDef.tooltip || '',
       'data-btn': btnDef.name,
       'aria-label': this.context.locale.toolbar[btnDef.name] || btnDef.tooltip || btnDef.name,
+      // A button that reports an active state is a toggle, so its state has to
+      // be exposed to assistive tech and not only through the `.active` class.
+      ...(typeof btnDef.isActive === 'function' ? { 'aria-pressed': 'false' } : {}),
     });
 
     // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.
@@ -640,6 +650,93 @@ export class Toolbar {
 
     this._disposers.push(disposer);
     return /** @type {HTMLButtonElement} */ (btn);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Keyboard navigation — WAI-ARIA toolbar pattern
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Every control the toolbar contains, in visual order. Disabled ones are
+   * included so their tabindex can be cleared; `_navigable()` filters them out.
+   * @returns {HTMLElement[]}
+   */
+  _controls() {
+    if (!this.el) return [];
+    return /** @type {HTMLElement[]} */ (Array.from(this.el.querySelectorAll('button, select')));
+  }
+
+  /** @returns {HTMLElement[]} controls that can actually receive focus */
+  _navigable() {
+    return this._controls().filter(
+      (el) => !(/** @type {HTMLButtonElement} */ (el).disabled),
+    );
+  }
+
+  /**
+   * Enforces the roving-tabindex invariant: exactly one control sits in the tab
+   * order and the rest are reached with arrow keys. The default toolbar renders
+   * 39 controls, so without this a keyboard user pressed Tab 39 times to get
+   * past the toolbar and into the editable area.
+   *
+   * @param {HTMLElement} [focused] - control that should own the tab stop;
+   *   omitted on refresh, where the user's current position is preserved.
+   */
+  _syncRovingTabindex(focused) {
+    const all = this._controls();
+    const navigable = this._navigable();
+    if (!navigable.length) return;
+    const active = (focused && navigable.includes(focused))
+      ? focused
+      : navigable.find((el) => el.getAttribute('tabindex') === '0') || navigable[0];
+    all.forEach((el) => el.setAttribute('tabindex', el === active ? '0' : '-1'));
+  }
+
+  /** Wires arrow-key navigation. Called on build and again after rebuild(). */
+  _initRovingFocus() {
+    if (!this.el) return;
+    this._syncRovingTabindex();
+    this._disposers.push(
+      on(this.el, 'keydown', (e) => this._onToolbarKeydown(/** @type {KeyboardEvent} */ (e))),
+      // Clicking or programmatically focusing a control moves the tab stop with
+      // it, so Tab always leaves from wherever the user actually is.
+      on(this.el, 'focusin', (e) => {
+        const el = /** @type {Element} */ (e.target)?.closest?.('button, select');
+        if (el) this._syncRovingTabindex(/** @type {HTMLElement} */ (el));
+      }),
+    );
+  }
+
+  /**
+   * Home/End jump to the ends; Left/Right step between controls and wrap.
+   * Up/Down are deliberately left alone so `<select>` controls keep their
+   * native value-changing behaviour.
+   * @param {KeyboardEvent} event
+   */
+  _onToolbarKeydown(event) {
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+    const controls = this._navigable();
+    const current = /** @type {HTMLElement|null} */ (
+      /** @type {Element} */ (event.target)?.closest?.('button, select')
+    );
+    const idx = current ? controls.indexOf(current) : -1;
+    if (idx === -1) return;
+
+    let next;
+    if (event.key === 'Home') {
+      next = controls[0];
+    } else if (event.key === 'End') {
+      next = controls.at(-1);
+    } else {
+      // In RTL the arrow that points at the next control is the left one.
+      const rtl = this.options.direction === 'rtl';
+      const forward = (event.key === 'ArrowRight') !== rtl;
+      next = controls[(idx + (forward ? 1 : -1) + controls.length) % controls.length];
+    }
+    if (!next) return;
+    event.preventDefault();
+    this._syncRovingTabindex(next);
+    next.focus();
   }
 
   // ---------------------------------------------------------------------------
@@ -687,12 +784,17 @@ export class Toolbar {
     this.el.querySelectorAll('button[data-btn]').forEach((btn) => {
       const def = btnMap.get(/** @type {HTMLElement} */ (btn).dataset.btn);
       if (def && typeof def.isActive === 'function') {
-        btn.classList.toggle('active', !!def.isActive(this.context));
+        const active = !!def.isActive(this.context);
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', String(active));
       }
       if (def && typeof def.isDisabled === 'function') {
         /** @type {HTMLButtonElement} */ (btn).disabled = !!def.isDisabled(this.context);
       }
     });
+
+    // A button disabled just now must not be the one holding the tab stop.
+    this._syncRovingTabindex();
 
     // Sync select dropdowns (e.g. font family) with current cursor position
     this.el.querySelectorAll('select[data-btn]').forEach((select) => {
@@ -741,6 +843,9 @@ export class Toolbar {
     if (this.el) this.el.innerHTML = '';
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
+    // rebuild() cleared the disposers, taking the keydown/focusin listeners
+    // with them — re-arm navigation over the new controls.
+    this._initRovingFocus();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
         .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),

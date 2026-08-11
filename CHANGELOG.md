@@ -9,8 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2.1.0] - 2026-08-11
+
+### Security
+
+- **SVG animation elements are now removed by the sanitiser.** `<animate>`, `<set>`, `<animateTransform>` and `<animateMotion>` can rewrite an attribute *after* sanitisation completes, so `<svg><a><animate attributeName="href" values="javascript:…">` passed an attribute-level filter untouched and still navigated on click. The editor only emits static `<svg>` icons, so nothing is lost.
+- **MathML HTML-integration points are removed.** `<mglyph>`, `<malignmark>` and `<annotation-xml>` make the parser switch namespaces mid-tree, which let a crafted fragment re-parse into different markup than it serialised from (mXSS). Sanitising is now a fixed point for the known mutation payloads; ordinary formula markup (`<math>`, `<mrow>`, `<mi>`, …) still survives.
+- **URL filtering extended to `poster`, `background` and `srcset`,** which previously passed through unchecked. `srcset` is validated candidate by candidate against the media protocol allowlist, and the whole attribute is dropped if any candidate fails.
+- **`ping` is stripped from links.** The editor never emits it and its only effect is a POST beacon to an arbitrary host on click.
+- **`image-set()` and `src()` are blocked in inline styles,** alongside the `url()` that was already rejected — all three fetch an external resource, so allowing them let pasted content phone home.
+
+### Fixed
+
+- **Importing the package no longer crashes under SSR.** `core/env.js` read `navigator.userAgent` at module scope, so `import 'autumnnote'` threw `ReferenceError: navigator is not defined` on any runtime without a global `navigator` — including Node 20, which `engines` still supports. That made the React and Vue wrappers unusable in Next.js/Nuxt server rendering. Every field is a lazy getter now, and nothing inside the library reads them anyway.
+- `env.isChrome` no longer reports `true` on Edge, whose user agent also contains `Chrome/`.
+
+### Added
+
+- **The toolbar is keyboard navigable.** It carries `role="toolbar"` and a roving tabindex, so it is a single tab stop instead of 39: Left/Right move between controls and wrap, Home/End jump to the ends, and the arrows reverse under `direction: 'rtl'`. Up/Down are left alone so `<select>` controls keep native value changing.
+- **Toggle buttons expose `aria-pressed`.** Bold, italic and the rest tracked their active state only through a CSS class, so screen readers could not tell an enabled button from a disabled one.
+- **Image and video resize handles work on touch.** They now use pointer events, so one code path serves mouse, touch and pen; the handles set `touch-action: none` (otherwise the browser claims the drag as a scroll) and get a larger transparent hit area. A `pointercancel` — a touch drag interrupted by the OS — ends the drag properly instead of leaving the move listener attached.
+
 ### Changed
 - npm publishing now authenticates through OIDC trusted publishing instead of a long-lived `NPM_TOKEN` secret. The workflow requests an `id-token` and no longer references the token anywhere, so there is no publish credential left to leak or rotate.
+- Dev-dependency overrides raised to each advisory's patched version (`brace-expansion >=5.0.9`, `postcss >=8.5.23`, new `nanoid >=3.3.17`). The previous floors satisfied an earlier advisory but not its follow-up, which had turned the `pnpm audit --audit-level high` gate in CI red. Build tooling only — the production dependency tree remains empty.
+- Coverage thresholds tightened to sit ~1–2 points under the measured figures instead of six, so they act as regression guards again rather than decoration.
+- `eslint` is now a caret range (`^10.7.0`) like every other devDependency.
+
+### Internal
+- `TableTooltip.js` split up: static SVG glyphs moved to `module/table-icons.js` and the colspan/rowspan geometry helpers to `module/table-grid.js`, which are now unit-tested directly. The cell-shading and table-border colour popovers — two near-identical 55-line builders where a fix to one silently missed the other — were folded into a single `_buildColorPopover()` factory. No behaviour change; the module is ~12 KB smaller.
 
 ---
 

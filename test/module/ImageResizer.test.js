@@ -217,14 +217,16 @@ describe('ImageResizer._startResize (drag)', () => {
     img.getBoundingClientRect = () => ({ top: 50, left: 100, width: 200, height: 150, bottom: 200, right: 300 });
     ir._select(img);
 
-    // Simulate handle mousedown → triggers _startResize
+    // jsdom has no PointerEvent constructor, but listeners are keyed by type
+    // name and the handler only reads clientX/clientY, so a MouseEvent carrying
+    // a pointer type name exercises the real path.
     const handle = ir._overlay.querySelector('[data-handle="se"]');
     expect(() => {
-      handle.dispatchEvent(new MouseEvent('mousedown', { clientX: 300, clientY: 200, bubbles: true, cancelable: true }));
+      handle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 300, clientY: 200, bubbles: true, cancelable: true }));
       // Move
-      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 350, clientY: 250, bubbles: true }));
+      document.dispatchEvent(new MouseEvent('pointermove', { clientX: 350, clientY: 250, bubbles: true }));
       // Release
-      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      document.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }));
     }).not.toThrow();
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
@@ -233,5 +235,26 @@ describe('ImageResizer._startResize (drag)', () => {
     const { ir } = makeResizer();
     ir._active = null;
     expect(() => ir._startResize({ clientX: 0, clientY: 0 }, 'se')).not.toThrow();
+  });
+
+  it('ends the drag on pointercancel, not only on pointerup', () => {
+    // A touch drag taken over by the OS ends with pointercancel and no
+    // pointerup; without handling it the move listener stays on document for
+    // the rest of the session and every later pointer move resizes the image.
+    const { ir, ctx } = makeResizer();
+    const img = ctx.layoutInfo.editable.querySelector('img');
+    img.getBoundingClientRect = () => ({ top: 50, left: 100, width: 200, height: 150, bottom: 200, right: 300 });
+    ir._select(img);
+
+    const handle = ir._overlay.querySelector('[data-handle="se"]');
+    handle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 300, clientY: 200, bubbles: true, cancelable: true }));
+    expect(ir._dragDisposers).not.toBeNull();
+
+    document.dispatchEvent(new MouseEvent('pointercancel', { bubbles: true }));
+    expect(ir._dragDisposers).toBeNull();
+
+    const widthAfterCancel = img.style.width;
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 900, clientY: 900, bubbles: true }));
+    expect(img.style.width).toBe(widthAfterCancel);
   });
 });

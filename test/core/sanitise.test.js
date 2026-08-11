@@ -346,3 +346,113 @@ describe('URL protocol canonicalisation', () => {
     expect(result).toContain('rel="noopener noreferrer"');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Post-sanitisation attribute rewriting (SMIL) and namespace-confusion (mXSS)
+// ---------------------------------------------------------------------------
+describe('SVG animation elements', () => {
+  it.each([
+    ['animate', '<svg><a><animate attributeName="href" values="javascript:alert(1)"/><text>click</text></a></svg>'],
+    ['set', '<svg><a><set attributeName="href" to="javascript:alert(1)"/><text>click</text></a></svg>'],
+    ['animateTransform', '<svg><a><animateTransform attributeName="href" to="javascript:alert(1)"/></a></svg>'],
+    ['animateMotion', '<svg><a><animateMotion attributeName="href" to="javascript:alert(1)"/></a></svg>'],
+  ])('removes <%s>, which could rewrite href after sanitisation', (_tag, html) => {
+    const result = sanitiseHTML(html);
+    expect(result).not.toContain('javascript:');
+    expect(result).not.toMatch(/<animate|<set/i);
+  });
+
+  it('keeps the static SVG icons the editor itself inserts', () => {
+    const icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/></svg>';
+    const result = sanitiseHTML(icon);
+    expect(result).toContain('<svg');
+    expect(result).toContain('<rect');
+  });
+});
+
+describe('mXSS hardening', () => {
+  it.each([
+    '<math><mtext><table><mglyph><style><!--</style><img src=x onerror=alert(1)>',
+    '<svg></p><style><a id="</style><img src=1 onerror=alert(1)>">',
+    '<form><math><mtext></form><form><mglyph><style></math><img src onerror=alert(1)>',
+    '<table><td><style><!--</style><img src=x onerror=alert(1)>',
+    '<math><annotation-xml encoding="text/html"><style><!--</style><img src=x onerror=alert(1)>',
+  ])('is a fixed point for mutation payload %#', (html) => {
+    const pass1 = sanitiseHTML(html);
+    // A sanitiser whose output re-parses into different markup is the
+    // precondition for mXSS: the caller assigns pass1 to innerHTML, so pass1
+    // must already describe the final tree.
+    expect(sanitiseHTML(pass1)).toBe(pass1);
+    expect(pass1).not.toContain('onerror');
+  });
+
+  it('drops MathML HTML-integration points but keeps ordinary formula markup', () => {
+    const result = sanitiseHTML('<math><mrow><mi>x</mi><mglyph src="e.png"/></mrow></math>');
+    expect(result).not.toContain('mglyph');
+    expect(result).toContain('<mi>x</mi>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// URL-bearing attributes beyond href/src
+// ---------------------------------------------------------------------------
+describe('secondary URL attributes', () => {
+  it('rejects an unsafe video poster', () => {
+    expect(sanitiseHTML('<video poster="javascript:alert(1)" src="https://a.b/c.mp4"></video>'))
+      .not.toContain('poster=');
+  });
+
+  it('keeps a safe video poster', () => {
+    expect(sanitiseHTML('<video poster="https://a.b/p.png" src="https://a.b/c.mp4"></video>'))
+      .toContain('poster="https://a.b/p.png"');
+  });
+
+  it('rejects an unsafe legacy background attribute', () => {
+    expect(sanitiseHTML('<table background="javascript:alert(1)"><tr><td>x</td></tr></table>'))
+      .not.toContain('background=');
+  });
+
+  it('strips the ping beacon from links', () => {
+    const result = sanitiseHTML('<a href="https://ok.example" ping="https://evil.example/t">x</a>');
+    expect(result).not.toContain('ping=');
+    expect(result).toContain('href="https://ok.example"');
+  });
+
+  it('keeps a well-formed srcset', () => {
+    const result = sanitiseHTML('<img src="https://a.b/1x.png" srcset="https://a.b/1x.png 1x, https://a.b/2x.png 2x">');
+    expect(result).toContain('srcset=');
+    expect(result).toContain('2x.png');
+  });
+
+  it('keeps a srcset using width descriptors and a raster data candidate', () => {
+    const result = sanitiseHTML('<img srcset="data:image/png;base64,abc 300w" src="https://a.b/1.png">');
+    expect(result).toContain('srcset=');
+  });
+
+  it('rejects the whole srcset when any candidate is unsafe', () => {
+    const result = sanitiseHTML('<img src="https://a.b/1.png" srcset="https://a.b/1.png 1x, javascript:alert(1) 2x">');
+    expect(result).not.toContain('srcset=');
+    expect(result).toContain('src="https://a.b/1.png"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Style values that fetch external resources
+// ---------------------------------------------------------------------------
+describe('style resource-loading functions', () => {
+  it.each([
+    'background-color: image-set("https://evil.example/t.png" 1x)',
+    'background-color: -webkit-image-set("https://evil.example/t.png" 1x)',
+    'background-color: src("https://evil.example/t.png")',
+    'background-color: url(https://evil.example/t.png)',
+  ])('drops the declaration using %s', (decl) => {
+    const result = sanitiseHTML(`<div style="${decl.replace(/"/g, '&quot;')}">x</div>`);
+    expect(result).not.toContain('evil.example');
+  });
+
+  it('keeps neighbouring safe declarations intact', () => {
+    const result = sanitiseHTML('<div style="background-color: image-set(&quot;a.png&quot; 1x); color: red">x</div>');
+    expect(result).toContain('color: red');
+    expect(result).not.toContain('image-set');
+  });
+});

@@ -2,131 +2,16 @@
 // Shows a horizontal action bar above (or below) the hovered table,
 // similar in appearance and interaction to ImageTooltip / VideoTooltip.
 import { createElement, on } from '../core/dom.js';
+import { ICONS } from './table-icons.js';
+import {
+  getVisualColIndex,
+  getCellAtVisualCol,
+  getCellAfterVisualCol,
+  buildGridMap,
+} from './table-grid.js';
 
 const SHOW_DELAY = 120;
 const HIDE_DELAY = 200;
-
-// ---------------------------------------------------------------------------
-// Table helpers — visual column index (accounts for colspan)
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the visual (logical) column index of a cell, taking colspan into
- * account for all preceding cells in the same row.
- * @param {HTMLTableCellElement} cell
- * @returns {number} 0-based visual column index, or -1 on failure
- */
-function getVisualColIndex(cell) {
-  const row = cell.closest('tr');
-  if (!row) return -1;
-  let visualIdx = 0;
-  for (const c of row.cells) {
-    if (c === cell) return visualIdx;
-    visualIdx += c.colSpan || 1;
-  }
-  return -1;
-}
-
-/**
- * Finds the first cell in a row whose visual start column equals visualIdx.
- * Returns null if no exact match (e.g. the column is spanned by a merged cell).
- * @param {HTMLTableRowElement} row
- * @param {number} visualIdx
- * @returns {HTMLTableCellElement|null}
- */
-function getCellAtVisualCol(row, visualIdx) {
-  let vIdx = 0;
-  for (const c of row.cells) {
-    if (vIdx === visualIdx) return c;
-    if (vIdx > visualIdx) break;
-    vIdx += c.colSpan || 1;
-  }
-  return null;
-}
-
-/**
- * Finds the first cell whose visual range ends after visualIdx
- * (used for inserting a new column to the right of visualIdx).
- * @param {HTMLTableRowElement} row
- * @param {number} visualIdx
- * @returns {HTMLTableCellElement|null} reference cell for insertBefore, or null = append
- */
-function getCellAfterVisualCol(row, visualIdx) {
-  let vIdx = 0;
-  for (const c of row.cells) {
-    vIdx += c.colSpan || 1;
-    if (vIdx > visualIdx) {
-      // next cell after the one that starts at / spans visualIdx
-      const next = c.nextElementSibling;
-      return (next?.tagName === 'TD' || next?.tagName === 'TH') ? /** @type {HTMLTableCellElement} */ (next) : null;
-    }
-  }
-  return null;
-}
-
-/**
- * Build a 2D grid map of the table, accounting for both rowspan and colspan.
- *
- * gridMap[r][c] = the DOM cell occupying visual grid position (r, c).
- * cellPos       = WeakMap: cell → { r, c, rs, cs }  (top-left grid origin + span).
- *
- * Uses HTMLTableElement.rows which is scoped to the table itself and never
- * includes rows from nested tables.
- *
- * @param {HTMLTableElement} table
- * @returns {{ gridMap: Object, cellPos: WeakMap }}
- */
-function buildGridMap(table) {
-  const rows = Array.from(table.rows);
-  const gridMap = {};
-  const cellPos = new WeakMap();
-  rows.forEach((row, r) => {
-    if (!gridMap[r]) gridMap[r] = {};
-    let c = 0;
-    for (const cell of row.cells) {
-      // Skip positions already occupied by a rowspan from a previous row
-      while (gridMap[r][c]) c++;
-      const rs = cell.rowSpan || 1;
-      const cs = cell.colSpan || 1;
-      cellPos.set(cell, { r, c, rs, cs });
-      for (let dr = 0; dr < rs; dr++) {
-        if (!gridMap[r + dr]) gridMap[r + dr] = {};
-        for (let dc = 0; dc < cs; dc++) {
-          gridMap[r + dr][c + dc] = cell;
-        }
-      }
-      c += cs;
-    }
-  });
-  return { gridMap, cellPos };
-}
-
-const ICONS = {
-  rowAbove:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3v7"/><path d="M9 7l3-4 3 4"/></svg>`,
-  rowBelow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 12v7"/><path d="M9 17l3 4 3-4"/></svg>`,
-  deleteRow:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="21" y1="15" x2="15" y2="21"/></svg>`,
-  colLeft:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M3 12h7"/><path d="M7 8l-4 4 4 4"/></svg>`,
-  colRight:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><path d="M12 12h9"/><path d="M17 8l4 4-4 4"/></svg>`,
-  deleteCol:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="15" y1="6" x2="21" y2="12"/><line x1="21" y1="6" x2="15" y2="12"/></svg>`,
-  mergeCells:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="8" height="10" rx="1"/><rect x="14" y="7" width="8" height="10" rx="1"/><path d="M10 12h4"/><path d="M12 10l2 2-2 2"/></svg>`,
-  unmergeCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="12" y1="5" x2="12" y2="19" stroke-dasharray="2.5 2"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="2.5 2"/><path d="M9 9 L6 12 L9 15"/><path d="M15 9 L18 12 L15 15"/></svg>`,
-  colWidth:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="7" y1="12" x2="17" y2="12"/><path d="M10 9l-3 3 3 3"/><path d="M14 9l3 3-3 3"/></svg>`,
-  rowHeight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`,
-  tableBorder: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="13" x2="21" y2="13" stroke-width="2"/><line x1="3" y1="20" x2="21" y2="20" stroke-width="3"/></svg>`,
-  deleteTable: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="16" y1="16" x2="22" y2="22" stroke="#ef4444"/><line x1="22" y1="16" x2="16" y2="22" stroke="#ef4444"/></svg>`,
-  selectCells: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z" fill="currentColor" opacity="0.15"/><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z"/></svg>`,
-  cellShade:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11L8.93 3.36a1 1 0 0 0-1.29.08L3.22 7.8a1 1 0 0 0-.07 1.29L11 20"/><path d="m5 14 5-5"/><path d="M22 22a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2c0-1.5 2.5-5 3.5-5s3.5 3.5 3.5 5z"/></svg>`,
-  borderColor: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="1"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="1.5"/><line x1="12" y1="3" x2="12" y2="17" stroke-width="1.5"/><path d="M3 21h18" stroke-width="3"/></svg>`,
-  alignLeft:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>`,
-  alignCenter:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/></svg>`,
-  alignRight:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>`,
-  alignJustify: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>`,
-  headerRow:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="3" y="3" width="18" height="8" rx="1" fill="currentColor" opacity="0.2"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/></svg>`,
-  sortAsc:     `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/><path d="M15 9l3-3 3 3"/><line x1="18" y1="6" x2="18" y2="18"/></svg>`,
-  sortDesc:    `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="13" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/><path d="M15 15l3 3 3-3"/><line x1="18" y1="6" x2="18" y2="18"/></svg>`,
-  exportCSV:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-  cellPadding: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="7" y="7" width="10" height="10" rx="0.5" stroke-dasharray="2 1.5"/></svg>`,
-};
 
 const SHADE_PRESETS = [
   '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
@@ -1189,16 +1074,33 @@ export class TableTooltip {
   }
 
   // ---------------------------------------------------------------------------
-  // Cell background shade popover
+  // Colour popovers (cell shading + table border colour)
   // ---------------------------------------------------------------------------
 
-  _buildCellShadePopover() {
+  /**
+   * Builds one of the two colour popovers. Both are the same widget — a preset
+   * palette, a "no colour" reset row, and a custom `<input type="color">` — and
+   * they were previously two near-identical 55-line methods, so a fix applied
+   * to one silently missed the other. They differ only in the swatch the custom
+   * input starts on and in what the chosen colour is applied to.
+   *
+   * `getPopover` is read lazily rather than closed over: `destroy()` nulls the
+   * field, and the deferred handlers must see that instead of holding the
+   * detached element alive.
+   *
+   * @param {object} config
+   * @param {string} config.defaultColor - initial value of the custom input
+   * @param {(color: string) => void} config.apply - called with '' to clear
+   * @param {() => HTMLElement|null} config.getPopover
+   * @param {() => void} config.hide
+   * @returns {{ el: HTMLElement, titleEl: HTMLElement, noColorBtn: HTMLElement }}
+   */
+  _buildColorPopover({ defaultColor, apply, getPopover, hide }) {
     const pop = createElement('div', { class: 'an-cell-shade-popover' });
     pop.style.display = 'none';
 
-    const title = createElement('div', { class: 'an-size-popover-title' });
-    pop.appendChild(title);
-    this._shadeTitleEl = title;
+    const titleEl = createElement('div', { class: 'an-size-popover-title' });
+    pop.appendChild(titleEl);
 
     // 24-color palette — reuse existing CSS classes
     const palette = createElement('div', { class: 'an-context-color-palette' });
@@ -1207,26 +1109,25 @@ export class TableTooltip {
       sw.style.background = color;
       this._disposers.push(on(sw, 'click', (e) => {
         e.stopPropagation();
-        this._applyCellShade(color);
+        apply(color);
       }));
       palette.appendChild(sw);
     });
     pop.appendChild(palette);
 
-    // "No shading" row — clears background color
-    const noShadeRow = createElement('div', { class: 'an-context-color-custom' });
-    const noShadeBtn = createElement('button', { type: 'button', class: 'an-shade-no-color' });
-    this._disposers.push(on(noShadeBtn, 'click', () => this._applyCellShade('')));
-    noShadeRow.appendChild(noShadeBtn);
-    pop.appendChild(noShadeRow);
-    this._shadeNoBtn = noShadeBtn;
+    // Reset row — clears the colour
+    const noColorRow = createElement('div', { class: 'an-context-color-custom' });
+    const noColorBtn = createElement('button', { type: 'button', class: 'an-shade-no-color' });
+    this._disposers.push(on(noColorBtn, 'click', () => apply('')));
+    noColorRow.appendChild(noColorBtn);
+    pop.appendChild(noColorRow);
 
     // Custom color input
     const customRow = createElement('div', { class: 'an-context-color-custom' });
-    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#ffffff' }));
+    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: defaultColor }));
     const customLabel = createElement('span');
     customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
-    this._disposers.push(on(colorInput, 'change', () => this._applyCellShade(colorInput.value)));
+    this._disposers.push(on(colorInput, 'change', () => apply(colorInput.value)));
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
     pop.appendChild(customRow);
@@ -1239,16 +1140,56 @@ export class TableTooltip {
       // Close on outside click
       on(document, 'click', (e) => {
         const et = /** @type {Node} */ (e.target);
-        if (this._shadePopover &&
-            this._shadePopover.style.display !== 'none' &&
-            !this._shadePopover.contains(et) &&
+        const current = getPopover();
+        if (current &&
+            current.style.display !== 'none' &&
+            !current.contains(et) &&
             !this._el?.contains(et)) {
-          this._hideCellShadePopover();
+          hide();
         }
       }),
     );
 
-    return pop;
+    return { el: pop, titleEl, noColorBtn };
+  }
+
+  /**
+   * Shows a colour popover under the tooltip, flipping above it when there is
+   * no room below. Measurement has to wait a frame because the popover is
+   * display:none until now and would otherwise report zero size.
+   * @param {() => HTMLElement|null} getPopover
+   */
+  _showColorPopover(getPopover) {
+    const pop = getPopover();
+    if (!pop) return;
+    pop.style.display = 'block';
+    requestAnimationFrame(() => {
+      const current = getPopover();
+      if (!current || !this._el) return;
+      const pw = current.offsetWidth  || 170;
+      const ph = current.offsetHeight || 120;
+      const tipRect = this._el.getBoundingClientRect();
+      let left = tipRect.left;
+      let top  = tipRect.bottom + 6;
+      if (left + pw > globalThis.innerWidth  - 8) left = globalThis.innerWidth  - pw - 8;
+      if (top  + ph > globalThis.innerHeight - 8) top  = tipRect.top - ph - 6;
+      current.style.left = `${Math.max(8, left)}px`;
+      current.style.top  = `${Math.max(8, top)}px`;
+    });
+  }
+
+  // --- Cell background shade ---
+
+  _buildCellShadePopover() {
+    const { el, titleEl, noColorBtn } = this._buildColorPopover({
+      defaultColor: '#ffffff',
+      apply: (color) => this._applyCellShade(color),
+      getPopover: () => this._shadePopover,
+      hide: () => this._hideCellShadePopover(),
+    });
+    this._shadeTitleEl = titleEl;
+    this._shadeNoBtn = noColorBtn;
+    return el;
   }
 
   _openCellShadePopover() {
@@ -1256,20 +1197,7 @@ export class TableTooltip {
     const L = this.context.locale.tooltips.table;
     if (this._shadeTitleEl) this._shadeTitleEl.textContent = L.cellBackground;
     if (this._shadeNoBtn)   this._shadeNoBtn.textContent  = L.noShading;
-
-    this._shadePopover.style.display = 'block';
-    requestAnimationFrame(() => {
-      if (!this._shadePopover || !this._el) return;
-      const pw = this._shadePopover.offsetWidth  || 170;
-      const ph = this._shadePopover.offsetHeight || 120;
-      const tipRect = this._el.getBoundingClientRect();
-      let left = tipRect.left;
-      let top  = tipRect.bottom + 6;
-      if (left + pw > globalThis.innerWidth  - 8) left = globalThis.innerWidth  - pw - 8;
-      if (top  + ph > globalThis.innerHeight - 8) top  = tipRect.top - ph - 6;
-      this._shadePopover.style.left = `${Math.max(8, left)}px`;
-      this._shadePopover.style.top  = `${Math.max(8, top)}px`;
-    });
+    this._showColorPopover(() => this._shadePopover);
   }
 
   _hideCellShadePopover() {
@@ -1289,62 +1217,18 @@ export class TableTooltip {
     this.context.invoke('editor.afterCommand');
   }
 
-  // ---------------------------------------------------------------------------
-  // Table border color popover
-  // ---------------------------------------------------------------------------
+  // --- Table border colour ---
 
   _buildBorderColorPopover() {
-    const pop = createElement('div', { class: 'an-cell-shade-popover' });
-    pop.style.display = 'none';
-
-    const title = createElement('div', { class: 'an-size-popover-title' });
-    pop.appendChild(title);
-    this._borderColorTitleEl = title;
-
-    const palette = createElement('div', { class: 'an-context-color-palette' });
-    SHADE_PRESETS.forEach((color) => {
-      const sw = createElement('div', { class: 'an-context-color-swatch', title: color });
-      sw.style.background = color;
-      this._disposers.push(on(sw, 'click', (e) => {
-        e.stopPropagation();
-        this._applyBorderColor(color);
-      }));
-      palette.appendChild(sw);
+    const { el, titleEl, noColorBtn } = this._buildColorPopover({
+      defaultColor: '#000000',
+      apply: (color) => this._applyBorderColor(color),
+      getPopover: () => this._borderColorPopover,
+      hide: () => this._hideBorderColorPopover(),
     });
-    pop.appendChild(palette);
-
-    const noColorRow = createElement('div', { class: 'an-context-color-custom' });
-    const noColorBtn = createElement('button', { type: 'button', class: 'an-shade-no-color' });
-    this._disposers.push(on(noColorBtn, 'click', () => this._applyBorderColor('')));
-    noColorRow.appendChild(noColorBtn);
-    pop.appendChild(noColorRow);
+    this._borderColorTitleEl = titleEl;
     this._borderColorNoBtn = noColorBtn;
-
-    const customRow = createElement('div', { class: 'an-context-color-custom' });
-    const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', class: 'an-shade-color-input', value: '#000000' }));
-    const customLabel = createElement('span');
-    customLabel.textContent = this.context.locale.contextMenu.customColorLabel;
-    this._disposers.push(on(colorInput, 'change', () => this._applyBorderColor(colorInput.value)));
-    customRow.appendChild(colorInput);
-    customRow.appendChild(customLabel);
-    pop.appendChild(customRow);
-
-    this._disposers.push(
-      on(pop, 'mousedown', (e) => e.preventDefault()),
-      on(pop, 'mouseenter', () => this._clearTimers()),
-      on(pop, 'mouseleave', () => this._scheduleHide()),
-      on(document, 'click', (e) => {
-        const et = /** @type {Node} */ (e.target);
-        if (this._borderColorPopover &&
-            this._borderColorPopover.style.display !== 'none' &&
-            !this._borderColorPopover.contains(et) &&
-            !this._el?.contains(et)) {
-          this._hideBorderColorPopover();
-        }
-      }),
-    );
-
-    return pop;
+    return el;
   }
 
   _openBorderColorPopover() {
@@ -1352,20 +1236,7 @@ export class TableTooltip {
     const L = this.context.locale.tooltips.table;
     if (this._borderColorTitleEl) this._borderColorTitleEl.textContent = L.tableBorderColor;
     if (this._borderColorNoBtn)   this._borderColorNoBtn.textContent  = L.noBorderColor;
-
-    this._borderColorPopover.style.display = 'block';
-    requestAnimationFrame(() => {
-      if (!this._borderColorPopover || !this._el) return;
-      const pw = this._borderColorPopover.offsetWidth  || 170;
-      const ph = this._borderColorPopover.offsetHeight || 120;
-      const tipRect = this._el.getBoundingClientRect();
-      let left = tipRect.left;
-      let top  = tipRect.bottom + 6;
-      if (left + pw > globalThis.innerWidth  - 8) left = globalThis.innerWidth  - pw - 8;
-      if (top  + ph > globalThis.innerHeight - 8) top  = tipRect.top - ph - 6;
-      this._borderColorPopover.style.left = `${Math.max(8, left)}px`;
-      this._borderColorPopover.style.top  = `${Math.max(8, top)}px`;
-    });
+    this._showColorPopover(() => this._borderColorPopover);
   }
 
   _hideBorderColorPopover() {
