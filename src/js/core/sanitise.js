@@ -5,14 +5,49 @@
  * DOM-parser based — no regex-based stripping of HTML (avoids bypass tricks).
  */
 
-/** Tags that are unconditionally removed from editor content. */
-const PROHIBITED_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template', 'link', 'meta', 'noscript', 'portal', 'frame', 'frameset', 'applet'];
+/**
+ * Tags that are unconditionally removed from editor content.
+ *
+ * Beyond the obvious script hosts this covers two SVG/MathML-specific classes:
+ *
+ * - SMIL animation (`animate`, `set`, `animateTransform`, `animateMotion`)
+ *   can rewrite an attribute *after* sanitisation finishes, so
+ *   `<svg><a><animate attributeName="href" values="javascript:…">` survives an
+ *   attribute-level filter untouched and still navigates on click. The editor
+ *   only ever emits static `<svg>` icons, so animation is pure attack surface.
+ *
+ * - `mglyph` / `malignmark` / `annotation-xml` are HTML integration points
+ *   inside the MathML namespace. They make the parser switch namespaces
+ *   mid-tree, which is what lets a crafted fragment re-parse into different
+ *   markup than it serialised from (mXSS). The rest of MathML is left alone so
+ *   pasted formulae survive.
+ */
+const PROHIBITED_TAGS = [
+  'script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template',
+  'link', 'meta', 'noscript', 'portal', 'frame', 'frameset', 'applet',
+  'animate', 'set', 'animatetransform', 'animatemotion',
+  'mglyph', 'malignmark', 'annotation-xml',
+];
 
 /** Tags whose element wrapper is stripped but content (child nodes) is preserved. */
 const UNWRAP_TAGS = new Set(['button']);
 
 /** Attributes whose values must be sanitised as URLs. */
-const URL_ATTRS = ['href', 'src', 'action', 'formaction', 'xlink:href'];
+const URL_ATTRS = ['href', 'src', 'action', 'formaction', 'xlink:href', 'poster', 'background', 'srcset'];
+
+/**
+ * URL attributes that address media rather than navigation, so they are
+ * validated against SAFE_MEDIA_PROTOCOLS regardless of which element carries
+ * them (unlike `src`, whose meaning depends on the owning tag).
+ */
+const MEDIA_URL_ATTRS = new Set(['poster', 'background', 'srcset']);
+
+/**
+ * Attributes removed outright: the editor never emits them and their only
+ * effect is an outbound request the author did not ask for. `ping` fires a
+ * POST beacon to arbitrary hosts when a link is clicked.
+ */
+const BEACON_ATTRS = new Set(['ping']);
 
 /** Inline style properties the editor's own toolbar/table features persist on saved content. */
 const ALLOWED_STYLE_PROPS = new Set([
@@ -22,8 +57,12 @@ const ALLOWED_STYLE_PROPS = new Set([
   'border-width', 'border-style', 'border-color', 'padding',
 ]);
 
-/** Value patterns that are never safe regardless of property. */
-const DANGEROUS_STYLE_VALUE_RE = /url\s*\(|expression\s*\(|@import|javascript:|vbscript:|behavior\s*:|-moz-binding/i;
+/**
+ * Value patterns that are never safe regardless of property.
+ * `image-set()` and `src()` are covered alongside `url()` — all three fetch an
+ * external resource, so allowing them would let pasted content phone home.
+ */
+const DANGEROUS_STYLE_VALUE_RE = /url\s*\(|image-set\s*\(|src\s*\(|expression\s*\(|@import|javascript:|vbscript:|behavior\s*:|-moz-binding/i;
 
 /** Trusted hosts for iframe embeds when allowIframes is enabled. */
 const TRUSTED_IFRAME_HOSTS = new Set([
@@ -106,12 +145,21 @@ export function sanitiseHTML(html, { allowIframes = false } = {}) {
         else el.removeAttribute('style');
         continue;
       }
+      // Drop tracking-beacon attributes outright
+      if (BEACON_ATTRS.has(attr.name)) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
       // Sanitise URL attributes
       if (URL_ATTRS.includes(attr.name)) {
         const val = attr.value.trim();
-        const isMediaSource = attr.name === 'src' &&
-          ['IMG', 'VIDEO', 'AUDIO', 'SOURCE'].includes(el.tagName);
-        if (!isSafeUrl(val, { media: isMediaSource, allowData: el.tagName === 'IMG' })) {
+        const isMediaSource = MEDIA_URL_ATTRS.has(attr.name) ||
+          (attr.name === 'src' && ['IMG', 'VIDEO', 'AUDIO', 'SOURCE'].includes(el.tagName));
+        const allowData = el.tagName === 'IMG';
+        const safe = attr.name === 'srcset'
+          ? isSafeSrcset(val, { allowData })
+          : isSafeUrl(val, { media: isMediaSource, allowData });
+        if (!safe) {
           el.removeAttribute(attr.name);
           continue;
         }
@@ -172,6 +220,31 @@ function sanitiseStyleValue(value) {
     kept.push(`${prop}: ${val}`);
   }
   return kept.join('; ');
+}
+
+/**
+ * Validates every candidate URL in a `srcset` attribute.
+ *
+ * Per the HTML srcset grammar a candidate URL is a run of non-whitespace
+ * characters — commas may appear *inside* it, which is why `data:` URLs work
+ * there — optionally followed by a width (`300w`) or density (`2x`) descriptor.
+ * Splitting on whitespace and skipping descriptor tokens therefore yields the
+ * URL set. Anything unparseable makes the whole attribute fail, since a
+ * partially-trusted candidate list is not something we can express.
+ *
+ * @param {string} value
+ * @param {{ allowData?: boolean }} [options]
+ * @returns {boolean}
+ */
+function isSafeSrcset(value, { allowData = false } = {}) {
+  const tokens = (value || '').trim().split(/\s+/).filter(Boolean);
+  for (const token of tokens) {
+    if (/^[\d.]+[xw],?$/i.test(token)) continue; // width/density descriptor
+    const url = token.replace(/,+$/, ''); // trailing comma = candidate separator
+    if (!url) continue;
+    if (!isSafeUrl(url, { media: true, allowData })) return false;
+  }
+  return true;
 }
 
 /**
