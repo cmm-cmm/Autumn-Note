@@ -222,12 +222,14 @@ describe('VideoResizer._startResize (drag)', () => {
     const wrapper = getWrapper(ctx);
     vr._select(wrapper);
 
-    // Simulate handle mousedown → triggers _startResize
+    // jsdom has no PointerEvent constructor, but listeners are keyed by type
+    // name and the handler only reads clientX/clientY, so a MouseEvent carrying
+    // a pointer type name exercises the real path.
     const handle = vr._overlay.querySelector('[data-handle="se"]');
     expect(() => {
-      handle.dispatchEvent(new MouseEvent('mousedown', { clientX: 420, clientY: 230, bubbles: true, cancelable: true }));
-      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 470, clientY: 280, bubbles: true }));
-      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      handle.dispatchEvent(new MouseEvent('pointerdown', { clientX: 420, clientY: 230, bubbles: true, cancelable: true }));
+      document.dispatchEvent(new MouseEvent('pointermove', { clientX: 470, clientY: 280, bubbles: true }));
+      document.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }));
     }).not.toThrow();
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });

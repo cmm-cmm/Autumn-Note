@@ -1390,6 +1390,17 @@
     border-radius: 1px;
     box-sizing: border-box;
     pointer-events: all;
+    // Required for the pointerdown drag to survive on touch: without it the
+    // browser claims the gesture as a scroll and fires pointercancel.
+    touch-action: none;
+
+    // 8px is below the ~44px recommended touch target, so widen the hit area
+    // with a transparent ::before rather than by enlarging the visible dot.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+    }
   }
 
   // Corners

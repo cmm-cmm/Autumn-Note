@@ -168,7 +168,11 @@ export class BaseResizer {
       h.dataset.handle = pos;
       // Attach handle listeners here so they're torn down in destroy() via _disposers
       this._disposers.push(
-        on(h, 'mousedown', (e) => {
+        // Pointer events rather than mouse events, so the same code path serves
+        // mouse, touch and pen. The handles also set `touch-action: none` in
+        // CSS — without it a touch drag is claimed by the browser as a scroll
+        // gesture and the pointer stream is cancelled before it starts.
+        on(h, 'pointerdown', (e) => {
           e.preventDefault();
           e.stopPropagation();
           this._startResize(e, pos);
@@ -293,20 +297,26 @@ export class BaseResizer {
       });
     };
 
+    const stop = () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+    };
+
     const onUp = () => {
       if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      stop();
       this._dragDisposers = null;
       this.context.invoke('editor.afterCommand');
     };
 
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    // A touch drag interrupted by the system (incoming call, gesture takeover)
+    // ends with pointercancel and no pointerup, which would otherwise leave the
+    // move listener attached for the rest of the session.
+    document.addEventListener('pointercancel', onUp);
     // Track these so destroy() can clean them up if called during an active drag
-    this._dragDisposers = [
-      () => document.removeEventListener('mousemove', onMove),
-      () => document.removeEventListener('mouseup', onUp),
-    ];
+    this._dragDisposers = [stop];
   }
 }
