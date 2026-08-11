@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Question or idea
+    url: https://github.com/cmm-cmm/Autumn-Note/discussions
+    about: Ask how to do something, share what you built, or float an idea before it becomes a feature request.
+  - name: 🔒 Security vulnerability
+    url: https://github.com/cmm-cmm/Autumn-Note/security/policy
+    about: Report privately instead of opening a public issue — the sanitiser is security-critical.
+  - name: 📖 Documentation and live demo
+    url: https://autumn.konexforge.com/docs.html
+    about: Options, API reference and a playground to reproduce behaviour before filing.
