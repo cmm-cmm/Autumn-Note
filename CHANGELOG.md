@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2.1.0] - 2026-08-11
+
 ### Security
 
 - **SVG animation elements are now removed by the sanitiser.** `<animate>`, `<set>`, `<animateTransform>` and `<animateMotion>` can rewrite an attribute *after* sanitisation completes, so `<svg><a><animate attributeName="href" values="javascript:…">` passed an attribute-level filter untouched and still navigated on click. The editor only emits static `<svg>` icons, so nothing is lost.
