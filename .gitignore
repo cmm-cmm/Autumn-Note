@@ -14,6 +14,11 @@ dist/
 # Test coverage
 coverage/
 
+# Vitest browser-mode failure artefacts (screenshots of the page at the moment
+# an assertion failed) — regenerated on every red run, useless once it is green.
+.vitest-attachments/
+test/browser/__screenshots__/
+
 # Environment variables
 .env
 .env.local

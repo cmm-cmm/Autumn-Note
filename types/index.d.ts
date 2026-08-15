@@ -68,6 +68,14 @@ export interface AsnOptions {
   useFontAwesome?: boolean;
   /** Font Awesome prefix class, e.g. 'fas' (FA5) or 'fa-solid' (FA6). */
   fontAwesomeClass?: string;
+  /**
+   * Let the icon dialog inject Font Awesome CSS from a CDN when the host page
+   * has none of its own (default: true). Set to false under a strict CSP, in an
+   * offline build, or wherever third-party requests are disallowed.
+   */
+  fontAwesomeAutoInject?: boolean;
+  /** Stylesheet URL used by that injection. Point it at a self-hosted copy to keep the request first-party. */
+  fontAwesomeCDN?: string;
   /** Force plain-text paste — strips all HTML on paste. */
   pasteAsPlainText?: boolean;
   /** Sanitise HTML on paste. */

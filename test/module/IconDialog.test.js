@@ -18,14 +18,14 @@ afterEach(() => {
   if (sel) sel.removeAllRanges();
 });
 
-function makeDialog() {
+function makeDialog(options = {}) {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   editable.innerHTML = '<p>text</p>';
   document.body.appendChild(editable);
   const context = {
     layoutInfo: { editable },
-    options: {},
+    options,
     locale: en,
     invoke: vi.fn(),
   };
@@ -35,7 +35,7 @@ function makeDialog() {
 }
 
 describe('IconDialog insertion caret behavior', () => {
-  it('keeps caret after inserted icon at end of line', () => {
+  it('keeps caret after inserted icon at end of line', async () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';
     editable.innerHTML = '<p>hello</p>';
@@ -53,7 +53,7 @@ describe('IconDialog insertion caret behavior', () => {
 
     const dialog = new IconDialog(context);
     dialog.initialize();
-    dialog.show();
+    await dialog.show();
 
     dialog._selectedIcon = 'house';
     dialog._onInsert();
@@ -75,8 +75,9 @@ describe('IconDialog insertion caret behavior', () => {
 });
 
 describe('IconDialog lifecycle, filtering, and options', () => {
-  it('injects Font Awesome once and respects an existing host stylesheet', () => {
+  it('injects Font Awesome once and respects an existing host stylesheet', async () => {
     const first = makeDialog().dialog;
+    await first.show();
     const link = document.getElementById('an-fontawesome-css');
     expect(link?.getAttribute('crossorigin')).toBe('anonymous');
     first._ensureFontAwesome();
@@ -89,19 +90,47 @@ describe('IconDialog lifecycle, filtering, and options', () => {
     hostLink.href = 'https://example.com/font-awesome.css';
     document.head.appendChild(hostLink);
     const second = makeDialog().dialog;
+    await second.show();
     expect(document.getElementById('an-fontawesome-css')).toBeNull();
     second.destroy();
     hostLink.remove();
   });
 
-  it('reuses its dialog and resets selection, search, and category on show', () => {
+  it('makes no third-party request until the dialog is actually opened', async () => {
     const { dialog } = makeDialog();
-    dialog.show();
+    // Mounting an editor must not reach out to a CDN — the stylesheet is only
+    // needed once the icon grid becomes visible.
+    expect(document.getElementById('an-fontawesome-css')).toBeNull();
+    await dialog.show();
+    expect(document.getElementById('an-fontawesome-css')).not.toBeNull();
+    dialog.destroy();
+  });
+
+  it('never injects when fontAwesomeAutoInject is false', async () => {
+    const { dialog } = makeDialog({ fontAwesomeAutoInject: false });
+    await dialog.show();
+    expect(document.getElementById('an-fontawesome-css')).toBeNull();
+    // The dialog still opens and stays usable without the glyph font.
+    expect(dialog._dialog).not.toBeNull();
+    dialog.destroy();
+  });
+
+  it('honours a self-hosted fontAwesomeCDN override', async () => {
+    const href = 'https://assets.example.com/vendor/fontawesome/all.min.css';
+    const { dialog } = makeDialog({ fontAwesomeCDN: href });
+    await dialog.show();
+    expect(document.getElementById('an-fontawesome-css')?.getAttribute('href')).toBe(href);
+    dialog.destroy();
+  });
+
+  it('reuses its dialog and resets selection, search, and category on show', async () => {
+    const { dialog } = makeDialog();
+    await dialog.show();
     const built = dialog._dialog;
     dialog._selectIcon('house');
     dialog._searchInput.value = 'house';
     dialog._activeCat = 'objects';
-    dialog.show();
+    await dialog.show();
 
     expect(dialog._dialog).toBe(built);
     expect(dialog._selectedIcon).toBeNull();
@@ -111,9 +140,9 @@ describe('IconDialog lifecycle, filtering, and options', () => {
     dialog.destroy();
   });
 
-  it('filters by search and category and renders an empty state', () => {
+  it('filters by search and category and renders an empty state', async () => {
     const { dialog } = makeDialog();
-    dialog.show();
+    await dialog.show();
     dialog._filterIcons('house', 'all');
     expect(dialog._grid.querySelector('[data-name="house"]').style.display).toBe('');
     expect(dialog._grid.querySelector('[data-name="heart"]').style.display).toBe('none');
@@ -125,9 +154,9 @@ describe('IconDialog lifecycle, filtering, and options', () => {
     dialog.destroy();
   });
 
-  it('responds to category, grid, search, and option events', () => {
+  it('responds to category, grid, search, and option events', async () => {
     const { dialog } = makeDialog();
-    dialog.show();
+    await dialog.show();
     dialog._catBar.querySelector('[data-cat="objects"]').click();
     expect(dialog._activeCat).toBe('objects');
 
@@ -150,9 +179,9 @@ describe('IconDialog lifecycle, filtering, and options', () => {
     dialog.destroy();
   });
 
-  it('guards insertion without a selection and appends when no saved range exists', () => {
+  it('guards insertion without a selection and appends when no saved range exists', async () => {
     const { dialog, editable, context } = makeDialog();
-    dialog.show();
+    await dialog.show();
     dialog._onInsert();
     expect(editable.querySelector('i')).toBeNull();
 

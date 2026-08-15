@@ -5,247 +5,30 @@
 import { createElement, on, makeDraggable } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 
-// ---------------------------------------------------------------------------
-// Icon catalogue — FA 6 Free Solid slug names, grouped by category
-// ---------------------------------------------------------------------------
+/** Fallback stylesheet URL when `options.fontAwesomeCDN` is absent. Mirrors settings.js. */
+const FONT_AWESOME_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
 
-const ICON_CATEGORIES = [
-  { id: 'popular',       label: 'Popular' },
-  { id: 'interface',     label: 'Interface' },
-  { id: 'navigation',    label: 'Navigation' },
-  { id: 'media',         label: 'Media' },
-  { id: 'communication', label: 'Communication' },
-  { id: 'files',         label: 'Files' },
-  { id: 'people',        label: 'People' },
-  { id: 'objects',       label: 'Objects' },
-];
+/**
+ * Resolved icon catalogue, shared by every editor instance on the page.
+ * @type {{ ICON_CATEGORIES: Array, ICON_LIST: Array }|null}
+ */
+let _iconData = null;
+/** @type {Promise<{ ICON_CATEGORIES: Array, ICON_LIST: Array }>|null} */
+let _iconDataPromise = null;
 
-// Each entry: [slug, category]
-const ICON_LIST = [
-  // Popular
-  ['house',                 'popular'],
-  ['star',                  'popular'],
-  ['heart',                 'popular'],
-  ['check',                 'popular'],
-  ['xmark',                 'popular'],
-  ['plus',                  'popular'],
-  ['minus',                 'popular'],
-  ['magnifying-glass',      'popular'],
-  ['gear',                  'popular'],
-  ['bell',                  'popular'],
-  ['user',                  'popular'],
-  ['envelope',              'popular'],
-  ['phone',                 'popular'],
-  ['calendar',              'popular'],
-  ['clock',                 'popular'],
-  ['lock',                  'popular'],
-  ['eye',                   'popular'],
-  ['eye-slash',             'popular'],
-  ['trash',                 'popular'],
-  ['pen',                   'popular'],
-  ['bookmark',              'popular'],
-  ['flag',                  'popular'],
-  ['thumbs-up',             'popular'],
-  ['thumbs-down',           'popular'],
-  ['circle-info',           'popular'],
-  ['triangle-exclamation',  'popular'],
-  ['circle-check',          'popular'],
-  ['circle-xmark',          'popular'],
-  ['share',                 'popular'],
-  ['download',              'popular'],
-  ['upload',                'popular'],
-  ['tag',                   'popular'],
-  // Interface
-  ['bars',                  'interface'],
-  ['ellipsis',              'interface'],
-  ['ellipsis-vertical',     'interface'],
-  ['list',                  'interface'],
-  ['table-cells',           'interface'],
-  ['table-list',            'interface'],
-  ['grip',                  'interface'],
-  ['filter',                'interface'],
-  ['sort',                  'interface'],
-  ['arrows-rotate',         'interface'],
-  ['rotate',                'interface'],
-  ['rotate-left',           'interface'],
-  ['rotate-right',          'interface'],
-  ['copy',                  'interface'],
-  ['floppy-disk',           'interface'],
-  ['print',                 'interface'],
-  ['link',                  'interface'],
-  ['code',                  'interface'],
-  ['expand',                'interface'],
-  ['compress',              'interface'],
-  ['cloud',                 'interface'],
-  ['lock-open',             'interface'],
-  ['key',                   'interface'],
-  ['shield',                'interface'],
-  ['shield-halved',         'interface'],
-  ['sliders',               'interface'],
-  ['toggle-on',             'interface'],
-  ['square-check',          'interface'],
-  ['circle-plus',           'interface'],
-  ['circle-minus',          'interface'],
-  // Navigation
-  ['arrow-right',           'navigation'],
-  ['arrow-left',            'navigation'],
-  ['arrow-up',              'navigation'],
-  ['arrow-down',            'navigation'],
-  ['chevron-right',         'navigation'],
-  ['chevron-left',          'navigation'],
-  ['chevron-up',            'navigation'],
-  ['chevron-down',          'navigation'],
-  ['angle-right',           'navigation'],
-  ['angle-left',            'navigation'],
-  ['angle-up',              'navigation'],
-  ['angle-down',            'navigation'],
-  ['angles-right',          'navigation'],
-  ['angles-left',           'navigation'],
-  ['location-dot',          'navigation'],
-  ['compass',               'navigation'],
-  ['map',                   'navigation'],
-  ['map-pin',               'navigation'],
-  ['route',                 'navigation'],
-  ['circle-arrow-right',    'navigation'],
-  ['circle-arrow-left',     'navigation'],
-  ['arrow-trend-up',        'navigation'],
-  ['arrow-trend-down',      'navigation'],
-  ['right-from-bracket',    'navigation'],
-  ['right-to-bracket',      'navigation'],
-  // Media
-  ['play',                  'media'],
-  ['pause',                 'media'],
-  ['stop',                  'media'],
-  ['forward',               'media'],
-  ['backward',              'media'],
-  ['forward-step',          'media'],
-  ['backward-step',         'media'],
-  ['volume-high',           'media'],
-  ['volume-low',            'media'],
-  ['volume-xmark',          'media'],
-  ['volume-off',            'media'],
-  ['music',                 'media'],
-  ['headphones',            'media'],
-  ['microphone',            'media'],
-  ['microphone-slash',      'media'],
-  ['film',                  'media'],
-  ['camera',                'media'],
-  ['camera-rotate',         'media'],
-  ['video',                 'media'],
-  ['image',                 'media'],
-  ['images',                'media'],
-  ['photo-film',            'media'],
-  ['podcast',               'media'],
-  ['radio',                 'media'],
-  // Communication
-  ['comment',               'communication'],
-  ['comments',              'communication'],
-  ['comment-dots',          'communication'],
-  ['message',               'communication'],
-  ['paper-plane',           'communication'],
-  ['reply',                 'communication'],
-  ['reply-all',             'communication'],
-  ['at',                    'communication'],
-  ['hashtag',               'communication'],
-  ['wifi',                  'communication'],
-  ['signal',                'communication'],
-  ['rss',                   'communication'],
-  ['share-nodes',           'communication'],
-  ['inbox',                 'communication'],
-  ['phone-volume',          'communication'],
-  ['mobile',                'communication'],
-  ['mobile-screen',         'communication'],
-  ['laptop',                'communication'],
-  ['desktop',               'communication'],
-  ['tower-broadcast',       'communication'],
-  // Files
-  ['file',                  'files'],
-  ['file-lines',            'files'],
-  ['folder',                'files'],
-  ['folder-open',           'files'],
-  ['folder-plus',           'files'],
-  ['folder-minus',          'files'],
-  ['file-image',            'files'],
-  ['file-pdf',              'files'],
-  ['file-code',             'files'],
-  ['file-zipper',           'files'],
-  ['file-audio',            'files'],
-  ['file-video',            'files'],
-  ['file-arrow-up',         'files'],
-  ['file-arrow-down',       'files'],
-  ['database',              'files'],
-  ['box',                   'files'],
-  ['box-open',              'files'],
-  ['hard-drive',            'files'],
-  ['server',                'files'],
-  // People
-  ['user',                  'people'],
-  ['users',                 'people'],
-  ['user-group',            'people'],
-  ['user-plus',             'people'],
-  ['user-minus',            'people'],
-  ['user-check',            'people'],
-  ['user-xmark',            'people'],
-  ['user-tie',              'people'],
-  ['user-shield',           'people'],
-  ['user-secret',           'people'],
-  ['person',                'people'],
-  ['person-running',        'people'],
-  ['person-walking',        'people'],
-  ['child',                 'people'],
-  ['handshake',             'people'],
-  ['hand',                  'people'],
-  ['hands-holding',         'people'],
-  ['people-group',          'people'],
-  // Objects
-  ['pencil',                'objects'],
-  ['paintbrush',            'objects'],
-  ['eraser',                'objects'],
-  ['scissors',              'objects'],
-  ['wrench',                'objects'],
-  ['screwdriver',           'objects'],
-  ['hammer',                'objects'],
-  ['toolbox',               'objects'],
-  ['graduation-cap',        'objects'],
-  ['book',                  'objects'],
-  ['book-open',             'objects'],
-  ['glasses',               'objects'],
-  ['microscope',            'objects'],
-  ['flask',                 'objects'],
-  ['stethoscope',           'objects'],
-  ['hospital',              'objects'],
-  ['building',              'objects'],
-  ['city',                  'objects'],
-  ['car',                   'objects'],
-  ['truck',                 'objects'],
-  ['plane',                 'objects'],
-  ['train',                 'objects'],
-  ['bicycle',               'objects'],
-  ['bus',                   'objects'],
-  ['rocket',                'objects'],
-  ['briefcase',             'objects'],
-  ['cart-shopping',         'objects'],
-  ['bag-shopping',          'objects'],
-  ['credit-card',           'objects'],
-  ['money-bill',            'objects'],
-  ['chart-bar',             'objects'],
-  ['chart-line',            'objects'],
-  ['chart-pie',             'objects'],
-  ['bolt',                  'objects'],
-  ['sun',                   'objects'],
-  ['moon',                  'objects'],
-  ['snowflake',             'objects'],
-  ['fire',                  'objects'],
-  ['droplet',               'objects'],
-  ['leaf',                  'objects'],
-  ['tree',                  'objects'],
-  ['earth-americas',        'objects'],
-  ['globe',                 'objects'],
-  ['award',                 'objects'],
-  ['trophy',                'objects'],
-  ['gift',                  'objects'],
-  ['puzzle-piece',          'objects'],
-];
+/**
+ * Loads the icon catalogue on first use. Mirrors EmojiDialog's split: the table
+ * is ~6 KB gzip of slugs that consumers without an icon button never render.
+ * @returns {Promise<{ ICON_CATEGORIES: Array, ICON_LIST: Array }>}
+ */
+function loadIconData() {
+  if (_iconData) return Promise.resolve(_iconData);
+  _iconDataPromise ??= import('./icon-data.js').then((mod) => {
+    _iconData = { ICON_CATEGORIES: mod.ICON_CATEGORIES, ICON_LIST: mod.ICON_LIST };
+    return _iconData;
+  });
+  return _iconDataPromise;
+}
 
 export class IconDialog extends BaseDialog {
   _selectedIcon = null;
@@ -256,18 +39,29 @@ export class IconDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
 
   initialize() {
-    this._ensureFontAwesome();
-    // Grid is built lazily in show() to avoid ~250 icon cells at load time.
+    // Neither the FA stylesheet nor the grid is needed until the dialog opens —
+    // both are deferred to show() so merely mounting an editor makes no
+    // third-party request and builds no ~250 icon cells.
     return this;
   }
 
   /**
-   * Injects FA 6 Free CSS from CDN if it is not already on the page.
+   * Injects FA 6 Free CSS from a CDN if it is not already on the page.
    * This guarantees icon glyphs render in the grid, preview, and in the
    * editor content after insertion — regardless of whether the host page
    * loaded FA itself.
+   *
+   * Opt out with `fontAwesomeAutoInject: false`, or point the request
+   * somewhere self-hosted with `fontAwesomeCDN`.
    */
   _ensureFontAwesome() {
+    if (this.context.options.fontAwesomeAutoInject === false) return;
+    // Fall back to the default URL rather than the option value alone: modules
+    // are constructible with a partial options object, and losing the glyphs
+    // silently is worse than the request the consumer did not opt out of.
+    const href = this.context.options.fontAwesomeCDN || FONT_AWESOME_CDN;
+    if (!href) return;
+
     // Already present (icon element or stylesheet link)?
     if (document.getElementById('an-fontawesome-css')) return;
     const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
@@ -278,7 +72,7 @@ export class IconDialog extends BaseDialog {
     const link = document.createElement('link');
     link.id   = 'an-fontawesome-css';
     link.rel  = 'stylesheet';
-    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+    link.href = href;
     link.crossOrigin = 'anonymous';
     link.referrerPolicy = 'no-referrer';
     document.head.appendChild(link);
@@ -288,12 +82,27 @@ export class IconDialog extends BaseDialog {
   // Public API
   // ---------------------------------------------------------------------------
 
-  show() {
-    if (!this._dialog) {
-      this._dialog = this._buildDialog();
-      document.body.appendChild(this._dialog);
-    }
+  /**
+   * Opens the picker, fetching the icon catalogue chunk on first call.
+   * Awaiting is optional — the dialog opens on its own once data arrives.
+   * @returns {Promise<void>}
+   */
+  async show() {
+    // Capture the caret before awaiting: the selection must be read while the
+    // click that opened the dialog is still the current interaction.
     this._saveRange();
+    this._ensureFontAwesome();
+
+    if (!this._dialog) {
+      const { ICON_CATEGORIES, ICON_LIST } = await loadIconData();
+      // A second show() may have won the race while this one awaited.
+      if (!this._dialog) {
+        this._cats = ICON_CATEGORIES;
+        this._list = ICON_LIST;
+        this._dialog = this._buildDialog();
+        document.body.appendChild(this._dialog);
+      }
+    }
     this._selectedIcon = null;
     this._activeCat = 'all';
     this._searchInput.value = '';
@@ -348,7 +157,7 @@ export class IconDialog extends BaseDialog {
     const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
     allTab.textContent = L.all;
     catBar.appendChild(allTab);
-    ICON_CATEGORIES.forEach(({ id, label }) => {
+    this._cats.forEach(({ id, label }) => {
       const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
       tab.textContent = L.categories?.[id] || label;
       catBar.appendChild(tab);
@@ -357,7 +166,7 @@ export class IconDialog extends BaseDialog {
 
     // Icon grid
     const grid = createElement('div', { class: 'an-icon-grid' });
-    ICON_LIST.forEach(([name, cat]) => {
+    this._list.forEach(([name, cat]) => {
       const cell = createElement('button', { type: 'button', class: 'an-icon-cell', 'data-name': name, 'data-cat': cat, title: name });
       const icon = createElement('i', { class: 'fa-solid fa-' + name, 'aria-hidden': 'true' });
       const label = createElement('span');
