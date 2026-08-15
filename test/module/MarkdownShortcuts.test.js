@@ -432,3 +432,119 @@ describe('MarkdownShortcuts keydown handler', () => {
     expect(ms._applyEnterRule).not.toHaveBeenCalled();
   });
 });
+
+// ── code-context guard ────────────────────────────────────────────────────────
+
+describe('MarkdownShortcuts leaves code alone', () => {
+  const mountInside = (wrapperHTML, selector) => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    ctx.layoutInfo.editable.innerHTML = wrapperHTML;
+    const host = ctx.layoutInfo.editable.querySelector(selector);
+    host.textContent = '';
+    const textNode = document.createTextNode('');
+    host.appendChild(textNode);
+    return { ctx, ms, host, textNode };
+  };
+
+  it('does not turn **bold** into <strong> inside a code block', () => {
+    // Auto-formatting here rewrote the user's own snippet.
+    const { ms, host, textNode } = mountInside('<pre><code></code></pre>', 'code');
+    textNode.textContent = 'a **bold**';
+    setCursorAt(textNode, textNode.textContent.length);
+    ms._onInput();
+    expect(host.innerHTML).toBe('a **bold**');
+    expect(host.querySelector('strong')).toBeNull();
+  });
+
+  it('does not nest a second <code> inside an inline code span', () => {
+    const { ms, host, textNode } = mountInside('<p><code></code></p>', 'code');
+    textNode.textContent = 'a `x`';
+    setCursorAt(textNode, textNode.textContent.length);
+    ms._onInput();
+    expect(host.querySelector('code')).toBeNull();
+  });
+
+  it('does not apply a block rule inside a code block', () => {
+    const { ctx, host, textNode } = mountInside('<pre><code></code></pre>', 'code');
+    textNode.textContent = '#';
+    setCursorAt(textNode, 1);
+    const e = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    ctx.layoutInfo.editable.dispatchEvent(e);
+    expect(e.defaultPrevented).toBe(false);
+    expect(host.textContent).toBe('#');
+  });
+});
+
+// ── extended block rules ──────────────────────────────────────────────────────
+
+describe('MarkdownShortcuts extended block rules', () => {
+  const fireSpace = (text) => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    const p = document.createElement('p');
+    p.textContent = text;
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, text.length);
+    return { fired: ms._applyBlockRule(), ctx };
+  };
+
+  it.each([['####', 4], ['#####', 5], ['######', 6]])(
+    'converts %s to a heading (previously only H1–H3 were supported)',
+    (marker, level) => {
+      const { fired } = fireSpace(marker);
+      expect(fired).toBe(true);
+      expect(document.execCommand).toHaveBeenCalledWith('formatBlock', false, `h${level}`);
+    },
+  );
+
+  it('accepts the ) ordered-list delimiter', () => {
+    const { fired } = fireSpace('1)');
+    expect(fired).toBe(true);
+    expect(document.execCommand).toHaveBeenCalledWith('insertOrderedList');
+  });
+
+  it('accepts + as an unordered-list marker', () => {
+    const { fired } = fireSpace('+');
+    expect(fired).toBe(true);
+    expect(document.execCommand).toHaveBeenCalledWith('insertUnorderedList');
+  });
+
+  it('starts a [x] item already ticked', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    ctx.layoutInfo.editable.innerHTML = '<ul class="an-checklist"><li><input type="checkbox"><span>x</span></li></ul>';
+    const span = ctx.layoutInfo.editable.querySelector('span');
+    setCursorAt(span.firstChild, 1);
+    ms._convertToChecklist(true);
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.toggleChecklist');
+    expect(ctx.layoutInfo.editable.querySelector('input').checked).toBe(true);
+  });
+
+  it.each(['***', '___'])('treats %s on Enter as a thematic break', (marker) => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    const p = document.createElement('p');
+    p.textContent = marker;
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, marker.length);
+    expect(ms._applyEnterRule()).toBe(true);
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.insertHr');
+  });
+
+  it('treats a ~~~ fence on Enter as a code block', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    const p = document.createElement('p');
+    p.textContent = '~~~';
+    ctx.layoutInfo.editable.appendChild(p);
+    setCursorAt(p.firstChild, 3);
+    expect(ms._applyEnterRule()).toBe(true);
+    expect(document.execCommand).toHaveBeenCalledWith('formatBlock', false, 'pre');
+  });
+});

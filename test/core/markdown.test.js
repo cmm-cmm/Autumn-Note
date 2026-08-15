@@ -985,3 +985,315 @@ describe('markdownToHTML — ATX heading trailing hash stripping', () => {
     expect(markdownToHTML('### C## Programming')).toBe('<h3>C## Programming</h3>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Code blocks — fence variants and indented code
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — code fences', () => {
+  it('parses a tilde fence, which previously became strikethrough', () => {
+    // `~~~js\ncode\n~~~` used to fall through to the inline rules and render as
+    // <p>~<del>js code </del>~</p>, destroying the snippet.
+    expect(markdownToHTML('~~~js\nconst a = 1;\n~~~'))
+      .toBe('<pre><code class="language-js">const a = 1;</code></pre>');
+  });
+
+  it('lets a longer fence contain a shorter run of the same marker', () => {
+    expect(markdownToHTML('````\na ``` b\n````')).toBe('<pre><code>a ``` b</code></pre>');
+  });
+
+  it('does not read a backtick code span as a fence', () => {
+    expect(markdownToHTML('``a ` b``')).toBe('<p><code>a ` b</code></p>');
+  });
+
+  it('accepts up to three spaces of fence indent and strips them from the body', () => {
+    expect(markdownToHTML('  ```\n  x\n  ```')).toBe('<pre><code>x</code></pre>');
+  });
+
+  it('closes an unterminated fence at the end of input', () => {
+    expect(markdownToHTML('```js\nconst a = 1;'))
+      .toBe('<pre><code class="language-js">const a = 1;</code></pre>');
+  });
+
+  it('takes only the first word of the info string as the language', () => {
+    expect(markdownToHTML('```js title=x\ncode\n```'))
+      .toBe('<pre><code class="language-js">code</code></pre>');
+  });
+
+  it('treats a fenced block as literal, not as reference definitions', () => {
+    const html = markdownToHTML('```\n[ref]: http://e.com\n```');
+    expect(html).toBe('<pre><code>[ref]: http://e.com</code></pre>');
+  });
+});
+
+describe('markdownToHTML — indented code blocks', () => {
+  it('parses a four-space indented block instead of collapsing it into a paragraph', () => {
+    expect(markdownToHTML('    const x = 1;\n    const y = 2;'))
+      .toBe('<pre><code>const x = 1;\nconst y = 2;</code></pre>');
+  });
+
+  it('parses a tab-indented block', () => {
+    expect(markdownToHTML('\tconst x = 1;')).toBe('<pre><code>const x = 1;</code></pre>');
+  });
+
+  it('keeps an interior blank line but not a trailing one', () => {
+    expect(markdownToHTML('    a\n\n    b')).toBe('<pre><code>a\n\nb</code></pre>');
+    expect(markdownToHTML('    a\n\ntext')).toBe('<pre><code>a</code></pre><p>text</p>');
+  });
+
+  it('does not let indented code interrupt a paragraph', () => {
+    expect(markdownToHTML('text\n    more')).toBe('<p>text more</p>');
+  });
+
+  it('preserves relative indentation beyond the first four columns', () => {
+    expect(markdownToHTML('    if (x) {\n        y();\n    }'))
+      .toBe('<pre><code>if (x) {\n    y();\n}</code></pre>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Link and image titles
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — link destinations and titles', () => {
+  it('splits a quoted title off the destination instead of putting it in href', () => {
+    // The whole `url "title"` string used to land in href, producing a link
+    // that did not resolve at all.
+    expect(markdownToHTML('[x](http://e.com "T")'))
+      .toBe('<p><a href="http://e.com" title="T">x</a></p>');
+  });
+
+  it('accepts a single-quoted title', () => {
+    expect(markdownToHTML("[x](http://e.com 'T')"))
+      .toBe('<p><a href="http://e.com" title="T">x</a></p>');
+  });
+
+  it('applies the same split to images', () => {
+    expect(markdownToHTML('![a](i.png "T")'))
+      .toBe('<p><img src="i.png" alt="a" title="T" class="an-image"></p>');
+  });
+
+  it('reads an angle-bracket destination containing spaces', () => {
+    expect(markdownToHTML('[x](<http://e.com/a b>)'))
+      .toBe('<p><a href="http://e.com/a b">x</a></p>');
+  });
+
+  it('reads an angle-bracket destination containing a closing paren', () => {
+    expect(markdownToHTML('[x](<http://e.com/a(b)>)'))
+      .toBe('<p><a href="http://e.com/a(b)">x</a></p>');
+  });
+
+  it('leaves a destination with no title untouched', () => {
+    expect(markdownToHTML('[x](http://e.com)')).toBe('<p><a href="http://e.com">x</a></p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Character references
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — character references', () => {
+  it('preserves a named reference rather than double-escaping it', () => {
+    expect(markdownToHTML('&copy; 2024')).toBe('<p>&copy; 2024</p>');
+  });
+
+  it('preserves decimal and hex references', () => {
+    expect(markdownToHTML('&#8212; &#x2014;')).toBe('<p>&#8212; &#x2014;</p>');
+  });
+
+  it('still escapes a bare ampersand', () => {
+    expect(markdownToHTML('A & B')).toBe('<p>A &amp; B</p>');
+  });
+
+  it('still escapes an ampersand that only looks like a reference', () => {
+    expect(markdownToHTML('A &notanentity B')).toBe('<p>A &amp;notanentity B</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ordered lists with ) and pipe-less tables
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — ordered list delimiters', () => {
+  it('accepts the ) delimiter', () => {
+    expect(markdownToHTML('1) a\n2) b')).toBe('<ol><li>a</li><li>b</li></ol>');
+  });
+
+  it('keeps an explicit start with the ) delimiter', () => {
+    expect(markdownToHTML('5) a\n6) b')).toBe('<ol start="5"><li>a</li><li>b</li></ol>');
+  });
+});
+
+describe('markdownToHTML — tables without outer pipes', () => {
+  it('parses a GFM table whose rows have no leading or trailing pipe', () => {
+    expect(markdownToHTML('a | b\n--- | ---\n1 | 2'))
+      .toBe('<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>');
+  });
+
+  it('reads alignment markers in the bare form', () => {
+    const html = markdownToHTML('a | b\n:--- | ---:\n1 | 2');
+    expect(html).toContain('<th style="text-align:left">a</th>');
+    expect(html).toContain('<th style="text-align:right">b</th>');
+  });
+
+  it('does not mistake prose containing a pipe for a table', () => {
+    // The delimiter row must have as many cells as the header, so this stays a
+    // setext heading rather than becoming a one-column table.
+    expect(markdownToHTML('a | b\n---')).toBe('<h2>a | b</h2>');
+  });
+});
+
+describe('markdownToHTML — email autolinks', () => {
+  it('links an angle-bracket email address through mailto:', () => {
+    expect(markdownToHTML('<foo@example.com>'))
+      .toBe('<p><a href="mailto:foo@example.com">foo@example.com</a></p>');
+  });
+
+  it('leaves a non-address in angle brackets alone', () => {
+    expect(markdownToHTML('<notanemail>')).toBe('<p>&lt;notanemail&gt;</p>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// htmlToMarkdown — escaping prose so it survives a round-trip
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — escapes Markdown syntax in text', () => {
+  const roundTrips = (html) => markdownToHTML(htmlToMarkdown(html));
+
+  it.each([
+    ['asterisks used as multiplication', '<p>2 * 3 * 4</p>'],
+    ['underscores around words', '<p>use _foo_ and _bar_ literally</p>',],
+    ['a doubled tilde', '<p>a ~~b~~ literal tildes</p>'],
+    ['backticks', '<p>a `code` literal</p>'],
+    ['square brackets', '<p>see [not a link] here</p>'],
+    ['an image-looking run', '<p>![not an image](x)</p>'],
+    ['a leading hash', '<p># not a heading</p>'],
+    ['a leading dash', '<p>- not a bullet</p>'],
+    ['a leading number', '<p>1. not a list</p>'],
+    ['a leading angle bracket', '<p>&gt; not a quote</p>'],
+    ['a backslash', '<p>C:\\path\\to\\file</p>'],
+  ])('round-trips %s unchanged', (_label, html) => {
+    expect(roundTrips(html)).toBe(html);
+  });
+
+  it('leaves intra-word underscores unescaped so the Markdown stays readable', () => {
+    // They are not emphasis to begin with, so escaping them would only add noise.
+    expect(htmlToMarkdown('<p>snake_case_name</p>')).toBe('snake_case_name');
+  });
+
+  it('does not escape inside a code span or code block', () => {
+    expect(htmlToMarkdown('<p><code>a * b</code></p>')).toBe('`a * b`');
+    expect(htmlToMarkdown('<pre><code>a * b</code></pre>')).toBe('```\na * b\n```');
+  });
+
+  it('escapes an ampersand that would otherwise become a character reference', () => {
+    expect(htmlToMarkdown('<p>literal &amp;copy; text</p>')).toBe(String.raw`literal &amp;copy; text`);
+    expect(roundTrips('<p>literal &amp;copy; text</p>')).toBe('<p>literal &amp;copy; text</p>');
+  });
+
+  it('escapes a line that would read as a thematic break', () => {
+    expect(roundTrips('<p>---</p>')).toBe('<p>---</p>');
+  });
+
+  it('escapes pipes inside table cells', () => {
+    const html = '<table><tr><td>a | b</td><td>c</td></tr></table>';
+    expect(htmlToMarkdown(html)).toContain(String.raw`a \| b`);
+  });
+});
+
+describe('htmlToMarkdown — round-trip fidelity', () => {
+  it('preserves an explicit ordered-list start', () => {
+    expect(htmlToMarkdown('<ol start="5"><li>a</li><li>b</li></ol>')).toBe('5. a\n6. b');
+    expect(markdownToHTML('5. a\n6. b')).toBe('<ol start="5"><li>a</li><li>b</li></ol>');
+  });
+
+  it('preserves table column alignment', () => {
+    const html = '<table><thead><tr><th style="text-align:center">a</th>'
+      + '<th style="text-align:right">b</th></tr></thead>'
+      + '<tbody><tr><td>1</td><td>2</td></tr></tbody></table>';
+    expect(htmlToMarkdown(html)).toBe('| a | b |\n| :---: | ---: |\n| 1 | 2 |');
+  });
+
+  it('preserves a link title', () => {
+    expect(htmlToMarkdown('<p><a href="http://e.com" title="T">x</a></p>'))
+      .toBe('[x](http://e.com "T")');
+  });
+
+  it('preserves an image title', () => {
+    expect(htmlToMarkdown('<p><img src="i.png" alt="a" title="T"></p>'))
+      .toBe('![a](i.png "T")');
+  });
+
+  it('wraps a destination containing parentheses so it re-parses whole', () => {
+    const md = htmlToMarkdown('<p><a href="http://e.com/a(b)">x</a></p>');
+    expect(md).toBe('[x](<http://e.com/a(b)>)');
+    expect(markdownToHTML(md)).toBe('<p><a href="http://e.com/a(b)">x</a></p>');
+  });
+
+  it('fences a code span around an embedded backtick', () => {
+    const md = htmlToMarkdown('<p><code>a ` b</code></p>');
+    expect(md).toBe('``a ` b``');
+    expect(markdownToHTML(md)).toBe('<p><code>a ` b</code></p>');
+  });
+
+  it('indents a list item continuation paragraph so it stays in the item', () => {
+    const md = htmlToMarkdown('<ul><li><p>a</p><p>b</p></li><li>c</li></ul>');
+    expect(md).toBe('- a\n\n  b\n- c');
+    // Re-parsing keeps `b` inside the first item rather than ending the list.
+    expect(markdownToHTML(md)).toBe('<ul><li><p>a</p><p>b</p></li><li><p>c</p></li></ul>');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isMarkdown — detection gaps that left content pasted as plain text
+// ---------------------------------------------------------------------------
+
+describe('isMarkdown — additional constructs', () => {
+  it.each([
+    ['a tilde fence', '~~~\ncode\n~~~'],
+    ['a table without outer pipes', 'a | b\n--- | ---\n1 | 2'],
+    ['a ) ordered list', '1) first\n2) second'],
+    ['a link alongside inline code', 'see [docs](http://e.com) and `npm i`'],
+  ])('detects %s', (_label, text) => expect(isMarkdown(text)).toBe(true));
+
+  it.each([
+    ['a bare URL', 'see https://example.com for info'],
+    ['a parenthetical aside', 'the result (see note) was good'],
+    ['an email signature', 'Best,\nJohn -- Sent from my phone'],
+    ['prose with inline numbering', 'I have 1. apples 2. oranges'],
+  ])('does not treat %s as Markdown', (_label, text) => expect(isMarkdown(text)).toBe(false));
+});
+
+// ---------------------------------------------------------------------------
+// .md file handling — byte-order mark
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — UTF-8 byte-order mark', () => {
+  const BOM = '﻿';
+
+  it('parses the first block of a file saved with a BOM', () => {
+    // FileReader.readAsText keeps the BOM, so a dropped .md file written by a
+    // Windows editor had U+FEFF glued to its opening character — the heading
+    // came through as a paragraph.
+    expect(markdownToHTML(`${BOM}# Title\n\ntext`)).toBe('<h1>Title</h1><p>text</p>');
+  });
+
+  it('detects a BOM-prefixed file as Markdown', () => {
+    expect(isMarkdown(`${BOM}# Title`)).toBe(true);
+  });
+
+  it('only strips a BOM at the very start', () => {
+    expect(markdownToHTML(`text ${BOM} more`)).toBe(`<p>text ${BOM} more</p>`);
+  });
+
+  it('handles a BOM in front of frontmatter', () => {
+    expect(markdownToHTML(`${BOM}---\ntitle: x\n---\n\n# T`)).toBe('<h1>T</h1>');
+  });
+
+  it('tolerates null and undefined input', () => {
+    expect(markdownToHTML(null)).toBe('');
+    expect(markdownToHTML(undefined)).toBe('');
+    expect(isMarkdown(null)).toBe(false);
+  });
+});
