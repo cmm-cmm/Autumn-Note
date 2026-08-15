@@ -28,8 +28,14 @@ const shippedSet = new Set(shipped);
 // self-contained by construction and their chunk graph is Vite's problem.
 const sources = shipped.filter((f) => f.startsWith('src/') && f.endsWith('.js'));
 
-// `from './x.js'` / `import './x.js'` — static and dynamic, relative only.
-const IMPORT_RE = /(?:\bfrom\s*|\bimport\s*\(?\s*)['"](\.[^'"]*)['"]/g;
+// `from './x.js'` / `import './x.js'` / `import('./x.js')` — relative only.
+//
+// The optional group has to start with a literal `(` rather than being written
+// as `\s*\(?\s*`: two adjacent unbounded `\s*` can split a run of whitespace
+// many ways, so a near-match that ultimately fails backtracks through every
+// split (super-linear, CWE-1333). Anchoring the group on `(` makes the match
+// deterministic.
+const IMPORT_RE = /(?:\bfrom|\bimport)\s*(?:\(\s*)?['"](\.[^'"]*)['"]/g;
 
 /**
  * Drops comments so JSDoc type imports — `@type {import('../../types/index.js')}`
