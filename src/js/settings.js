@@ -18,6 +18,8 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {string}   [toolbarButtonClass]   - CSS classes for Bootstrap toolbar buttons
  * @property {boolean}  [useFontAwesome]       - Use Font Awesome icons (default: true)
  * @property {string}   [fontAwesomeClass]     - Font Awesome prefix class, e.g. 'fas' or 'fa-solid'
+ * @property {boolean}  [fontAwesomeAutoInject] - Let the icon dialog inject Font Awesome CSS from a CDN when the host page has none (default: true)
+ * @property {string}   [fontAwesomeCDN]       - Stylesheet URL used by that injection (defaults to cdnjs FA 6 Free)
  * @property {boolean}  [pasteAsPlainText]     - Force plain-text paste
  * @property {boolean}  [pasteCleanHTML]       - Sanitise HTML on paste
  * @property {boolean}  [pasteStripAttributes] - Strip class/style/data-* from pasted HTML (default: false)
@@ -88,6 +90,13 @@ export const defaultOptions = {
   useFontAwesome: true,
   // Default FontAwesome prefix — 'fas' for FA5, 'fa-solid' for FA6. Change if needed.
   fontAwesomeClass: 'fas',
+  // The icon dialog needs FA glyphs to render its grid. When the host page ships
+  // no Font Awesome of its own, it pulls the stylesheet from a CDN. Set to false
+  // on pages with a strict CSP, an offline deployment, or a no-third-party-request
+  // policy — the dialog still works, it just renders without glyphs unless the
+  // page provides FA itself.
+  fontAwesomeAutoInject: true,
+  fontAwesomeCDN: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
   pasteAsPlainText: false,
   pasteCleanHTML: true,
   pasteStripAttributes: false,

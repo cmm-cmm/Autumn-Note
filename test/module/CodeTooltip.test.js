@@ -433,6 +433,73 @@ describe('CodeTooltip._flashCopied timer', () => {
   });
 });
 
+// ── _ensurePrism ──────────────────────────────────────────────────────────────
+
+describe('CodeTooltip._ensurePrism', () => {
+  const CDN = 'https://cdn.example.com/prism';
+  const themeSel = `link[href="${CDN}/themes/prism-tomorrow.min.css"]`;
+  const scriptSel = `script[src="${CDN}/prism.min.js"]`;
+
+  const cleanHead = () => {
+    document.head.querySelectorAll(`${themeSel}, ${scriptSel}`).forEach((el) => el.remove());
+  };
+
+  afterEach(() => {
+    cleanHead();
+    vi.unstubAllGlobals();
+  });
+
+  it('requests nothing while codeHighlight is off', () => {
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlightCDN = CDN;
+    ct._ensurePrism();
+    expect(document.head.querySelector(themeSel)).toBeNull();
+    expect(document.head.querySelector(scriptSel)).toBeNull();
+  });
+
+  it('requests nothing when the host page already provides Prism', () => {
+    vi.stubGlobal('Prism', { languages: {} });
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlight = true;
+    ctx.options.codeHighlightCDN = CDN;
+    ct._ensurePrism();
+    expect(document.head.querySelector(scriptSel)).toBeNull();
+  });
+
+  it('injects the theme and the manual-mode core script exactly once', () => {
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlight = true;
+    ctx.options.codeHighlightCDN = CDN;
+
+    ct._ensurePrism();
+    const script = document.head.querySelector(scriptSel);
+    expect(document.head.querySelector(themeSel)).not.toBeNull();
+    expect(script).not.toBeNull();
+    // data-manual stops Prism highlighting the whole page behind the editor's back.
+    expect(script.dataset.manual).toBe('');
+    expect(ct._prismScript).toBe(script);
+
+    // A second editor on the same page must reuse what is already there.
+    const second = makeTooltip();
+    second.ctx.options.codeHighlight = true;
+    second.ctx.options.codeHighlightCDN = CDN;
+    second.ct._ensurePrism();
+    expect(document.head.querySelectorAll(scriptSel)).toHaveLength(1);
+    expect(document.head.querySelectorAll(themeSel)).toHaveLength(1);
+    expect(second.ct._prismScript).toBe(script);
+  });
+
+  it('drops its script handle once the core script finishes loading', () => {
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlight = true;
+    ctx.options.codeHighlightCDN = CDN;
+    ct._ensurePrism();
+
+    document.head.querySelector(scriptSel).dispatchEvent(new Event('load'));
+    expect(ct._prismScript).toBeNull();
+  });
+});
+
 // ── _loadPrismComponent ────────────────────────────────────────────────────────
 
 describe('CodeTooltip._loadPrismComponent', () => {

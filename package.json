@@ -1,6 +1,6 @@
 {
   "name": "autumnnote",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "WYSIWYG rich-text editor built with vanilla JavaScript — zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers included.",
   "type": "module",
   "main": "dist/autumnnote.cjs",
@@ -19,9 +19,17 @@
     },
     "./dist/autumnnote.css": "./dist/autumnnote.css"
   },
+  "sideEffects": [
+    "*.css",
+    "*.scss",
+    "./src/js/index.js",
+    "./src/js/index.umd.js",
+    "./src/js/i18n/all.js"
+  ],
   "files": [
     "dist",
-    "src",
+    "src/js/i18n",
+    "src/js/core/func.js",
     "types"
   ],
   "scripts": {
@@ -42,7 +50,8 @@
     "test:wrappers": "pnpm --filter autumnnote-react test && pnpm --filter autumnnote-vue test",
     "build:wrappers": "pnpm --filter autumnnote-react build && pnpm --filter autumnnote-vue build",
     "check:bundle": "node scripts/check-bundle-size.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm build:demo && pnpm build:wrappers"
+    "check:package": "node scripts/check-package-files.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && pnpm build:demo && pnpm build:wrappers"
   },
   "keywords": [
     "wysiwyg",

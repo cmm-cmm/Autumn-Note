@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-08-15
+
+### Fixed
+
+- **Mounting an editor no longer fires a third-party CDN request.** `IconDialog` injected the Font Awesome stylesheet from `cdnjs.cloudflare.com` inside `initialize()`, so every editor instance reached out on page load — whether or not the toolbar had an icon button and whether or not the dialog was ever opened. The URL was hardcoded with no way to redirect or disable it, which broke pages under a strict CSP, offline deployments, and anywhere a third-party request needs consent. Two things changed: the injection moved to `show()`, and it is now configurable.
+
+### Added
+
+- **`fontAwesomeAutoInject`** (default `true`) turns the injection off entirely. The icon dialog still opens and works; it simply renders without glyphs unless the host page supplies Font Awesome itself.
+- **`fontAwesomeCDN`** points the request at a self-hosted copy, keeping it first-party. This mirrors how `codeHighlight`/`codeHighlightCDN` already worked for Prism.
+- Browser-suite coverage for the paths jsdom can only stub: list and checklist round-trips, table insertion shape, multi-step undo/redo across the snapshot debounce, and toolbar arrow-key navigation. These run on Chromium, Firefox and WebKit.
+
+### Changed
+
+- **The icon catalogue is a lazy chunk.** `module/icon-data.js` is fetched on first dialog open, mirroring the existing emoji split, and `IconDialog.show()` is now async as a result (it was already fire-and-forget through `invoke`). ESM bundle: 79.2 → 77.8 KiB gzip.
+- **`sideEffects` is declared** in all three packages, so bundlers can drop unreached modules instead of conservatively keeping them. The stylesheet entry points and `i18n/all.js` are listed as side-effectful, because they are.
+- **The npm tarball ships only what consumers resolve:** `dist`, the `i18n` tree behind the `./i18n/*` export, and the one core helper that tree imports. It no longer bundles all of `src/`. 1.1 MB → 895 kB packed, 94 → 40 files.
+
+### Internal
+
+- `scripts/check-package-files.mjs` walks every relative import inside the shipped `src/` slice and fails when one resolves to a file `files` omits. A repo checkout hides that class of breakage from every other gate — the import resolves locally and only throws for consumers. Wired into `pnpm check` and CI.
+- Dependabot config for `github-actions` and the three npm manifests, weekly and grouped. Action versions had been bumped by hand.
+- Coverage for `CodeTooltip._ensurePrism`, previously unexercised because every test ran with `codeHighlight: false`.
+
+---
+
 ## [2.1.0] - 2026-08-11
 
 ### Security

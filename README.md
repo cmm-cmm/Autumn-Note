@@ -499,6 +499,8 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `toolbarButtonClass` | `string` | `'btn btn-sm btn-light'` | CSS classes for toolbar buttons when `useBootstrap` is `true`. |
 | `useFontAwesome` | `boolean` | `true` | Use FA icons when FontAwesome is detected on the page. |
 | `fontAwesomeClass` | `string` | `'fas'` | FA prefix: `'fas'` for FA 5, `'fa-solid'` for FA 6. |
+| `fontAwesomeAutoInject` | `boolean` | `true` | Let the icon dialog pull Font Awesome CSS from a CDN when the page has none. Set `false` under a strict CSP or offline. |
+| `fontAwesomeCDN` | `string` | cdnjs FA 6.5.2 | Stylesheet URL for that injection — point it at a self-hosted copy to keep the request first-party. |
 | `pasteAsPlainText` | `boolean` | `false` | Strip all formatting when pasting. |
 | `pasteCleanHTML` | `boolean` | `true` | Sanitise HTML on paste. |
 | `pasteStripAttributes` | `boolean` | `false` | Strip `class`, `style`, and `data-*` attributes from pasted HTML. |
