@@ -43,9 +43,97 @@ function _directChildren(el, tagName) {
   return Array.from(el.children).filter((c) => c.tagName === tagName.toUpperCase());
 }
 
+/**
+ * Backslash-escapes the inline Markdown syntax characters in a run of plain
+ * text, so prose survives a round-trip instead of being re-read as formatting.
+ *
+ * Deliberately narrow: `_` is only escaped at a word boundary (intra-word
+ * underscores are not emphasis, and escaping `snake_case_name` makes the
+ * Markdown unreadable), and `~` only as part of a `~~` pair.
+ * @param {string} text
+ * @returns {string}
+ */
+function _escapeInlineMd(text) {
+  return text
+    .replaceAll('\\', '\\\\')
+    // An `&` that would read as a character reference has to become one itself,
+    // otherwise the literal text "&copy;" comes back as ©.
+    .replace(/&(?=#\d+;|#[xX][0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]*;)/g, '&amp;')
+    .replace(/!(?=\[)/g, String.raw`\!`)
+    .replace(/([`*[\]])/g, String.raw`\$1`)
+    .replace(/(?<!\w)_|_(?!\w)/g, String.raw`\_`)
+    .replace(/~(?=~)|(?<=~)~/g, String.raw`\~`);
+}
+
+/**
+ * Escapes a leading block marker so a line of prose is not re-read as a
+ * heading, quote, list item, thematic break or setext underline.
+ * @param {string} line
+ * @returns {string}
+ */
+function _escapeLineStart(line) {
+  if (/^\s*(?:-{2,}|={2,}|\*{3,}|_{3,}|(?:[-*_] +){2,}[-*_])\s*$/.test(line)) {
+    return line.replace(/[-=*_]/, (c) => `\\${c}`);
+  }
+  return line
+    .replace(/^(\s*)(#{1,6})(?=\s|$)/, (_, ws, h) => `${ws}\\${h}`)
+    .replace(/^(\s*)>/, (_, ws) => `${ws}\\>`)
+    .replace(/^(\s*)([-*+])(?=\s)/, (_, ws, c) => `${ws}\\${c}`)
+    .replace(/^(\s*)(\d+)([.)])(?=\s)/, (_, ws, n, d) => `${ws}${n}\\${d}`);
+}
+
+/** Applies _escapeLineStart() to every line of a multi-line block body. */
+function _escapeBlockStarts(text) {
+  return text.split('\n').map(_escapeLineStart).join('\n');
+}
+
+/**
+ * Renders an `<a href>` / `<img src>` as a Markdown link destination, with the
+ * element's `title` when it has one.
+ *
+ * A URL containing spaces or parentheses is wrapped in angle brackets, which is
+ * the only form that survives re-parsing — `[x](http://e.com/a(b))` otherwise
+ * closes at the inner `)`.
+ * @param {Element} el
+ * @param {'href'|'src'} attr
+ * @returns {string}
+ */
+/**
+ * Renders one `<li>`'s content for a list at `depth`.
+ *
+ * A list item holding more than one paragraph produced a second paragraph at
+ * column 0, which re-parsed as a sibling paragraph that ended the list. Any
+ * continuation line is therefore indented to the child column — nested lists
+ * already carry that indent from their own `depth`, so they are left as they
+ * are rather than shifted twice.
+ * @param {Element} li
+ * @param {number} depth
+ * @returns {string}
+ */
+function _itemBody(li, depth) {
+  const childIndent = '  '.repeat(depth + 1);
+  return _domToMd(li, depth + 1).trim().split('\n')
+    .map((line, idx) => {
+      if (idx === 0 || line.trim() === '') return line;
+      return line.startsWith(childIndent) ? line : childIndent + line;
+    })
+    .join('\n');
+}
+
+function _destination(el, attr) {
+  const url = el.getAttribute(attr) || '';
+  const wrapped = /[\s()]/.test(url) ? `<${url}>` : url;
+  const title = el.getAttribute('title');
+  return title ? `${wrapped} "${title.replaceAll('"', String.raw`\"`)}"` : wrapped;
+}
+
 function _domToMd(node, depth = 0) {
   if (node.nodeType === 3) {
-    return node.textContent.replace(/\s+/g, ' ');
+    const text = node.textContent.replace(/\s+/g, ' ');
+    // Text inside <code>/<pre> is already literal in Markdown; everywhere else
+    // it has to be escaped or the user's own prose turns into formatting on the
+    // way back — "2 * 3 * 4" came back as "2 <em> 3 </em> 4".
+    return node.parentElement?.closest('pre, code') ? text : _escapeInlineMd(text);
   }
   if (node.nodeType !== 1) return '';
 
@@ -55,7 +143,7 @@ function _domToMd(node, depth = 0) {
 
   switch (tag) {
     case 'p':
-    case 'div':      return `\n\n${inner()}\n\n`;
+    case 'div':      return `\n\n${_escapeBlockStarts(inner())}\n\n`;
     case 'br':       return '  \n';
     case 'h1':       return `\n\n# ${inner()}\n\n`;
     case 'h2':       return `\n\n## ${inner()}\n\n`;
@@ -87,7 +175,14 @@ function _domToMd(node, depth = 0) {
     case 'code': {
       // Inside <pre> we emit raw text; outside we wrap in backticks
       if (el.closest('pre')) return inner();
-      return `\`${inner()}\``;
+      const content = inner();
+      // A code span has to be fenced by more backticks than the longest run it
+      // contains, and padded with spaces when it starts or ends with one —
+      // otherwise `a ` b` closes at the wrong backtick and mangles the text.
+      const longestRun = Math.max(0, ...Array.from(content.matchAll(/`+/g), (m) => m[0].length));
+      const fence = '`'.repeat(longestRun + 1);
+      const pad = /^`|`$/.test(content) ? ' ' : '';
+      return `${fence}${pad}${content}${pad}${fence}`;
     }
     case 'pre': {
       const codeEl = el.querySelector('code');
@@ -102,14 +197,10 @@ function _domToMd(node, depth = 0) {
       const lines = rawLines.filter((l, idx) => l.trim() !== '' || (rawLines[idx - 1] ?? '').trim() !== '');
       return `\n\n${lines.map((l) => (l.trim() === '' ? '>' : `> ${l}`)).join('\n')}\n\n`;
     }
-    case 'a': {
-      const href = el.getAttribute('href') || '';
-      return `[${inner()}](${href})`;
-    }
+    case 'a':  return `[${inner()}](${_destination(el, 'href')})`;
     case 'img': {
-      const src = el.getAttribute('src') || '';
-      const alt = el.getAttribute('alt') || '';
-      return `![${alt}](${src})`;
+      const alt = _escapeInlineMd(el.getAttribute('alt') || '');
+      return `![${alt}](${_destination(el, 'src')})`;
     }
     case 'ul': {
       const items = _directChildren(el, 'li');
@@ -125,7 +216,7 @@ function _domToMd(node, depth = 0) {
           const checked = cb ? cb.checked : false;
           prefix = checked ? '- [x] ' : '- [ ] ';
         }
-        return `${indent}${prefix}${_domToMd(li, depth + 1).trim()}`;
+        return `${indent}${prefix}${_itemBody(li, depth)}`;
       }).join('\n');
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
@@ -133,7 +224,11 @@ function _domToMd(node, depth = 0) {
       const items = _directChildren(el, 'li');
       if (!items.length) return inner();
       const indent = '  '.repeat(depth);
-      const lines = items.map((li, i) => `${indent}${i + 1}. ${_domToMd(li, depth + 1).trim()}`).join('\n');
+      // Preserve an explicit start; markdownToHTML already emits `start` for a
+      // list that does not begin at 1, so dropping it here broke the round-trip.
+      const start = Number.parseInt(el.getAttribute('start') || '1', 10);
+      const first = Number.isFinite(start) ? start : 1;
+      const lines = items.map((li, i) => `${indent}${first + i}. ${_itemBody(li, depth)}`).join('\n');
       return depth === 0 ? `\n\n${lines}\n\n` : `\n${lines}`;
     }
     case 'li':  return inner();
@@ -147,15 +242,27 @@ function _domToMd(node, depth = 0) {
         Array.from(allRows[0].children).every((c) => c.tagName === 'TH')
       );
       const cellTexts = allRows.map((tr) =>
-        Array.from(tr.querySelectorAll('th, td')).map((c) => c.textContent.trim().replaceAll('|', String.raw`\|`)),
+        Array.from(tr.querySelectorAll('th, td')).map((c) =>
+          _escapeInlineMd(c.textContent.trim()).replaceAll('|', String.raw`\|`)),
       );
       const cols = Math.max(...cellTexts.map((r) => r.length));
       const padRow = (row) => { const r = [...row]; while (r.length < cols) r.push(''); return r; };
       const bodyStart = firstRowIsHeader ? 1 : 0;
       const headerCells = firstRowIsHeader ? padRow(cellTexts[0]) : new Array(cols).fill('');
+      // Carry per-column alignment back into the delimiter row. markdownToHTML
+      // writes it out as `text-align`, so without this a round-trip through
+      // Markdown silently left every column default-aligned.
+      const alignRow = Array.from({ length: cols }, (_unused, c) => {
+        const cell = allRows[0]?.children[c];
+        const align = /text-align:\s*(left|center|right)/.exec(cell?.getAttribute('style') || '')?.[1];
+        if (align === 'center') return ':---:';
+        if (align === 'right') return '---:';
+        if (align === 'left') return ':---';
+        return '---';
+      });
       let md = '\n\n';
       md += `| ${headerCells.join(' | ')} |\n`;
-      md += `| ${new Array(cols).fill('---').join(' | ')} |\n`;
+      md += `| ${alignRow.join(' | ')} |\n`;
       for (let r = bodyStart; r < cellTexts.length; r++) {
         md += `| ${padRow(cellTexts[r]).join(' | ')} |\n`;
       }
@@ -166,23 +273,95 @@ function _domToMd(node, depth = 0) {
 }
 
 /**
+ * Removes a leading UTF-8 byte-order mark.
+ *
+ * `FileReader.readAsText` keeps the BOM, and editors on Windows write one by
+ * default, so a dropped `.md` file arrived with U+FEFF glued to its first
+ * character: the opening heading parsed as a paragraph and isMarkdown()
+ * rejected the file outright.
+ * @param {string} text
+ * @returns {string}
+ */
+function _stripBOM(text) {
+  return String(text ?? '').replace(/^﻿/, '');
+}
+
+/**
  * Detects whether a string likely contains Markdown syntax.
  *
  * Checks for common Markdown constructs such as ATX headings, unordered or
  * ordered list items, blockquotes, fenced code blocks, and bold emphasis.
- * @param {string} text - Input text to inspect for Markdown patterns.
+ * @param {string} rawText - Input text to inspect for Markdown patterns.
  * @returns {boolean} `true` if any Markdown-like pattern is present, `false` otherwise.
  */
-export function isMarkdown(text) {
-  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+\. [^\s]|^> ?[^\s]|^```|^\*{2}[^*\n]+\*{2}/m.test(text)
+export function isMarkdown(rawText) {
+  const text = _stripBOM(rawText);
+  return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+[.)] [^\s]|^> ?[^\s]|^ {0,3}(?:`{3,}|~{3,})|^\*{2}[^*\n]+\*{2}/m.test(text)
     || /^.+\n=+\s*$/m.test(text)
     || /^.+\n-{2,}\s*$/m.test(text)
     || /^---\s*\n(?:[\s\S]*?\n)?(?:---|\.\.\.)\s*(?:\n|$)/.test(text)
-    || /^\|.+\|[ \t]*\n\|[ \t:|-]+\|/m.test(text);
+    || /^\|.+\|[ \t]*\n\|[ \t:|-]+\|/m.test(text)
+    // Pipe table without outer pipes: `a | b` over `--- | ---`.
+    || /^[^\n|]*\|[^\n]*\n[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+$/m.test(text)
+    // A link or image plus at least one other inline marker — either alone is
+    // too weak a signal (bare URLs and "(see note)" are ordinary prose), but
+    // together they reliably indicate Markdown rather than a plain-text body.
+    || (/!?\[[^\]\n]*\]\([^)\n]*\)/.test(text) && /`[^`\n]+`|\*\*[^*\n]+\*\*|^#{1,6} |^[-*+] /m.test(text));
 }
 
 // Blockquote line: optional up-to-3 leading spaces, '>', optional single space, rest of line.
 const BQ_RE = /^ {0,3}>( ?)(.*)$/;
+// Indented code block: 4+ spaces or a leading tab, with actual content after it.
+const INDENTED_CODE_RE = /^(?: {4}|\t)\s*\S/;
+// Opening fence: up to 3 spaces, then 3+ backticks or 3+ tildes, then an info string.
+const FENCE_RE = /^( {0,3})(`{3,}|~{3,})[ \t]*(.*)$/;
+
+/**
+ * Parses `line` as an opening code fence, or returns null.
+ *
+ * A backtick fence's info string may not contain a backtick (CommonMark) —
+ * without that rule ```` ```` `` wrongly reads as a fence whose language is a
+ * backtick, and a line like "``a ` b``" reads as a fence instead of a code span.
+ * @param {string} line
+ * @returns {{ marker: string, length: number, indent: number, lang: string }|null}
+ */
+function _openingFence(line) {
+  const m = FENCE_RE.exec(line);
+  if (!m) return null;
+  const [, indent, fence, info] = m;
+  if (fence[0] === '`' && info.includes('`')) return null;
+  return {
+    marker: fence[0],
+    length: fence.length,
+    indent: indent.length,
+    // Only the first word of the info string is the language.
+    lang: info.trim().split(/\s+/)[0] || '',
+  };
+}
+
+/**
+ * Removes up to `count` leading space-equivalents, expanding a leading tab to
+ * the next 4-column stop the way CommonMark does.
+ * @param {string} line
+ * @param {number} count
+ * @returns {string}
+ */
+function _stripIndent(line, count) {
+  let removed = 0;
+  let idx = 0;
+  while (idx < line.length && removed < count) {
+    if (line[idx] === ' ') { removed += 1; idx += 1; continue; }
+    if (line[idx] === '\t') {
+      const width = 4 - (removed % 4);
+      if (removed + width > count) break;
+      removed += width;
+      idx += 1;
+      continue;
+    }
+    break;
+  }
+  return line.slice(idx);
+}
 // Horizontal rule: 3+ of the same character (-, * or _), optionally space-separated.
 const HR_RE = /^ {0,3}([-*_])( *\1){2,}\s*$/;
 // Hard-break marker — placed between paragraph lines that end in a
@@ -196,7 +375,7 @@ const HARD_BREAK = String.fromCharCode(1);
  * @returns {string}
  */
 export function markdownToHTML(text) {
-  let lines = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+  let lines = _stripBOM(text).replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
   lines = _stripFrontmatter(lines);
   const refs = _extractReferenceDefinitions(lines);
   lines = refs.clean;
@@ -219,19 +398,44 @@ function _parseBlocks(lines) {
   while (i < lines.length) {
     const line = lines[i];
 
-    // ---- Fenced code block ``` lang ... ``` -----------------------------------
-    const fenceMatch = /^```(\S*)$/.exec(line);
-    if (fenceMatch) {
-      const lang = fenceMatch[1];
+    // ---- Fenced code block  ```lang / ~~~lang ... ----------------------------
+    const fence = _openingFence(line);
+    if (fence) {
+      const closeRe = new RegExp(`^ {0,3}\\${fence.marker}{${fence.length},}[ \t]*$`);
       const codeLines = [];
       i++;
-      while (i < lines.length && !lines[i].startsWith('```')) {
-        codeLines.push(_esc(lines[i]));
+      while (i < lines.length && !closeRe.test(lines[i])) {
+        // CommonMark strips up to as many leading spaces as the opening fence
+        // was indented by, so an indented fence keeps its code left-aligned.
+        codeLines.push(_esc(_stripIndent(lines[i], fence.indent)));
         i++;
       }
-      const langAttr = lang ? ` class="language-${_escAttr(lang)}"` : '';
+      const langAttr = fence.lang ? ` class="language-${_escAttr(fence.lang)}"` : '';
       out.push(`<pre><code${langAttr}>${codeLines.join('\n')}</code></pre>`);
-      i++; // skip closing ```
+      i++; // skip closing fence (no-op at EOF — an unclosed fence runs to the end)
+      continue;
+    }
+
+    // ---- Indented code block (4 spaces or a tab) -----------------------------
+    // Only reachable at a block boundary: an indented line following a
+    // paragraph is consumed as a lazy continuation before it gets here, which
+    // matches CommonMark's rule that indented code cannot interrupt a paragraph.
+    if (INDENTED_CODE_RE.test(line)) {
+      const codeLines = [];
+      while (i < lines.length && (INDENTED_CODE_RE.test(lines[i]) || lines[i].trim() === '')) {
+        // A trailing run of blank lines belongs to whatever follows, not to the
+        // code block, so only keep blanks that have more code after them.
+        if (lines[i].trim() === '') {
+          let j = i;
+          while (j < lines.length && lines[j].trim() === '') j++;
+          if (j >= lines.length || !INDENTED_CODE_RE.test(lines[j])) break;
+          for (; i < j; i++) codeLines.push('');
+          continue;
+        }
+        codeLines.push(_esc(_stripIndent(lines[i], 4)));
+        i++;
+      }
+      out.push(`<pre><code>${codeLines.join('\n')}</code></pre>`);
       continue;
     }
 
@@ -286,7 +490,7 @@ function _parseBlocks(lines) {
     }
 
     // ---- Ordered list  1. item  ----------------------------------------------
-    if (/^\d+\. /.test(line)) {
+    if (/^\d+[.)] /.test(line)) {
       const { html: listHtml, endIdx } = _parseListBlock(lines, i);
       out.push(listHtml); i = endIdx; continue;
     }
@@ -300,7 +504,7 @@ function _parseBlocks(lines) {
     // ---- GFM Table  | col | col | -------------------------------------------
     // A table starts with a pipe-prefixed or pipe-containing line followed by
     // a separator row (| --- | --- |). We detect and collect all rows.
-    if (/^\|.+\|/.test(line) && i + 1 < lines.length && /^\|[\s|:-]+\|/.test(lines[i + 1])) {
+    if (_isTableStart(lines, i)) {
       const headerCells = _parseTableRow(line);
       const alignments = _parseTableRow(lines[i + 1]).map((c) => {
         if (c.startsWith(':') && c.endsWith(':')) return 'center';
@@ -310,7 +514,7 @@ function _parseBlocks(lines) {
       });
       i += 2; // skip header + separator
       const bodyRows = [];
-      while (i < lines.length && /^\|.+\|/.test(lines[i])) {
+      while (i < lines.length && lines[i].trim() !== '' && _countTableCells(lines[i]) > 1) {
         bodyRows.push(_parseTableRow(lines[i]));
         i++;
       }
@@ -331,10 +535,11 @@ function _parseBlocks(lines) {
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{1,6} |[-*+] |\d+\. |```)/.test(lines[i]) &&
+      !/^(#{1,6} |[-*+] |\d+[.)] )/.test(lines[i]) &&
+      !_openingFence(lines[i]) &&
       !BQ_RE.test(lines[i]) &&
       !HR_RE.test(lines[i]) &&
-      !/^\|.+\|/.test(lines[i]) &&
+      !_isTableStart(lines, i) &&
       !(i + 1 < lines.length && /^=+\s*$/.test(lines[i + 1])) &&
       !(i + 1 < lines.length && /^-{2,}\s*$/.test(lines[i + 1]))
     ) {
@@ -403,8 +608,14 @@ function _extractReferenceDefinitions(lines) {
   const footnoteDefRe = /^\[\^([^\]]+)\]:\s*(.+)$/;
 
   for (const line of lines) {
-    if (/^```/.test(line)) { inFence = !inFence; clean.push(line); continue; }
-    if (!inFence) {
+    // Definitions inside a fenced block are literal code, not definitions.
+    if (inFence) {
+      if (/^ {0,3}(?:`{3,}|~{3,})[ \t]*$/.test(line)) inFence = false;
+      clean.push(line);
+      continue;
+    }
+    if (_openingFence(line)) { inFence = true; clean.push(line); continue; }
+    {
       const fm = footnoteDefRe.exec(line);
       if (fm) { footnoteIds.add(fm[1]); continue; }
       const lm = linkDefRe.exec(line);
@@ -426,7 +637,10 @@ function _joinParagraphLines(paraLines) {
   let joined = '';
   for (let idx = 0; idx < paraLines.length; idx++) {
     const isLast = idx === paraLines.length - 1;
-    const ln = paraLines[idx];
+    // Leading whitespace on a continuation line is not content — CommonMark
+    // strips it before joining, so an indented lazy continuation does not carry
+    // its indent into the paragraph text.
+    const ln = paraLines[idx].replace(/^[ \t]+/, '');
     if (!isLast && /\\$/.test(ln)) { joined += ln.replace(/\\$/, '') + HARD_BREAK; continue; }
     if (!isLast && / {2,}$/.test(ln)) { joined += ln.replace(/ {2,}$/, '') + HARD_BREAK; continue; }
     joined += ln + (isLast ? '' : ' ');
@@ -441,6 +655,38 @@ function _joinParagraphLines(paraLines) {
  * @param {string} row
  * @returns {string[]}
  */
+/** Number of cells a GFM table row would split into. */
+function _countTableCells(line) {
+  return _parseTableRow(line).length;
+}
+
+/**
+ * True when `lines[i]` is a GFM table header followed by a delimiter row.
+ *
+ * Leading and trailing pipes are optional in GFM (`a | b` / `--- | ---` is a
+ * valid table), so the delimiter row is identified by shape instead.
+ *
+ * The pipe-delimited form stays deliberately lenient — a ragged table whose
+ * delimiter row is short still renders, columns past it just unaligned. The
+ * bare form has to be stricter, matching header and delimiter cell counts:
+ * without that, prose containing a pipe followed by a `---` line would be read
+ * as a one-column table instead of the setext heading it is.
+ * @param {string[]} lines
+ * @param {number} i
+ * @returns {boolean}
+ */
+function _isTableStart(lines, i) {
+  const header = lines[i];
+  const delim = lines[i + 1];
+  if (delim === undefined || !header.includes('|')) return false;
+
+  if (/^\|.+\|/.test(header)) return /^\|[\s|:-]+\|/.test(delim);
+
+  const delimCells = _parseTableRow(delim);
+  if (delimCells.length < 2 || !delimCells.every((c) => /^:?-+:?$/.test(c))) return false;
+  return _countTableCells(header) === delimCells.length;
+}
+
 function _parseTableRow(row) {
   const trimmed = row.replace(/^\|/, '').replace(/\|$/, '');
   const cells = [];
@@ -456,7 +702,7 @@ function _parseTableRow(row) {
 
 function _parseListBlock(lines, startIdx) {
   const baseIndent = (lines[startIdx].match(/^(\s*)/)[1]).length;
-  const isOL = /^\s*\d+\. /.test(lines[startIdx]);
+  const isOL = /^\s*\d+[.)] /.test(lines[startIdx]);
   const items = [];
   let firstIsCB = null;
   let loose = false;
@@ -473,8 +719,8 @@ function _parseListBlock(lines, startIdx) {
       const next = lines[i + 1];
       const nextIndent = next !== undefined ? (next.match(/^(\s*)/)[1]).length : -1;
       const nextIsSameItem = next !== undefined &&
-        /^\s*(?:[-*+]|\d+\.) /.test(next) &&
-        (/^\s*\d+\. /.test(next) === isOL) &&
+        /^\s*(?:[-*+]|\d+[.)]) /.test(next) &&
+        (/^\s*\d+[.)] /.test(next) === isOL) &&
         nextIndent === baseIndent;
       const nextIsContinuation = next !== undefined && next.trim() !== '' && nextIndent > baseIndent;
       if (!items.length || (!nextIsSameItem && !nextIsContinuation)) break;
@@ -488,9 +734,9 @@ function _parseListBlock(lines, startIdx) {
     if (indent < baseIndent) break;
 
     if (indent === baseIndent) {
-      if (!/^\s*(?:[-*+]|\d+\.) /.test(line)) break;
-      if (/^\s*\d+\. /.test(line) !== isOL) break;
-      const raw = isOL ? line.replace(/^\s*\d+\. /, '') : line.replace(/^\s*[-*+] /, '');
+      if (!/^\s*(?:[-*+]|\d+[.)]) /.test(line)) break;
+      if (/^\s*\d+[.)] /.test(line) !== isOL) break;
+      const raw = isOL ? line.replace(/^\s*\d+[.)] /, '') : line.replace(/^\s*[-*+] /, '');
       // Checklists are intentionally UL-only: sanitise.js's checkbox guard,
       // the injected checklist CSS, and every checklist-toggle command are
       // all hardcoded to `ul.an-checklist` with no `ol` equivalent, so an
@@ -506,7 +752,7 @@ function _parseListBlock(lines, startIdx) {
       i++;
     } else {
       if (!items.length) { i++; continue; }
-      if (/^\s*(?:[-*+]|\d+\.) /.test(line)) {
+      if (/^\s*(?:[-*+]|\d+[.)]) /.test(line)) {
         const nested = _parseListBlock(lines, i);
         items[items.length - 1].sub += nested.html;
         i = nested.endIdx;
@@ -524,7 +770,7 @@ function _parseListBlock(lines, startIdx) {
   }
 
   const hasCB = !isOL && (firstIsCB === true);
-  const startMatch = isOL ? /^\s*(\d+)\. /.exec(lines[startIdx]) : null;
+  const startMatch = isOL ? /^\s*(\d+)[.)] /.exec(lines[startIdx]) : null;
   const startNum = startMatch ? Number.parseInt(startMatch[1], 10) : 1;
   const open = isOL
     ? (startNum !== 1 ? `<ol start="${startNum}">` : '<ol>')
@@ -542,9 +788,12 @@ function _parseListBlock(lines, startIdx) {
   return { html: `${open}${liHTML}${close}`, endIdx: i };
 }
 
-// Backslash-escapable inline punctuation (CommonMark-ish, narrowed to the
-// syntax characters this converter actually uses).
-const ESCAPABLE_RE = /\\([*_`#[\]()>\\~|])/g;
+// Backslash-escapable punctuation. This is CommonMark's full ASCII-punctuation
+// set rather than just the characters this converter emits syntax for: the
+// escaper on the htmlToMarkdown side has to be able to neutralise a leading
+// "- ", "1. " or "---", and those only round-trip if the parser also unescapes
+// them.
+const ESCAPABLE_RE = /\\([!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])/g;
 // Placeholder marker for escaped literals — a NUL character can't appear in
 // real markdown text, so it's safe as a delimiter. Built at runtime (not
 // written as a literal escape) to avoid embedding a raw NUL byte in this file.
@@ -576,6 +825,40 @@ function _restoreBackslashEscapes(text, literals) {
   return text.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_, idx) => _esc(literals[Number(idx)]));
 }
 
+// Inline link/image destination. The angle-bracket alternative comes first so a
+// URL containing `)` — `[x](<http://e.com/a(b)>)` — is taken whole instead of
+// being cut at the inner parenthesis. Matched against _esc()'d text, so the
+// brackets appear as entities.
+const DEST = String.raw`(&lt;.*?&gt;(?:\s+(?:"[^"]*"|'[^']*'))?|[^)]*)`;
+const IMAGE_RE = new RegExp(String.raw`!\[([^\]]*)\]\(${DEST}\)`, 'g');
+const LINK_RE = new RegExp(String.raw`\[([^\]]+)\]\(${DEST}\)`, 'g');
+
+/**
+ * Splits an inline link destination into its URL and optional title:
+ * `url`, `url "title"`, `url 'title'`, `<url with spaces>`, `<url> "title"`.
+ *
+ * Without this the whole `url "title"` string landed in `href`, producing a
+ * link that simply does not resolve — the title is extremely common in
+ * generated Markdown, so this silently broke a lot of pasted content.
+ *
+ * Operates on _esc()'d text, hence the `&lt;`/`&gt;` comparisons.
+ * @param {string} dest
+ * @returns {{ href: string, title: string }}
+ */
+function _splitDestAndTitle(dest) {
+  const s = dest.trim();
+
+  // Angle-bracket destination: everything up to the closing bracket is the URL,
+  // so it may contain spaces and parentheses.
+  const angle = /^&lt;([^]*?)&gt;\s*(?:"([^"]*)"|'([^']*)')?\s*$/.exec(s);
+  if (angle) return { href: angle[1], title: angle[2] ?? angle[3] ?? '' };
+
+  const withTitle = /^(\S+)\s+(?:"([^"]*)"|'([^']*)')\s*$/.exec(s);
+  if (withTitle) return { href: withTitle[1], title: withTitle[2] ?? withTitle[3] ?? '' };
+
+  return { href: s, title: '' };
+}
+
 /**
  * Resolves images, inline links, GFM reference-style links (explicit,
  * shortcut, and bare/implicit forms), and footnote markers. Must run on text
@@ -584,10 +867,16 @@ function _restoreBackslashEscapes(text, literals) {
  * @returns {string}
  */
 function _resolveLinksAndFootnotes(text) {
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) =>
-    `<img src="${_escAttrQuotes(src)}" alt="${_escAttrQuotes(alt)}" class="an-image">`);
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) =>
-    `<a href="${_escAttrQuotes(href)}">${label}</a>`);
+  text = text.replace(IMAGE_RE, (_, alt, dest) => {
+    const { href, title } = _splitDestAndTitle(dest);
+    const titleAttr = title ? ` title="${_escAttrQuotes(title)}"` : '';
+    return `<img src="${_escAttrQuotes(href)}" alt="${_escAttrQuotes(alt)}"${titleAttr} class="an-image">`;
+  });
+  text = text.replace(LINK_RE, (_, label, dest) => {
+    const { href, title } = _splitDestAndTitle(dest);
+    const titleAttr = title ? ` title="${_escAttrQuotes(title)}"` : '';
+    return `<a href="${_escAttrQuotes(href)}"${titleAttr}>${label}</a>`;
+  });
   text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
     const def = _linkDefs.get(_unescAmpLtGt(ref || label).trim().toLowerCase());
     if (!def) return m;
@@ -613,6 +902,11 @@ function _resolveLinksAndFootnotes(text) {
  */
 function _applyAutolinks(text) {
   text = text.replace(/&lt;(https?:\/\/[^\s&]+?)&gt;/g, (_, url) => `<a href="${_escAttrQuotes(url)}">${url}</a>`);
+  // Email autolink — CommonMark's `<user@host>` form gets a mailto: href.
+  text = text.replace(
+    /&lt;([\w.!#$%&'*+/=?^`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)&gt;/g,
+    (_, addr) => `<a href="mailto:${_escAttrQuotes(addr)}">${addr}</a>`,
+  );
   text = text.replace(/(^|[\s(])(https?:\/\/[^\s()]+)/g, (m, pre, rawUrl) => {
     const trail = /[.,;:!?)]+$/.exec(rawUrl);
     const url = trail ? rawUrl.slice(0, -trail[0].length) : rawUrl;
@@ -668,9 +962,16 @@ function _inline(text) {
   return _restoreBackslashEscapes(result, literals);
 }
 
+// A complete named / decimal / hex character reference. An `&` that starts one
+// is left alone so `&copy;` survives as a copyright sign instead of rendering
+// as the literal text "&copy;". Everything the sanitiser cares about is decided
+// after this, on the parsed DOM, so preserving references does not widen what
+// can get through.
+const ENTITY_RE = /&(?!#\d+;|#[xX][0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]*;)/g;
+
 function _esc(v) {
   return String(v)
-    .replaceAll('&', '&amp;')
+    .replace(ENTITY_RE, '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
 }

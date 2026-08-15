@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] - 2026-08-15
+
+Markdown handling — the converter behind `getMarkdown()`, `setMarkdown()`, `downloadMarkdown()`, Markdown paste and `.md` file drop.
+
+### Fixed
+
+- **Prose is escaped on the way out, so text round-trips as text.** `htmlToMarkdown()` emitted every character literally, so a document's own wording was re-read as formatting the next time it was parsed: `2 * 3 * 4` came back as `2 <em> 3 </em> 4`, `1. not a list` became an ordered list, `- not a bullet` a bullet, `a ` + '`code`' + ` literal` a code span. Markdown syntax characters in text are now backslash-escaped, and leading block markers (`#`, `>`, `-`, `1.`, `---`) are neutralised per line. Intra-word underscores are deliberately left alone — `snake_case_name` is not emphasis, and escaping it only made the Markdown unreadable.
+- **A `~~~` fence no longer destroys the code it wraps.** Tilde fences were not recognised at all, so `~~~js` … `~~~` fell through to the inline rules and rendered as `<p>~<del>js code </del>~</p>`. Fences of any length are now accepted in both `` ` `` and `~` forms, may be indented up to three spaces, close only on a matching marker at least as long as the opener, and run to the end of input when never closed. A backtick fence's info string may not contain a backtick, which is what keeps ``` ``a ` b`` ``` a code span.
+- **Link and image titles no longer break the URL.** `[x](http://e.com "T")` put the entire `url "title"` string into `href`, producing a link that did not resolve. The title is now split out into a `title` attribute, in both quote styles, for links and images alike.
+- **Four-space and tab-indented code blocks are parsed** instead of collapsing into a paragraph with the indentation squeezed out.
+- **Character references survive.** `&copy;` was double-escaped to `&amp;copy;` and rendered as literal text; a complete named, decimal or hex reference is now passed through, while a bare `&` is still escaped.
+- **A UTF-8 BOM no longer breaks the first block of a dropped `.md` file.** `FileReader.readAsText` keeps the BOM and Windows editors write one by default, so the opening heading parsed as a paragraph — and `isMarkdown()` rejected the file outright, meaning it was inserted as plain text.
+- **Markdown input rules are suppressed inside code.** Typing `**bold**` in a code block inserted a real `<strong>` into the snippet, and a backtick pair inside an existing code span nested a second `<code>` in it.
+- A code span containing a backtick is now fenced with enough backticks to survive re-parsing, instead of closing at the wrong one.
+- A list item holding more than one paragraph indents its continuation, instead of emitting a paragraph at column 0 that ended the list on re-parse.
+- Leading whitespace on a paragraph's continuation lines is no longer carried into the text.
+
+### Added
+
+- **Round-trip fidelity for things the parser already understood but the serialiser dropped**: an explicit `<ol start>`, per-column table alignment, and link/image `title`. A destination containing spaces or parentheses is wrapped in angle brackets — `[x](<http://e.com/a(b)>)` — which is the only form that re-parses whole.
+- `1)` ordered lists, `+` bullets, GFM tables without outer pipes, and `<user@host>` email autolinks (as `mailto:`).
+- Input rules for H4–H6, `1)`, `+`, `[x]` (starts ticked), `***`/`___` thematic breaks and `~~~` fences — the block rules previously stopped at H3, `1.`, `-`/`*` and `[ ]`.
+- `isMarkdown()` recognises tilde fences, `)` ordered lists and pipe-less tables, and treats a link or image alongside another inline marker as Markdown. Bare URLs and parenthetical asides stay prose, so plain-text paste is not converted on a weak signal.
+
+---
+
 ## [2.2.0] - 2026-08-15
 
 ### Fixed

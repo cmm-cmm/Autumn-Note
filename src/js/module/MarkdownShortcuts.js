@@ -49,11 +49,31 @@ export class MarkdownShortcuts {
   // ---------------------------------------------------------------------------
 
   _onKeydown(e) {
+    if (this._inCodeContext()) return;
     if (e.key === ' ') {
       if (this._applyBlockRule()) e.preventDefault();
     } else if (e.key === 'Enter') {
       if (this._applyEnterRule()) e.preventDefault();
     }
+  }
+
+  /**
+   * True when the caret sits inside a code block or code span.
+   *
+   * Markdown syntax is literal text there: auto-formatting it rewrote the
+   * user's own code — typing `**bold**` inside a <pre> produced a real
+   * <strong> element in the middle of the snippet, and a backtick pair inside
+   * an existing <code> nested a second <code> in it.
+   * @returns {boolean}
+   */
+  _inCodeContext() {
+    const sel = globalThis.getSelection();
+    if (!sel?.rangeCount) return false;
+    const node = sel.getRangeAt(0).startContainer;
+    const el = /** @type {Element|null} */ (
+      node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement
+    );
+    return !!el?.closest('pre, code');
   }
 
   /**
@@ -98,11 +118,13 @@ export class MarkdownShortcuts {
     const { text } = ctx;
 
     const blockPatterns = [
-      { re: /^(#{1,3})$/, handler: (m) => this._convertToHeading(m[1].length) },
+      { re: /^(#{1,6})$/, handler: (m) => this._convertToHeading(m[1].length) },
       { re: /^>$/, handler: () => this._convertToBlockquote() },
-      { re: /^[-*]$/, handler: () => this._convertToList('ul') },
-      { re: /^1\.$/, handler: () => this._convertToList('ol') },
-      { re: /^\[ \]$/, handler: () => this._convertToChecklist() },
+      { re: /^[-*+]$/, handler: () => this._convertToList('ul') },
+      { re: /^1[.)]$/, handler: () => this._convertToList('ol') },
+      // `[x]` starts the item already ticked, matching the `- [x]` the
+      // converter reads and writes.
+      { re: /^\[([ xX])\]$/, handler: (m) => this._convertToChecklist(m[1].toLowerCase() === 'x') },
     ];
 
     for (const { re, handler } of blockPatterns) {
@@ -121,11 +143,12 @@ export class MarkdownShortcuts {
     if (!ctx) return false;
     const { text } = ctx;
 
-    if (/^-{3,}$/.test(text)) {
+    // All three thematic-break spellings, matching what the converter parses.
+    if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(text)) {
       this._convertToHr();
       return true;
     }
-    if (/^`{3}/.test(text)) {
+    if (/^(?:`{3}|~{3})/.test(text)) {
       this._convertToCodeBlock();
       return true;
     }
@@ -165,9 +188,21 @@ export class MarkdownShortcuts {
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
-  _convertToChecklist() {
+  /** @param {boolean} [checked] - start the new item ticked (from `[x]`) */
+  _convertToChecklist(checked = false) {
     this._selectLineAndDelete();
     this.context.invoke('editor.toggleChecklist');
+    if (checked) {
+      const sel = globalThis.getSelection();
+      const node = sel?.rangeCount ? sel.getRangeAt(0).startContainer : null;
+      const el = /** @type {Element|null} */ (
+        node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement ?? null
+      );
+      const box = /** @type {HTMLInputElement|null} */ (
+        el?.closest('li')?.querySelector('input[type="checkbox"]') ?? null
+      );
+      if (box) box.checked = true;
+    }
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
@@ -188,6 +223,7 @@ export class MarkdownShortcuts {
   // ---------------------------------------------------------------------------
 
   _onInput() {
+    if (this._inCodeContext()) return;
     const sel = globalThis.getSelection();
     if (!sel?.rangeCount) return;
     const range = sel.getRangeAt(0);
