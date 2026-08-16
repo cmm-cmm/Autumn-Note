@@ -134,3 +134,116 @@ describe('detectLang', () => {
     expect(detectLang('1 + 2 = 3')).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Scoring behaviour — constructs the ordered if-chain used to miss or misfile
+// ---------------------------------------------------------------------------
+
+describe('detectLang — previously misdetected snippets', () => {
+  it.each([
+    ['a JS module default export', 'export default {\n  data() { return { a: 1 }; }\n}', 'javascript'],
+    ['a one-line DOM call chain', "document.querySelector('.x').addEventListener('click', h)", 'javascript'],
+    ['a CommonJS export', 'module.exports = { a: 1 };', 'javascript'],
+    ['a generic TS function', 'function f<T>(a: T): T { return a; }', 'typescript'],
+    ['a Python with-block', "with open('f.txt') as f:\n    data = f.read()", 'python'],
+    ['a Python comprehension', 'x = [i**2 for i in range(5)]', 'python'],
+    ['a Java field declaration', 'private final List<String> items = new ArrayList<>();', 'java'],
+    ['a Go struct type', 'type Server struct {\n  Addr string\n}', 'go'],
+    ['a Go method receiver', 'func (s *Server) Start() error {\n  return nil\n}', 'go'],
+    ['a Rust pub struct', 'pub struct Config { pub name: String }', 'rust'],
+    ['a single-line CSS rule', '#main > .item:hover { background: #fff; }', 'css'],
+    ['a shell command chain', 'cd /var/www && ls -la', 'bash'],
+    ['a shell for-loop', 'for f in *.txt; do\n  mv "$f" "$f.bak"\ndone', 'bash'],
+    ['a shell export', 'export PATH=$PATH:/usr/local/bin', 'bash'],
+    ['a PHP method', "public function index() {\n  return view('home');\n}", 'php'],
+    ['a C# expression-bodied member', 'public async Task<int> GetAsync() => await _repo.CountAsync();', 'csharp'],
+    ['a Swift guard with assignment', 'guard let x = y else { return }', 'swift'],
+  ])('detects %s', (_label, code, want) => expect(detectLang(code)).toBe(want));
+});
+
+describe('detectLang — YAML and Markdown', () => {
+  it.each([
+    ['a GitHub Actions workflow', 'name: CI\non:\n  push:\n    branches: [main]'],
+    ['a compose file', "version: '3'\nservices:\n  web:\n    image: nginx"],
+    ['a sequence of mappings', '- name: step one\n  run: echo hi'],
+  ])('detects %s as YAML', (_label, code) => expect(detectLang(code)).toBe('yaml'));
+
+  it.each([
+    ['a heading with emphasis and a list', '# Title\n\nSome **bold** text.\n\n- a\n- b'],
+    ['a heading with a link', '## Heading\n\nSee [docs](http://e.com) for more.'],
+    ['a GFM table', '| a | b |\n| --- | --- |\n| 1 | 2 |'],
+  ])('detects %s as Markdown', (_label, code) => expect(detectLang(code)).toBe('markdown'));
+});
+
+describe('detectLang — declines to guess', () => {
+  it.each([
+    ['ordinary prose', 'Hello world, this is just a sentence.'],
+    ['a bare word', 'foo'],
+    ['digits', '12345'],
+  ])('returns null for %s', (_label, text) => expect(detectLang(text)).toBeNull());
+
+  it('returns null rather than picking a side when two languages tie', () => {
+    // A single shared signal is not evidence. The scorer needs both a minimum
+    // total and a margin over the runner-up before it commits to an answer.
+    expect(detectLang('x = 1')).toBeNull();
+  });
+});
+
+describe('detectLang — superset languages keep their base language evidence', () => {
+  it('reads SCSS markers over the surrounding plain CSS', () => {
+    // Every line here is also valid CSS; the $variable and & are what decide it.
+    expect(detectLang('$c: red;\n.a {\n  color: $c;\n  &:hover { color: blue; }\n}')).toBe('scss');
+  });
+
+  it('reads TypeScript annotations over the surrounding plain JavaScript', () => {
+    expect(detectLang("const n: number = 1;\nconsole.log(n);")).toBe('typescript');
+  });
+
+  it('still reports plain CSS and plain JavaScript as themselves', () => {
+    expect(detectLang('.a { color: red; padding: 4px; }')).toBe('css');
+    expect(detectLang('const n = 1;\nconsole.log(n);')).toBe('javascript');
+  });
+});
+
+describe('SUPPORTED_LANGS', () => {
+  it('lists exactly the languages the detector can return', async () => {
+    const { SUPPORTED_LANGS } = await import('../../src/js/core/detectLang.js');
+    expect(new Set(SUPPORTED_LANGS).size).toBe(SUPPORTED_LANGS.length);
+    expect(SUPPORTED_LANGS).toContain('yaml');
+    expect(SUPPORTED_LANGS).toContain('markdown');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cost — detection runs on whatever the user pastes
+// ---------------------------------------------------------------------------
+
+describe('detectLang — bounded cost', () => {
+  it.each([
+    ['one very long line, as a minified bundle pastes', 'x'.repeat(100_000)],
+    ['a long run of spaces after a keyword', `def f${' '.repeat(40_000)}`],
+    ['a long import-like line', `import ${'a'.repeat(40_000)}`],
+    ['a huge selector followed by declarations', `${'a'.repeat(20_000)} {${'b: c;'.repeat(2_000)}`],
+    ['many unclosed parens', `func ${'('.repeat(5_000)}`],
+    ['deeply nested braces', '{'.repeat(5_000) + '}'.repeat(5_000)],
+  ])('stays fast on %s', (_label, input) => {
+    // Several rules scan a line for a trailing token, which is quadratic in
+    // line length; the 100 KB single line took over seven seconds before the
+    // input was capped, which froze the editor on paste.
+    const start = performance.now();
+    detectLang(input);
+    expect(performance.now() - start).toBeLessThan(250);
+  });
+
+  it('identifies a language from the opening lines of a large file', () => {
+    const big = `def main():\n    pass\n${'# filler comment line\n'.repeat(5_000)}`;
+    expect(detectLang(big)).toBe('python');
+  });
+
+  it('does not let truncation invent a line boundary mid-line', () => {
+    // The sample is cut back to the previous newline, so an anchored rule never
+    // sees half a line as though it were a whole one.
+    const long = `${'a'.repeat(6_000)}\nSELECT * FROM t;`;
+    expect(detectLang(long)).not.toBe('sql');
+  });
+});
