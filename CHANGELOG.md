@@ -24,6 +24,9 @@ Code blocks and blockquotes.
 
   Measured against 79 real-world snippets across 22 languages, detection went from 44/58 to 79/79 on the cases it previously handled plus the ones it could not express at all. Constructs that used to come back unrecognised now resolve: `with … as …:` and comprehensions (Python), `type X struct` and method receivers (Go), `pub struct` (Rust), generic functions with return types (TypeScript), field declarations (Java), single-line rules (CSS), `cd … && …`, `for … do`, `export VAR=` (Bash), `public function` (PHP), and expression-bodied members (C#).
 
+- **Detecting a language on a large paste could freeze the editor.** Several rules scan a line looking for a trailing token, which is quadratic in line length, and detection ran over the whole input — a minified bundle pasted as one 100 KB line took over seven seconds. Detection now samples the first 4 KB, cut back to a line boundary so no anchored rule sees a line that truncation invented; a language is identifiable from its opening lines regardless. The same paste is now ~13 ms, and the cost no longer scales with file size.
+- **Two dozen detection patterns could backtrack super-linearly** (CWE-1333) on input crafted to nearly match — the recurring shape was a `\s*`/`\s+` quantifier next to a character class that also matches whitespace. Intra-line whitespace is matched with `[ \t]` and the risky spans are bounded, so no rule has two quantifiers competing for the same characters. Ruby's `def … end` rule, which paired a lazy `[\s\S]*?` with `\s*` and scanned to end-of-input whenever a block never closed, is now two independent signals that score the same way.
+
 ### Added
 
 - **YAML and Markdown detection**, and both in the code block's language picker. Their absence meant CI configs, compose files and Markdown snippets — some of the most commonly pasted code there is — always fell through to plain text.

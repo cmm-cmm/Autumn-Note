@@ -73,7 +73,7 @@ const RULES = [
   { lang: 'java',       w: 10, re: /\bSystem\.out\.(?:print|println)\s*\(/ },
   { lang: 'csharp',     w: 10, re: /\bConsole\.(?:Write|WriteLine)\s*\(/ },
   { lang: 'cpp',        w: 10, re: /\b(?:cout|cerr)\s*<<|\bcin\s*>>|\busing\s+namespace\s+std\b|\bstd::\w/ },
-  { lang: 'python',     w: 10, re: /\bdef\s+\w+\s*\([^)]*\)\s*(?:->\s*[\w[\]., |]+\s*)?:|\bif\s+__name__\s*==\s*['"]__main__['"]/ },
+  { lang: 'python',     w: 10, re: /\bdef[ \t]+\w+[ \t]*\([^)]*\)[ \t]*(?:->[^:\n]*)?:|\bif[ \t]+__name__[ \t]*==[ \t]*['"]__main__['"]/ },
   { lang: 'html',       w: 10, re: /^\s*<!DOCTYPE\s+html/i },
   { lang: 'xml',        w: 10, re: /^\s*<\?xml\s/i },
 
@@ -84,8 +84,8 @@ const RULES = [
   // enough weight on its own — `export default { a: 1 }` used to tie with CSS,
   // which read the object body as a declaration block.
   { lang: 'javascript', w: 8, re: /\bexport\s+(?:default|const|function|class|async|\{|\*)|\bmodule\.exports\b|\brequire\s*\(\s*['"]/ },
-  { lang: 'javascript', w: 5, re: /\bfunction\s*\w*\s*\([^)]*\)\s*\{|=>\s*[{([`\w'"]/ },
-  { lang: 'javascript', w: 5, re: /\bimport\s+[\w{*\s,}]+\s+from\s+['"]/ },
+  { lang: 'javascript', w: 5, re: /\bfunction(?:[ \t]+\w+)?[ \t]*\([^)]*\)[ \t]*\{|=>[ \t]*[{([`\w'"]/ },
+  { lang: 'javascript', w: 5, re: /\bimport\b[^'"\n]*[ \t]from[ \t]*['"]/ },
   { lang: 'javascript', w: 4, re: /\.(?:map|filter|forEach|reduce|then|catch|find|some|every)\s*\(/ },
   // Split rather than alternated: a one-line DOM call chain hits several of
   // these at once, and as a single rule it capped at one rule's weight and
@@ -111,20 +111,20 @@ const RULES = [
   { lang: 'python',     w: 6, re: /(?:^|\n)\s*class\s+\w+(?:\([\w., ]*\))?\s*:/ },
   { lang: 'python',     w: 5, re: /(?:^|\n)\s*(?:with|elif|except|finally|async\s+def)\b[^\n]*:/ },
   { lang: 'python',     w: 5, re: /\bself\.\w|\b__init__\b|\bf["'][^"']*\{/ },
-  { lang: 'python',     w: 4, re: /(?:^|\n)\s*for\s+\w+\s+in\s+[^\n:]+:|\bfor\s+\w+\s+in\s+range\s*\(/ },
+  { lang: 'python',     w: 4, re: /(?:^|\n)[ \t]*for[ \t]+\w+[ \t]+in[ \t][^\n:]*:|\bfor[ \t]+\w+[ \t]+in[ \t]+range[ \t]*\(/ },
   { lang: 'python',     w: 4, re: /\bprint\s*\(|\blen\s*\(|\brange\s*\(/ },
   { lang: 'python',     w: 3, re: /\[[^\]\n]*\bfor\s+\w+\s+in\s[^\]\n]*\]|\bNone\b|\bTrue\b|\bFalse\b/ },
-  { lang: 'python',     w: 3, re: /\*\*\w|\bdict\s*\(|\blambda\s+\w*\s*:/ },
+  { lang: 'python',     w: 3, re: /\*\*\w|\bdict[ \t]*\(|\blambda(?:[ \t]+\w+)?[ \t]*:/ },
 
   // ── Go ─────────────────────────────────────────────────────────────────────
   { lang: 'go',         w: 8, re: /(?:^|\n)\s*package\s+\w+\s*$/m },
   { lang: 'go',         w: 6, re: /\btype\s+\w+\s+struct\s*\{|\btype\s+\w+\s+interface\s*\{/ },
-  { lang: 'go',         w: 6, re: /\bfunc\s*(?:\([^)]*\)\s*)?\w*\s*\([^)]*\)\s*(?:[\w*[\]().]+\s*)?\{/ },
+  { lang: 'go',         w: 6, re: /\bfunc(?:[ \t]*\([^)]*\))?(?:[ \t]+\w+)?[ \t]*\([^)]*\)[^\n{]{0,40}\{/ },
   { lang: 'go',         w: 5, re: /\bif\s+err\s*!=\s*nil\b|\berr\s*:=\s|\bdefer\s+\w/ },
   { lang: 'go',         w: 4, re: /\w+\s*:=\s*\S|\bchan\s+\w|\bgo\s+func\b|\bnil\b/ },
 
   // ── Rust ───────────────────────────────────────────────────────────────────
-  { lang: 'rust',       w: 7, re: /\bfn\s+\w+\s*(?:<[^>]*>)?\s*\([^)]*\)(?:\s*->\s*[\w<>:&[\] ]+)?\s*\{/ },
+  { lang: 'rust',       w: 7, re: /\bfn[ \t]+\w+(?:<[^>]*>)?[ \t]*\([^)]*\)[^\n{]{0,40}\{/ },
   { lang: 'rust',       w: 7, re: /\blet\s+mut\s+\w|\bpub\s+(?:fn|struct|enum|mod|use)\b|\bimpl\s+\w/ },
   { lang: 'rust',       w: 5, re: /\buse\s+(?:std|crate|self|super)::|\bmatch\s+\w+\s*\{[^}]*=>/ },
   { lang: 'rust',       w: 4, re: /\b(?:Option|Result|Vec|Box|Rc|Arc|HashMap)\s*<|&(?:mut\s+)?self\b|\b\w+::<|->\s*Result</ },
@@ -146,14 +146,14 @@ const RULES = [
 
   // ── Kotlin ─────────────────────────────────────────────────────────────────
   { lang: 'kotlin',     w: 8, re: /\bfun\s+\w+\s*\([^)]*\)\s*(?::\s*[\w<>?.]+\s*)?[={]|\bdata\s+class\s+\w/ },
-  { lang: 'kotlin',     w: 6, re: /\bval\s+\w+\s*(?::\s*[\w<>?.]+)?\s*=|\bcompanion\s+object\b|\bsuspend\s+fun\b/ },
+  { lang: 'kotlin',     w: 6, re: /\bval[ \t]+\w+(?:[ \t]*:[ \t]*[\w<>?.]+)?[ \t]*=|\bcompanion[ \t]+object\b|\bsuspend[ \t]+fun\b/ },
   { lang: 'kotlin',     w: 4, re: /\bprintln\s*\(|\bwhen\s*\([^)]*\)\s*\{|\bobject\s+\w+\s*[:{]|\?:\s*\w/ },
 
   // ── Swift ──────────────────────────────────────────────────────────────────
   { lang: 'swift',      w: 8, re: /\bguard\s+(?:let|var)\s[^\n]*\belse\b|\bfunc\s+\w+\s*\([^)]*\)\s*(?:async\s+)?(?:throws\s+)?->\s*[\w<>?[\]]/ },
-  { lang: 'swift',      w: 6, re: /\bprotocol\s+\w+\s*(?::\s*[\w, ]+)?\{|\bextension\s+\w+\s*(?::\s*[\w, ]+)?\{|\bimport\s+(?:SwiftUI|UIKit|Foundation)\b/ },
+  { lang: 'swift',      w: 6, re: /\bprotocol[ \t]+\w+[^\n{]{0,40}\{|\bextension[ \t]+\w+[^\n{]{0,40}\{|\bimport[ \t]+(?:SwiftUI|UIKit|Foundation)\b/ },
   { lang: 'swift',      w: 6, re: /\b(?:let|var)\s+\w+\s*:\s*(?:Int|String|Double|Float|Bool|Character|Any|\[[A-Z])|@(?:State|Binding|Published|IBOutlet|objc)\b/ },
-  { lang: 'swift',      w: 4, re: /\\\(\w|\bif\s+let\s+\w|\bstruct\s+\w+\s*:\s*View\b|\bfunc\s+\w+\s*\([^)]*\w+\s*:\s*[A-Z]/ },
+  { lang: 'swift',      w: 4, re: /\\\(\w|\bif[ \t]+let[ \t]+\w|\bstruct[ \t]+\w+[ \t]*:[ \t]*View\b|\bfunc[ \t]+\w+[ \t]*\([^)]*:[ \t]*[A-Z]/ },
   { lang: 'swift',      w: 3, re: /\?\?\s*\w|\b\w+\?\.\w|\bself\.\w+\s*=/ },
 
   // ── C / C++ ────────────────────────────────────────────────────────────────
@@ -165,16 +165,20 @@ const RULES = [
   { lang: 'c',          w: 3, re: /\btypedef\s+struct\b|\bsizeof\s*\(|\bNULL\b/ },
 
   // ── Ruby ───────────────────────────────────────────────────────────────────
-  { lang: 'ruby',       w: 8, re: /\bdo\s*\|\s*\w+[\w, ]*\|/ },
+  { lang: 'ruby',       w: 8, re: /\bdo[ \t]*\|[ \t]*\w[\w, ]*\|/ },
   { lang: 'ruby',       w: 7, re: /\battr_(?:accessor|reader|writer)\s+:|\brequire(?:_relative)?\s+['"]|\bputs\s+\S/ },
-  { lang: 'ruby',       w: 6, re: /(?:^|\n)\s*def\s+\w[\w?!]*[^\n]*\n[\s\S]*?(?:^|\n)\s*end\b/ },
+  // Split from a single `def … end` span: two independent signals score the
+  // same way here, and the span form put a lazy `[\\s\\S]*?` next to `\\s*`,
+  // which backtracks super-linearly on input that never closes the block.
+  { lang: 'ruby',       w: 4, re: /(?:^|\n)[ \t]*def[ \t]+\w/ },
+  { lang: 'ruby',       w: 4, re: /(?:^|\n)[ \t]*end[ \t]*$/m },
   { lang: 'ruby',       w: 4, re: /\bnil\?\b|\b\w+\.new\b|=>\s*['"\w]|\bmodule\s+[A-Z]\w*\s*$/m },
-  { lang: 'ruby',       w: 3, re: /:\w+\s*=>|\bend\b\s*$/m },
+  { lang: 'ruby',       w: 3, re: /:\w+[ \t]*=>|\bend[ \t]*$/m },
 
   // ── PHP ────────────────────────────────────────────────────────────────────
   { lang: 'php',        w: 7, re: /\$this->\w|\bfunction\s+\w+\s*\([^)]*\$\w/ },
   { lang: 'php',        w: 6, re: /\$\w+\s*=\s*\S|\bforeach\s*\(\s*\$\w+\s+as\s+\$/ },
-  { lang: 'php',        w: 5, re: /\becho\s+[^;\n]*[$'"]|\bnamespace\s+[\w\\]+;|\buse\s+[\w\\]+\\\w+;/ },
+  { lang: 'php',        w: 5, re: /\becho[ \t][^;\n]*[$'"]|\bnamespace[ \t]+[\w\\]+;|\buse[ \t]+[\w\\]+\\\w+;/ },
   // `public function` is PHP's spelling and nothing else's: Java and C# name a
   // return type in that position, and TypeScript class methods drop `function`
   // entirely. Weighted to clear JavaScript's generic `function name(…) {` rule,
@@ -196,8 +200,8 @@ const RULES = [
   // its absence made every such snippet fall through to null.
   { lang: 'yaml',       w: 8, re: /^---\s*$/m },
   { lang: 'yaml',       w: 6, re: /^[ \t]*-\s+\w+\s*:\s*\S/m },
-  { lang: 'yaml',       w: 5, re: /^[a-zA-Z_][\w-]*\s*:\s*(?:$|\s*(?:[|>][-+]?\s*$|['"\w[{]))/m },
-  { lang: 'yaml',       w: 4, re: /^[ \t]+[a-zA-Z_][\w-]*\s*:\s*\S/m },
+  { lang: 'yaml',       w: 5, re: /^[a-z_][\w-]*[ \t]*:(?:[ \t]*$|[ \t]+(?:[|>][-+]?[ \t]*$|['"\w[{]))/im },
+  { lang: 'yaml',       w: 4, re: /^[ \t]+[a-z_][\w-]*[ \t]*:[ \t]*\S/im },
   { lang: 'yaml',       w: 3, re: /^[ \t]*-\s+\S/m },
 
   // ── Markdown ───────────────────────────────────────────────────────────────
@@ -212,13 +216,13 @@ const RULES = [
   { lang: 'sql',        w: 4, re: /\b(?:INNER|LEFT|RIGHT|FULL)\s+(?:OUTER\s+)?JOIN\b|\bGROUP\s+BY\b|\bORDER\s+BY\b|\bWITH\s+\w+\s+AS\s*\(/i },
 
   // ── SCSS before CSS: every SCSS marker is invalid plain CSS ────────────────
-  { lang: 'scss',       w: 9, re: /^[ \t]*\$[\w-]+\s*:\s*[^;\n]+;|@(?:mixin|include|extend|use|forward)\s+[\w"'-]/m },
+  { lang: 'scss',       w: 9, re: /^[ \t]*\$[\w-]+[ \t]*:[^;\n]+;|@(?:mixin|include|extend|use|forward)[ \t]+[\w"'-]/m },
   { lang: 'scss',       w: 7, re: /^[ \t]*&[\s.:[&>+~]|#\{[^}]*\}/m },
   { lang: 'scss',       w: 4, re: /^[ \t]*\/\/[ \t]*\S/m },
 
   // The leading word must not be a statement keyword from another language:
   // an object or block literal reads exactly like a rule set otherwise.
-  { lang: 'css',        w: 6, re: /^[ \t]*(?!(?:export|import|return|function|const|let|var|val|if|else|for|while|switch|case|class|new|public|private|protected|internal|def|func|fun|fn|pub|package|type|interface|enum|struct|impl|trait|mod|use|using|namespace|module|data|object|async|await|guard|extension|protocol|template|typedef)\b)[.#]?[\w-]+(?:[\s>+~][\s\S]{0,40})?\s*\{[^{}]*[\w-]+\s*:[^{};]+[;}]/m },
+  { lang: 'css',        w: 6, re: /^[ \t]*(?!(?:export|import|return|function|const|let|var|val|if|else|for|while|switch|case|class|new|public|private|protected|internal|def|func|fun|fn|pub|package|type|interface|enum|struct|impl|trait|mod|use|using|namespace|module|data|object|async|await|guard|extension|protocol|template|typedef)\b)[.#]?[\w-]+[^{}\n]{0,60}\{[^{}:]*:[^{};]+[;}]/m },
   { lang: 'css',        w: 5, re: /@(?:media|supports|keyframes|font-face|import|charset)\b/ },
   { lang: 'css',        w: 4, re: /:\s*(?:#[\da-f]{3,8}|\d+(?:px|rem|em|%|vh|vw)|flex|grid|block|none|absolute|relative)\s*[;}]/i },
   { lang: 'css',        w: 3, re: /::?(?:hover|focus|active|before|after|first-child|last-child|nth-child)\b/ },
@@ -226,11 +230,35 @@ const RULES = [
   // ── Bash ───────────────────────────────────────────────────────────────────
   { lang: 'bash',       w: 7, re: /(?:^|\n|&&|\|\|)\s*(?:sudo\s+)?(?:apt(?:-get)?|yum|brew|npm|pnpm|yarn|pip3?|docker|kubectl|git|systemctl|curl|wget|chmod|chown|mkdir|rm|cp|mv|tar|ssh|scp)\s+[\w./-]/ },
   { lang: 'bash',       w: 6, re: /^\s*(?:export|source|alias)\s+\w+|^\s*\w+=\S+\s*$/m },
-  { lang: 'bash',       w: 6, re: /\bfi\b\s*$|(?:^|\n)\s*(?:if|for|while)\s[^\n]*;\s*(?:then|do)\b|(?:^|\n)\s*done\b/m },
+  { lang: 'bash',       w: 6, re: /\bfi[ \t]*$|(?:^|\n)[ \t]*(?:if|for|while)[ \t][^\n]*;[ \t]*(?:then|do)\b|(?:^|\n)[ \t]*done\b/m },
   { lang: 'bash',       w: 5, re: /\$\{?\w+\}?[/:]|"\$\w|\becho\s+["'$]|\$\(\w/ },
   { lang: 'bash',       w: 4, re: /(?:^|\n|\|)\s*(?:grep|awk|sed|cat|ls|cd|pwd|find|xargs|head|tail|sort|uniq|wc)\s+[-\w$'"./]/ },
-  { lang: 'bash',       w: 3, re: /\s\|\s*\w|\s&&\s|\s2>&1|\s-{1,2}[\w-]+\s/ },
+  { lang: 'bash',       w: 3, re: /\s\|[ \t]*\w|\s&&\s|\s2>&1|\s-[\w-]+\s/ },
 ];
+
+/**
+ * How much of the input the rules actually run over.
+ *
+ * A language is identifiable from its opening lines, so scanning a whole file
+ * buys nothing — and it costs a lot: several rules scan a line looking for a
+ * trailing token, which is quadratic in line length. Pasting a minified bundle
+ * (one 100 KB line) took over seven seconds before this cap, freezing the
+ * editor. Bounding the input makes detection cost independent of file size.
+ */
+const SAMPLE_LIMIT = 4000;
+
+/**
+ * First `SAMPLE_LIMIT` characters, cut back to a line boundary so the `^`/`$`
+ * anchored rules do not see a line that the truncation invented.
+ * @param {string} s
+ * @returns {string}
+ */
+function _sample(s) {
+  if (s.length <= SAMPLE_LIMIT) return s;
+  const head = s.slice(0, SAMPLE_LIMIT);
+  const lastBreak = head.lastIndexOf('\n');
+  return lastBreak > 0 ? head.slice(0, lastBreak) : head;
+}
 
 /**
  * Detects the programming language of a code snippet.
@@ -239,7 +267,7 @@ const RULES = [
  */
 export function detectLang(code) {
   if (!code?.trim()) return null;
-  const s = code.trim();
+  const s = _sample(code.trim());
 
   /** @type {Map<string, number>} */
   const scores = new Map();

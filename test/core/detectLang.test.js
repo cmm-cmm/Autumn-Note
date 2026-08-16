@@ -213,3 +213,37 @@ describe('SUPPORTED_LANGS', () => {
     expect(SUPPORTED_LANGS).toContain('markdown');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Cost — detection runs on whatever the user pastes
+// ---------------------------------------------------------------------------
+
+describe('detectLang — bounded cost', () => {
+  it.each([
+    ['one very long line, as a minified bundle pastes', 'x'.repeat(100_000)],
+    ['a long run of spaces after a keyword', `def f${' '.repeat(40_000)}`],
+    ['a long import-like line', `import ${'a'.repeat(40_000)}`],
+    ['a huge selector followed by declarations', `${'a'.repeat(20_000)} {${'b: c;'.repeat(2_000)}`],
+    ['many unclosed parens', `func ${'('.repeat(5_000)}`],
+    ['deeply nested braces', '{'.repeat(5_000) + '}'.repeat(5_000)],
+  ])('stays fast on %s', (_label, input) => {
+    // Several rules scan a line for a trailing token, which is quadratic in
+    // line length; the 100 KB single line took over seven seconds before the
+    // input was capped, which froze the editor on paste.
+    const start = performance.now();
+    detectLang(input);
+    expect(performance.now() - start).toBeLessThan(250);
+  });
+
+  it('identifies a language from the opening lines of a large file', () => {
+    const big = `def main():\n    pass\n${'# filler comment line\n'.repeat(5_000)}`;
+    expect(detectLang(big)).toBe('python');
+  });
+
+  it('does not let truncation invent a line boundary mid-line', () => {
+    // The sample is cut back to the previous newline, so an anchored rule never
+    // sees half a line as though it were a whole one.
+    const long = `${'a'.repeat(6_000)}\nSELECT * FROM t;`;
+    expect(detectLang(long)).not.toBe('sql');
+  });
+});
