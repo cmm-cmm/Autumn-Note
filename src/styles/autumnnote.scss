@@ -488,11 +488,69 @@
     &:last-child  { margin-bottom: 0; }
   }
   li:has(> p) { margin-bottom: 0.6em; }
+  // Quote — a flat grey rule and muted text read as disabled content rather
+  // than as a deliberate pull-quote, so the accent colour carries it instead:
+  // a rounded accent bar, a faint tinted panel, and an oversized glyph set
+  // behind the text. The glyph is a pseudo-element, so it never enters the
+  // editable tree, the caret, the selection or getHTML().
   blockquote {
-    margin: 0.5em 0 0.5em 1em;
-    padding: 0.5em 1em;
-    border-left: 4px solid $an-border;
-    color: $an-muted;
+    position: relative;
+    margin: 0.9em 0;
+    padding: 0.7em 1em 0.7em 1.75em;
+    border: 0;
+    border-radius: 0 $an-radius $an-radius 0;
+    background: rgba($an-primary, 0.05);
+    color: inherit;
+    font-style: italic;
+
+    // Accent bar. A pseudo-element rather than border-left so it can be inset
+    // and rounded at both ends.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0.35em auto 0.35em 0;
+      width: 3px;
+      border-radius: 3px;
+      background: $an-primary;
+      opacity: 0.65;
+    }
+
+    // Decorative opening quote, kept out of the text flow so it cannot be
+    // clicked into or dragged over.
+    &::after {
+      content: '\201C';
+      position: absolute;
+      top: -0.05em;
+      left: 0.42em;
+      z-index: 0;
+      font: italic 700 2.6em/1 Georgia, 'Times New Roman', serif;
+      color: $an-primary;
+      opacity: 0.1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    p { margin: 0 0 0.45em; }
+    > :last-child { margin-bottom: 0; }
+
+    // Attribution line — "— Someone" as the final paragraph.
+    p:last-child:not(:only-child) {
+      font-style: normal;
+      font-size: 0.92em;
+      color: $an-muted;
+    }
+
+    // Nested quotes step the tint up instead of repeating the decoration.
+    blockquote {
+      margin: 0.6em 0 0.2em;
+      background: rgba($an-primary, 0.06);
+      &::after { content: none; }
+    }
   }
   pre, code {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -2012,8 +2070,14 @@ $an-video-accent: #8b5cf6; // violet-500
     a { color: #89b4fa; }
 
     blockquote {
-      border-color: #3f3f5f;
-      color: #a6adc8;
+      background: rgba(#89b4fa, 0.07);
+      color: inherit;
+
+      &::before { background: #89b4fa; opacity: 0.6; }
+      &::after  { color: #89b4fa; opacity: 0.13; }
+
+      p:last-child:not(:only-child) { color: #a6adc8; }
+      blockquote { background: rgba(#89b4fa, 0.09); }
     }
 
     pre:not([class*='language-']),
@@ -2480,8 +2544,14 @@ $an-video-accent: #8b5cf6; // violet-500
       a { color: #89b4fa; }
 
       blockquote {
-        border-color: #3f3f5f;
-        color: #a6adc8;
+        background: rgba(#89b4fa, 0.07);
+        color: inherit;
+
+        &::before { background: #89b4fa; opacity: 0.6; }
+        &::after  { color: #89b4fa; opacity: 0.13; }
+
+        p:last-child:not(:only-child) { color: #a6adc8; }
+        blockquote { background: rgba(#89b4fa, 0.09); }
       }
 
       pre:not([class*='language-']),

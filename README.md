@@ -69,7 +69,7 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 
 ### Search
 - **Find and Replace** — `Ctrl+F` to find, `Ctrl+H` for find-and-replace; compact non-blocking floating panel (top-right); TreeWalker text matching; `<mark>` highlighting; case-sensitive `Aa` toggle; **regex mode** (`.*` toggle); icon-button Prev/Next navigation (↑ ↓); single and replace-all modes
-- **Auto language detection** — when selected text is formatted as a code block the editor automatically analyses the content and applies Prism.js syntax highlighting; 20 languages detected: JavaScript, TypeScript, Python, HTML, CSS, SCSS, JSON, SQL, Bash, Java, C#, PHP, Ruby, Go, Rust, C++, C, Kotlin, Swift, XML
+- **Auto language detection** — when selected text is formatted as a code block the editor analyses the content and applies Prism.js syntax highlighting. 22 languages: JavaScript, TypeScript, Python, HTML, CSS, SCSS, JSON, YAML, Markdown, XML, SQL, Bash, Java, C#, PHP, Ruby, Go, Rust, C++, C, Kotlin, Swift. Detection weighs every matching signal and picks the highest-scoring language, requiring a clear margin before it commits — a snippet that could be two things is left unhighlighted rather than guessed at, and prose is never treated as code
 
 ### Inline tooltips
 Floating toolbars appear automatically when the user clicks on an editable element:

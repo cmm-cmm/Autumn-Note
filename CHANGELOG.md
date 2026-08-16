@@ -11,6 +11,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.0] - 2026-08-16
+
+Code blocks and blockquotes.
+
+### Fixed
+
+- **Choosing a language no longer resets the code block.** `_onLangChange()` assigned `pre.className` outright, wiping every other class on the element — so picking a language silently switched line numbers back off and dropped any class the pasted content arrived with. Only the `language-*` class is swapped now.
+- **Language detection was decided by rule order, not by evidence.** The detector returned on the first pattern that matched, so each language could only be found if no earlier one happened to match first, and a snippet carrying signals for two languages was resolved by position in the file. `export default { data() { … } }` came back as **CSS**, because the JavaScript rules did not cover `export default` and the CSS rule read the object body as a declaration block.
+
+  Detection is now weighted: every matching rule adds to its language's score, the highest total wins, and a language must also clear a minimum score and beat the runner-up by a margin before it is used. An ambiguous snippet returns null and stays unhighlighted rather than being guessed at. Superset languages (TypeScript over JavaScript, SCSS over CSS, C++ over C) inherit their base language's score once they show a marker of their own, so shared syntax no longer splits the vote between them.
+
+  Measured against 79 real-world snippets across 22 languages, detection went from 44/58 to 79/79 on the cases it previously handled plus the ones it could not express at all. Constructs that used to come back unrecognised now resolve: `with … as …:` and comprehensions (Python), `type X struct` and method receivers (Go), `pub struct` (Rust), generic functions with return types (TypeScript), field declarations (Java), single-line rules (CSS), `cd … && …`, `for … do`, `export VAR=` (Bash), `public function` (PHP), and expression-bodied members (C#).
+
+### Added
+
+- **YAML and Markdown detection**, and both in the code block's language picker. Their absence meant CI configs, compose files and Markdown snippets — some of the most commonly pasted code there is — always fell through to plain text.
+- `SUPPORTED_LANGS` (detector) and `LANGUAGES` (picker) are exported and checked against each other in the test suite, so a language the detector can return can always be shown in the picker.
+
+### Changed
+
+- **Blockquotes are styled as a pull-quote rather than as greyed-out text.** A flat grey rule with muted body copy read as disabled content. They now carry a rounded accent bar, a faint tint in the accent colour, an oversized quotation glyph set behind the text, italic body copy, and a distinct final-line treatment for an attribution. Nested quotes step the tint up instead of repeating the glyph. Dark theme has its own palette.
+
+  The glyph and the bar are pseudo-elements, so nothing enters the editable tree — the caret, selection, `getHTML()` and `getMarkdown()` are unchanged.
+
+---
+
 ## [2.3.0] - 2026-08-15
 
 Markdown handling — the converter behind `getMarkdown()`, `setMarkdown()`, `downloadMarkdown()`, Markdown paste and `.md` file drop.

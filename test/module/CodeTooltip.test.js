@@ -538,3 +538,74 @@ describe('CodeTooltip._loadPrismComponent', () => {
     existing.remove();
   });
 });
+
+// ── language class handling ───────────────────────────────────────────────────
+
+describe('CodeTooltip language switching', () => {
+  it('keeps the other classes on <pre> when the language changes', () => {
+    // Assigning className outright wiped everything else, so choosing a
+    // language silently switched line numbers back off.
+    const { ctx, ct } = makeTooltip();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    ct._activePre = pre;
+
+    ct._toggleLineNumbers();
+    expect(pre.classList.contains('an-code-line-numbers')).toBe(true);
+    pre.classList.add('user-class');
+
+    ct._langSelect.value = 'javascript';
+    ct._onLangChange();
+
+    expect(pre.classList.contains('an-code-line-numbers')).toBe(true);
+    expect(pre.classList.contains('user-class')).toBe(true);
+    expect(pre.classList.contains('language-javascript')).toBe(true);
+  });
+
+  it('replaces the previous language rather than accumulating them', () => {
+    const { ctx, ct } = makeTooltip();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    ct._activePre = pre;
+
+    ct._langSelect.value = 'javascript';
+    ct._onLangChange();
+    ct._langSelect.value = 'python';
+    ct._onLangChange();
+
+    expect(pre.classList.contains('language-javascript')).toBe(false);
+    expect(pre.classList.contains('language-python')).toBe(true);
+    expect(pre.querySelector('code').classList.contains('language-python')).toBe(true);
+  });
+
+  it('clears only the language class when switching back to plain text', () => {
+    const { ctx, ct } = makeTooltip();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    ct._activePre = pre;
+    ct._toggleLineNumbers();
+
+    ct._langSelect.value = 'javascript';
+    ct._onLangChange();
+    ct._langSelect.value = '';
+    ct._onLangChange();
+
+    expect(pre.className).toBe('an-code-line-numbers');
+    expect(pre.dataset.language).toBeUndefined();
+  });
+});
+
+describe('CodeTooltip language picker coverage', () => {
+  it('offers every language the detector can return', async () => {
+    const { LANGUAGES } = await import('../../src/js/module/CodeTooltip.js');
+    const { SUPPORTED_LANGS } = await import('../../src/js/core/detectLang.js');
+    const offered = new Set(LANGUAGES.map(([value]) => value));
+    // A detected language missing here highlights correctly but leaves the
+    // picker reading "Plain text", which looks like the detection failed.
+    expect(SUPPORTED_LANGS.filter((l) => !offered.has(l))).toEqual([]);
+  });
+
+  it('offers a plain-text option and no duplicates', async () => {
+    const { LANGUAGES } = await import('../../src/js/module/CodeTooltip.js');
+    const values = LANGUAGES.map(([v]) => v);
+    expect(values).toContain('');
+    expect(new Set(values).size).toBe(values.length);
+  });
+});

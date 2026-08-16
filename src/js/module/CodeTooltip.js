@@ -17,6 +17,35 @@ const ICONS = {
   lineNumbers:  `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-2-2-2"/></svg>`,
 };
 
+/**
+ * Options offered by the language picker, as `[prism id, label]`.
+ *
+ * Exported so a test can assert it covers everything `detectLang()` is able to
+ * return — a detected language missing from here highlights the block correctly
+ * but leaves the picker showing "Plain text", which reads as a bug.
+ * @type {Array<[string, string]>}
+ */
+export const LANGUAGES = [
+  ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
+  ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['scss', 'SCSS'],
+  ['json', 'JSON'], ['yaml', 'YAML'], ['markdown', 'Markdown'], ['xml', 'XML'],
+  ['bash', 'Bash / Shell'], ['sql', 'SQL'],
+  ['java', 'Java'], ['csharp', 'C#'], ['php', 'PHP'], ['ruby', 'Ruby'],
+  ['go', 'Go'], ['rust', 'Rust'], ['cpp', 'C++'], ['c', 'C'],
+  ['kotlin', 'Kotlin'], ['swift', 'Swift'],
+];
+
+/**
+ * Replaces whatever `language-*` class an element carries with `lang`,
+ * leaving every other class alone. Passing an empty `lang` just removes it.
+ * @param {Element} el
+ * @param {string} lang
+ */
+function _setLanguageClass(el, lang) {
+  [...el.classList].forEach((c) => { if (c.startsWith('language-')) el.classList.remove(c); });
+  if (lang) el.classList.add(`language-${lang}`);
+}
+
 export class CodeTooltip {
   /** @param {import('../Context.js').Context} context */
   constructor(context) {
@@ -101,14 +130,6 @@ export class CodeTooltip {
       title: L.syntaxLanguage,
       'aria-label': L.syntaxAriaLabel,
     }));
-    const LANGUAGES = [
-      ['', 'Plain text'], ['javascript', 'JavaScript'], ['typescript', 'TypeScript'],
-      ['python', 'Python'], ['html', 'HTML'], ['css', 'CSS'], ['scss', 'SCSS'],
-      ['json', 'JSON'], ['xml', 'XML'], ['bash', 'Bash / Shell'], ['sql', 'SQL'],
-      ['java', 'Java'], ['csharp', 'C#'], ['php', 'PHP'], ['ruby', 'Ruby'],
-      ['go', 'Go'], ['rust', 'Rust'], ['cpp', 'C++'], ['c', 'C'],
-      ['kotlin', 'Kotlin'], ['swift', 'Swift'],
-    ];
     LANGUAGES.forEach(([value, label]) => {
       const opt = createElement('option', { value });
       opt.textContent = label;
@@ -359,9 +380,12 @@ export class CodeTooltip {
       pre.appendChild(codeEl);
     }
 
-    codeEl.className = lang ? `language-${lang}` : '';
+    // Swap only the language- class. Assigning className outright wiped every
+    // other class on the element, so picking a language silently switched line
+    // numbers back off and dropped any class the content arrived with.
+    _setLanguageClass(codeEl, lang);
     // Mirror language class on <pre> so Prism CSS theme targets it (pre[class*='language-'])
-    pre.className = lang ? `language-${lang}` : '';
+    _setLanguageClass(pre, lang);
     if (lang) {
       pre.dataset.language = lang;
     } else {
