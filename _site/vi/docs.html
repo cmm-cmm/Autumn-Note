@@ -56,6 +56,17 @@
   <link rel="apple-touch-icon" href="/image/banner.png" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+  <style>
+    /* Critical path — see playground.html: fixes the body box before the
+       external stylesheet arrives so an early paint cannot shift the page.
+       Keep in step with assets/docs.css. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh; background: #f9fafb; color: #111827; line-height: 1.65;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" />
   <link rel="stylesheet" crossorigin href="/assets/docs-BkwJPq7w.css">
 </head>

@@ -127,6 +127,17 @@
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
+  <style>
+    /* Critical path — see playground.html: fixes the body box before the
+       external stylesheet arrives so an early paint cannot shift the page.
+       Keep in step with assets/index.css. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh; background: #faf9f7; color: #1c1917; line-height: 1.55;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+  </style>
 
   <script type="module" crossorigin src="/assets/main-aW68qyhd.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/all-DjYBa7g1.js">

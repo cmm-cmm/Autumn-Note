@@ -54,12 +54,38 @@
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
+  <style>
+    /* Critical path — inlined so a paint that happens before the external
+       stylesheets arrive still has the final body box. Cloudflare RUM measured
+       CLS 0.773 on /playground from <body> going 8px-margin / 0-height to
+       0 / full-viewport, which is the signature of a first paint with the UA
+       stylesheet still in effect. Reserving the geometry here makes that shift
+       impossible regardless of when the CSS lands. Keep in step with
+       assets/playground.css. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      background: #f3f4f6; color: #111827;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    body.dark { background: #1e1e2e; color: #cdd6f4; }
+  </style>
   <script type="module" crossorigin src="/assets/playground-DusVeIHs.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/all-DjYBa7g1.js">
   <link rel="stylesheet" crossorigin href="/assets/all-BarZ0tO9.css">
   <link rel="stylesheet" crossorigin href="/assets/playground-BYFbSwrs.css">
 </head>
 <body>
+<script>
+  /* Applies the saved theme before the body is laid out. The module script at
+     the end of this file runs after first paint, so a returning dark-mode
+     visitor used to see a light page and then a flip to dark. */
+  try {
+    var c = JSON.parse(localStorage.getItem('an-playground-cfg') || 'null');
+    if (c && c.theme === 'dark') document.body.classList.add('dark');
+  } catch (e) { /* private mode / disabled storage — fall through to light */ }
+</script>
 
 <header class="site-header">
   <div class="header-inner">
