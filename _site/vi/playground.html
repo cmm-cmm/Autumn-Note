@@ -64,11 +64,12 @@
 <script>
   /* Applies the saved theme before the body is laid out. The module script at
      the end of this file runs after first paint, so a returning dark-mode
-     visitor used to see a light page and then a flip to dark. */
+     visitor used to see a light page and then a flip to dark. Storage throws
+     in private mode; falling through simply leaves the light theme. */
   try {
-    var c = JSON.parse(localStorage.getItem('an-playground-cfg') || 'null');
-    if (c && c.theme === 'dark') document.body.classList.add('dark');
-  } catch (e) { /* private mode / disabled storage — fall through to light */ }
+    const cfg = JSON.parse(localStorage.getItem('an-playground-cfg') || 'null');
+    if (cfg && cfg.theme === 'dark') document.body.classList.add('dark');
+  } catch (_) { void _; }
 </script>
 
 <header class="site-header">
