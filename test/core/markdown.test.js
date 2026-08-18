@@ -1297,3 +1297,120 @@ describe('markdownToHTML — UTF-8 byte-order mark', () => {
     expect(isMarkdown(null)).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Code content — spans, fences, and code inside list items
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — code spans are literal', () => {
+  it('keeps a character reference as written instead of decoding it', () => {
+    // Code is literal text: `&amp;` inside backticks has to survive as those
+    // five characters, not render as "&". Preserving entities in _esc() for
+    // ordinary prose had started decoding them here too.
+    expect(markdownToHTML('use `&amp;` here')).toBe('<p>use <code>&amp;amp;</code> here</p>');
+  });
+
+  it('still escapes a raw angle bracket', () => {
+    expect(markdownToHTML('`if x < 5`')).toBe('<p><code>if x &lt; 5</code></p>');
+  });
+
+  it('does not treat a backslash as an escape inside a span', () => {
+    // CommonMark: backslash escapes are inert inside a code span.
+    expect(markdownToHTML('`a\\*b`')).toBe('<p><code>a\\*b</code></p>');
+  });
+
+  it('leaves an escaped backtick out of span detection', () => {
+    expect(markdownToHTML('a \\`not code\\` b')).toBe('<p>a `not code` b</p>');
+  });
+
+  it('lets a longer backtick run hold a shorter one', () => {
+    expect(markdownToHTML('`` a ` b ``')).toBe('<p><code>a ` b</code></p>');
+  });
+
+  it('leaves an empty backtick pair as literal text', () => {
+    expect(markdownToHTML('a `` b')).toBe('<p>a `` b</p>');
+  });
+});
+
+describe('markdownToHTML — fenced content is literal', () => {
+  it('keeps character references as written', () => {
+    expect(markdownToHTML('```\n&amp; &lt;div&gt;\n```'))
+      .toBe('<pre><code>&amp;amp; &amp;lt;div&amp;gt;</code></pre>');
+  });
+
+  it('round-trips a fence containing entities', () => {
+    const src = '```html\n<div>&amp;</div>\n```';
+    expect(htmlToMarkdown(markdownToHTML(src))).toBe(src);
+  });
+});
+
+describe('markdownToHTML — code blocks inside list items', () => {
+  it('parses a fenced block in a loose item instead of folding it into the text', () => {
+    // The fence lines used to be joined into the item's paragraph, where the
+    // inline code-span rule mangled them into <code><code>js x </code></code>
+    // and every line break was lost.
+    expect(markdownToHTML('- item\n\n  ```js\n  const a = 1;\n  ```\n\n- next'))
+      .toBe('<ul><li><p>item</p><pre><code class="language-js">const a = 1;</code></pre></li>'
+          + '<li><p>next</p></li></ul>');
+  });
+
+  it('parses a fenced block in a tight item', () => {
+    expect(markdownToHTML('- item\n  ```js\n  const a = 1;\n  ```'))
+      .toBe('<ul><li>item<pre><code class="language-js">const a = 1;</code></pre></li></ul>');
+  });
+
+  it('parses a fenced block in an ordered item', () => {
+    expect(markdownToHTML('1. step\n\n   ```sh\n   npm i\n   ```'))
+      .toBe('<ol><li><p>step</p><pre><code class="language-sh">npm i</code></pre></li></ol>');
+  });
+
+  it('preserves interior indentation of the snippet', () => {
+    const html = markdownToHTML('- item\n\n  ```js\n  if (a) {\n    b();\n  }\n  ```');
+    expect(html).toContain('if (a) {\n  b();\n}');
+  });
+
+  it('accepts a tilde fence', () => {
+    expect(markdownToHTML('- item\n\n  ~~~js\n  x\n  ~~~'))
+      .toContain('<pre><code class="language-js">x</code></pre>');
+  });
+
+  it('keeps a code block and a nested list in source order', () => {
+    expect(markdownToHTML('- item\n\n  ```js\n  x\n  ```\n\n  - sub'))
+      .toBe('<ul><li><p>item</p><pre><code class="language-js">x</code></pre>'
+          + '<ul><li>sub</li></ul></li></ul>');
+  });
+
+  it('works inside a blockquote', () => {
+    expect(markdownToHTML('> - item\n>   ```js\n>   x\n>   ```'))
+      .toBe('<blockquote><ul><li>item<pre><code class="language-js">x</code></pre></li></ul></blockquote>');
+  });
+
+  it('round-trips', () => {
+    const src = '- item\n\n  ```js\n  const a = 1;\n  ```';
+    expect(htmlToMarkdown(markdownToHTML(src))).toBe(src);
+  });
+});
+
+describe('htmlToMarkdown — code block line breaks', () => {
+  it('reads <br> as a newline, which is how contenteditable stores them', () => {
+    // textContent drops <br> outright, so a code block typed in the editor
+    // came back as one run-together line.
+    expect(htmlToMarkdown('<pre><code>line1<br>line2<br>line3</code></pre>'))
+      .toBe('```\nline1\nline2\nline3\n```');
+  });
+
+  it('reads block-level children as line breaks too', () => {
+    expect(htmlToMarkdown('<pre><code><div>l1</div><div>l2</div></code></pre>'))
+      .toBe('```\nl1\nl2\n```');
+  });
+
+  it('does not add a blank line for a trailing newline', () => {
+    expect(htmlToMarkdown('<pre><code>a\n</code></pre>')).toBe('```\na\n```');
+  });
+
+  it('strips Prism markup back to the underlying source', () => {
+    const html = '<pre><code class="language-js"><span class="token keyword">const</span>'
+      + ' a <span class="token operator">=</span> <span class="token number">1</span>;</code></pre>';
+    expect(htmlToMarkdown(html)).toBe('```js\nconst a = 1;\n```');
+  });
+});

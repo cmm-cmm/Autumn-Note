@@ -456,3 +456,22 @@ describe('style resource-loading functions', () => {
     expect(result).not.toContain('image-set');
   });
 });
+
+describe('sanitiseHTML — code block presentation', () => {
+  it('keeps white-space so the word-wrap toggle survives a save/restore', () => {
+    // CodeTooltip's wrap toggle persists as an inline style on the <pre>.
+    // Dropping it lost the setting through setHTML, paste and auto-save restore.
+    const html = '<pre style="white-space: pre-wrap"><code>x</code></pre>';
+    expect(sanitiseHTML(html)).toContain('pre-wrap');
+  });
+
+  it('still drops a style property that is not allowlisted', () => {
+    expect(sanitiseHTML('<pre style="position: fixed"><code>x</code></pre>'))
+      .not.toContain('position');
+  });
+
+  it('still rejects a url() value on an allowlisted property', () => {
+    expect(sanitiseHTML('<pre style="background-color: url(javascript:alert(1))"><code>x</code></pre>'))
+      .not.toContain('url(');
+  });
+});

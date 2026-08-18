@@ -44,6 +44,34 @@ function _directChildren(el, tagName) {
 }
 
 /**
+ * Text of a code element with line breaks preserved.
+ *
+ * `textContent` drops `<br>` entirely, and contenteditable stores every line
+ * break inside a `<pre>` as one — so a code block typed in the editor came out
+ * of getMarkdown() as a single run-together line. Block-level children (some
+ * browsers wrap lines in `<div>`) end a line too.
+ * @param {Element} el
+ * @returns {string}
+ */
+function _codeText(el) {
+  let out = '';
+  for (const node of el.childNodes) {
+    if (node.nodeType === 3) { out += node.textContent; continue; }
+    if (node.nodeType !== 1) continue;
+    const tag = node.nodeName.toLowerCase();
+    if (tag === 'br') { out += '\n'; continue; }
+    if (tag === 'div' || tag === 'p') {
+      if (out && !out.endsWith('\n')) out += '\n';
+      out += _codeText(/** @type {Element} */ (node));
+      out += '\n';
+      continue;
+    }
+    out += _codeText(/** @type {Element} */ (node));
+  }
+  return out;
+}
+
+/**
  * Backslash-escapes the inline Markdown syntax characters in a run of plain
  * text, so prose survives a round-trip instead of being re-read as formatting.
  *
@@ -188,8 +216,10 @@ function _domToMd(node, depth = 0) {
       const codeEl = el.querySelector('code');
       const langMatch = /language-(\S+)/.exec(codeEl?.className || '');
       const lang = langMatch ? langMatch[1] : '';
-      const content = (codeEl || el).textContent || '';
-      return `\n\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
+      const content = _codeText(codeEl || el);
+      // A block whose text already ends in a newline would otherwise gain a
+      // blank line from the one added before the closing fence.
+      return `\n\n\`\`\`${lang}\n${content.replace(/\n$/, '')}\n\`\`\`\n\n`;
     }
     case 'blockquote': {
       const rawLines = inner().trim().split('\n');
@@ -407,7 +437,7 @@ function _parseBlocks(lines) {
       while (i < lines.length && !closeRe.test(lines[i])) {
         // CommonMark strips up to as many leading spaces as the opening fence
         // was indented by, so an indented fence keeps its code left-aligned.
-        codeLines.push(_esc(_stripIndent(lines[i], fence.indent)));
+        codeLines.push(_escCode(_stripIndent(lines[i], fence.indent)));
         i++;
       }
       const langAttr = fence.lang ? ` class="language-${_escAttr(fence.lang)}"` : '';
@@ -432,7 +462,7 @@ function _parseBlocks(lines) {
           for (; i < j; i++) codeLines.push('');
           continue;
         }
-        codeLines.push(_esc(_stripIndent(lines[i], 4)));
+        codeLines.push(_escCode(_stripIndent(lines[i], 4)));
         i++;
       }
       out.push(`<pre><code>${codeLines.join('\n')}</code></pre>`);
@@ -752,6 +782,29 @@ function _parseListBlock(lines, startIdx) {
       i++;
     } else {
       if (!items.length) { i++; continue; }
+
+      // A fenced block belonging to this item. Without this the fence lines
+      // were folded into the item's paragraph text and the inline code-span
+      // rule chewed them up — "- a\n\n  ```js\n  x\n  ```" came out as
+      // <li><p>a</p><p><code><code>js x </code></code></p></li>, with the
+      // snippet's line breaks gone.
+      const dedent = (l) => _stripIndent(l, indent);
+      const fence = _openingFence(dedent(line));
+      if (fence) {
+        const closeRe = new RegExp(`^ {0,3}\\${fence.marker}{${fence.length},}[ \t]*$`);
+        const blockLines = [dedent(lines[i])];
+        i++;
+        while (i < lines.length && !closeRe.test(dedent(lines[i]))) {
+          blockLines.push(dedent(lines[i]));
+          i++;
+        }
+        if (i < lines.length) { blockLines.push(dedent(lines[i])); i++; }
+        // Appended to `sub` so it keeps its position relative to a nested list.
+        items[items.length - 1].sub += _parseBlocks(blockLines);
+        pendingBlank = false;
+        continue;
+      }
+
       if (/^\s*(?:[-*+]|\d+[.)]) /.test(line)) {
         const nested = _parseListBlock(lines, i);
         items[items.length - 1].sub += nested.html;
@@ -798,6 +851,55 @@ const ESCAPABLE_RE = /\\([!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])/g;
 // real markdown text, so it's safe as a delimiter. Built at runtime (not
 // written as a literal escape) to avoid embedding a raw NUL byte in this file.
 const MARK = String.fromCharCode(0);
+
+// Placeholder delimiter for extracted code spans. Distinct from MARK and
+// HARD_BREAK; like them it survives _esc() untouched and matches no syntax rule.
+const CODE_MARK = String.fromCharCode(2);
+// A code span: a run of backticks, the shortest content that reaches a matching
+// run, and that run again.
+const CODE_SPAN_RE = /(`+)([^]*?)\1/g;
+
+/**
+ * Pulls code spans out before anything else looks at the text.
+ *
+ * Their content is literal: no emphasis, no links, no backslash escapes, and no
+ * character references — `&amp;` inside backticks has to survive as those five
+ * characters. Extracting first is the only way to tell an `&lt;` the author
+ * typed from one _esc() produced out of a raw `<`.
+ * @param {string} text
+ * @returns {{ text: string, codes: string[] }}
+ */
+function _extractCodeSpans(text) {
+  const codes = [];
+  const replaced = text.replace(CODE_SPAN_RE, (whole, ticks, content) => {
+    // An empty span (`` with nothing between) is literal text in CommonMark.
+    if (content === '') return whole;
+    codes.push(content);
+    return `${CODE_MARK}${codes.length - 1}${CODE_MARK}`;
+  });
+  return { text: replaced, codes };
+}
+
+/**
+ * Restores extracted code spans as `<code>` elements, escaping their content
+ * as literal code.
+ * @param {string} text
+ * @param {string[]} codes
+ * @param {string[]} literals - backslash-escaped characters, for spans containing them
+ * @returns {string}
+ */
+function _restoreCodeSpans(text, codes, literals) {
+  return text.replace(new RegExp(`${CODE_MARK}(\\d+)${CODE_MARK}`, 'g'), (_, idx) => {
+    let c = codes[Number(idx)];
+    // A backslash escape is not an escape inside a code span — put the
+    // backslash back so `a\*b` shows as written.
+    c = c.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_m, i) => `\\${literals[Number(i)]}`);
+    // CommonMark strips one leading and trailing space when both are present,
+    // which is what lets a span hold a leading or trailing backtick.
+    if (c.length > 2 && c.startsWith(' ') && c.endsWith(' ') && c.trim() !== '') c = c.slice(1, -1);
+    return `<code>${_escCode(c)}</code>`;
+  });
+}
 
 /**
  * Step 0 of _inline(): replaces backslash-escaped punctuation with inert
@@ -932,10 +1034,6 @@ function _applyEmphasisAndCode(text) {
   text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
-  // Double-backtick code spans first (tolerates a single literal ` inside),
-  // then single-backtick spans.
-  text = text.replace(/``([\s\S]*?)``/g, (_, c) => `<code>${c}</code>`);
-  text = text.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
   return text;
 }
 
@@ -943,7 +1041,11 @@ function _inline(text) {
   // Step 0: backslash escapes (\* \_ \` \# \[ \] \( \) \> \\ \~ \|) — replaced
   // with inert placeholders before any syntax regex below can match them, so
   // e.g. \*not bold\* never gets treated as emphasis. Restored at the end.
+  // Backslash escapes first, so an escaped backtick cannot open a code span.
+  // Code spans come out next: their content is literal, and must not be seen by
+  // the entity, link or emphasis passes below.
   const { text: withoutEscapes, literals } = _extractBackslashEscapes(text);
+  const { text: withoutCode, codes } = _extractCodeSpans(withoutEscapes);
 
   // Step 1: escape raw &/</> in the plain-text parts of the string exactly
   // once, up front — none of these are markdown-syntax characters used below,
@@ -953,13 +1055,13 @@ function _inline(text) {
   // (_escAttrQuotes), since & < > are already entities. Values that come from
   // _linkDefs (sourced from the raw, unescaped line array) still need the
   // full _escAttr/_esc treatment.
-  let result = _esc(withoutEscapes);
+  let result = _esc(withoutCode);
 
   result = _resolveLinksAndFootnotes(result);
   result = _applyAutolinks(result);
   result = _applyEmphasisAndCode(result);
 
-  return _restoreBackslashEscapes(result, literals);
+  return _restoreCodeSpans(_restoreBackslashEscapes(result, literals), codes, literals);
 }
 
 // A complete named / decimal / hex character reference. An `&` that starts one
@@ -972,6 +1074,21 @@ const ENTITY_RE = /&(?!#\d+;|#[xX][0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]*;)/g;
 function _esc(v) {
   return String(v)
     .replace(ENTITY_RE, '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+/**
+ * Escaper for code content. Unlike _esc() it escapes every `&`, because a
+ * character reference is not recognised inside a code span or code block —
+ * `&amp;` written in a fence has to survive as those five literal characters
+ * rather than rendering as `&`.
+ * @param {string} v
+ * @returns {string}
+ */
+function _escCode(v) {
+  return String(v)
+    .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
 }

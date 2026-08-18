@@ -55,6 +55,10 @@ const ALLOWED_STYLE_PROPS = new Set([
   'text-align', 'vertical-align',
   'width', 'min-width', 'height', 'min-height',
   'border-width', 'border-style', 'border-color', 'padding',
+  // The code block's word-wrap toggle persists as `white-space: pre-wrap` on
+  // the <pre>. Dropping it meant the setting was lost through every path that
+  // re-sanitises — setHTML, paste, and auto-save restore.
+  'white-space',
 ]);
 
 /**

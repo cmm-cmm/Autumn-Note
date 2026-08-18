@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] - 2026-08-18
+
+Code inside content — code spans, fenced blocks, and code blocks nested in lists.
+
+### Fixed
+
+- **A fenced code block inside a list item was destroyed.** Its lines were folded into the item's paragraph text, where the inline code-span rule chewed them up: `- item` followed by an indented ```` ```js ```` block came out as `<li><p>item</p><p><code><code>js const a = 1; </code></code></p></li>`, with every line break gone. A fence opening in an item's continuation is now parsed as a block, in tight and loose items, ordered and unordered, inside blockquotes, and with both fence markers. It keeps its position relative to a nested list, and round-trips.
+- **Code blocks written in the editor collapsed to a single line.** `contenteditable` stores every line break inside a `<pre>` as a `<br>`, and `htmlToMarkdown()` read the block with `textContent`, which drops them — so `getMarkdown()` and `downloadMarkdown()` returned `line1line2line3`. Line breaks are now read from `<br>` and from block-level children, which is how some browsers wrap lines.
+- **Character references inside code were being decoded.** Code is literal text, so `&amp;` written in a fence or a code span has to survive as those five characters; preserving entities for ordinary prose in 2.3.0 had started decoding them here too. Code spans are now extracted before any other inline pass, which is also the only way to tell an `&lt;` the author typed from one the escaper produced out of a raw `<`.
+- **The code block's word-wrap toggle did not survive a save.** It persists as `white-space: pre-wrap` on the `<pre>`, and the sanitiser's style allowlist dropped the property — so the setting was lost through `setHTML`, paste, and auto-save restore. `white-space` is allowlisted now; it fetches nothing and cannot escape layout.
+- A backslash is no longer treated as an escape inside a code span, matching CommonMark — `` `a\*b` `` renders as written. An escaped backtick no longer opens a span, and a longer backtick run can hold a shorter one.
+- A `<pre>` whose text already ended in a newline no longer gains a blank line before the closing fence.
+
+---
+
 ## [2.4.0] - 2026-08-16
 
 Code blocks and blockquotes.
