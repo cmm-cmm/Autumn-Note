@@ -29,6 +29,11 @@ export * from './core/key.js';
 export * from './core/lists.js';
 export * from './core/env.js';
 export * from './core/sanitise.js';
+// Both were reachable only through an editor instance, which needs a DOM —
+// so converting or detecting on a server or in a build step meant reaching
+// into src/. They are already in the bundle; exporting them costs nothing.
+export * from './core/markdown.js';
+export * from './core/detectLang.js';
 export * from './module/Buttons.js';
 export { locales, resolveLocale, registerLocale } from './i18n/index.js';
 

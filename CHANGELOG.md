@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.0] - 2026-08-18
 
-Code inside content — code spans, fenced blocks, and code blocks nested in lists.
+Code inside content — code spans, fenced blocks, and code blocks nested in lists — plus a hang, and the conversion helpers on the public API.
 
 ### Fixed
+
+- **A heading marker with no title froze the page.** `# ` on its own — a hash, a space, nothing after it — was rejected by the heading rule *and* refused by the paragraph collector, which skips any line starting with a heading marker. Neither consumed the line, so the block loop spun forever: converting or pasting a document containing one locked the tab. Present in 2.3.0 and 2.4.0. `# ` is now the empty heading CommonMark says it is, and the block loop has a forward-progress guard so no future gap between two branches can hang it again.
 
 - **A fenced code block inside a list item was destroyed.** Its lines were folded into the item's paragraph text, where the inline code-span rule chewed them up: `- item` followed by an indented ```` ```js ```` block came out as `<li><p>item</p><p><code><code>js const a = 1; </code></code></p></li>`, with every line break gone. A fence opening in an item's continuation is now parsed as a block, in tight and loose items, ordered and unordered, inside blockquotes, and with both fence markers. It keeps its position relative to a nested list, and round-trips.
 - **Code blocks written in the editor collapsed to a single line.** `contenteditable` stores every line break inside a `<pre>` as a `<br>`, and `htmlToMarkdown()` read the block with `textContent`, which drops them — so `getMarkdown()` and `downloadMarkdown()` returned `line1line2line3`. Line breaks are now read from `<br>` and from block-level children, which is how some browsers wrap lines.
@@ -23,6 +25,13 @@ Code inside content — code spans, fenced blocks, and code blocks nested in lis
 - **The code block's word-wrap toggle did not survive a save.** It persists as `white-space: pre-wrap` on the `<pre>`, and the sanitiser's style allowlist dropped the property — so the setting was lost through `setHTML`, paste, and auto-save restore. `white-space` is allowlisted now; it fetches nothing and cannot escape layout.
 - A backslash is no longer treated as an escape inside a code span, matching CommonMark — `` `a\*b` `` renders as written. An escaped backtick no longer opens a span, and a longer backtick run can hold a shorter one.
 - A `<pre>` whose text already ended in a newline no longer gains a blank line before the closing fence.
+- **Seven super-linear backtracking sites in the converter** (CWE-1333) — the frontmatter, fence, heading, footnote-definition and angle-bracket-destination patterns each had a whitespace quantifier competing with a neighbouring class that also matched whitespace. A regex linter now reports none, and the pathological inputs that used to be slow all finish in under 100 ms.
+
+### Added
+
+- **`markdownToHTML`, `htmlToMarkdown`, `isMarkdown`, `detectLang` and `SUPPORTED_LANGS` are exported from the package entry**, alongside `sanitiseHTML`. They were reachable only through an editor instance, which needs a DOM, so converting or detecting in a build step, on a server, or in a test meant importing out of `src/`. They were already in the bundle; exporting them costs nothing. Typed in `types/core/markdown.d.ts` and `types/core/detectLang.d.ts`.
+
+  `markdownToHTML()` output is not sanitised — pass it through `sanitiseHTML()` before inserting it anywhere.
 
 ---
 

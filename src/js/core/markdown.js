@@ -313,7 +313,7 @@ function _domToMd(node, depth = 0) {
  * @returns {string}
  */
 function _stripBOM(text) {
-  return String(text ?? '').replace(/^﻿/, '');
+  return String(text ?? '').replace(/^\ufeff/, '');
 }
 
 /**
@@ -329,7 +329,7 @@ export function isMarkdown(rawText) {
   return /^#{1,6} [^\s]|^[ \t]*[-*+] [^\s]|^[ \t]*\d+[.)] [^\s]|^> ?[^\s]|^ {0,3}(?:`{3,}|~{3,})|^\*{2}[^*\n]+\*{2}/m.test(text)
     || /^.+\n=+\s*$/m.test(text)
     || /^.+\n-{2,}\s*$/m.test(text)
-    || /^---\s*\n(?:[\s\S]*?\n)?(?:---|\.\.\.)\s*(?:\n|$)/.test(text)
+    || /^---[ \t]*\n(?:[\s\S]*?\n)?(?:---|\.\.\.)[ \t]*(?:\n|$)/.test(text)
     || /^\|.+\|[ \t]*\n\|[ \t:|-]+\|/m.test(text)
     // Pipe table without outer pipes: `a | b` over `--- | ---`.
     || /^[^\n|]*\|[^\n]*\n[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)+$/m.test(text)
@@ -344,7 +344,7 @@ const BQ_RE = /^ {0,3}>( ?)(.*)$/;
 // Indented code block: 4+ spaces or a leading tab, with actual content after it.
 const INDENTED_CODE_RE = /^(?: {4}|\t)\s*\S/;
 // Opening fence: up to 3 spaces, then 3+ backticks or 3+ tildes, then an info string.
-const FENCE_RE = /^( {0,3})(`{3,}|~{3,})[ \t]*(.*)$/;
+const FENCE_RE = /^( {0,3})(`{3,}|~{3,})[ \t]*([^\s`~][^\n]*)?$/;
 
 /**
  * Parses `line` as an opening code fence, or returns null.
@@ -358,7 +358,8 @@ const FENCE_RE = /^( {0,3})(`{3,}|~{3,})[ \t]*(.*)$/;
 function _openingFence(line) {
   const m = FENCE_RE.exec(line);
   if (!m) return null;
-  const [, indent, fence, info] = m;
+  // The info-string group is optional, so it is undefined on a bare fence.
+  const [, indent, fence, info = ''] = m;
   if (fence[0] === '`' && info.includes('`')) return null;
   return {
     marker: fence[0],
@@ -491,7 +492,11 @@ function _parseBlocks(lines) {
     }
 
     // ---- ATX Headings # – ######  -------------------------------------------
-    const hMatch = /^(#{1,6})\s+(.+)$/.exec(line);
+    // The title may be empty: "# " on its own is a valid empty heading. It also
+    // has to match here, because the paragraph collector below refuses any line
+    // starting with a heading marker — a line this regex rejected but that one
+    // also skipped consumed nothing, and the block loop spun forever.
+    const hMatch = /^(#{1,6})[ \t]+(.*)$/.exec(line);
     if (hMatch) {
       const level = hMatch[1].length;
       // Strip an optional closing sequence of #'s (e.g. "## Heading ##"),
@@ -578,6 +583,13 @@ function _parseBlocks(lines) {
     }
     if (paraLines.length) {
       out.push(`<p>${_inline(_joinParagraphLines(paraLines)).replaceAll(HARD_BREAK, '<br>')}</p>`);
+    } else {
+      // Nothing above consumed this line and the paragraph collector rejected
+      // it too. That combination is a bug in one of the branches, but the loop
+      // must still move: spinning here froze the page on input as ordinary as a
+      // heading marker with nothing after it. Emit the line and move on.
+      out.push(`<p>${_inline(line)}</p>`);
+      i++;
     }
   }
 
@@ -635,7 +647,7 @@ function _extractReferenceDefinitions(lines) {
   const clean = [];
   let inFence = false;
   const linkDefRe = /^\[([^\]]+)\]:\s*(\S+)(?:\s+"([^"]*)")?\s*$/;
-  const footnoteDefRe = /^\[\^([^\]]+)\]:\s*(.+)$/;
+  const footnoteDefRe = /^\[\^([^\]]+)\]:[ \t]*(\S.*)$/;
 
   for (const line of lines) {
     // Definitions inside a fenced block are literal code, not definitions.
@@ -952,7 +964,7 @@ function _splitDestAndTitle(dest) {
 
   // Angle-bracket destination: everything up to the closing bracket is the URL,
   // so it may contain spaces and parentheses.
-  const angle = /^&lt;([^]*?)&gt;\s*(?:"([^"]*)"|'([^']*)')?\s*$/.exec(s);
+  const angle = /^&lt;([\s\S]*?)&gt;(?:[ \t]*(?:"([^"]*)"|'([^']*)'))?[ \t]*$/.exec(s);
   if (angle) return { href: angle[1], title: angle[2] ?? angle[3] ?? '' };
 
   const withTitle = /^(\S+)\s+(?:"([^"]*)"|'([^']*)')\s*$/.exec(s);

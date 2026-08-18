@@ -446,6 +446,8 @@ export * from './core/key.js';
 export * from './core/lists.js';
 export * from './core/env.js';
 export * from './core/sanitise.js';
+export * from './core/markdown.js';
+export * from './core/detectLang.js';
 
 // ---------------------------------------------------------------------------
 // Context — per-instance editor hub

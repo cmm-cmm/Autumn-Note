@@ -1414,3 +1414,49 @@ describe('htmlToMarkdown — code block line breaks', () => {
     expect(htmlToMarkdown(html)).toBe('```js\nconst a = 1;\n```');
   });
 });
+
+
+// ---------------------------------------------------------------------------
+// Termination and cost — conversion runs on whatever the user pastes
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — empty ATX headings', () => {
+  it.each(['# ', '#   ', '## ', '###### '])(
+    'terminates on %p, a heading marker with no title',
+    (input) => {
+      // The heading regex required a title, and the paragraph collector refuses
+      // any line starting with a heading marker — so this line was consumed by
+      // neither and the block loop spun forever, freezing the page. Shipped in
+      // 2.3.0 and 2.4.0.
+      const start = performance.now();
+      const html = markdownToHTML(input);
+      expect(performance.now() - start).toBeLessThan(500);
+      expect(html).toMatch(/^<h[1-6]><\/h[1-6]>$/);
+    },
+  );
+
+  it('still reads a heading with a title', () => {
+    expect(markdownToHTML('# title')).toBe('<h1>title</h1>');
+  });
+
+  it('leaves a bare marker with no space as a paragraph', () => {
+    expect(markdownToHTML('#')).toBe('<p>#</p>');
+  });
+});
+
+describe('markdownToHTML — bounded cost', () => {
+  it.each([
+    ['an unterminated frontmatter marker', `---\n${'a\n'.repeat(20_000)}`],
+    ['a long run of backticks', '`'.repeat(40_000)],
+    ['a long run of tildes', '~'.repeat(40_000)],
+    ['a heading marker with a long space run', `#${' '.repeat(40_000)}`],
+    ['a footnote definition with a long space run', `[^a]:${' '.repeat(40_000)}`],
+    ['an unclosed angle-bracket destination', `[x](<${'a'.repeat(40_000)}`],
+    ['a long run of emphasis markers', '*'.repeat(20_000)],
+    ['one very long line', 'x'.repeat(200_000)],
+  ])('stays fast on %s', (_label, input) => {
+    const start = performance.now();
+    markdownToHTML(input);
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
+});
