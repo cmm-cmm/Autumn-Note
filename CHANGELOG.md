@@ -29,6 +29,16 @@ Code inside content — code spans, fenced blocks, and code blocks nested in lis
 
 ### Added
 
+- **`onImageUpload` can hand the uploaded URL back.** The handler was called with the dropped files and returned nothing, so every integration that uploaded to its own storage had to insert the image itself — there was no supported path for the most common way an editor is wired up. Return the URL, or a promise of it, and the editor inserts a dimmed placeholder previewing the local file straight away and swaps in the real URL when it lands. An array maps onto the files by position.
+
+  Progress is reported through a `setProgress(file, ratio)` helper passed to the handler, and drives a bar along the bottom of the placeholder. A rejection — or a URL the sanitiser refuses — marks the image failed and fires `imageError` carrying a `retry()` that re-sends just that file.
+
+  **A handler that returns nothing behaves exactly as before**: nothing is inserted, no placeholder appears, and the handler stays responsible for placing the image. This is additive.
+
+  Not to be confused with `imageProcessor`, which *transforms* a file and must resolve to a data URL; `onImageUpload` *uploads* and resolves to any URL the sanitiser accepts.
+
+### Added
+
 - **`markdownToHTML`, `htmlToMarkdown`, `isMarkdown`, `detectLang` and `SUPPORTED_LANGS` are exported from the package entry**, alongside `sanitiseHTML`. They were reachable only through an editor instance, which needs a DOM, so converting or detecting in a build step, on a server, or in a test meant importing out of `src/`. They were already in the bundle; exporting them costs nothing. Typed in `types/core/markdown.d.ts` and `types/core/detectLang.d.ts`.
 
   `markdownToHTML()` output is not sanitised — pass it through `sanitiseHTML()` before inserting it anywhere.

@@ -60,7 +60,23 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 ### Insert
 - **Horizontal rule** — inserts an `<hr>` at the current caret position
 - **Link dialog** — URL, display text (auto-filled from selection), "Open in new tab" checkbox; edits existing links when caret is inside an `<a>`
-- **Image dialog** — insert by URL with alt text, or file upload (base64 embed); enforces `maxImageSize`; file input restricted to browser-renderable MIME types; supports custom `onImageUpload` handler for server-side upload
+- **Image dialog** — insert by URL with alt text, or file upload (base64 embed); enforces `maxImageSize`; file input restricted to browser-renderable MIME types
+- **Server-side image upload** — return the uploaded URL from `onImageUpload` (or a promise of it) and the editor drops in a dimmed placeholder previewing the local file straight away, then swaps in the real URL when it lands. Report progress with the supplied `setProgress(file, ratio)`; a rejection marks the image failed and fires `imageError` with a `retry()` for that file. A handler that returns nothing keeps the previous behaviour and inserts the image itself:
+
+  ```js
+  AutumnNote.create('#editor', {
+    async onImageUpload(files, { setProgress }) {
+      return Promise.all(files.map(async (file) => {
+        const body = new FormData();
+        body.append('file', file);
+        setProgress(file, 0.1);
+        const res = await fetch('/api/upload', { method: 'POST', body });
+        setProgress(file, 1);
+        return (await res.json()).url;   // inserted in place of the placeholder
+      }));
+    },
+  });
+  ```
 - **Image crop overlay** — inline interactive crop tool triggered from the image tooltip; corner and edge drag handles; canvas-based crop export; CORS fallback warning
 - **Video dialog** — paste a YouTube watch/short URL, Vimeo URL, or direct `.mp4 / .webm / .ogg` URL; configurable width; renders as responsive `<iframe>` or `<video>`
 - **Table** — interactive grid picker (up to 10x10); optional header row (`tableHeaderRow`); floating tooltip for full row/column/cell management
@@ -312,17 +328,43 @@ const editor = AutumnNote.create('#my-editor', {
 
 ### Custom image upload
 
+Return the URL and the editor places the image for you — a placeholder appears
+at the caret immediately and is replaced when the upload resolves:
+
 ```js
-const editor = AutumnNote.create('#my-editor', {
-  onImageUpload(files) {
-    const fd = new FormData();
-    fd.append('file', files[0]);
-    fetch('/api/upload', { method: 'POST', body: fd })
-      .then(r => r.json())
-      .then(({ url }) => editor.invoke('editor.insertImage', url, files[0].name));
+AutumnNote.create('#my-editor', {
+  async onImageUpload(files, { setProgress }) {
+    return Promise.all(files.map(async (file) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      setProgress(file, 0.1);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      setProgress(file, 1);
+      return (await res.json()).url;
+    }));
+  },
+  onImageError({ file, message, retry }) {
+    console.warn(message, file?.name);
+    retry?.();          // re-sends just that file
   },
 });
 ```
+
+Returning nothing keeps the original behaviour — the handler inserts the image
+itself and no placeholder is shown:
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  onImageUpload(files) {
+    upload(files[0]).then(({ url }) =>
+      editor.invoke('editor.insertImage', url, files[0].name));
+  },
+});
+```
+
+> `onImageUpload` **uploads** and resolves to any URL the sanitiser accepts.
+> `imageProcessor` **transforms** a file and must resolve to a data URL — use it
+> for compression or format conversion, not for sending the file somewhere.
 
 ### Bubble toolbar
 
@@ -474,7 +516,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `blur` | `context` | Editor lost focus. |
 | `init` | `context` | Fired once after the editor has fully initialised. |
 | `imageUpload` | `files: FileList` | Fired when images are dropped or pasted (when `onImageUpload` is provided). |
-| `imageError` | `{ file, message }` | Fired when an image is rejected (e.g. over `maxImageSize`). |
+| `imageError` | `{ file, message, error?, retry? }` | Fired when an image is rejected (e.g. over `maxImageSize`) or an upload fails. `retry()` is present on upload failures and re-sends that one file. |
 | `paste` | `{ text, html }` | Fired after every paste event. |
 | `pasteError` | `{ message, size?, maxBytes? }` | Fired when paste/drop exceeds `maxPasteSize` or a dropped Markdown file cannot be read. |
 | `selectionChange` | `context` | Fired when the cursor or selection changes. |
@@ -542,7 +584,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
 | `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |
 | `onInit` | `Function` | `null` | `(context) => void` — called once after the editor is initialised. |
-| `onImageUpload` | `Function` | `null` | `(files: FileList) => void` — custom upload handler. Overrides base64 embed. |
+| `onImageUpload` | `Function` | `null` | `(files, { context, setProgress }) => void \| string \| string[] \| Promise<…>` — upload handler; overrides the base64 embed. Return the uploaded URL(s) to have the editor insert them, or nothing to insert them yourself. |
 | `onImageError` | `Function` | `null` | `({ file, message }) => void` — called when an image is rejected. |
 | `onPaste` | `Function` | `null` | `({ text, html }) => void` — called after every paste event. |
 | `onPasteError` | `Function` | `null` | `({ message, size?, maxBytes? }) => void` — called when pasted or dropped content cannot be processed. |

@@ -366,7 +366,7 @@ describe('Clipboard._insertImageFiles', () => {
     const { cb } = makeClipboard({ onImageUpload });
     const file = new File(['content'], 'photo.png', { type: 'image/png' });
     cb._insertImageFiles([file]);
-    expect(onImageUpload).toHaveBeenCalledWith([file]);
+    expect(onImageUpload).toHaveBeenCalledWith([file], expect.objectContaining({ setProgress: expect.any(Function) }));
   });
 
   it('does nothing for empty files array', () => {
@@ -456,7 +456,7 @@ describe('Clipboard._onDrop', () => {
     };
     cb._onDrop(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(onImageUpload).toHaveBeenCalledWith([imgFile]);
+    expect(onImageUpload).toHaveBeenCalledWith([imgFile], expect.objectContaining({ setProgress: expect.any(Function) }));
   });
 
   it('converts a dropped .md file to HTML and inserts it', async () => {
@@ -738,7 +738,7 @@ describe('Clipboard._onPaste', () => {
     };
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(onImageUpload).toHaveBeenCalledWith([imgFile]);
+    expect(onImageUpload).toHaveBeenCalledWith([imgFile], expect.objectContaining({ setProgress: expect.any(Function) }));
   });
 });
 
@@ -827,5 +827,144 @@ describe('Clipboard._placeCaretAtPoint', () => {
 
     delete document.caretPositionFromPoint;
     if (origCRFP) document.caretRangeFromPoint = origCRFP;
+  });
+});
+
+// ── async image upload pipeline ───────────────────────────────────────────────
+
+describe('Clipboard image upload handler', () => {
+  const makeFile = (name = 'a.png') => new File(['x'], name, { type: 'image/png' });
+
+  const mountUpload = (onImageUpload) => {
+    const ctx = makeContext({ onImageUpload });
+    const cb = new Clipboard(ctx);
+    cb.initialize();
+    const editable = ctx.layoutInfo.editable;
+    // jsdom has no execCommand; the shared stub returns true without inserting,
+    // so placeholder assertions would pass vacuously. Make insertHTML actually
+    // append, which is what the browser does at the caret.
+    vi.spyOn(document, 'execCommand').mockImplementation((cmd, _ui, html) => {
+      if (cmd === 'insertHTML') editable.insertAdjacentHTML('beforeend', String(html));
+      return true;
+    });
+    return { ctx, cb, editable };
+  };
+
+  it('keeps the original contract when the handler returns nothing', async () => {
+    // The handler inserts the image itself; no placeholder should appear.
+    const handler = vi.fn(() => undefined);
+    const { cb, editable } = mountUpload(handler);
+    await cb._runUploadHandler([makeFile()]);
+    expect(handler).toHaveBeenCalled();
+    expect(editable.querySelector('img')).toBeNull();
+  });
+
+  it('passes the files and the helpers to the handler', async () => {
+    const handler = vi.fn(() => undefined);
+    const { ctx, cb } = mountUpload(handler);
+    const file = makeFile();
+    await cb._runUploadHandler([file]);
+    const [files, helpers] = handler.mock.calls[0];
+    expect(files).toEqual([file]);
+    expect(helpers.context).toBe(ctx);
+    expect(typeof helpers.setProgress).toBe('function');
+  });
+
+  it('shows a placeholder immediately and swaps in the resolved URL', async () => {
+    let release;
+    const pending = new Promise((r) => { release = r; });
+    const { cb, editable } = mountUpload(() => pending);
+
+    const done = cb._runUploadHandler([makeFile()]);
+    // Placeholder is in place before the promise settles.
+    const placeholder = editable.querySelector('img.an-image-uploading');
+    expect(placeholder).not.toBeNull();
+    expect(placeholder.getAttribute('src')).toMatch(/^blob:/);
+
+    release('https://cdn.example.com/a.png');
+    await done;
+
+    const img = editable.querySelector('img');
+    expect(img.getAttribute('src')).toBe('https://cdn.example.com/a.png');
+    expect(img.classList.contains('an-image-uploading')).toBe(false);
+    expect(img.hasAttribute('data-an-upload')).toBe(false);
+  });
+
+  it('accepts a plain string as well as a promise', async () => {
+    const { cb, editable } = mountUpload(() => 'https://cdn.example.com/b.png');
+    await cb._runUploadHandler([makeFile()]);
+    expect(editable.querySelector('img').getAttribute('src')).toBe('https://cdn.example.com/b.png');
+  });
+
+  it('maps an array of URLs onto the files by position', async () => {
+    const { cb, editable } = mountUpload(() => ['https://cdn.example.com/1.png', 'https://cdn.example.com/2.png']);
+    await cb._runUploadHandler([makeFile('1.png'), makeFile('2.png')]);
+    const srcs = [...editable.querySelectorAll('img')].map((i) => i.getAttribute('src'));
+    expect(srcs).toContain('https://cdn.example.com/1.png');
+    expect(srcs).toContain('https://cdn.example.com/2.png');
+  });
+
+  it('marks the placeholder failed and offers a retry when the upload rejects', async () => {
+    const err = new Error('network down');
+    const { ctx, cb, editable } = mountUpload(() => Promise.reject(err));
+    await cb._runUploadHandler([makeFile()]);
+
+    const img = editable.querySelector('img');
+    expect(img.classList.contains('an-image-failed')).toBe(true);
+    expect(img.classList.contains('an-image-uploading')).toBe(false);
+
+    const call = ctx.triggerEvent.mock.calls.find(([name]) => name === 'imageError');
+    expect(call).toBeTruthy();
+    expect(call[1].error).toBe(err);
+    expect(typeof call[1].retry).toBe('function');
+  });
+
+  it('fails a placeholder that got no URL rather than leaving it hanging', async () => {
+    const { cb, editable } = mountUpload(() => ['https://cdn.example.com/1.png']);
+    await cb._runUploadHandler([makeFile('1.png'), makeFile('2.png')]);
+    expect(editable.querySelectorAll('img.an-image-failed')).toHaveLength(1);
+  });
+
+  it('rejects a URL the sanitiser would not allow', async () => {
+    const { cb, editable } = mountUpload(() => 'javascript:alert(1)');
+    await cb._runUploadHandler([makeFile()]);
+    const img = editable.querySelector('img');
+    expect(img.classList.contains('an-image-failed')).toBe(true);
+    expect(img.getAttribute('src')).not.toContain('javascript:');
+  });
+
+  it('reports a handler that throws before anything was sent', async () => {
+    const { ctx, cb, editable } = mountUpload(() => { throw new Error('bad config'); });
+    await cb._runUploadHandler([makeFile()]);
+    expect(editable.querySelector('img')).toBeNull();
+    expect(ctx.triggerEvent.mock.calls.some(([n]) => n === 'imageError')).toBe(true);
+  });
+
+  it('records progress on the placeholder', async () => {
+    const file = makeFile();
+    let release;
+    const pending = new Promise((r) => { release = r; });
+    const { cb, editable } = mountUpload((_files, { setProgress }) => {
+      queueMicrotask(() => setProgress(file, 0.42));
+      return pending;
+    });
+
+    const done = cb._runUploadHandler([file]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(editable.querySelector('img').style.getPropertyValue('--an-upload-progress')).toBe('0.42');
+
+    release('https://cdn.example.com/a.png');
+    await done;
+  });
+
+  it('clamps a progress ratio outside 0–1', async () => {
+    const file = makeFile();
+    const { cb, editable } = mountUpload(() => new Promise(() => {}));
+    cb._runUploadHandler([file]);
+    cb._setUploadProgress(file, 5);
+    expect(editable.querySelector('img').style.getPropertyValue('--an-upload-progress')).toBe('1');
+    cb._setUploadProgress(file, -3);
+    expect(editable.querySelector('img').style.getPropertyValue('--an-upload-progress')).toBe('0');
   });
 });

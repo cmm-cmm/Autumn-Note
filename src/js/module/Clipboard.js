@@ -6,7 +6,7 @@
 
 import { on } from '../core/dom.js';
 import { execCommand } from '../editing/Style.js';
-import { sanitiseHTML } from '../core/sanitise.js';
+import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { isMarkdown, markdownToHTML } from '../core/markdown.js';
 
 export class Clipboard {
@@ -56,6 +56,11 @@ export class Clipboard {
     if (this._blobRegistry) {
       this._blobRegistry.forEach((_, blobUrl) => URL.revokeObjectURL(blobUrl));
       this._blobRegistry.clear();
+    }
+    // Previews for uploads still in flight when the editor went away.
+    if (this._uploadPreviews) {
+      this._uploadPreviews.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+      this._uploadPreviews.clear();
     }
   }
 
@@ -393,7 +398,7 @@ export class Clipboard {
     if (!files || files.length === 0) return;
 
     if (typeof this.options.onImageUpload === 'function') {
-      this.options.onImageUpload(files);
+      this._runUploadHandler(files);
       return;
     }
 
@@ -424,6 +429,178 @@ export class Clipboard {
         console.warn('[AutumnNote]', message, err);
       });
     });
+  }
+
+  /**
+   * Escapes a value for use inside a double-quoted HTML attribute.
+   * @param {string} v
+   * @returns {string}
+   */
+  _escapeAttr(v) {
+    return String(v)
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
+  /**
+   * Runs `options.onImageUpload` and, when it reports back, places the images
+   * it uploaded.
+   *
+   * The handler has always been called with the dropped files; what it could
+   * not do was hand the resulting URL back, so every integration that uploaded
+   * to its own storage had to insert the image itself. Returning a URL — or a
+   * promise of one — now inserts a placeholder immediately and swaps the real
+   * URL in when it arrives.
+   *
+   * A handler that returns nothing keeps the old behaviour exactly: nothing is
+   * inserted and no placeholder appears.
+   * @param {File[]} files
+   */
+  async _runUploadHandler(files) {
+    const helpers = {
+      context: this.context,
+      setProgress: (file, ratio) => this._setUploadProgress(file, ratio),
+    };
+
+    let result;
+    try {
+      result = this.options.onImageUpload(files, helpers);
+    } catch (error) {
+      this._reportUploadError(files, error);
+      return;
+    }
+
+    // Legacy contract: the handler inserts the image itself.
+    if (result === undefined) return;
+
+    // Placeholders go in synchronously, before the promise is awaited, so the
+    // image appears at the caret the moment it is dropped.
+    const tokens = files.map((file) => this._insertUploadPlaceholder(file));
+
+    let urls;
+    try {
+      urls = await result;
+    } catch (error) {
+      tokens.forEach((token, i) => this._failUpload(token, files[i], error));
+      return;
+    }
+
+    const list = Array.isArray(urls) ? urls : [urls];
+    tokens.forEach((token, i) => {
+      const url = list[i];
+      if (typeof url === 'string' && url) this._resolveUpload(token, url);
+      // A handler that returned fewer URLs than files leaves the rest failed
+      // rather than silently dropping a placeholder mid-document.
+      else this._failUpload(token, files[i], new Error('No URL returned for this file.'));
+    });
+  }
+
+  /**
+   * Inserts a dimmed placeholder for a file being uploaded, previewing the
+   * local file so the user sees what is on its way up.
+   * @param {File} file
+   * @returns {string} token identifying the placeholder
+   */
+  _insertUploadPlaceholder(file) {
+    const token = `an-up-${Date.now().toString(36)}-${this._uploadSeq = (this._uploadSeq || 0) + 1}`;
+    const previewUrl = URL.createObjectURL(file);
+    this._uploadPreviews = this._uploadPreviews || new Map();
+    this._uploadPreviews.set(token, { previewUrl, file });
+
+    const alt = this._escapeAttr(file.name.replace(/\.[^.]+$/, ''));
+    execCommand('insertHTML',
+      `<img src="${this._escapeAttr(previewUrl)}" alt="${alt}" class="an-image an-image-uploading" data-an-upload="${token}">`);
+    this.context.invoke('editor.afterCommand');
+    return token;
+  }
+
+  /** @param {string} token @returns {HTMLImageElement|null} */
+  _findPlaceholder(token) {
+    return /** @type {HTMLImageElement|null} */ (
+      this.context.layoutInfo.editable?.querySelector(`img[data-an-upload="${token}"]`) ?? null
+    );
+  }
+
+  /**
+   * Swaps a placeholder over to the uploaded URL.
+   * @param {string} token
+   * @param {string} url
+   */
+  _resolveUpload(token, url) {
+    const img = this._findPlaceholder(token);
+    const entry = this._uploadPreviews?.get(token);
+    if (img) {
+      const safe = sanitiseUrl(url, { allowData: true });
+      if (safe) {
+        img.setAttribute('src', safe);
+        img.classList.remove('an-image-uploading');
+        img.removeAttribute('data-an-upload');
+        img.style.removeProperty('--an-upload-progress');
+      } else {
+        this._failUpload(token, entry?.file, new Error(`Rejected image URL: ${url}`));
+        return;
+      }
+    }
+    if (entry) {
+      URL.revokeObjectURL(entry.previewUrl);
+      this._uploadPreviews.delete(token);
+    }
+    this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Marks a placeholder as failed and reports it. The preview is kept so the
+   * user can still see which image did not make it; `retry` re-runs the
+   * handler for that one file.
+   * @param {string} token
+   * @param {File|undefined} file
+   * @param {unknown} error
+   */
+  _failUpload(token, file, error) {
+    const img = this._findPlaceholder(token);
+    if (img) {
+      img.classList.remove('an-image-uploading');
+      img.classList.add('an-image-failed');
+      img.style.removeProperty('--an-upload-progress');
+    }
+    const message = `Image "${file?.name ?? 'unknown'}" could not be uploaded.`;
+    console.warn('[AutumnNote]', message, error);
+    this.context.triggerEvent('imageError', {
+      file,
+      message,
+      error,
+      retry: () => {
+        img?.remove();
+        this._uploadPreviews?.delete(token);
+        if (file) this._runUploadHandler([file]);
+      },
+    });
+  }
+
+  /** Reports a handler that threw before any placeholder existed. */
+  _reportUploadError(files, error) {
+    const message = 'The image upload handler threw before any file was sent.';
+    console.warn('[AutumnNote]', message, error);
+    this.context.triggerEvent('imageError', { file: files[0], message, error });
+  }
+
+  /**
+   * Records upload progress for a file, as a 0–1 ratio. Exposed to the handler
+   * so a consumer with a progress-reporting transport can drive the indicator.
+   * @param {File} file
+   * @param {number} ratio
+   */
+  _setUploadProgress(file, ratio) {
+    if (!this._uploadPreviews) return;
+    const clamped = Math.max(0, Math.min(1, Number(ratio) || 0));
+    for (const [token, entry] of this._uploadPreviews) {
+      if (entry.file !== file) continue;
+      const img = this._findPlaceholder(token);
+      if (img) img.style.setProperty('--an-upload-progress', String(clamped));
+      return;
+    }
   }
 
   /**

@@ -605,6 +605,34 @@
     display: inline-block;
   }
 
+  // An image whose upload is still in flight. The local file is shown straight
+  // away so the user sees what is going up; it is dimmed, and a bar along the
+  // bottom tracks `--an-upload-progress` (0–1) when the handler reports it.
+  // Both states are driven entirely by classes the upload pipeline sets, so
+  // nothing extra enters the editable tree.
+  img.an-image-uploading {
+    opacity: 0.55;
+    outline: 2px dashed rgba($an-primary, 0.55);
+    outline-offset: 2px;
+    // The gradient sits behind the (translucent) image pixels.
+    background-image: linear-gradient(
+      to right,
+      rgba($an-primary, 0.85) 0 calc(var(--an-upload-progress, 0) * 100%),
+      rgba($an-primary, 0.12) 0
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 4px;
+    background-position: left bottom;
+    animation: an-upload-pulse 1.4s ease-in-out infinite;
+  }
+
+  img.an-image-failed {
+    opacity: 0.5;
+    outline: 2px solid #dc2626;
+    outline-offset: 2px;
+    filter: grayscale(0.7);
+  }
+
   .an-video-wrapper {
     position: relative;
     display: block;
@@ -2944,4 +2972,10 @@ $an-video-accent: #8b5cf6; // violet-500
   padding: 6px 12px;
   font-size: 13px;
   color: $an-muted;
+}
+
+// Breathing outline for an image whose upload has not finished yet.
+@keyframes an-upload-pulse {
+  0%, 100% { outline-color: rgba($an-primary, 0.55); }
+  50%      { outline-color: rgba($an-primary, 0.20); }
 }
