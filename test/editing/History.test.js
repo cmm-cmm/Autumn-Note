@@ -415,3 +415,102 @@ describe('History byte-budget eviction', () => {
     expect(h._maxBytes).toBe(10 * 1024 * 1024);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Where undo leaves the caret
+// ---------------------------------------------------------------------------
+
+describe('History — caret placement', () => {
+  /** Absolute character offset of the current caret within `el`. */
+  const caretOffset = (el) => {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return null;
+    const r = sel.getRangeAt(0);
+    const probe = document.createRange();
+    probe.selectNodeContents(el);
+    probe.setEnd(r.startContainer, r.startOffset);
+    return probe.toString().length;
+  };
+
+  it('records a selection anchored on an element, not just on a text node', () => {
+    // `setStartAfter` leaves the selection anchored on the parent element,
+    // which is what the native insertion path produces. Searching for that
+    // container among the text nodes never matched, so it serialised as 0 and
+    // undo threw the caret to the top of the document.
+    const el = makeEditable('<p>onetwo</p>');
+    const history = new History(el);
+
+    const p = el.querySelector('p');
+    const em = document.createElement('em');
+    em.textContent = 'XX';
+    p.appendChild(em);
+
+    const range = document.createRange();
+    range.setStartAfter(em);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    history.recordUndo();
+    expect(history.stack.at(-1).sel).toEqual({ start: 8, end: 8 });
+  });
+
+  it('puts the caret at the edit site when undoing to a state with no saved selection', () => {
+    // The state `reset()` pushes after setHTML has no selection — the editor
+    // was not focused yet. Undo used to drop the caret at offset 0.
+    const el = makeEditable('<p>one</p><p>two</p><p>three</p>');
+    const history = new History(el);
+
+    el.querySelectorAll('p')[1].textContent = 'twoXX';
+    history.recordUndo();
+
+    history.undo();
+
+    expect(el.innerHTML).toBe('<p>one</p><p>two</p><p>three</p>');
+    // "onetwo" is the common prefix — exactly where the removed XX sat.
+    expect(caretOffset(el)).toBe(6);
+  });
+
+  it('prefers the selection the restored state saved over the edit site', () => {
+    const el = makeEditable('<p>abcdef</p>');
+    const history = new History(el);
+
+    // Give state 1 a caret of its own, then edit again so there is a state 2.
+    // Re-read the text node each time: assigning textContent replaces it.
+    const put = (offset) => {
+      const r = document.createRange();
+      r.setStart(el.querySelector('p').firstChild, offset);
+      r.collapse(true);
+      const s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    };
+    // Mutate first, then place the caret, then record — the order afterCommand
+    // uses, and the only order in which the caret survives the mutation.
+    el.querySelector('p').textContent = 'abcdefG';
+    put(3);
+    history.recordUndo();
+    el.querySelector('p').textContent = 'abcdefGH';
+    put(8);
+    history.recordUndo();
+
+    history.undo();
+    expect(el.textContent).toBe('abcdefG');
+    // 3 is what that state saved; the edit site would have been 7.
+    expect(caretOffset(el)).toBe(3);
+  });
+
+  it('redo lands the caret at the change too', () => {
+    const el = makeEditable('<p>one</p><p>two</p>');
+    const history = new History(el);
+    el.querySelectorAll('p')[1].textContent = 'twoZZ';
+    history.recordUndo();
+
+    history.undo();
+    history.redo();
+
+    expect(el.textContent).toBe('onetwoZZ');
+    expect(caretOffset(el)).not.toBe(0);
+  });
+});

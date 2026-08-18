@@ -3,7 +3,7 @@
  * Rewritten from Summernote's approach using vanilla JS + execCommand fallback
  */
 
-import { closest, isElement, isPara } from '../core/dom.js';
+import { closest, isElement, isPara, repairListNesting } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
 import { insertHTMLNative, insertTextNative, insertHorizontalRuleNative } from './insert.js';
 
@@ -222,7 +222,29 @@ export const justifyFull = () => execCommand('justifyFull');
 /**
  * Indents the list or block.
  */
-export const indent = () => execCommand('indent');
+export function indent() {
+  execCommand('indent');
+  // execCommand leaves the new sublist as a sibling of the item it indented.
+  // Repair it here rather than teaching every consumer of the HTML about a
+  // shape the spec does not allow — see repairListNesting.
+  repairListNesting(_selectionListRoot());
+}
+
+/**
+ * The outermost list containing the selection, or null when there is none.
+ * @returns {Element|null}
+ */
+function _selectionListRoot() {
+  const sel = globalThis.getSelection();
+  if (!sel?.rangeCount) return null;
+  let node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentElement;
+  let outermost = null;
+  for (let cur = /** @type {Element|null} */ (node); cur; cur = cur.parentElement) {
+    if (cur.nodeName === 'UL' || cur.nodeName === 'OL') outermost = cur;
+  }
+  return outermost;
+}
 
 /**
  * Outdents the list or block.

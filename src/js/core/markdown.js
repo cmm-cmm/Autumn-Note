@@ -8,6 +8,8 @@
  * The HTML output MUST be passed through sanitiseHTML() before insertion.
  */
 
+import { repairListNesting } from './dom.js';
+
 /**
  * Converts an HTML string to Markdown.
  * Handles: headings, paragraphs, bold/italic/del/code, links, images,
@@ -17,6 +19,11 @@
  */
 export function htmlToMarkdown(html) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
+  // Content can arrive with a sublist parked next to its item rather than
+  // inside it — that is what execCommand('indent') produces, and paste carries
+  // it in from other editors. A sublist in that position belongs to no item, so
+  // without this the indented items are silently dropped from the output.
+  repairListNesting(doc.body);
   return _domToMd(doc.body).replace(/\n{3,}/g, '\n\n').trim();
 }
 

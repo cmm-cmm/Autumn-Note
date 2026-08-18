@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Indenting a list item deleted it from the Markdown export.** `execCommand('indent')` nests the new sublist as a *sibling* of the item it indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML that no engine repairs on re-parse. A sublist in that position belongs to no item, so `getMarkdown()` returned `- a\n- c` and a round trip through Markdown removed the indented item from the document.
+
+  The structure is repaired where it is created, so saved content is valid HTML rather than something every consumer has to know about. `htmlToMarkdown()` also repairs its own parsed copy, because the same shape arrives by paste from other editors.
+
+- **Undo threw the caret to the top of the document.** `History` recorded a selection by looking for its container among the text nodes, so a selection anchored on an *element* — which is what `setStartAfter` leaves behind, and therefore what the native insertion path produces — always serialised as offset 0. Offsets are measured with a Range now, which handles both.
+
+  Undoing to a state that never recorded a selection at all — the one `reset()` pushes after `setHTML`, before the editor has been focused — now places the caret where the two states first differ, which is exactly where the undone edit happened.
+
+- **Tab inside a table typed spaces into the cell.** It fell through to the default branch, so the key that every comparable editor uses to cross a table silently edited it instead. Tab moves to the next cell, Shift+Tab to the previous — across `<thead>` and `<tbody>` — and Tab in the last cell appends a row and lands in it. Shift+Tab in the first cell stays put rather than inserting anything. Tab outside a table is unchanged.
+
+---
+
 ---
 
 ## [2.6.0] - 2026-08-18

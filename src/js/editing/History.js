@@ -3,6 +3,19 @@
  * Inspired by Summernote's History module, rewritten without jQuery
  */
 
+/**
+ * Number of characters two strings share from the start.
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function _commonPrefixLength(a, b) {
+  const max = Math.min(a.length, b.length);
+  let i = 0;
+  while (i < max && a.charCodeAt(i) === b.charCodeAt(i)) i++;
+  return i;
+}
+
 export class History {
   /**
    * @param {HTMLElement} editable - the contenteditable element
@@ -65,19 +78,29 @@ export class History {
   /**
    * Returns the character offset of (node, offset) from the beginning of
    * the editable's text content.
+   *
+   * Measured with a Range rather than by looking for `node` among the text
+   * nodes: a selection is often anchored on an *element* — `setStartAfter` on
+   * an inserted node leaves it that way, which is what the native insertion
+   * path produces — and searching for it among text nodes never matches, so
+   * every such position used to serialise as 0. Undo then threw the caret to
+   * the top of the document after any insertion.
    * @param {Node} node
    * @param {number} offset
    * @returns {number}
    */
   _charOffset(node, offset) {
-    let count = 0;
-    const walker = document.createTreeWalker(this.editable, NodeFilter.SHOW_TEXT, null);
-    let cur;
-    while ((cur = walker.nextNode())) {
-      if (cur === node) return count + offset;
-      count += /** @type {Text} */ (cur).length;
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(this.editable);
+      range.setEnd(node, offset);
+      // Range.toString() concatenates exactly the text nodes _restoreSelection
+      // walks, so the two agree on what an offset means.
+      return range.toString().length;
+    } catch (_) {
+      void _; // position outside the editable — treat as the start
+      return 0;
     }
-    return 0;
   }
 
   /**
@@ -158,10 +181,27 @@ export class History {
     this.stackOffset = this.stack.length - 1;
   }
 
+  /**
+   * Restores a snapshot and puts the caret somewhere useful.
+   *
+   * A state captured before the editor was ever focused — the one `reset()`
+   * pushes after `setHTML` — carries no selection, and without a fallback the
+   * first undo after loading content dropped the caret at the top of the
+   * document. The fallback is the position where this state and the one being
+   * left first differ, which is exactly where the undone edit happened.
+   * @param {{html: string, images?: Record<string,string>, sel: {start: number, end: number}|null}} point
+   */
   _restore(point) {
     if (!point) return;
+    const before = this.editable.textContent || '';
     this.editable.innerHTML = this._detokenizeImages(point);
-    this._restoreSelection(point.sel);
+
+    let sel = point.sel;
+    if (!sel) {
+      const at = _commonPrefixLength(before, this.editable.textContent || '');
+      sel = { start: at, end: at };
+    }
+    this._restoreSelection(sel);
   }
 
   // ---------------------------------------------------------------------------
@@ -193,7 +233,7 @@ export class History {
 
   /**
    * Restores a snapshot by replacing tokens back with their data URLs.
-   * @param {{ html: string, images: Object<string,string> }} point
+   * @param {{ html: string, images?: Object<string,string> }} point
    * @returns {string}
    */
   _detokenizeImages(point) {

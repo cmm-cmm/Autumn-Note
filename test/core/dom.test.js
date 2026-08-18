@@ -680,7 +680,7 @@ describe('trapFocus', () => {
 // placeCaret
 // ---------------------------------------------------------------------------
 
-import { placeCaret } from '../../src/js/core/dom.js';
+import { placeCaret, repairListNesting } from '../../src/js/core/dom.js';
 
 describe('placeCaret', () => {
   it('places caret at end of element', () => {
@@ -695,5 +695,65 @@ describe('placeCaret', () => {
       expect(sel.getRangeAt(0).collapsed).toBe(true);
     }
     document.body.innerHTML = '';
+  });
+});
+
+// ---------------------------------------------------------------------------
+// repairListNesting — the shape execCommand('indent') leaves behind
+// ---------------------------------------------------------------------------
+
+describe('repairListNesting', () => {
+  const html = (markup) => {
+    const host = document.createElement('div');
+    host.innerHTML = markup;
+    return host;
+  };
+
+  it('moves a sublist parked beside its item into that item', () => {
+    // What Chromium's execCommand('indent') produces. No engine repairs it on
+    // re-parse, so it survives into saved content.
+    const host = html('<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>');
+    expect(host.querySelectorAll('ul > ul')).toHaveLength(1);
+
+    repairListNesting(host);
+
+    expect(host.innerHTML).toBe('<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>');
+    expect(host.querySelectorAll('ul > ul, ul > ol, ol > ul, ol > ol')).toHaveLength(0);
+  });
+
+  it('handles ordered lists and mixed nesting', () => {
+    const host = html('<ol><li>a</li><ul><li>b</li></ul></ol>');
+    repairListNesting(host);
+    expect(host.innerHTML).toBe('<ol><li>a<ul><li>b</li></ul></li></ol>');
+  });
+
+  it('gives a sublist with no item before it one of its own', () => {
+    // Dropping it would lose the content; an empty carrier item keeps it.
+    const host = html('<ul><ul><li>orphan</li></ul></ul>');
+    repairListNesting(host);
+    expect(host.querySelectorAll('ul > ul')).toHaveLength(0);
+    expect(host.textContent).toBe('orphan');
+  });
+
+  it('repairs several levels in one pass', () => {
+    const host = html('<ul><li>a</li><ul><li>b</li><ul><li>c</li></ul></ul></ul>');
+    repairListNesting(host);
+    expect(host.querySelectorAll('ul > ul')).toHaveLength(0);
+    expect(host.textContent).toBe('abc');
+  });
+
+  it('leaves correct markup alone and is safe to run twice', () => {
+    const good = '<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>';
+    const host = html(good);
+    repairListNesting(host);
+    expect(host.innerHTML).toBe(good);
+    repairListNesting(host);
+    expect(host.innerHTML).toBe(good);
+  });
+
+  it('ignores a null or non-element argument rather than throwing', () => {
+    expect(() => repairListNesting(null)).not.toThrow();
+    expect(() => repairListNesting(undefined)).not.toThrow();
+    expect(() => repairListNesting(document.createTextNode('x'))).not.toThrow();
   });
 });

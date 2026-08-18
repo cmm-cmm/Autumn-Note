@@ -1460,3 +1460,38 @@ describe('markdownToHTML — bounded cost', () => {
     expect(performance.now() - start).toBeLessThan(1000);
   });
 });
+
+// ---------------------------------------------------------------------------
+// A sublist parked beside its item must not take the item down with it
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — sublist nested as a sibling', () => {
+  it('keeps the indented item instead of dropping it', () => {
+    // execCommand('indent') produces exactly this, and paste carries it in from
+    // other editors. The sublist is not inside any <li>, so the converter used
+    // to walk past it and return "- a\n- c" — deleting "b" from the export.
+    const md = htmlToMarkdown('<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>');
+    expect(md).toBe('- a\n  - b\n- c');
+  });
+
+  it('keeps it for ordered lists too', () => {
+    const md = htmlToMarkdown('<ol><li>a</li><ol><li>b</li></ol><li>c</li></ol>');
+    expect(md).toBe('1. a\n  1. b\n2. c');
+  });
+
+  it('survives a full round trip without losing the item', () => {
+    const damaged = '<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>';
+    const once = htmlToMarkdown(damaged);
+    const twice = htmlToMarkdown(markdownToHTML(once));
+    expect(twice).toBe(once);
+    expect(twice).toContain('b');
+  });
+
+  it('does not mutate the caller’s DOM while repairing its own copy', () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<ul><li>a</li><ul><li>b</li></ul></ul>';
+    const before = host.innerHTML;
+    htmlToMarkdown(host.innerHTML);
+    expect(host.innerHTML).toBe(before);
+  });
+});
