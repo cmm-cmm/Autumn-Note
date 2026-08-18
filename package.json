@@ -1,7 +1,7 @@
 {
   "name": "autumnnote",
-  "version": "2.4.0",
-  "description": "WYSIWYG rich-text editor built with vanilla JavaScript — zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers included.",
+  "version": "2.5.0",
+  "description": "WYSIWYG rich-text editor built with vanilla JavaScript \u2014 zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue\u00a03 wrappers included.",
   "type": "module",
   "main": "dist/autumnnote.cjs",
   "module": "dist/autumnnote.es.js",
@@ -17,12 +17,17 @@
       "types": "./types/i18n/*.d.ts",
       "import": "./src/js/i18n/*.js"
     },
-    "./dist/autumnnote.css": "./dist/autumnnote.css"
+    "./dist/autumnnote.css": "./dist/autumnnote.css",
+    "./core": {
+      "types": "./types/core-entry.d.ts",
+      "import": "./dist/autumnnote.core.es.js"
+    }
   },
   "sideEffects": [
     "*.css",
     "*.scss",
     "./src/js/index.js",
+    "./src/js/core.js",
     "./src/js/index.umd.js",
     "./src/js/i18n/all.js"
   ],
@@ -34,7 +39,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --config vite.umd.config.js && vite build --config vite.cdn.config.js && node scripts/create-cjs-alias.mjs",
+    "build": "vite build && vite build --config vite.umd.config.js && vite build --config vite.cdn.config.js && vite build --config vite.core.config.js && node scripts/create-cjs-alias.mjs",
     "build:demo": "vite build --config vite.demo.config.js",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
@@ -51,7 +56,8 @@
     "build:wrappers": "pnpm --filter autumnnote-react build && pnpm --filter autumnnote-vue build",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:package": "node scripts/check-package-files.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && pnpm build:demo && pnpm build:wrappers"
+    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && pnpm build:demo && pnpm build:wrappers",
+    "build:core": "vite build --config vite.core.config.js"
   },
   "keywords": [
     "wysiwyg",

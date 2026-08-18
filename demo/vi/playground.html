@@ -59,13 +59,23 @@
   <link rel="stylesheet" href="../assets/playground.css" />
 </head>
 <body>
+<script>
+  /* Applies the saved theme before the body is laid out. The module script at
+     the end of this file runs after first paint, so a returning dark-mode
+     visitor used to see a light page and then a flip to dark. Storage throws
+     in private mode; falling through simply leaves the light theme. */
+  try {
+    const cfg = JSON.parse(localStorage.getItem('an-playground-cfg') || 'null');
+    if (cfg && cfg.theme === 'dark') document.body.classList.add('dark');
+  } catch (_) { void _; }
+</script>
 
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="./" aria-label="Trang chủ Autumn Note">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">Autumn Note</span>
-      <span class="brand-version">v2.4.0</span>
+      <span class="brand-version">v2.5.0</span>
     </a>
     <nav class="header-nav" aria-label="Liên kết trang">
       <a class="nav-link" href="./">Trang chủ</a>

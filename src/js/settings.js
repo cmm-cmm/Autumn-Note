@@ -35,7 +35,10 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {Function} [onFocus]              - Callback on focus
  * @property {Function} [onBlur]               - Callback on blur
  * @property {Function} [onInit]               - Callback after the editor has initialised
- * @property {Function} [onImageUpload]        - Custom upload handler: (files) => void
+ * @property {Function} [onImageUpload]        - Upload handler: (files, { context, setProgress }) => void | string | string[] | Promise<string|string[]>.
+ *   Return (or resolve to) the uploaded URL(s) and the editor inserts a placeholder
+ *   immediately and swaps the real URL in when it arrives. Returning nothing keeps
+ *   the old behaviour: the handler is responsible for inserting the image itself.
  * @property {Function} [onImageError]         - Callback when an image upload error occurs
  * @property {boolean}  [stickyToolbar]        - Stick the toolbar to the viewport top when scrolling
  * @property {number}   [stickyToolbarOffset]  - Top offset in px for sticky toolbar (e.g. fixed nav height)

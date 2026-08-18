@@ -184,3 +184,30 @@ describe('AutumnNote.buttons namespace', () => {
     expect(Object.keys(AutumnNote.buttons).length).toBeGreaterThanOrEqual(40);
   });
 });
+
+describe('public API — conversion utilities without an editor instance', () => {
+  it('exports the markdown and language helpers from the package entry', async () => {
+    // They were reachable only through an editor instance, which needs a DOM —
+    // so converting in a build step or on a server meant reaching into src/.
+    const mod = await import('../../src/js/index.js');
+    expect(typeof mod.markdownToHTML).toBe('function');
+    expect(typeof mod.htmlToMarkdown).toBe('function');
+    expect(typeof mod.isMarkdown).toBe('function');
+    expect(typeof mod.detectLang).toBe('function');
+    expect(Array.isArray(mod.SUPPORTED_LANGS)).toBe(true);
+  });
+
+  it('round-trips through the exported helpers', async () => {
+    const { markdownToHTML, htmlToMarkdown, isMarkdown, detectLang } =
+      await import('../../src/js/index.js');
+    expect(markdownToHTML('# Title')).toBe('<h1>Title</h1>');
+    expect(htmlToMarkdown('<h1>Title</h1>')).toBe('# Title');
+    expect(isMarkdown('# Title')).toBe(true);
+    expect(detectLang('const x = 1;\nconsole.log(x);')).toBe('javascript');
+  });
+
+  it('still exports sanitiseHTML alongside them', async () => {
+    const { sanitiseHTML } = await import('../../src/js/index.js');
+    expect(sanitiseHTML('<img src=x onerror=alert(1)>')).not.toContain('onerror');
+  });
+});

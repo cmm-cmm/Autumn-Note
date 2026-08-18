@@ -11,53 +11,42 @@ import { resolveLocale } from './i18n/index.js';
 import { renderLayout } from './renderer.js';
 import { on } from './core/dom.js';
 
-// Modules
-import { Editor } from './module/Editor.js';
-import { Toolbar } from './module/Toolbar.js';
-import { Statusbar } from './module/Statusbar.js';
-import { Clipboard } from './module/Clipboard.js';
-import { Placeholder } from './module/Placeholder.js';
-import { Codeview } from './module/Codeview.js';
-import { Fullscreen } from './module/Fullscreen.js';
-import { LinkDialog } from './module/LinkDialog.js';
-import { ImageDialog } from './module/ImageDialog.js';
-import { VideoDialog } from './module/VideoDialog.js';
-import { ImageResizer } from './module/ImageResizer.js';
-import { VideoResizer } from './module/VideoResizer.js';
-import { LinkTooltip } from './module/LinkTooltip.js';
-import { ImageTooltip } from './module/ImageTooltip.js';
-import { VideoTooltip } from './module/VideoTooltip.js';
-import { TableTooltip } from './module/TableTooltip.js';
-import { CodeTooltip } from './module/CodeTooltip.js';
-import { EmojiDialog } from './module/EmojiDialog.js';
-import { IconDialog } from './module/IconDialog.js';
-import { ContextMenu } from './module/ContextMenu.js';
-import { ShortcutsDialog } from './module/ShortcutsDialog.js';
-import { FindReplace } from './module/FindReplace.js';
-import { ImageCropOverlay } from './module/ImageCropOverlay.js';
-import { AutoSaveRestore } from './module/AutoSaveRestore.js';
-import { MarkdownShortcuts } from './module/MarkdownShortcuts.js';
-import { BubbleToolbar } from './module/BubbleToolbar.js';
-import { Mention } from './module/Mention.js';
-import { SlashMenu } from './module/SlashMenu.js';
-
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
 export const _customModules = new Map();
 
 /**
- * Modules whose registration depends on an option value. Declared once so the
- * initial mount (`_registerModules`) and runtime toggles (`updateOptions`) can
- * never drift apart — previously `updateOptions({ bubbleToolbar: true })`
- * changed the option but silently left the module unregistered.
- * @type {Array<{ name: string, Class: new (ctx: Context) => { initialize: () => any, destroy?: () => void }, enabled: (options: any) => boolean }>}
+ * @typedef {object} ModuleDef
+ * @property {string} name - Key the module is registered and invoked under.
+ * @property {new (ctx: Context) => { initialize: () => any, destroy?: () => void }} Class
+ * @property {(options: any) => boolean} [enabled] - Option gate. Omitted means always on.
+ *   Consulted at mount and again after updateOptions(), so a runtime toggle
+ *   starts or tears the module down instead of silently disagreeing with the
+ *   option value.
  */
-const OPTIONAL_MODULES = [
-  { name: 'autoSaveRestore',   Class: AutoSaveRestore,   enabled: (o) => !!o.autoSaveRestore },
-  { name: 'markdownShortcuts', Class: MarkdownShortcuts, enabled: (o) => o.markdownShortcuts !== false },
-  { name: 'bubbleToolbar',     Class: BubbleToolbar,     enabled: (o) => !!o.bubbleToolbar },
-  { name: 'mention',           Class: Mention,           enabled: (o) => !!o.mention },
-  { name: 'slashMenu',         Class: SlashMenu,         enabled: (o) => o.slashMenu !== false },
-];
+
+/**
+ * Module table for every Context created from here on.
+ *
+ * Context deliberately imports no module of its own: whichever entry point the
+ * consumer loaded installs the table. That is what lets `autumnnote/core` leave
+ * the dialogs, tooltips and pickers out of the bundle entirely rather than
+ * merely not registering them.
+ * @type {ModuleDef[]}
+ */
+let _moduleDefs = [];
+
+/**
+ * Installs the module table. Called by each entry point at import time.
+ * @param {ModuleDef[]} defs
+ */
+export function setModuleDefs(defs) {
+  _moduleDefs = Array.isArray(defs) ? defs : [];
+}
+
+/** The table currently installed. */
+export function getModuleDefs() {
+  return _moduleDefs;
+}
 
 /** Global plugin registry (populated via AutumnNote.use()). Applied to every new Context. */
 export const _globalPlugins = new Map();
@@ -151,31 +140,9 @@ export class Context {
       instance.initialize();
     };
 
-    register('editor', Editor);
-    register('toolbar', Toolbar);
-    register('statusbar', Statusbar);
-    register('clipboard', Clipboard);
-    register('contextMenu', ContextMenu);
-    register('placeholder', Placeholder);
-    register('codeview', Codeview);
-    register('fullscreen', Fullscreen);
-    register('linkDialog', LinkDialog);
-    register('imageDialog', ImageDialog);
-    register('videoDialog', VideoDialog);
-    register('imageResizer', ImageResizer);
-    register('videoResizer', VideoResizer);
-    register('linkTooltip', LinkTooltip);
-    register('imageTooltip', ImageTooltip);
-    register('videoTooltip', VideoTooltip);
-    register('tableTooltip', TableTooltip);
-    register('codeTooltip', CodeTooltip);
-    register('emojiDialog', EmojiDialog);
-    register('iconDialog', IconDialog);
-    register('shortcutsDialog', ShortcutsDialog);
-    register('findReplace', FindReplace);
-    register('imageCropOverlay', ImageCropOverlay);
-    for (const { name, Class, enabled } of OPTIONAL_MODULES) {
-      if (enabled(this.options)) register(name, Class);
+    for (const { name, Class, enabled } of _moduleDefs) {
+      if (typeof enabled === 'function' && !enabled(this.options)) continue;
+      register(name, Class);
     }
 
     // Custom modules registered via AutumnNote.registerModule()
@@ -192,7 +159,8 @@ export class Context {
    * `bubbleToolbar` at runtime actually takes effect.
    */
   _syncOptionalModules() {
-    for (const { name, Class, enabled } of OPTIONAL_MODULES) {
+    for (const { name, Class, enabled } of _moduleDefs) {
+      if (typeof enabled !== 'function') continue;
       const shouldRun = enabled(this.options);
       const isRunning = this._modules.has(name);
       if (shouldRun === isRunning) continue;

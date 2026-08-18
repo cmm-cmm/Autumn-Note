@@ -240,7 +240,9 @@ describe('Typing Tab key', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '    ');
+    // Asserts the result rather than the mechanism: insertion runs through the
+    // native Range path now, with execCommand only as a fallback.
+    expect(pre.textContent).toBe('    code');
   });
 
   it('Tab with custom tabSize option inserts the correct number of spaces', () => {
@@ -258,7 +260,7 @@ describe('Typing Tab key', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '  ');
+    expect(p.textContent).toBe('  hello');
   });
 
   it('Tab outside a list/pre with no tabSize option returns false', () => {
@@ -360,7 +362,7 @@ describe('Typing Tab in <pre> block', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '    ');
+    expect(pre.textContent).toBe('    code here');
   });
 
   it('uses options.tabSize when set', () => {
@@ -375,7 +377,7 @@ describe('Typing Tab in <pre> block', () => {
     const event = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
     handleKeydown(event, editable, { tabSize: 2 });
 
-    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '  ');
+    expect(pre.textContent).toBe('  code');
   });
 
   it('Shift+Tab in <pre> does nothing (returns false)', () => {
@@ -420,7 +422,10 @@ describe('Typing Enter in <pre> block', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertText', false, '\n');
+    // Preformatted content keeps a real newline; converting it to <br> here
+    // would change what the code block contains.
+    expect(pre.textContent).toBe('co\nde');
+    expect(pre.querySelector('br')).toBeNull();
   });
 });
 

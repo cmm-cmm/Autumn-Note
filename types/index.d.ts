@@ -105,9 +105,37 @@ export interface AsnOptions {
   /** Callback fired when the word limit is reached. */
   onWordLimitReached?: (context: Context) => void;
   /** Custom image upload handler. */
-  onImageUpload?: (files: File[]) => void;
+  /**
+   * Handles files dropped, pasted, or picked in the image dialog.
+   *
+   * Return the uploaded URL — or a promise of it — and the editor inserts a
+   * dimmed placeholder previewing the local file straight away, then swaps in
+   * the real URL when the promise settles. A rejection marks the placeholder
+   * failed and fires `imageError` with a `retry()` for that file.
+   *
+   * Returning `undefined` keeps the original contract: nothing is inserted and
+   * the handler is responsible for placing the image itself.
+   *
+   * Distinct from `imageProcessor`, which transforms a file and must resolve to
+   * a **data URL**; this one uploads and resolves to any URL the sanitiser
+   * accepts.
+   */
+  onImageUpload?: (
+    files: File[],
+    helpers: {
+      context: Context;
+      /** Reports progress for one file as a 0–1 ratio, for the placeholder's bar. */
+      setProgress: (file: File, ratio: number) => void;
+    },
+  ) => void | string | string[] | Promise<void | string | string[]>;
   /** Callback when an image upload error occurs. */
-  onImageError?: (error: { file?: File; message: string; error?: unknown }) => void;
+  onImageError?: (error: {
+    file?: File;
+    message: string;
+    error?: unknown;
+    /** Present when an upload failed: re-runs the handler for that one file. */
+    retry?: () => void;
+  }) => void;
   /** Stick the toolbar to the viewport top when scrolling. */
   stickyToolbar?: boolean;
   /** Top offset in px for sticky toolbar (e.g. height of a fixed nav bar). */
@@ -446,6 +474,8 @@ export * from './core/key.js';
 export * from './core/lists.js';
 export * from './core/env.js';
 export * from './core/sanitise.js';
+export * from './core/markdown.js';
+export * from './core/detectLang.js';
 
 // ---------------------------------------------------------------------------
 // Context — per-instance editor hub

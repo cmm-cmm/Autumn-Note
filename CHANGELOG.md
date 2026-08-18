@@ -11,6 +11,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] - 2026-08-18
+
+Code inside content — code spans, fenced blocks, and code blocks nested in lists — plus a hang, server-side image upload, and the conversion helpers on the public API.
+
+### Fixed
+
+- **A heading marker with no title froze the page.** `# ` on its own — a hash, a space, nothing after it — was rejected by the heading rule *and* refused by the paragraph collector, which skips any line starting with a heading marker. Neither consumed the line, so the block loop spun forever: converting or pasting a document containing one locked the tab. Present in 2.3.0 and 2.4.0. `# ` is now the empty heading CommonMark says it is, and the block loop has a forward-progress guard so no future gap between two branches can hang it again.
+
+- **A fenced code block inside a list item was destroyed.** Its lines were folded into the item's paragraph text, where the inline code-span rule chewed them up: `- item` followed by an indented ```` ```js ```` block came out as `<li><p>item</p><p><code><code>js const a = 1; </code></code></p></li>`, with every line break gone. A fence opening in an item's continuation is now parsed as a block, in tight and loose items, ordered and unordered, inside blockquotes, and with both fence markers. It keeps its position relative to a nested list, and round-trips.
+- **Code blocks written in the editor collapsed to a single line.** `contenteditable` stores every line break inside a `<pre>` as a `<br>`, and `htmlToMarkdown()` read the block with `textContent`, which drops them — so `getMarkdown()` and `downloadMarkdown()` returned `line1line2line3`. Line breaks are now read from `<br>` and from block-level children, which is how some browsers wrap lines.
+- **Character references inside code were being decoded.** Code is literal text, so `&amp;` written in a fence or a code span has to survive as those five characters; preserving entities for ordinary prose in 2.3.0 had started decoding them here too. Code spans are now extracted before any other inline pass, which is also the only way to tell an `&lt;` the author typed from one the escaper produced out of a raw `<`.
+- **The code block's word-wrap toggle did not survive a save.** It persists as `white-space: pre-wrap` on the `<pre>`, and the sanitiser's style allowlist dropped the property — so the setting was lost through `setHTML`, paste, and auto-save restore. `white-space` is allowlisted now; it fetches nothing and cannot escape layout.
+- A backslash is no longer treated as an escape inside a code span, matching CommonMark — `` `a\*b` `` renders as written. An escaped backtick no longer opens a span, and a longer backtick run can hold a shorter one.
+- A `<pre>` whose text already ended in a newline no longer gains a blank line before the closing fence.
+- **Seven super-linear backtracking sites in the converter** (CWE-1333) — the frontmatter, fence, heading, footnote-definition and angle-bracket-destination patterns each had a whitespace quantifier competing with a neighbouring class that also matched whitespace. A regex linter now reports none, and the pathological inputs that used to be slow all finish in under 100 ms.
+
+### Added
+
+- **A minimal build: `autumnnote/core`.** The default entry statically imported all 23 modules, so a consumer who only needed bold and italic still shipped `TableTooltip`, `EmojiDialog`, `ImageCropOverlay` and the rest. `Context` now imports no module of its own — the entry point installs a module table — so a build that never reaches the full preset drops those modules entirely rather than registering them and leaving them idle.
+
+  | Entry | Modules | ES bundle (gzip) |
+  |---|---|---|
+  | `autumnnote` | all | 84.1 KiB |
+  | `autumnnote/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
+
+  Same API, same types, same stylesheet. A toolbar button whose module is absent still renders; invoking it logs a warning and does nothing, so pair the preset with a toolbar naming only buttons the core modules serve.
+
+  **The default entry is unchanged** — same modules, same order, same behaviour — so this is additive and needs no migration. `check:bundle` now holds the core build to a 60 KiB ceiling, so it cannot quietly drift back up to the full size.
+
+- **`onImageUpload` can hand the uploaded URL back.** The handler was called with the dropped files and returned nothing, so every integration that uploaded to its own storage had to insert the image itself — there was no supported path for the most common way an editor is wired up. Return the URL, or a promise of it, and the editor inserts a dimmed placeholder previewing the local file straight away and swaps in the real URL when it lands. An array maps onto the files by position.
+
+  Progress is reported through a `setProgress(file, ratio)` helper passed to the handler, and drives a bar along the bottom of the placeholder. A rejection — or a URL the sanitiser refuses — marks the image failed and fires `imageError` carrying a `retry()` that re-sends just that file.
+
+  **A handler that returns nothing behaves exactly as before**: nothing is inserted, no placeholder appears, and the handler stays responsible for placing the image. This is additive.
+
+  Not to be confused with `imageProcessor`, which *transforms* a file and must resolve to a data URL; `onImageUpload` *uploads* and resolves to any URL the sanitiser accepts.
+
+- **`markdownToHTML`, `htmlToMarkdown`, `isMarkdown`, `detectLang` and `SUPPORTED_LANGS` are exported from the package entry**, alongside `sanitiseHTML`. They were reachable only through an editor instance, which needs a DOM, so converting or detecting in a build step, on a server, or in a test meant importing out of `src/`. They were already in the bundle; exporting them costs nothing. Typed in `types/core/markdown.d.ts` and `types/core/detectLang.d.ts`.
+
+  `markdownToHTML()` output is not sanitised — pass it through `sanitiseHTML()` before inserting it anywhere.
+
+### Changed
+
+- **The three insertion commands no longer go through `document.execCommand`.** `insertHTML`, `insertText` and `insertHorizontalRule` are now implemented on the Range API — `deleteContents()` plus `insertNode()` — which is stage 1 of the plan in `docs/EXEC_COMMAND_MIGRATION.md`. These three were the natural place to start: unlike `bold` or `fontName` they never have to reason about overlapping inline formatting, so the replacement is a substitution rather than a rewrite of the formatting model.
+
+  `Style.execCommand` keeps the deprecated call as a fallback, exactly as the plan's compatibility adapter asks: each native path reports back when it cannot act — no selection, or a selection outside editable content — and `document.execCommand` runs instead. No public API changed, and paste, drop, slash-menu insertion and the toolbar all keep their existing behaviour.
+
+  Two things are better than what `execCommand` did: a newline given to `insertText` stays a literal newline inside a `<pre>` instead of becoming a `<br>`, which is what a code block needs; and a horizontal rule is placed *after* the block holding the caret with a paragraph after it, so a rule at the end of the document no longer leaves the caret with nowhere to go.
+
+  Covered by 18 jsdom tests and 7 browser tests run against Chromium, Firefox and WebKit.
+
+---
+
 ## [2.4.0] - 2026-08-16
 
 Code blocks and blockquotes.

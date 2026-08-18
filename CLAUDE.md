@@ -72,7 +72,8 @@ context.on('eventName', callback)           // subscribe to editor events
 ### Editing Layer (`src/js/editing/`)
 
 - **`History.js`** — undo/redo stack of DOM snapshots
-- **`Style.js`** — formatting commands (`execCommand` wrappers + direct DOM list/checklist transitions)
+- **`insert.js`** — Range-based `insertHTML`/`insertText`/`insertHorizontalRule`; each returns `false` when it cannot act so the caller falls back
+- **`Style.js`** — formatting commands (native insertion first, `execCommand` fallback + direct DOM list/checklist transitions)
 - **`Table.js`** — table creation and cell manipulation
 - **`Typing.js`** — Tab/Enter/Arrow key overrides
 
@@ -109,6 +110,6 @@ Environment is jsdom (simulated browser). Use `globals: true` — no explicit im
 
 - **Zero runtime dependencies** — do not introduce any.
 - The sanitiser in `core/sanitise.js` is security-critical; changes there need careful review.
-- `execCommand` is used intentionally despite deprecation — it is still the only reliable cross-browser formatting API for contenteditable; do not replace without a complete alternative.
+- `execCommand` is being retired in stages — see `docs/EXEC_COMMAND_MIGRATION.md`. The three insertion commands are native already; the rest still route through `document.execCommand`, which remains the only reliable cross-browser formatting API for contenteditable. Do not replace a command without a complete alternative and browser coverage on all three engines.
 - Toolbar config is a 2D array of button-name strings; custom buttons must be registered in `Buttons.js` before use.
 - Custom modules can be registered globally via `AutumnNote.registerModule('name', Class)` before `create()`.
