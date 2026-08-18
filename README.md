@@ -789,7 +789,7 @@ src/
 │   │   ├── env.js            Browser/platform detection (lazy — SSR-safe)
 │   │   ├── detectLang.js     Code-block language detection for Prism highlighting
 │   │   ├── markdown.js       Bidirectional HTML ↔ Markdown conversion (with GFM checklists)
-│   │   └── sanitise.js       DOM-based HTML and URL sanitiser
+│   │   └── sanitise.js       DOM-based HTML and URL sanitiser (string or nodes)
 │   ├── editing/
 │   │   ├── History.js        Undo/redo stack (configurable depth)
 │   │   ├── insert.js         Range-based insertHTML/insertText/insertHorizontalRule

@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The word count read the whole document as one line.** `<p>hello</p><p>world</p><p>again</p>` was reported as **1 word**, because the counter ran on `textContent`, which glues blocks together into `helloworldagain`. `getWordCount()` did not agree with the number on screen — it read `innerText`, which does insert line breaks, and returned 3. Both now read the same block-aware text: paragraphs, list items, table cells and `<br>` all separate words, and the two numbers cannot drift apart again because they come from one function.
+
+  Reading it without `innerText` also means no forced layout pass, which matters because this runs on every keystroke.
+
+- **The font, size, style and line-height dropdowns cut their own labels off.** The widths were px caps tuned for English, so Vietnamese "Bình thường" rendered as "Bình thườ" and Spanish "Tamaño" lost its last letter. Under the 640px breakpoint it was worse and not language-specific: the caps hid **45px of "Times New Roman" in every locale, English included** — on a control whose only job is to show the current value.
+
+  Widths are now in `em` and loose enough for the shipped locales to size themselves, so the cap is a guard against a pathological custom font list rather than a layout target. When it does bite, the label ends in an ellipsis instead of losing half a glyph. Most controls came out *narrower* — the px `min-width` had been padding out short labels, so Chinese "样式" went from 80px to 54px. A browser test measures every option of every dropdown in all eight locales at the narrow breakpoint.
+
+### Changed
+
+- **Typing in a large document is ~10x cheaper.** Measured in Chromium on a 217 KiB / 5,400-element document, `afterCommand` — the synchronous work behind every keystroke — went from **6.83 ms to 0.68 ms**. Nearly all of it was `Intl.Segmenter` running over the entire document to recount words, 6.4 ms of the 6.7 ms.
+
+  Counts are cached per top-level block and reused while that block's text is unchanged, so a keystroke re-segments one block instead of the document. Blocks that do miss are segmented together in a single pass rather than one call each — `Intl.Segmenter.segment()` carries enough per-call setup that 1,200 small calls cost about three times one large one, which would have made `setHTML` pay for typing's speed.
+
+  | Document | `afterCommand` before | after |
+  |---|---|---|
+  | 18 KiB / 452 elements | 0.62 ms | **0.06 ms** |
+  | 72 KiB / 1,808 elements | 2.24 ms | **0.25 ms** |
+  | 217 KiB / 5,424 elements | 6.83 ms | **0.68 ms** |
+
+- **`setHTML` is ~10% faster than before this release, despite doing the above.** It was serialising the sanitiser's DOM back to a string and letting `innerHTML` parse it a second time. `sanitiseToBody()` hands back the parsed `<body>` and `setHTML` adopts its children, which on the 217 KiB document is 45.3 ms → 35.6 ms (39.2 ms before any of this work).
+
+  Skipping the re-parse also narrows the security surface rather than widening it: re-parsing a sanitised string is the step mXSS turns against you. `sanitiseHTML()` is unchanged and still returns a string — it simply delegates — and a test asserts the two forms serialise identically across the hostile-input corpus, plus that `setHTML` lands the same DOM either way.
+
 ---
 
 ## [2.5.0] - 2026-08-18

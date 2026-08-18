@@ -204,3 +204,84 @@ describe('CodeTooltip._syncLangSelect regex', () => {
     return result;
   });
 });
+
+// ---------------------------------------------------------------------------
+// 6. Statusbar counts — whole-document segmentation vs per-block cache
+//
+// This was the editor's most expensive per-keystroke path: `Intl.Segmenter`
+// over the entire document, 6.4 ms of a 6.7 ms `afterCommand` on a 217 KiB
+// document in Chromium. A keystroke changes one block, so the current
+// implementation re-segments only that block.
+// ---------------------------------------------------------------------------
+
+describe('Statusbar word/char counts', () => {
+  const PARAGRAPHS = 400;
+
+  /** A document shaped like real editor content: prose, lists, code, tables. */
+  function buildDoc(doc) {
+    const editable = doc.createElement('div');
+    const parts = [];
+    for (let i = 0; i < PARAGRAPHS; i++) {
+      parts.push(`<p>Paragraph ${i} with <strong>bold</strong> and <em>italic</em> plus filler text of a realistic length.</p>`);
+      if (i % 10 === 0) parts.push(`<pre><code>const x${i} = ${i};\nconsole.log(x${i});</code></pre>`);
+      if (i % 25 === 0) parts.push('<ul><li>one</li><li>two</li><li>three</li></ul>');
+    }
+    editable.innerHTML = parts.join('');
+    return editable;
+  }
+
+  const segmenter = typeof Intl?.Segmenter === 'function'
+    ? new Intl.Segmenter(undefined, { granularity: 'word' })
+    : null;
+
+  const doc = makeDoc();
+  const editable = buildDoc(doc);
+
+  /** Previous implementation: one segmentation pass over the whole document. */
+  function countLegacy(el) {
+    const text = el.textContent || '';
+    let words = 0;
+    if (segmenter) {
+      for (const seg of segmenter.segment(text.trim())) if (seg.isWordLike) words++;
+    } else {
+      words = text.trim().split(/\s+/).length;
+    }
+    return { words, chars: text.replaceAll('\n', '').length };
+  }
+
+  /**
+   * Current implementation, warm: every top-level child's text is unchanged, so
+   * each costs one string comparison and nothing is re-segmented.
+   */
+  const cache = new WeakMap();
+  function countCached(el) {
+    let words = 0;
+    let chars = 0;
+    for (let node = el.firstChild; node; node = node.nextSibling) {
+      const hit = cache.get(node);
+      const key = node.textContent || '';
+      if (hit && hit.key === key) {
+        words += hit.words;
+        chars += hit.chars;
+        continue;
+      }
+      let w = 0;
+      if (segmenter) {
+        for (const seg of segmenter.segment(key.trim())) if (seg.isWordLike) w++;
+      } else {
+        w = key.trim() ? key.trim().split(/\s+/).length : 0;
+      }
+      const entry = { key, words: w, chars: key.replaceAll('\n', '').length };
+      cache.set(node, entry);
+      words += w;
+      chars += entry.chars;
+    }
+    return { words, chars };
+  }
+
+  countCached(editable); // warm the cache the way a mounted editor would be
+
+  bench('legacy: segment the whole document on every keystroke', () => countLegacy(editable));
+
+  bench('current: per-block cache, one comparison per untouched block', () => countCached(editable));
+});

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Editor } from '../../src/js/module/Editor.js';
+import { sanitiseHTML } from '../../src/js/core/sanitise.js';
 
 // execCommand is not implemented in jsdom
 if (typeof document.execCommand !== 'function') {
@@ -756,5 +757,72 @@ describe('Editor._getClosestAnchor', () => {
     r.collapse(true);
     window.getSelection().addRange(r);
     expect(editor._getClosestAnchor()).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// setHTML adopts the sanitiser's nodes instead of re-parsing its string
+// ---------------------------------------------------------------------------
+
+describe('Editor.setHTML node adoption', () => {
+  /**
+   * Adopting and re-parsing can disagree wherever the HTML parser would move a
+   * node the sanitiser left in place — an unwrapped element landing somewhere
+   * the parser forbids, a namespace-switching tag, unbalanced markup. These are
+   * the inputs where that could show, so the two paths are compared on the
+   * resulting DOM rather than on the string that produced it.
+   */
+  const CASES = [
+    '<p>plain</p>',
+    '<script>alert(1)</script><p>after</p>',
+    '<img src=x onerror=alert(1)>',
+    '<svg><mglyph><style><img src=x onerror=alert(1)></style></mglyph></svg>',
+    '<math><annotation-xml encoding="text/html"><p>x</p></annotation-xml></math>',
+    '<button><b>kept</b></button>',
+    '<div><tr><td>orphan row</td></tr></div>',
+    '<table><tr><td>cell</td></tr></table>',
+    '<p>unclosed<div>nested</p></div>',
+    '<ul><li class="an-checklist"><input type="checkbox" checked></li></ul>',
+    '<iframe src="https://www.youtube.com/embed/abcdefghijk"></iframe>',
+  ];
+
+  for (const input of CASES) {
+    it(`lands the same DOM as assigning the sanitised string: ${JSON.stringify(input).slice(0, 52)}`, () => {
+      const context = makeContext();
+      const editor = new Editor(context);
+      editor.initialize();
+      editor.setHTML(input);
+      const adopted = context.layoutInfo.editable.innerHTML;
+
+      const reference = document.createElement('div');
+      reference.innerHTML = sanitiseHTML(input, { allowIframes: true });
+
+      // setHTML appends a trailing paragraph so the caret always has a home.
+      expect(adopted.startsWith(reference.innerHTML)).toBe(true);
+      editor.destroy();
+    });
+  }
+
+  it('still strips what the sanitiser strips', () => {
+    const context = makeContext();
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.setHTML('<p>keep</p><script>alert(1)</script><img src=x onerror=alert(1)>');
+
+    const editable = context.layoutInfo.editable;
+    expect(editable.querySelector('script')).toBeNull();
+    expect(editable.querySelector('img').hasAttribute('onerror')).toBe(false);
+    expect(editable.textContent).toContain('keep');
+    editor.destroy();
+  });
+
+  it('replaces the previous content rather than appending to it', () => {
+    const context = makeContext('<p>old</p>');
+    const editor = new Editor(context);
+    editor.initialize();
+    editor.setHTML('<p>new</p>');
+    expect(context.layoutInfo.editable.textContent).not.toContain('old');
+    expect(context.layoutInfo.editable.textContent).toContain('new');
+    editor.destroy();
   });
 });

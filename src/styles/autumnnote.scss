@@ -173,8 +173,18 @@
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  min-width: 110px;
-  max-width: 160px;
+  // Widths are in `em`, not px, and deliberately loose.
+  //
+  // A `<select>` sizes itself to its widest option; a px cap that fits "Normal"
+  // cuts "Bình thường" in half, and one that fits "Size" cuts "Tamaño". Label
+  // lengths swing by more than 2x across the shipped locales, so the cap is a
+  // guard against a pathological custom font list — not a layout target. In
+  // `em` it also tracks the font-size drop at the narrow breakpoint instead of
+  // needing a second set of numbers there.
+  min-width: 4em;
+  max-width: 16em;
+  // If the cap ever does bite, end the label rather than slicing a glyph.
+  text-overflow: ellipsis;
   transition: border-color $an-transition, box-shadow $an-transition;
 
   &:hover {
@@ -194,15 +204,15 @@
 
 // Narrow variant — used for short-value selects such as Line Height
 .an-select-narrow {
-  min-width: 76px;
-  max-width: 90px;
+  min-width: 4em;
+  max-width: 10em;
   padding-right: 20px;
 }
 
 // Paragraph-style variant — Normal/H1-H6/Quote/Code labels
 .an-select-style {
-  min-width: 80px;
-  max-width: 92px;
+  min-width: 4em;
+  max-width: 11em;
   padding-right: 20px;
 }
 
@@ -2425,15 +2435,14 @@ $an-video-accent: #8b5cf6; // violet-500
     &::-webkit-scrollbar { display: none; }
   }
 
-  // Compact dropdown selects to save horizontal real-estate on small screens
+  // Compact the dropdown selects by type size only. The px caps that used to
+  // live here hid ~45px of "Times New Roman" in every locale, English included,
+  // and over a third of "Bình thường" — on the one control whose entire job is
+  // to show the current value. The toolbar scrolls on this breakpoint, so a
+  // wider select costs a swipe; an unreadable one costs the feature.
   .an-select {
-    min-width: 72px;
-    max-width: 90px;
     font-size: 11px;
   }
-
-  .an-select-style  { min-width: 62px; max-width: 76px; }
-  .an-select-narrow { min-width: 50px; max-width: 66px; }
 }
 
 // =============================================================================

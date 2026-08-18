@@ -51,9 +51,63 @@ describe('Statusbar', () => {
     const status = new Statusbar(context);
     status.initialize();
 
-    context.layoutInfo.editable.innerText = 'hello world';
+    // Real content, not `innerText`: jsdom does not implement it, so assigning
+    // it only set an expando that the old getters happened to read back.
+    context.layoutInfo.editable.textContent = 'hello world';
     expect(status.getWordCount()).toBe(2);
     expect(status.getCharCount()).toBe('hello world'.length);
+
+    status.destroy();
+  });
+
+  it('counts words across block boundaries, not through them', () => {
+    // `textContent` glues blocks together, so this used to report ONE word for
+    // a three-paragraph document — and disagree with getWordCount(), which read
+    // `innerText`. Both now read the same block-aware text.
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+
+    context.layoutInfo.editable.innerHTML = '<p>hello</p><p>world</p><p>again</p>';
+    status.update();
+
+    expect(status.getWordCount()).toBe(3);
+    expect(status._wordCountEl.textContent).toContain('3');
+    // Block boundaries are separators, not characters.
+    expect(status.getCharCount()).toBe('helloworldagain'.length);
+
+    status.destroy();
+  });
+
+  it('separates list items and table cells too', () => {
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+
+    context.layoutInfo.editable.innerHTML =
+      '<ul><li>alpha</li><li>beta</li></ul><table><tbody><tr><td>gamma</td><td>delta</td></tr></tbody></table>';
+    expect(status.getWordCount()).toBe(4);
+
+    status.destroy();
+  });
+
+  it('reuses cached counts for untouched blocks and notices the one that changed', () => {
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+    const editable = context.layoutInfo.editable;
+
+    editable.innerHTML = '<p>one two</p><p>three</p>';
+    expect(status.getWordCount()).toBe(3);
+
+    // Edit only the second block: the first must keep its cached count, and the
+    // total must still follow the edit.
+    editable.lastElementChild.textContent = 'three four five';
+    expect(status.getWordCount()).toBe(5);
+
+    // Removing a block drops its contribution.
+    editable.lastElementChild.remove();
+    expect(status.getWordCount()).toBe(2);
 
     status.destroy();
   });
