@@ -14,6 +14,13 @@ import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
 
+/**
+ * Blocks the caret cannot be placed after, so the editable always keeps a
+ * trailing paragraph. Module-level because `_ensureTrailingParagraph` runs on
+ * every keystroke and was rebuilding this set each time.
+ */
+const TRAPPING_TAGS = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
+
 export class Editor {
   /**
    * @param {import('../Context.js').Context} context
@@ -372,8 +379,7 @@ export class Editor {
     if (!editable) return;
     const last = editable.lastElementChild;
     if (!last) return;
-    const TRAPPING = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
-    if (TRAPPING.has(last.nodeName)) {
+    if (TRAPPING_TAGS.has(last.nodeName)) {
       const p = document.createElement('p');
       p.innerHTML = '<br>';
       editable.appendChild(p);

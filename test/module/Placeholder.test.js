@@ -94,3 +94,62 @@ describe('Placeholder — non-text content detection', () => {
     module.destroy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// The emptiness test short-circuits; it must still agree character for
+// character with the string it replaced.
+// ---------------------------------------------------------------------------
+
+describe('Placeholder — what counts as empty', () => {
+  /** The test this replaced, kept as the oracle. */
+  const wasEmpty = (el) => el.textContent.replaceAll('\u200B', '').trim().length === 0;
+
+  const CASES = [
+    '',
+    '\u200B',
+    '\u200B\u200B\u200B',
+    ' ',
+    '\n\t  \r',
+    '\u00a0',
+    '\u3000',
+    '\ufeff',
+    'x',
+    ' x ',
+    '\u200Bx',
+    'x\u200B',
+    '\u200B \u200B',
+  ];
+
+  for (const text of CASES) {
+    it(`agrees with the old test for ${JSON.stringify(text)}`, () => {
+      const context = makeContext();
+      const module = new Placeholder(context);
+      module.initialize();
+
+      const editable = context.layoutInfo.editable;
+      editable.textContent = text;
+      module._update();
+
+      // Not focused, no media: the class tracks emptiness directly.
+      expect(editable.classList.contains('an-placeholder')).toBe(wasEmpty(editable));
+      module.destroy();
+    });
+  }
+
+  it('finds text no matter how deeply it is nested', () => {
+    const context = makeContext();
+    const module = new Placeholder(context);
+    module.initialize();
+
+    const editable = context.layoutInfo.editable;
+    editable.innerHTML = '<p><span><b><i>\u200B</i></b></span></p>';
+    module._update();
+    expect(editable.classList.contains('an-placeholder')).toBe(true);
+
+    editable.innerHTML = '<p><span><b><i>deep</i></b></span></p>';
+    module._update();
+    expect(editable.classList.contains('an-placeholder')).toBe(false);
+
+    module.destroy();
+  });
+});
