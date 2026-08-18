@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.0] - 2026-08-18
 
-Code inside content — code spans, fenced blocks, and code blocks nested in lists — plus a hang, and the conversion helpers on the public API.
+Code inside content — code spans, fenced blocks, and code blocks nested in lists — plus a hang, server-side image upload, and the conversion helpers on the public API.
 
 ### Fixed
 
