@@ -56,22 +56,23 @@ describe('editing flows in a real browser', () => {
     expect(editor.invoke('editor.getMarkdown')).toBe('- a\n  - b\n- c');
   });
 
-  it('DIAGNOSTIC outdent', () => {
+  it('outdents back to where it started, on every engine', () => {
+    // Firefox's execCommand('outdent') dissolved the item into the one above —
+    // `<li>a<ul><li>b</li></ul></li>` came back as `<li>a<br>b</li>`, three
+    // items becoming two — so the nested case is done in the DOM instead.
     mount('<ul><li>a</li><li>b</li><li>c</li></ul>');
     caretIn(editable.querySelectorAll('li')[1].firstChild, 1);
     pressTab();
-    const afterIndent = editable.innerHTML;
-    const mdIndent = editor.invoke('editor.getMarkdown');
 
     const nested = editable.querySelector('li > ul li');
     caretIn(nested.firstChild, 1);
     pressTab(true);
 
-    console.log('DIAG afterIndent=' + JSON.stringify(afterIndent));
-    console.log('DIAG mdIndent=' + JSON.stringify(mdIndent));
-    console.log('DIAG afterOutdent=' + JSON.stringify(editable.innerHTML));
-    console.log('DIAG mdOutdent=' + JSON.stringify(editor.invoke('editor.getMarkdown')));
-    expect(true).toBe(true);
+    expect(editable.querySelectorAll('li')).toHaveLength(3);
+    expect(editable.querySelector('li > ul')).toBeNull();
+    // Scoped to the list: the editable always carries a trailing <p><br></p>.
+    expect(editable.querySelector('ul br')).toBeNull();
+    expect(editor.invoke('editor.getMarkdown')).toBe('- a\n- b\n- c');
   });
 
   it('leaves the caret at the edit after undo, not at the top of the document', () => {

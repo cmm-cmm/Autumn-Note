@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as Style from '../../src/js/editing/Style.js';
+import { repairListNesting } from '../../src/js/core/dom.js';
 import { fontSize, isInlineCode, toggleInlineCode, toggleChecklist, isInChecklist, underline, strikethrough, lineHeight, outdent, insertUnorderedList, insertOrderedList } from '../../src/js/editing/Style.js';
 
 const setCollapsedCursor = (node, offset) => {
@@ -1044,5 +1046,88 @@ describe('insertOrderedList — list-type transitions', () => {
     expect(execMock).toHaveBeenCalledWith('insertOrderedList', false, null);
 
     delete document.execCommand;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Outdenting a nested list item
+// ---------------------------------------------------------------------------
+
+describe('outdent — nested list items', () => {
+  const mount = (html) => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = html;
+    document.body.appendChild(editable);
+    return editable;
+  };
+
+  const caretIn = (node, offset = 0) => {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
+
+  it('lifts the item out to sit after the one that held its sublist', () => {
+    const editable = mount('<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>');
+    caretIn(editable.querySelector('li li').firstChild, 1);
+
+    Style.outdent();
+
+    expect(editable.innerHTML).toBe('<ul><li>a</li><li>b</li><li>c</li></ul>');
+  });
+
+  it('leaves the items below it nested under it', () => {
+    // Outdenting one item must not promote its siblings with it.
+    const editable = mount('<ul><li>a<ul><li>b</li><li>c</li><li>d</li></ul></li></ul>');
+    caretIn(editable.querySelectorAll('li li')[0].firstChild, 1);
+
+    Style.outdent();
+
+    expect(editable.innerHTML).toBe('<ul><li>a</li><li>b<ul><li>c</li><li>d</li></ul></li></ul>');
+  });
+
+  it('keeps the sublist when an item above it is outdented', () => {
+    const editable = mount('<ul><li>a<ul><li>b</li><li>c</li></ul></li></ul>');
+    caretIn(editable.querySelectorAll('li li')[1].firstChild, 1);
+
+    Style.outdent();
+
+    expect(editable.innerHTML).toBe('<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>');
+  });
+
+  it('works the same for ordered sublists', () => {
+    const editable = mount('<ol><li>a<ol><li>b</li></ol></li></ol>');
+    caretIn(editable.querySelector('li li').firstChild, 1);
+
+    Style.outdent();
+
+    expect(editable.innerHTML).toBe('<ol><li>a</li><li>b</li></ol>');
+  });
+
+  it('never merges the item into the one above it', () => {
+    const editable = mount('<ul><li>a<ul><li>b</li></ul></li></ul>');
+    caretIn(editable.querySelector('li li').firstChild, 1);
+
+    Style.outdent();
+
+    expect(editable.querySelector('br')).toBeNull();
+    expect(editable.querySelectorAll('li')).toHaveLength(2);
+  });
+
+  it('undoes exactly what repairListNesting produced after an indent', () => {
+    // The shape execCommand('indent') leaves once repaired — outdent has to
+    // take it back to where it started or the pair is not symmetric.
+    const editable = mount('<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>');
+    repairListNesting(editable);
+    expect(editable.innerHTML).toBe('<ul><li>a<ul><li>b</li></ul></li><li>c</li></ul>');
+
+    caretIn(editable.querySelector('li li').firstChild, 1);
+    Style.outdent();
+
+    expect(editable.innerHTML).toBe('<ul><li>a</li><li>b</li><li>c</li></ul>');
   });
 });

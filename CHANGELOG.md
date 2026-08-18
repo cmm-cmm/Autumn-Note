@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   The structure is repaired where it is created, so saved content is valid HTML rather than something every consumer has to know about. `htmlToMarkdown()` also repairs its own parsed copy, because the same shape arrives by paste from other editors.
 
+- **Outdenting a nested list item merged it into the item above, in Firefox.** `execCommand('outdent')` turned `<li>a<ul><li>b</li></ul></li>` into `<li>a<br>b</li>` there — three items became two and the Markdown came out with a hard line break inside the first — while Chromium restored the item. Since indent is now symmetric across engines, outdent had to be: the nested case is a DOM transform, so every engine does the same thing. Outdenting a top-level item into a paragraph still goes through `execCommand`, where the engines already agree.
+
 - **Undo threw the caret to the top of the document.** `History` recorded a selection by looking for its container among the text nodes, so a selection anchored on an *element* — which is what `setStartAfter` leaves behind, and therefore what the native insertion path produces — always serialised as offset 0. Offsets are measured with a Range now, which handles both.
 
   Undoing to a state that never recorded a selection at all — the one `reset()` pushes after `setHTML`, before the editor has been focused — now places the caret where the two states first differ, which is exactly where the undone edit happened.

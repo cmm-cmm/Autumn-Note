@@ -263,7 +263,51 @@ export function outdent() {
       return;
     }
   }
+  if (_outdentNestedItem()) return;
   execCommand('outdent');
+}
+
+/**
+ * Lifts the list item holding the caret out of its sublist, in the DOM.
+ *
+ * `execCommand('outdent')` does not agree across engines here. Firefox
+ * dissolves the item into the one above it — `<li>a<ul><li>b</li></ul></li>`
+ * becomes `<li>a<br>b</li>`, so three items turn into two and the Markdown
+ * comes out as a hard line break inside the first. Chromium restores the item.
+ * Indent is symmetric on every engine now, so outdent has to be too.
+ *
+ * Only the nested case is handled here; outdenting a top-level item into a
+ * paragraph still goes through execCommand, where the engines agree.
+ * @returns {boolean} false when the caret is not in a nested list item
+ */
+function _outdentNestedItem() {
+  const sel = globalThis.getSelection();
+  if (!sel?.rangeCount) return false;
+
+  let node = sel.getRangeAt(0).startContainer;
+  if (node.nodeType === 3) node = node.parentElement;
+  const li = /** @type {Element|null} */ (node)?.closest?.('li');
+  if (!li) return false;
+
+  const sublist = li.parentElement;
+  if (!sublist || (sublist.nodeName !== 'UL' && sublist.nodeName !== 'OL')) return false;
+
+  const outerItem = sublist.parentElement;
+  if (!outerItem || outerItem.nodeName !== 'LI' || !outerItem.parentNode) return false;
+
+  // Items below this one stay below it, nested under it — outdenting one item
+  // must not promote the rest of the sublist with it.
+  const following = [];
+  for (let next = li.nextElementSibling; next; next = next.nextElementSibling) following.push(next);
+  if (following.length) {
+    const carrier = li.ownerDocument.createElement(sublist.nodeName.toLowerCase());
+    following.forEach((item) => carrier.appendChild(item));
+    li.appendChild(carrier);
+  }
+
+  outerItem.parentNode.insertBefore(li, outerItem.nextSibling);
+  if (!sublist.children.length) sublist.remove();
+  return true;
 }
 
 /**
