@@ -33,6 +33,62 @@ function _countWords(text) {
 }
 
 /**
+ * Elements that start a new line of text. Used to join content the way the
+ * reader sees it: `textContent` glues `<p>hello</p><p>world</p>` into
+ * "helloworld", which any word counter then reports as one word.
+ */
+const BLOCK_TAGS = new Set([
+  'ADDRESS', 'ARTICLE', 'ASIDE', 'BLOCKQUOTE', 'BR', 'DD', 'DIV', 'DL', 'DT',
+  'FIELDSET', 'FIGCAPTION', 'FIGURE', 'FOOTER', 'FORM', 'H1', 'H2', 'H3', 'H4',
+  'H5', 'H6', 'HEADER', 'HR', 'LI', 'MAIN', 'NAV', 'OL', 'P', 'PRE', 'SECTION',
+  'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL',
+]);
+
+/**
+ * Appends `node`'s text into `lines` with a newline at every block boundary,
+ * and into `flat` without one.
+ *
+ * `lines` is what `innerText` gives, minus `innerText`'s forced layout pass —
+ * the counters run on every keystroke, so a reflow per character is not on.
+ * `flat` is exactly what `textContent` gives, produced by the same walk so the
+ * cold path does not traverse the subtree twice to get both.
+ * @param {Node} node
+ * @param {string[]} lines
+ * @param {string[]} flat
+ */
+function _collectText(node, lines, flat) {
+  for (let child = node.firstChild; child; child = child.nextSibling) {
+    if (child.nodeType === 3) {
+      const data = /** @type {Text} */ (child).data;
+      lines.push(data);
+      flat.push(data);
+    } else if (child.nodeType === 1) {
+      const block = BLOCK_TAGS.has(/** @type {Element} */ (child).tagName);
+      if (block) lines.push('\n');
+      _collectText(child, lines, flat);
+      if (block) lines.push('\n');
+    }
+  }
+}
+
+/**
+ * Both readings of a subtree's text: block-aware for counting words, flat for
+ * matching `textContent`.
+ * @param {Node} node
+ * @returns {{ lines: string, flat: string }}
+ */
+function readText(node) {
+  if (node.nodeType === 3) {
+    const data = /** @type {Text} */ (node).data;
+    return { lines: data, flat: data };
+  }
+  /** @type {string[]} */ const lines = [];
+  /** @type {string[]} */ const flat = [];
+  _collectText(node, lines, flat);
+  return { lines: lines.join(''), flat: flat.join('') };
+}
+
+/**
  * Toggles warning/exceeded CSS classes on a count element.
  * @param {HTMLElement} el
  * @param {number} current
@@ -68,6 +124,12 @@ export class Statusbar {
     this._wordCountEl = null;
     /** @type {HTMLElement|null} */
     this._charCountEl = null;
+    /**
+     * Per-child word/char counts, keyed on the child node itself so removed
+     * nodes fall out with no bookkeeping.
+     * @type {WeakMap<Node, {key: string, words: number, chars: number}>}
+     */
+    this._countCache = new WeakMap();
   }
 
   // ---------------------------------------------------------------------------
@@ -203,13 +265,92 @@ export class Statusbar {
   // Editor.afterCommand() already invokes 'statusbar.update' on every native
   // 'input' event and after every toolbar/formatting command, so a separate
   // content listener here would just re-run this on the same keystroke.
+  /**
+   * Word and character counts for the current content.
+   *
+   * Counts are cached per top-level child and reused while that child's text is
+   * unchanged, because `Intl.Segmenter` over the whole document was the single
+   * most expensive thing the editor did per keystroke — 6.4 ms of a 6.7 ms
+   * `afterCommand` on a 217 KiB document. A keystroke changes one child, so
+   * only that child is re-segmented; the rest costs a string comparison.
+   *
+   * Children that do miss are segmented together in one pass rather than one
+   * call each. `Intl.Segmenter.segment()` carries enough per-call setup that
+   * 1200 small calls cost roughly three times a single large one, so the cold
+   * path — `setHTML`, paste, undo of a big edit — would otherwise pay for the
+   * warm path's speed.
+   * @returns {{ words: number, chars: number }}
+   */
+  _counts() {
+    const editable = this.context.layoutInfo.editable;
+    let words = 0;
+    let chars = 0;
+    /** @type {{node: Node, key: string, text: string, start: number}[]} */
+    const cold = [];
+    /** @type {string[]} */
+    const parts = [];
+    let offset = 0;
+
+    for (let node = editable.firstChild; node; node = node.nextSibling) {
+      const hit = this._countCache.get(node);
+      // The flat text is the change key. Read it from the node only when there
+      // is an entry that could still be valid; a node with no entry is being
+      // walked anyway, and that walk yields the same string for free.
+      if (hit && hit.key === (node.textContent || '')) {
+        words += hit.words;
+        chars += hit.chars;
+        continue;
+      }
+      const { lines, flat } = readText(node);
+      cold.push({ node, key: flat, text: lines, start: offset });
+      parts.push(lines);
+      offset += lines.length + 1; // +1 for the newline the join inserts
+    }
+
+    if (cold.length) {
+      const counts = this._countBatch(cold, parts.join('\n'));
+      cold.forEach((child, i) => {
+        const entry = {
+          key: child.key,
+          words: counts[i],
+          // Newlines are separators, not characters the reader typed — and the
+          // ones inside a <pre> were never counted either.
+          chars: child.key.replaceAll('\n', '').length,
+        };
+        this._countCache.set(child.node, entry);
+        words += entry.words;
+        chars += entry.chars;
+      });
+    }
+
+    return { words, chars };
+  }
+
+  /**
+   * Word counts for each cold child, from a single pass over their joined text.
+   *
+   * The children are joined with a newline, which is a word boundary in every
+   * script, so no word can be counted across two of them. Segments arrive in
+   * increasing offset order, so attributing each one is a walk, not a search.
+   * @param {{start: number, text: string}[]} cold
+   * @param {string} joined
+   * @returns {number[]}
+   */
+  _countBatch(cold, joined) {
+    if (!_segmenter) return cold.map((c) => _countWords(c.text));
+    const counts = new Array(cold.length).fill(0);
+    let i = 0;
+    for (const seg of _segmenter.segment(joined)) {
+      if (!seg.isWordLike) continue;
+      while (i < cold.length - 1 && seg.index >= cold[i + 1].start) i++;
+      counts[i]++;
+    }
+    return counts;
+  }
+
   update() {
     if (!this._wordCountEl || !this._charCountEl) return;
-    const editable = this.context.layoutInfo.editable;
-    // textContent is faster than innerText (no layout flush, no CSS visibility check)
-    const text = editable.textContent || '';
-    const words = _countWords(text);
-    const chars = text.replaceAll('\n', '').length;
+    const { words, chars } = this._counts();
     const maxWords = this.options.maxWords || 0;
     const maxChars = this.options.maxChars || 0;
 
@@ -231,8 +372,7 @@ export class Statusbar {
    * @returns {number}
    */
   getWordCount() {
-    const editable = this.context.layoutInfo.editable;
-    return _countWords(editable.innerText || '');
+    return this._counts().words;
   }
 
   /**
@@ -240,7 +380,6 @@ export class Statusbar {
    * @returns {number}
    */
   getCharCount() {
-    const editable = this.context.layoutInfo.editable;
-    return (editable.innerText || '').replaceAll('\n', '').length;
+    return this._counts().chars;
   }
 }

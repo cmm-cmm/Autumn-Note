@@ -11,6 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.6.0] - 2026-08-18
+
+Per-keystroke work halved, a word count that was reporting one word for a whole document, and toolbar dropdowns that cut off their own labels.
+
+### Fixed
+
+- **The word count read the whole document as one line.** `<p>hello</p><p>world</p><p>again</p>` was reported as **1 word**, because the counter ran on `textContent`, which glues blocks together into `helloworldagain`. `getWordCount()` did not agree with the number on screen — it read `innerText`, which does insert line breaks, and returned 3. Both now read the same block-aware text: paragraphs, list items, table cells and `<br>` all separate words, and the two numbers cannot drift apart again because they come from one function.
+
+  Reading it without `innerText` also means no forced layout pass, which matters because this runs on every keystroke.
+
+- **The font, size, style and line-height dropdowns cut their own labels off.** The widths were px caps tuned for English, so Vietnamese "Bình thường" rendered as "Bình thườ" and Spanish "Tamaño" lost its last letter. Under the 640px breakpoint it was worse and not language-specific: the caps hid **45px of "Times New Roman" in every locale, English included** — on a control whose only job is to show the current value.
+
+  Widths are now in `em` and loose enough for the shipped locales to size themselves, so the cap is a guard against a pathological custom font list rather than a layout target. When it does bite, the label ends in an ellipsis instead of losing half a glyph. Most controls came out *narrower* — the px `min-width` had been padding out short labels, so Chinese "样式" went from 80px to 54px. A browser test measures every option of every dropdown in all eight locales at the narrow breakpoint.
+
+### Changed
+
+- **Typing in a large document costs less than half what it did.** Measured in Chromium by typing 43 real keystrokes and reading the Event Timing API, so the number covers every module's per-keystroke work rather than one function in isolation:
+
+  | Document | `input` handler before | after |
+  |---|---|---|
+  | 72 KiB / 1,744 elements | 3.44 ms | **1.51 ms** |
+  | 217 KiB / 5,232 elements | 8.66 ms | **3.41 ms** |
+
+  The worst single keystroke on the large document went from 14.1 ms to 5.3 ms.
+
+  Nearly all of it was one thing: `Intl.Segmenter` re-segmenting the entire document to recount words. In isolation that path — `afterCommand` — went from **6.83 ms to 0.68 ms**.
+
+  Counts are cached per top-level block and reused while that block's text is unchanged, so a keystroke re-segments one block instead of the document. Blocks that do miss are segmented together in a single pass rather than one call each — `Intl.Segmenter.segment()` carries enough per-call setup that 1,200 small calls cost about three times one large one, which would have made `setHTML` pay for typing's speed.
+
+  Two smaller things on the same path: the placeholder's is-it-empty test built the document's whole text and copied it twice to answer a question the first visible character settles (0.20 ms → 0.0005 ms), and the trailing-paragraph guard rebuilt a `Set` of tag names on every keystroke.
+
+- **`setHTML` is ~10% faster than before this release, despite doing the above.** It was serialising the sanitiser's DOM back to a string and letting `innerHTML` parse it a second time. `sanitiseToBody()` hands back the parsed `<body>` and `setHTML` adopts its children, which on the 217 KiB document is 45.3 ms → 35.6 ms (39.2 ms before any of this work).
+
+  Skipping the re-parse also narrows the security surface rather than widening it: re-parsing a sanitised string is the step mXSS turns against you. `sanitiseHTML()` is unchanged and still returns a string — it simply delegates — and a test asserts the two forms serialise identically across the hostile-input corpus, plus that `setHTML` lands the same DOM either way.
+
+### Added
+
+- **`sanitiseToBody(html, options)`** is exported alongside `sanitiseHTML`: the same sanitisation, handing back the parsed `<body>` of a detached document instead of its serialisation. Adopt its children when the result is going straight into the DOM and you skip a serialise plus a re-parse. This is what makes the release a minor rather than a patch — nothing existing changed.
+
+---
+
 ## [2.5.0] - 2026-08-18
 
 Code inside content — code spans, fenced blocks, and code blocks nested in lists — plus a hang, server-side image upload, and the conversion helpers on the public API.

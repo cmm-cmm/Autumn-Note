@@ -10,9 +10,16 @@ import { insertTable } from '../editing/Table.js';
 import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
-import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
+import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
+
+/**
+ * Blocks the caret cannot be placed after, so the editable always keeps a
+ * trailing paragraph. Module-level because `_ensureTrailingParagraph` runs on
+ * every keystroke and was rebuilding this set each time.
+ */
+const TRAPPING_TAGS = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
 
 export class Editor {
   /**
@@ -372,8 +379,7 @@ export class Editor {
     if (!editable) return;
     const last = editable.lastElementChild;
     if (!last) return;
-    const TRAPPING = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
-    if (TRAPPING.has(last.nodeName)) {
+    if (TRAPPING_TAGS.has(last.nodeName)) {
       const p = document.createElement('p');
       p.innerHTML = '<br>';
       editable.appendChild(p);
@@ -410,7 +416,11 @@ export class Editor {
    * @param {string} html - HTML string (will be sanitised)
    */
   setHTML(html) {
-    this.context.layoutInfo.editable.innerHTML = sanitiseHTML(html, { allowIframes: true });
+    // Adopt the sanitiser's nodes rather than its string: serialising them and
+    // letting innerHTML parse them again was ~14 ms of a ~45 ms setHTML on a
+    // 217 KiB document, and the re-parse is the step mXSS exploits.
+    const body = sanitiseToBody(html, { allowIframes: true });
+    this.context.layoutInfo.editable.replaceChildren(...body.childNodes);
     if (this._history) this._history.reset();
     this.afterCommand();
   }

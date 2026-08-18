@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitiseHTML, sanitiseUrl } from '../../src/js/core/sanitise.js';
+import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../../src/js/core/sanitise.js';
 
 // ---------------------------------------------------------------------------
 // sanitiseHTML
@@ -473,5 +473,61 @@ describe('sanitiseHTML — code block presentation', () => {
   it('still rejects a url() value on an allowlisted property', () => {
     expect(sanitiseHTML('<pre style="background-color: url(javascript:alert(1))"><code>x</code></pre>'))
       .not.toContain('url(');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sanitiseToBody — the node-returning form setHTML adopts from
+// ---------------------------------------------------------------------------
+
+describe('sanitiseToBody', () => {
+  /**
+   * Inputs picked for the ways they can diverge between the two forms: markup
+   * the parser rewrites, namespace-switching tags (the mXSS lever), unwrapping
+   * that can leave an element somewhere the parser would not have put it, and
+   * the attribute rules.
+   */
+  const CASES = [
+    '',
+    '<p>plain</p>',
+    '<script>alert(1)</script><p>after</p>',
+    '<img src=x onerror=alert(1)>',
+    '<a href="javascript:alert(1)">x</a>',
+    '<a href="java&#x0A;script:alert(1)">x</a>',
+    '<svg><mglyph><style><img src=x onerror=alert(1)></style></mglyph></svg>',
+    '<math><annotation-xml encoding="text/html"><p>x</p></annotation-xml></math>',
+    '<button><b>kept</b></button>',
+    '<table><tr><td>cell</td></tr></table>',
+    '<div><tr><td>orphan row</td></tr></div>',
+    '<form><input type="checkbox"></form>',
+    '<ul><li class="an-checklist"><input type="checkbox" checked></li></ul>',
+    '<p style="color: red; position: fixed">styled</p>',
+    '<iframe src="https://www.youtube.com/embed/abcdefghijk"></iframe>',
+    '<p>unclosed<div>nested</p></div>',
+    '<a href="#" ping="https://evil.example/beacon">x</a>',
+  ];
+
+  for (const input of CASES) {
+    it(`serialises to exactly what sanitiseHTML returns: ${JSON.stringify(input).slice(0, 56)}`, () => {
+      expect(sanitiseToBody(input).innerHTML).toBe(sanitiseHTML(input));
+      expect(sanitiseToBody(input, { allowIframes: true }).innerHTML)
+        .toBe(sanitiseHTML(input, { allowIframes: true }));
+    });
+  }
+
+  it('hands back a detached body, so adopting its children cannot touch the page', () => {
+    const body = sanitiseToBody('<p>x</p>');
+    expect(body.tagName).toBe('BODY');
+    expect(body.ownerDocument).not.toBe(document);
+    expect(document.body.contains(body)).toBe(false);
+  });
+
+  it('yields nodes an element can adopt directly', () => {
+    const host = document.createElement('div');
+    const body = sanitiseToBody('<p>one</p><script>alert(1)</script><p>two</p>');
+    host.replaceChildren(...body.childNodes);
+    expect(host.querySelectorAll('p')).toHaveLength(2);
+    expect(host.querySelector('script')).toBeNull();
+    expect(host.ownerDocument).toBe(document);
   });
 });
