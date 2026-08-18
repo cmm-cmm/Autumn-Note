@@ -29,6 +29,17 @@ Code inside content — code spans, fenced blocks, and code blocks nested in lis
 
 ### Added
 
+- **A minimal build: `autumnnote/core`.** The default entry statically imported all 23 modules, so a consumer who only needed bold and italic still shipped `TableTooltip`, `EmojiDialog`, `ImageCropOverlay` and the rest. `Context` now imports no module of its own — the entry point installs a module table — so a build that never reaches the full preset drops those modules entirely rather than registering them and leaving them idle.
+
+  | Entry | Modules | ES bundle (gzip) |
+  |---|---|---|
+  | `autumnnote` | all | 84.1 KiB |
+  | `autumnnote/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
+
+  Same API, same types, same stylesheet. A toolbar button whose module is absent still renders; invoking it logs a warning and does nothing, so pair the preset with a toolbar naming only buttons the core modules serve.
+
+  **The default entry is unchanged** — same modules, same order, same behaviour — so this is additive and needs no migration. `check:bundle` now holds the core build to a 60 KiB ceiling, so it cannot quietly drift back up to the full size.
+
 - **`onImageUpload` can hand the uploaded URL back.** The handler was called with the dropped files and returned nothing, so every integration that uploaded to its own storage had to insert the image itself — there was no supported path for the most common way an editor is wired up. Return the URL, or a promise of it, and the editor inserts a dimmed placeholder previewing the local file straight away and swaps in the real URL when it lands. An array maps onto the files by position.
 
   Progress is reported through a `setProgress(file, ratio)` helper passed to the handler, and drives a bar along the bottom of the placeholder. A rejection — or a URL the sanitiser refuses — marks the image failed and fires `imageError` carrying a `retry()` that re-sends just that file.

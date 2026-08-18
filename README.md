@@ -27,17 +27,18 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 
 1. [Features](#features)
 2. [Installation](#installation)
-3. [Framework Wrappers](#framework-wrappers)
-4. [Quick Start](#quick-start)
-5. [Plugin API](#plugin-api)
-6. [API](#api)
-7. [Options](#options)
-8. [Toolbar Customisation](#toolbar-customisation)
-9. [Keyboard Shortcuts](#keyboard-shortcuts)
-10. [Mentions](#mentions)
-11. [Project Structure](#project-structure)
-12. [Comparison](#comparison)
-13. [License](#license)
+3. [Minimal build](#minimal-build)
+4. [Framework Wrappers](#framework-wrappers)
+5. [Quick Start](#quick-start)
+6. [Plugin API](#plugin-api)
+7. [API](#api)
+8. [Options](#options)
+9. [Toolbar Customisation](#toolbar-customisation)
+10. [Keyboard Shortcuts](#keyboard-shortcuts)
+11. [Mentions](#mentions)
+12. [Project Structure](#project-structure)
+13. [Comparison](#comparison)
+14. [License](#license)
 
 ---
 
@@ -200,6 +201,34 @@ import 'autumnnote/dist/autumnnote.css';
 > <!-- FontAwesome 6 Free (recommended) -->
 > <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 > ```
+
+---
+
+## Minimal build
+
+The default entry installs every module. When you only need basic formatting,
+import `autumnnote/core` instead — it leaves the dialogs, floating tooltips,
+emoji and icon pickers and the crop overlay out of the bundle entirely rather
+than shipping them switched off:
+
+```js
+import AutumnNote from 'autumnnote/core';
+import 'autumnnote/dist/autumnnote.css';   // same stylesheet as the full build
+
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['undo', 'redo']],
+});
+```
+
+| Entry | Modules | ES bundle (gzip) |
+|---|---|---|
+| `autumnnote` | all | 84.1 KiB |
+| `autumnnote/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
+
+Same API, same types, same stylesheet — the difference is only which modules are
+installed. A toolbar button whose module is absent still renders, but invoking it
+logs a warning and does nothing, so give this preset a toolbar naming only
+buttons the core modules serve.
 
 ---
 

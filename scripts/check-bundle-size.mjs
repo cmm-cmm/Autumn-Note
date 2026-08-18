@@ -8,6 +8,10 @@ const budgets = new Map([
   ['dist/autumnnote.umd.js', { min: 50 * 1024, max: 110 * 1024 }],
   ['dist/autumnnote.cjs', { min: 50 * 1024, max: 110 * 1024 }],
   ['dist/autumnnote.min.js', { min: 50 * 1024, max: 110 * 1024 }],
+  // The minimal preset. Its ceiling is what makes the split meaningful: if it
+  // ever drifts up to the full build's size, `autumnnote/core` has quietly
+  // stopped being worth importing.
+  ['dist/autumnnote.core.es.js', { min: 20 * 1024, max: 60 * 1024 }],
 ]);
 
 let failed = false;
