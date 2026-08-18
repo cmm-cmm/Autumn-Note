@@ -48,11 +48,19 @@ Code inside content — code spans, fenced blocks, and code blocks nested in lis
 
   Not to be confused with `imageProcessor`, which *transforms* a file and must resolve to a data URL; `onImageUpload` *uploads* and resolves to any URL the sanitiser accepts.
 
-### Added
-
 - **`markdownToHTML`, `htmlToMarkdown`, `isMarkdown`, `detectLang` and `SUPPORTED_LANGS` are exported from the package entry**, alongside `sanitiseHTML`. They were reachable only through an editor instance, which needs a DOM, so converting or detecting in a build step, on a server, or in a test meant importing out of `src/`. They were already in the bundle; exporting them costs nothing. Typed in `types/core/markdown.d.ts` and `types/core/detectLang.d.ts`.
 
   `markdownToHTML()` output is not sanitised — pass it through `sanitiseHTML()` before inserting it anywhere.
+
+### Changed
+
+- **The three insertion commands no longer go through `document.execCommand`.** `insertHTML`, `insertText` and `insertHorizontalRule` are now implemented on the Range API — `deleteContents()` plus `insertNode()` — which is stage 1 of the plan in `docs/EXEC_COMMAND_MIGRATION.md`. These three were the natural place to start: unlike `bold` or `fontName` they never have to reason about overlapping inline formatting, so the replacement is a substitution rather than a rewrite of the formatting model.
+
+  `Style.execCommand` keeps the deprecated call as a fallback, exactly as the plan's compatibility adapter asks: each native path reports back when it cannot act — no selection, or a selection outside editable content — and `document.execCommand` runs instead. No public API changed, and paste, drop, slash-menu insertion and the toolbar all keep their existing behaviour.
+
+  Two things are better than what `execCommand` did: a newline given to `insertText` stays a literal newline inside a `<pre>` instead of becoming a `<br>`, which is what a code block needs; and a horizontal rule is placed *after* the block holding the caret with a paragraph after it, so a rule at the end of the document no longer leaves the caret with nowhere to go.
+
+  Covered by 18 jsdom tests and 7 browser tests run against Chromium, Firefox and WebKit.
 
 ---
 

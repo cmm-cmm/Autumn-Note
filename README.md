@@ -792,7 +792,8 @@ src/
 │   │   └── sanitise.js       DOM-based HTML and URL sanitiser
 │   ├── editing/
 │   │   ├── History.js        Undo/redo stack (configurable depth)
-│   │   ├── Style.js          Formatting commands (execCommand + DOM list/checklist transitions)
+│   │   ├── insert.js         Range-based insertHTML/insertText/insertHorizontalRule
+│   │   ├── Style.js          Formatting commands (native insertion, execCommand fallback)
 │   │   ├── Table.js          Table creation and cell manipulation
 │   │   └── Typing.js         Tab/Enter/ArrowKey behaviour and FA icon caret handling
 │   ├── module/

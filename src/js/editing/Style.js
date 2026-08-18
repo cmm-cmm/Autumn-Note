@@ -5,6 +5,7 @@
 
 import { closest, isElement, isPara } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
+import { insertHTMLNative, insertTextNative, insertHorizontalRuleNative } from './insert.js';
 
 // ---------------------------------------------------------------------------
 // execCommand wrappers (still the most compatible way in contenteditable)
@@ -17,6 +18,14 @@ import { currentRange } from '../core/range.js';
  * @returns {boolean}
  */
 export function execCommand(cmd, value = null) {
+  // Stage 1 of the execCommand migration: the three insertion commands have
+  // native Range-based implementations. They are tried first and report false
+  // when there is no usable selection, in which case the deprecated command
+  // still runs — the compatibility adapter docs/EXEC_COMMAND_MIGRATION.md calls
+  // for, so nothing stops working while the native paths are proven.
+  if (cmd === 'insertHTML' && insertHTMLNative(String(value ?? ''))) return true;
+  if (cmd === 'insertText' && insertTextNative(String(value ?? ''))) return true;
+  if (cmd === 'insertHorizontalRule' && insertHorizontalRuleNative()) return true;
   return document.execCommand(cmd, false, value);
 }
 
