@@ -1495,3 +1495,53 @@ describe('htmlToMarkdown — sublist nested as a sibling', () => {
     expect(host.innerHTML).toBe(before);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Single-column tables
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — single-column tables', () => {
+  const rows = (md) => {
+    const host = document.createElement('div');
+    host.innerHTML = markdownToHTML(md);
+    return host;
+  };
+
+  it('keeps the body rows instead of dropping them into a paragraph', () => {
+    // The body-row loop demanded more than one cell, so every row of a
+    // one-column table fell through and rendered as literal "| x |" text.
+    const host = rows('| h |\n| --- |\n| x |');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.querySelector('tbody td').textContent).toBe('x');
+    expect(host.textContent).not.toContain('|');
+  });
+
+  it('keeps several body rows', () => {
+    const host = rows('| h |\n| --- |\n| x |\n| y |\n| z |');
+    expect([...host.querySelectorAll('tbody td')].map((c) => c.textContent)).toEqual(['x', 'y', 'z']);
+  });
+
+  it('still stops at the paragraph after the table', () => {
+    const host = rows('| h |\n| --- |\n| x |\n\nafter');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.querySelector('p').textContent).toBe('after');
+  });
+
+  it('stops at a following line that is not a row', () => {
+    const host = rows('| h |\n| --- |\n| x |\nplain text');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.textContent).toContain('plain text');
+  });
+
+  it('round-trips a one-column table unchanged', () => {
+    const md = '| h |\n| --- |\n| x |';
+    expect(htmlToMarkdown(markdownToHTML(md))).toBe(md);
+  });
+
+  it('does not turn a setext heading into a table', () => {
+    // The bare (no outer pipes) form still needs two cells, or prose with a
+    // pipe above a --- line would be read as a table.
+    const host = rows('a | b\n---');
+    expect(host.querySelector('table')).toBeNull();
+  });
+});

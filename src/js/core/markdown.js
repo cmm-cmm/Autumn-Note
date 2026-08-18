@@ -556,7 +556,7 @@ function _parseBlocks(lines) {
       });
       i += 2; // skip header + separator
       const bodyRows = [];
-      while (i < lines.length && lines[i].trim() !== '' && _countTableCells(lines[i]) > 1) {
+      while (i < lines.length && lines[i].trim() !== '' && _isTableRow(lines[i])) {
         bodyRows.push(_parseTableRow(lines[i]));
         i++;
       }
@@ -707,6 +707,22 @@ function _joinParagraphLines(paraLines) {
 /** Number of cells a GFM table row would split into. */
 function _countTableCells(line) {
   return _parseTableRow(line).length;
+}
+
+/**
+ * True when `line` still belongs to the table being collected.
+ *
+ * A pipe-delimited line is a row whatever its cell count — the previous test
+ * demanded more than one cell, which silently dropped every body row of a
+ * single-column table into a paragraph of literal `| x |`. Without outer pipes
+ * a line has to split into at least two cells to count, or any prose containing
+ * a pipe would be swallowed by the table above it.
+ * @param {string} line
+ * @returns {boolean}
+ */
+function _isTableRow(line) {
+  if (!line.includes('|')) return false;
+  return /^\s*\|/.test(line) || _countTableCells(line) > 1;
 }
 
 /**

@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Undoing to a state that never recorded a selection at all — the one `reset()` pushes after `setHTML`, before the editor has been focused — now places the caret where the two states first differ, which is exactly where the undone edit happened.
 
+- **A one-column Markdown table lost every body row.** The row-collecting loop demanded more than one cell per line, so `| h |` / `| --- |` / `| x |` produced a header-only table followed by a paragraph of literal `| x |` — and a Markdown round trip of any document containing one was not stable. A line that starts with a pipe is a row whatever its cell count now; the pipe-less form still needs two cells, or prose containing a pipe above a `---` line would be read as a table instead of a setext heading.
+
+- **`maxWords` did nothing in Chinese, Japanese, Thai and every other script that does not space its words.** The limit split on whitespace, which reads an entire such document as one word, while the statusbar segmented properly — so the counter went red at 12/3 and typing carried on. Both now count through one shared implementation, so the number that stops the user is the number they can see. It also no longer reads `innerText`, which was forcing a layout pass on every keystroke in any editor with a limit set.
+
 - **Tab inside a table typed spaces into the cell.** It fell through to the default branch, so the key that every comparable editor uses to cross a table silently edited it instead. Tab moves to the next cell, Shift+Tab to the previous — across `<thead>` and `<tbody>` — and Tab in the last cell appends a row and lands in it. Shift+Tab in the first cell stays put rather than inserting anything. Tab outside a table is unchanged.
 
 ---

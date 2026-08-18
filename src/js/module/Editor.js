@@ -11,6 +11,7 @@ import { isModifier } from '../core/key.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
+import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
 
@@ -33,6 +34,12 @@ export class Editor {
     this._disposers = [];
     /** @type {number|null} Timer handle for debounced undo snapshot */
     this._snapshotTimer = null;
+    /**
+     * Counts for maxChars/maxWords. Created on first use so an editor without
+     * a limit carries no cache.
+     * @type {TextCounter|null}
+     */
+    this._limitCounter = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -288,6 +295,8 @@ export class Editor {
     const maxChars = this.options.maxChars || 0;
     const maxWords = this.options.maxWords || 0;
     if (!maxChars && !maxWords) return;
+    // Only editors with a limit pay for a counter of their own.
+    this._limitCounter ??= new TextCounter();
 
     const type = event.inputType || '';
     // Allow deletions, undo, redo and non-insert operations
@@ -297,8 +306,12 @@ export class Editor {
     // Only enforce for keyboard/IME/composition insertions
     if (!type.startsWith('insert')) return;
 
-    const text = this.context.layoutInfo.editable.innerText || '';
-    const chars = text.replaceAll('\n', '').length;
+    // Counted the same way the statusbar counts, so the number that stops the
+    // user is the number they can see. The old split on whitespace read an
+    // entire Japanese or Chinese document as one word, which left maxWords
+    // unenforceable in those scripts; it also read `innerText`, forcing a
+    // layout pass on every keystroke.
+    const { words, chars } = this._limitCounter.counts(this.context.layoutInfo.editable);
 
     if (maxChars && chars >= maxChars) {
       event.preventDefault();
@@ -310,7 +323,6 @@ export class Editor {
 
     // Word limit: block space / newline insertion when already at the limit
     if (maxWords && (event.data === ' ' || type === 'insertParagraph' || type === 'insertLineBreak')) {
-      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       if (words >= maxWords) {
         event.preventDefault();
         if (typeof this.options.onWordLimitReached === 'function') {

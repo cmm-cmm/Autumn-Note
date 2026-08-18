@@ -787,6 +787,7 @@ src/
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
 │   │   ├── env.js            Browser/platform detection (lazy — SSR-safe)
+│   │   ├── count.js         Word/character counting shared by the statusbar and the limits
 │   │   ├── detectLang.js     Code-block language detection for Prism highlighting
 │   │   ├── markdown.js       Bidirectional HTML ↔ Markdown conversion (with GFM checklists)
 │   │   └── sanitise.js       DOM-based HTML and URL sanitiser (string or nodes)
