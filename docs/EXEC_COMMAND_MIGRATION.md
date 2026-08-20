@@ -16,7 +16,7 @@ Each stage must keep the public `Context.invoke('editor.*')` API unchanged and a
 
 | Stage | State |
 |---|---|
-| 1. Insertion commands | **Done** — 2.5.0 |
+| 1. Insertion commands | **Done** — `insertHTML`, `insertText` and `insertHorizontalRule` in 2.5.0, `insertLineBreak` in 2.7.0 |
 | 2. Link creation/removal | Not started |
 | 3. Block/list commands | Partial — nested-item outdent is a DOM transform, because `execCommand('outdent')` disagrees across engines (Firefox merges the item into the one above). Indent still delegates, with its output repaired. |
 | 4. Inline formatting | Not started |

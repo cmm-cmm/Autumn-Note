@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The `contextMenu` option is documented and typed.** `contextMenu.items` has replaced the right-click menu since the module was written, but it appeared in neither the options typedef nor `types/index.d.ts`, so TypeScript consumers had to cast to reach it. There is now a `ContextMenuItem` interface covering every field the module actually reads — including the ones that select a different kind of row (`separator`, `back`, `colorStrip`, `colorPalette`, `tableGrid`) rather than a plain command.
 
+### Fixed
+
+- **The demo site advertised 2.5.0 while npm served 2.7.0.** The version was spelled out in fourteen places across seven pages, so keeping it current depended on someone remembering all fourteen at release time — and two releases had gone by without it. The pages carry a `__ASN_VERSION__` placeholder now, substituted from `package.json` by a Vite plugin wired into both the demo build and `npm run dev`.
+
+- **Six options had never reached the README, and `contextMenu` reached neither the README nor the type definitions.** `historyMaxBytes`, `autoSaveDelay`, `slashCommands`, `documentAdapters`, `collaborationAdapter` and `blockIds` all shipped without a row in the options table. A test now asserts that every key of `defaultOptions` appears in both the README and `types/index.d.ts`, so the next one cannot ship undocumented.
+
 ### Changed
 
 - **`mergeDeep()` returns the type of its target instead of `object`.** It builds the result as a copy of `target`, so that is what it has always returned; the annotation just did not say so. Everything reading `context.options` was typed as a bare `object` in consequence — 104 of the 133 errors TypeScript 7 reported are that one signature. Behaviour is unchanged.

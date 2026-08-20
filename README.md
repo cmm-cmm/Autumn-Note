@@ -614,6 +614,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `direction` | `string` | `'ltr'` | Text direction: `'ltr'` or `'rtl'`. |
 | `autoSave` | `boolean` | `false` | Persist content to `localStorage` on every change. |
 | `autoSaveKey` | `string` | `'autumnnote-autosave'` | `localStorage` key used when `autoSave` is enabled. |
+| `autoSaveDelay` | `number` | `400` | Debounce in ms between the last change and the auto-save write. |
 | `maxChars` | `number` | `0` | Maximum character count. `0` = unlimited. Shows warning in statusbar. |
 | `maxWords` | `number` | `0` | Maximum word count. `0` = unlimited. Shows warning in statusbar. |
 | `tableHeaderRow` | `boolean` | `false` | Insert a `<thead>` header row when creating new tables. |
@@ -634,6 +635,12 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `maxPasteSize` | `number` | `5242880` | Maximum paste payload size in bytes (default 5 MB). Pastes larger than this are silently dropped. |
 | `minImageSize` | `number` | `20` | Minimum image dimension in px during resize (width and height). |
 | `mention` | `object` | `null` | @mention configuration object. Set `mention.onSearch` to activate. See [Mentions](#mentions). |
+| `contextMenu` | `object` | `null` | Right-click menu override. `contextMenu.items` replaces the built-in list; see `ContextMenuItem` in the type definitions. |
+| `slashCommands` | `object[]` | `[]` | Extra entries appended to the `/` command palette. |
+| `historyMaxBytes` | `number` | `10485760` | Combined character budget for the undo/redo snapshot stack (default 10 MB). The oldest snapshots are dropped past it. |
+| `blockIds` | `boolean` | `false` | Add stable `data-an-block-id` attributes to top-level blocks, so an external adapter can address them. |
+| `documentAdapters` | `object` | `{}` | Import/export adapters keyed by format name. |
+| `collaborationAdapter` | `object` | `null` | Bridge notified of local HTML changes. |
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
 | `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |
