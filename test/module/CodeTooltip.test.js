@@ -504,6 +504,36 @@ describe('CodeTooltip._ensurePrism', () => {
     expect(second.ct._prismScript).toBe(script);
   });
 
+  it('normalises a trailing slash on the CDN base so no URL grows a `//`', () => {
+    // A base copied from a CDN's own UI usually ends in `/`, e.g.
+    // 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/'. Appending '/prism.min.js'
+    // to that yields a doubled slash: a different cache key from the canonical
+    // URL, and a selector that no longer matches what another call site wrote.
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlight = true;
+    ctx.options.codeHighlightCDN = `${CDN}/`;
+    ct._ensurePrism();
+
+    expect(document.head.querySelector(scriptSel)).not.toBeNull();
+    expect(document.head.querySelector(themeSel)).not.toBeNull();
+    expect(document.head.querySelector('script[src*="//prism.min.js"]')).toBeNull();
+  });
+
+  it('reuses assets injected by an editor whose CDN base was spelled with a slash', () => {
+    const first = makeTooltip();
+    first.ctx.options.codeHighlight = true;
+    first.ctx.options.codeHighlightCDN = CDN;
+    first.ct._ensurePrism();
+
+    const second = makeTooltip();
+    second.ctx.options.codeHighlight = true;
+    second.ctx.options.codeHighlightCDN = `${CDN}///`;
+    second.ct._ensurePrism();
+
+    expect(document.head.querySelectorAll(scriptSel)).toHaveLength(1);
+    expect(document.head.querySelectorAll(themeSel)).toHaveLength(1);
+  });
+
   it('drops its script handle once the core script finishes loading', () => {
     const { ctx, ct } = makeTooltip();
     ctx.options.codeHighlight = true;
@@ -518,6 +548,15 @@ describe('CodeTooltip._ensurePrism', () => {
 // ── _loadPrismComponent ────────────────────────────────────────────────────────
 
 describe('CodeTooltip._loadPrismComponent', () => {
+  it('strips a trailing slash from the CDN base before appending the component path', () => {
+    const { ctx, ct } = makeTooltip();
+    ctx.options.codeHighlightCDN = 'https://cdn.example.com/prism/';
+    ct._loadPrismComponent('python', vi.fn());
+    const sel = 'script[src="https://cdn.example.com/prism/components/prism-python.min.js"]';
+    expect(document.head.querySelector(sel)).not.toBeNull();
+    document.head.querySelector(sel).remove();
+  });
+
   it('appends a script element to document.head when grammar not already loaded', () => {
     const { ctx, ct } = makeTooltip();
     ctx.options.codeHighlightCDN = 'https://cdn.example.com/prism';

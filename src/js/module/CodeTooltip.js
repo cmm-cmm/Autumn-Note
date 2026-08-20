@@ -433,13 +433,26 @@ export class CodeTooltip {
   }
 
   /**
+   * The `codeHighlightCDN` option with any trailing slashes removed, so the
+   * paths appended below never produce a `//`. A doubled slash is not merely
+   * cosmetic: it makes the URL a different cache key from the canonical one,
+   * so the browser re-fetches assets the page may already hold, and it breaks
+   * the `querySelector('[src="..."]')` de-duplication whenever two call sites
+   * spell the base differently.
+   * @returns {string}
+   */
+  _cdnBase() {
+    return String(this.context.options.codeHighlightCDN ?? '').replace(/\/+$/, '');
+  }
+
+  /**
    * Loads Prism.js + CSS from CDN when options.codeHighlight is true.
    * Called once at initialize time. Fire-and-forget; errors are silent.
    */
   _ensurePrism() {
     const _w = /** @type {any} */ (globalThis);
     if (!this.context.options.codeHighlight || _w.Prism) return;
-    const cdn = this.context.options.codeHighlightCDN;
+    const cdn = this._cdnBase();
     const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
     const scriptSrc = `${cdn}/prism.min.js`;
 
@@ -484,8 +497,7 @@ export class CodeTooltip {
    */
   _loadPrismComponent(lang, cb) {
     const _w = /** @type {any} */ (globalThis);
-    const cdn = this.context.options.codeHighlightCDN;
-    const src = `${cdn}/components/prism-${lang}.min.js`;
+    const src = `${this._cdnBase()}/components/prism-${lang}.min.js`;
     // Avoid loading the same component twice
     if (document.querySelector(`script[src="${src}"]`)) {
       // Already in DOM — might still be loading; poll briefly then call cb

@@ -145,6 +145,7 @@ export interface AsnOptions {
   /** Auto-load Prism.js for syntax highlighting inside code blocks. */
   codeHighlight?: boolean;
   /** CDN base URL for Prism assets. */
+  /** Base URL for Prism assets, or your own origin to self-host. A trailing slash is normalised away. */
   codeHighlightCDN?: string;
   /** CSP nonce applied to dynamically injected Prism and Font Awesome assets. */
   cspNonce?: string;

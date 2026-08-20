@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A `codeHighlightCDN` ending in `/` produced `//` in every Prism URL.** Bases copied from a CDN's own UI usually carry the trailing slash — `https://cdn.jsdelivr.net/npm/prismjs@1.29.0/` — and the paths were appended to it verbatim. The doubled slash is a different cache key from the canonical URL, so assets the browser already held were fetched again, and it broke the `querySelector` de-duplication that stops a second editor on the page re-injecting the same script. Trailing slashes are normalised away before the paths are appended.
+
 - **Indenting a list item deleted it from the Markdown export.** `execCommand('indent')` nests the new sublist as a *sibling* of the item it indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML that no engine repairs on re-parse. A sublist in that position belongs to no item, so `getMarkdown()` returned `- a\n- c` and a round trip through Markdown removed the indented item from the document.
 
   The structure is repaired where it is created, so saved content is valid HTML rather than something every consumer has to know about. `htmlToMarkdown()` also repairs its own parsed copy, because the same shape arrives by paste from other editors.
