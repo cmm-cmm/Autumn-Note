@@ -24,11 +24,12 @@ Each stage must keep the public `Context.invoke('editor.*')` API unchanged and a
 
 ### Stage 1 as shipped
 
-`src/js/editing/insert.js` holds `insertHTMLNative`, `insertTextNative` and `insertHorizontalRuleNative`. `Style.execCommand` tries the native path first and falls back to `document.execCommand` for everything else:
+`src/js/editing/insert.js` holds `insertHTMLNative`, `insertTextNative`, `insertLineBreakNative` and `insertHorizontalRuleNative`. `Style.execCommand` tries the native path first and falls back to `document.execCommand` for everything else:
 
 ```js
 if (cmd === 'insertHTML' && insertHTMLNative(String(value ?? ''))) return true;
 if (cmd === 'insertText' && insertTextNative(String(value ?? ''))) return true;
+if (cmd === 'insertLineBreak' && insertLineBreakNative()) return true;
 if (cmd === 'insertHorizontalRule' && insertHorizontalRuleNative()) return true;
 return document.execCommand(cmd, false, value);
 ```

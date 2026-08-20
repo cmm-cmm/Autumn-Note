@@ -597,6 +597,9 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `tableHeaderRow` | `boolean` | `false` | Insert a `<thead>` header row when creating new tables. |
 | `codeHighlight` | `boolean` | `true` | Auto-load Prism.js for syntax highlighting inside `<pre><code>` blocks. |
 | `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL for Prism assets. |
+| `cspNonce` | `string` | `''` | CSP nonce applied to dynamically injected Prism and Font Awesome assets. |
+| `externalAssetCrossOrigin` | `string` | `'anonymous'` | `crossorigin` value for optional external assets; set `''` to omit it. |
+| `externalAssetReferrerPolicy` | `string` | `'no-referrer'` | Referrer policy for optional external assets; set `''` to omit it. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
 | `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |

@@ -2,6 +2,7 @@
 // Shows a horizontal action bar above (or below) the hovered code block,
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
 import { createElement, on } from '../core/dom.js';
+import { secureExternalAsset } from '../core/externalAsset.js';
 
 const SHOW_DELAY = 100;
 const HIDE_DELAY = 180;
@@ -446,6 +447,7 @@ export class CodeTooltip {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = themeHref;
+      secureExternalAsset(link, this.context.options);
       document.head.appendChild(link);
     }
 
@@ -458,6 +460,7 @@ export class CodeTooltip {
     const script = document.createElement('script');
     script.dataset.manual = ''; // prevent auto-highlight on load
     script.src = scriptSrc;
+    secureExternalAsset(script, this.context.options);
     this._prismScript = script;
     this._onScriptLoad(script, () => { this._prismScript = null; });
     document.head.appendChild(script);
@@ -505,6 +508,7 @@ export class CodeTooltip {
     }
     const s = document.createElement('script');
     s.src = src;
+    secureExternalAsset(s, this.context.options);
     this._onScriptLoad(s, cb);
     document.head.appendChild(s);
   }

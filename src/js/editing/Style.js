@@ -5,7 +5,9 @@
 
 import { closest, isElement, isPara, repairListNesting } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
-import { insertHTMLNative, insertTextNative, insertHorizontalRuleNative } from './insert.js';
+import {
+  insertHTMLNative, insertTextNative, insertLineBreakNative, insertHorizontalRuleNative,
+} from './insert.js';
 
 // ---------------------------------------------------------------------------
 // execCommand wrappers (still the most compatible way in contenteditable)
@@ -25,6 +27,7 @@ export function execCommand(cmd, value = null) {
   // for, so nothing stops working while the native paths are proven.
   if (cmd === 'insertHTML' && insertHTMLNative(String(value ?? ''))) return true;
   if (cmd === 'insertText' && insertTextNative(String(value ?? ''))) return true;
+  if (cmd === 'insertLineBreak' && insertLineBreakNative()) return true;
   if (cmd === 'insertHorizontalRule' && insertHorizontalRuleNative()) return true;
   return document.execCommand(cmd, false, value);
 }

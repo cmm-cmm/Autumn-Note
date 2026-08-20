@@ -146,6 +146,12 @@ export interface AsnOptions {
   codeHighlight?: boolean;
   /** CDN base URL for Prism assets. */
   codeHighlightCDN?: string;
+  /** CSP nonce applied to dynamically injected Prism and Font Awesome assets. */
+  cspNonce?: string;
+  /** crossorigin value applied to optional external assets. Default: 'anonymous'. */
+  externalAssetCrossOrigin?: '' | 'anonymous' | 'use-credentials';
+  /** Referrer policy applied to optional external assets. Default: 'no-referrer'. */
+  externalAssetReferrerPolicy?: ReferrerPolicy;
   /** Convert pasted Markdown text to HTML. */
   markdownPaste?: boolean;
   /** Maximum undo/redo history steps. */

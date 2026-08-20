@@ -288,7 +288,7 @@ describe('Typing Shift+Enter', () => {
   beforeEach(() => { document.execCommand = vi.fn(); });
   afterEach(() => { delete document.execCommand; });
 
-  it('Shift+Enter calls insertLineBreak and returns true', () => {
+  it('Shift+Enter inserts a native line break and returns true', () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';
     editable.innerHTML = '<p>hello</p>';
@@ -302,7 +302,8 @@ describe('Typing Shift+Enter', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    expect(document.execCommand).toHaveBeenCalledWith('insertLineBreak', false, null);
+    expect(editable.querySelector('p').innerHTML).toBe('hello<br>');
+    expect(document.execCommand).not.toHaveBeenCalled();
   });
 });
 
