@@ -60,6 +60,7 @@ export class CodeTooltip {
     this._lineNumbersBtn = null;
     this._langSelect = null;
     this._prismScript = null; // script element while Prism is loading
+    this._asyncDisposers = [];
   }
 
   initialize() {
@@ -98,6 +99,8 @@ export class CodeTooltip {
 
   destroy() {
     this._clearTimers();
+    this._asyncDisposers.forEach((dispose) => dispose());
+    this._asyncDisposers = [];
     this._disposers.forEach((d) => d());
     this._disposers = [];
     this._el?.remove();
@@ -396,6 +399,7 @@ export class CodeTooltip {
     // contenteditable stores line breaks as <br> elements; Prism reads textContent
     // which drops <br> entirely, collapsing all lines into one. Convert first.
     const applyPrism = () => {
+      if (!this.context._alive || !codeEl.isConnected || !_w.Prism) return;
       codeEl.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
       _w.Prism.highlightElement(codeEl);
       this.context.invoke('editor.afterCommand');
@@ -413,13 +417,13 @@ export class CodeTooltip {
         return;
       } else if (this._prismScript) {
         // Prism core is still loading — highlight once it arrives, then load grammar if needed
-        this._prismScript.addEventListener('load', () => {
+        this._onScriptLoad(this._prismScript, () => {
           if (_w.Prism.languages[lang]) {
             applyPrism();
           } else {
             this._loadPrismComponent(lang, applyPrism);
           }
-        }, { once: true });
+        });
         return;
       }
     }
@@ -455,8 +459,17 @@ export class CodeTooltip {
     script.dataset.manual = ''; // prevent auto-highlight on load
     script.src = scriptSrc;
     this._prismScript = script;
-    script.addEventListener('load', () => { this._prismScript = null; }, { once: true });
+    this._onScriptLoad(script, () => { this._prismScript = null; });
     document.head.appendChild(script);
+  }
+
+  /** Register a removable one-shot script callback so destroy() cancels stale work. */
+  _onScriptLoad(script, callback) {
+    const handler = () => {
+      if (this.context._alive) callback();
+    };
+    script.addEventListener('load', handler, { once: true });
+    this._asyncDisposers.push(() => script.removeEventListener('load', handler));
   }
 
   /**
@@ -474,17 +487,25 @@ export class CodeTooltip {
     if (document.querySelector(`script[src="${src}"]`)) {
       // Already in DOM — might still be loading; poll briefly then call cb
       const poll = setInterval(() => {
+        if (!this.context._alive) {
+          clearInterval(poll);
+          return;
+        }
         if (_w.Prism?.languages[lang]) {
           clearInterval(poll);
           cb();
         }
       }, 50);
-      setTimeout(() => clearInterval(poll), 3000); // give up after 3s
+      const timeout = setTimeout(() => clearInterval(poll), 3000); // give up after 3s
+      this._asyncDisposers.push(() => {
+        clearInterval(poll);
+        clearTimeout(timeout);
+      });
       return;
     }
     const s = document.createElement('script');
     s.src = src;
-    s.addEventListener('load', /** @type {EventListener} */ (cb), { once: true });
+    this._onScriptLoad(s, cb);
     document.head.appendChild(s);
   }
 

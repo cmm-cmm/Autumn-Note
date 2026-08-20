@@ -22,6 +22,7 @@ const makeContext = (html = CODE_HTML) => {
   container.appendChild(editable);
   document.body.appendChild(container);
   return {
+    _alive: true,
     locale: en,
     options: { codeHighlight: false },
     layoutInfo: { container, editable },
@@ -61,6 +62,20 @@ describe('CodeTooltip lifecycle', () => {
     ct.destroy();
     expect(ct._disposers.length).toBe(0);
     expect(ct._el).toBeNull();
+  });
+
+  it('destroy cancels callbacks waiting for an external script', () => {
+    const { ct, ctx } = makeTooltip();
+    const script = document.createElement('script');
+    const callback = vi.fn();
+    ctx.options.codeHighlightCDN = 'https://cdn.example.com/prism';
+    ct._onScriptLoad(script, callback);
+
+    ct.destroy();
+    script.dispatchEvent(new Event('load'));
+
+    expect(callback).not.toHaveBeenCalled();
+    expect(ct._asyncDisposers).toEqual([]);
   });
 });
 

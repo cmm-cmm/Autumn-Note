@@ -82,6 +82,8 @@ export class Context {
     this._suppressedRemoteHTML = null;
     /** @type {Promise<void>|null} Settles when destroy()'s closing auto-save finishes */
     this._destroyPromise = null;
+    /** @type {null|(() => void)} Set by the public factory to release its WeakMap entry. */
+    this._releaseInstance = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -797,6 +799,8 @@ export class Context {
     }
 
     this._alive = false;
+    this._releaseInstance?.();
+    this._releaseInstance = null;
 
     // Resolves once the closing auto-save (if any) has finished. Callers using
     // an async autoSaveAdapter can `await editor.destroy()` to be sure the last

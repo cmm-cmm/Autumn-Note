@@ -60,7 +60,6 @@ jobs:
         run: pnpm check:bundle
 
       - name: Verify the npm tarball is self-contained
-        if: runner.os == 'Linux'
         run: pnpm check:package
 
       - name: Build demo site

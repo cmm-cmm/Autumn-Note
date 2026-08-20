@@ -1,6 +1,6 @@
 /**
  * AutumnNote – TypeScript declarations
- * @version 2.0.0
+ * The runtime version is sourced from package.json during the build.
  */
 
 // ---------------------------------------------------------------------------
