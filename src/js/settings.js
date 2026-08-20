@@ -77,6 +77,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {object|null} [mention]            - @mention configuration (onSearch, minChars, ...)
  * @property {boolean}  [slashMenu]            - Show a "/" command palette for quick block insertion (default true)
  * @property {string}   [lang]                 - Display language or partial locale object override
+ * @property {{items?: object[]}|null} [contextMenu] - Right-click menu override; `items` replaces the built-in list
  */
 
 export const defaultOptions = {

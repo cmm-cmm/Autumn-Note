@@ -25,6 +25,27 @@ export const _customModules = new Map();
  */
 
 /**
+ * A live module instance, as held in `Context._modules`. Every module has the
+ * lifecycle pair; Toolbar and Statusbar additionally own the element Context
+ * inserts into the layout.
+ * @typedef {object} ModuleInstance
+ * @property {() => any} initialize
+ * @property {() => void} [destroy]
+ * @property {HTMLElement} [el]
+ */
+
+/**
+ * @typedef {object} PluginDef
+ * @property {string} name - Unique identifier; a second plugin with this name is skipped.
+ * @property {string} [version]
+ * @property {import('./module/Buttons.js').ButtonDef[]} [buttons] - Registered before
+ *   Toolbar initialises, so they can be referenced by name in `toolbar` config.
+ * @property {(ctx: Context, options: object) => any} [install] - Its return value becomes
+ *   the plugin's public API, reachable via `context.plugin(name)`.
+ * @property {(ctx: Context) => void} [uninstall] - Called on destroy().
+ */
+
+/**
  * Module table for every Context created from here on.
  *
  * Context deliberately imports no module of its own: whichever entry point the
@@ -69,10 +90,10 @@ export class Context {
     /** @type {Map<string, Function[]>} */
     this._listeners = new Map();
 
-    /** @type {Map<string, object>} */
+    /** @type {Map<string, ModuleInstance>} */
     this._modules = new Map();
 
-    /** @type {Map<string, { plugin: object, publicApi: * }>} */
+    /** @type {Map<string, { plugin: PluginDef, publicApi: * }>} */
     this._plugins = new Map();
 
     this._disposers = [];
@@ -209,7 +230,7 @@ export class Context {
    * Installs a plugin on this editor instance.
    * If called after create(), buttons are registered immediately but the toolbar
    * must be rebuilt via ctx.invoke('toolbar.rebuild') to render new buttons.
-   * @param {object} plugin - { name, version?, buttons?, install?, uninstall? }
+   * @param {PluginDef} plugin
    * @param {object} [options] - Forwarded to plugin.install(context, options)
    * @returns {this}
    */

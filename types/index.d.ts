@@ -29,6 +29,40 @@ export interface AutoSaveAdapter {
   remove?(payload: { key: string; context: Context }): void | Promise<void>;
 }
 
+/**
+ * One entry in the right-click menu. Most entries are a labelled row with an
+ * `action`; the remaining fields each select a different kind of row, and an
+ * entry that sets one of them ignores `action`.
+ */
+export interface ContextMenuItem {
+  /** Unique identifier. Omitted on separators and other non-interactive rows. */
+  name?: string;
+  label?: string;
+  /** Icon markup (SVG or HTML). */
+  icon?: string;
+  /** Key into `locale.contextMenu`; preferred over `label` when it resolves. */
+  localeKey?: string;
+  action?: (context: Context) => void;
+  /** Greys the row out and blocks the click. A function is evaluated per open. */
+  disabled?: boolean | ((context: Context) => boolean);
+  /** Opens a submenu instead of firing `action`. */
+  navigate?: ContextMenuItem[] | ((context: Context) => ContextMenuItem[]);
+  /** A horizontal rule. `sep` is an accepted alias. */
+  separator?: boolean;
+  /** @see separator */
+  sep?: boolean;
+  /** Renders as the submenu's "back" row rather than a command. */
+  back?: boolean;
+  /** Renders a row of quick colour swatches for `colorType`. */
+  colorStrip?: 'foreColor' | 'hiliteColor';
+  /** Renders the full palette plus a native colour input, for `colorType`. */
+  colorPalette?: boolean;
+  /** Which command `colorStrip` / `colorPalette` applies. */
+  colorType?: 'foreColor' | 'hiliteColor';
+  /** Renders the drag-to-size table picker. */
+  tableGrid?: boolean;
+}
+
 export interface SlashCommand {
   id: string;
   label?: string;
@@ -236,6 +270,14 @@ export interface AsnOptions {
 
   /** @mention autocomplete configuration. Activated when mention.onSearch is provided. */
   mention?: MentionOptions | null;
+
+  // ---- Right-click menu ------------------------------------------------------
+
+  /**
+   * Replaces the built-in right-click menu. Omit it, or omit `items`, to keep
+   * the default list.
+   */
+  contextMenu?: { items?: ContextMenuItem[] } | null;
 
   // ---- Slash command menu ----------------------------------------------------
 

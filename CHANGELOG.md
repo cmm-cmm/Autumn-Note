@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The `contextMenu` option is documented and typed.** `contextMenu.items` has replaced the right-click menu since the module was written, but it appeared in neither the options typedef nor `types/index.d.ts`, so TypeScript consumers had to cast to reach it. There is now a `ContextMenuItem` interface covering every field the module actually reads — including the ones that select a different kind of row (`separator`, `back`, `colorStrip`, `colorPalette`, `tableGrid`) rather than a plain command.
+
+### Changed
+
+- **`mergeDeep()` returns the type of its target instead of `object`.** It builds the result as a copy of `target`, so that is what it has always returned; the annotation just did not say so. Everything reading `context.options` was typed as a bare `object` in consequence — 104 of the 133 errors TypeScript 7 reported are that one signature. Behaviour is unchanged.
+
 ## [2.7.0] - 2026-08-20
 
 ### Added

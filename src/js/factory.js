@@ -117,7 +117,7 @@ const AutumnNote = {
    * Plugin `buttons` are registered to the global button registry immediately
    * so they are available when Toolbar initialises inside create().
    * Plugin `install()` is called after all built-in modules have initialised.
-   * @param {object} plugin - { name, version?, buttons?, install?, uninstall? }
+   * @param {import('./Context.js').PluginDef} plugin
    * @param {object} [options] - Forwarded to plugin.install(context, options)
    * @returns {typeof AutumnNote}
    */
@@ -146,7 +146,7 @@ const AutumnNote = {
   /**
    * Registers a single button definition in the global button registry.
    * After create(), call ctx.invoke('toolbar.rebuild') to render new buttons.
-   * @param {object} btnDef - ButtonDef-compatible object with a `name` string
+   * @param {import('./module/Buttons.js').ButtonDef} btnDef - Button definition with a unique `name`
    * @returns {typeof AutumnNote}
    */
   registerButton(btnDef) { registerButton(btnDef); return this; },

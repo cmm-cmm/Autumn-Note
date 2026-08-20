@@ -60,14 +60,14 @@ function btn(name, icon, tooltip, action, isActive, isDisabled) {
 /**
  * Global registry for custom buttons registered via AutumnNote.registerButton()
  * or via a plugin's `buttons` array. Toolbar resolves string names from here.
- * @type {Map<string, object>}
+ * @type {Map<string, ButtonDef>}
  */
 export const _buttonRegistry = new Map();
 
 /**
  * Registers a button definition in the global registry so it can be referenced
  * by string name in toolbar configuration: `toolbar: [['myBtn', boldBtn]]`.
- * @param {object} btnDef - Any ToolbarItemDef-compatible object with a `name` string.
+ * @param {ButtonDef} btnDef - Any ToolbarItemDef-compatible object with a `name` string.
  */
 export function registerButton(btnDef) {
   if (!btnDef || typeof btnDef.name !== 'string') {

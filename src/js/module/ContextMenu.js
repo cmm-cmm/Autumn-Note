@@ -113,7 +113,7 @@ export class ContextMenu {
   /** @param {import('../Context.js').Context} context */
   constructor(context) {
     this.context = context;
-    this.options = context.options || {};
+    this.options = context.options;
     this._items = this.options.contextMenu?.items || defaultItems;
     this.el = null;
     this._disposers = [];

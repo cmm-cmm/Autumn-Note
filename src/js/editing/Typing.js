@@ -99,7 +99,7 @@ function extractAfterContent(nativeRange, li) {
  * Handles special keydown behaviour inside the editor.
  * @param {KeyboardEvent} event
  * @param {HTMLElement} editable
- * @param {object} options - editor options
+ * @param {import('../settings.js').AsnOptions} options - editor options
  * @returns {boolean} true if the event was consumed
  */
 export function handleKeydown(event, editable, options = {}) {

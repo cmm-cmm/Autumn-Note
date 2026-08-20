@@ -108,9 +108,14 @@ export function isFunction(val) {
  * mutations to the merged result do not bleed back into the source object
  * (e.g. mutating `instance.options.fontFamilies` should not affect
  * `AutumnNote.defaults.fontFamilies`).
- * @param {object} target
- * @param {object} source
- * @returns {object}
+ *
+ * The result starts as a copy of `target`, so it carries `target`'s shape —
+ * `source` only overwrites values. Typing the return as `T` rather than
+ * `object` is what lets callers read properties off the merged result.
+ * @template {object} T
+ * @param {T} target
+ * @param {object} [source]
+ * @returns {T}
  */
 export function mergeDeep(target, source) {
   // Start with a shallow copy of target; clone any arrays to avoid shared refs
@@ -133,7 +138,8 @@ export function mergeDeep(target, source) {
       }
     }
   }
-  return output;
+  // `output` is built key by key from `target`, which no inference can follow.
+  return /** @type {T} */ (output);
 }
 
 /**
