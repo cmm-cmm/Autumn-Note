@@ -64,10 +64,10 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
-    "@vitejs/plugin-react": "^6.0.3",
+    "@vitejs/plugin-react": "^6.0.5",
     "autumnnote": "workspace:*",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "vite": "^8.1.5"
+    "vite": "^8.2.1"
   }
 }
