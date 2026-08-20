@@ -12,6 +12,7 @@ import { Context, _customModules, _globalPlugins } from './Context.js';
 import { registerButton, buttons } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 import { registerLocale } from './i18n/index.js';
+import { version as packageVersion } from '../../package.json';
 
 // Snapshot of factory defaults taken at module-load time (before any setDefaults() calls)
 const _originalDefaults = { ...defaultOptions };
@@ -54,6 +55,13 @@ const AutumnNote = {
     const ctxs = elements.map((el) => {
       if (instances.has(el)) return instances.get(el);
       const ctx = new Context(/** @type {HTMLElement} */ (el), options);
+      // Context.destroy() is part of the public API, so releasing the factory
+      // registry cannot depend on callers going through AutumnNote.destroy().
+      // React StrictMode in particular destroys and recreates an editor on the
+      // same host element during its development lifecycle.
+      ctx._releaseInstance = () => {
+        if (instances.get(el) === ctx) instances.delete(el);
+      };
       ctx.initialize();
       instances.set(el, ctx);
       return ctx;
@@ -168,7 +176,7 @@ const AutumnNote = {
   buttons,
 
   /** Library version */
-  version: '2.5.0',
+  version: packageVersion,
 };
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,6 @@
-import { insertHTMLNative, insertTextNative, insertHorizontalRuleNative } from '../../src/js/editing/insert.js';
+import {
+  insertHTMLNative, insertTextNative, insertLineBreakNative, insertHorizontalRuleNative,
+} from '../../src/js/editing/insert.js';
 
 /**
  * Stage 1 of the execCommand migration. Every function here returns false when
@@ -161,6 +163,23 @@ describe('native insertion primitives', () => {
       mount();
       window.getSelection().removeAllRanges();
       expect(insertTextNative('x')).toBe(false);
+    });
+  });
+
+  describe('insertLineBreakNative', () => {
+    it('inserts a br and moves the caret after it', () => {
+      mount();
+      caret(editable.querySelector('p').firstChild, 1);
+      expect(insertLineBreakNative()).toBe(true);
+      expect(editable.querySelector('p').innerHTML).toBe('a<br>b');
+      expect(getSelection().anchorNode).toBe(editable.querySelector('p'));
+    });
+
+    it('returns false outside editable content', () => {
+      const outside = document.createTextNode('outside');
+      document.body.appendChild(outside);
+      caret(outside, 0);
+      expect(insertLineBreakNative()).toBe(false);
     });
   });
 

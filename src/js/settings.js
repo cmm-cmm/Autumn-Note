@@ -44,7 +44,10 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [stickyToolbarOffset]  - Top offset in px for sticky toolbar (e.g. fixed nav height)
  * @property {string}   [theme]                - 'light' (default) | 'dark'
  * @property {boolean}  [codeHighlight]        - Auto-load Prism.js for syntax highlighting of code blocks
- * @property {string}   [codeHighlightCDN]     - CDN base URL for Prism assets (defaults to cdnjs)
+ * @property {string}   [codeHighlightCDN]     - CDN base URL for Prism assets, or your own origin to self-host (defaults to cdnjs). A trailing slash is normalised away.
+ * @property {string}   [cspNonce]             - CSP nonce applied to dynamically injected scripts/styles
+ * @property {string}   [externalAssetCrossOrigin] - crossorigin value for optional external assets
+ * @property {string}   [externalAssetReferrerPolicy] - referrer policy for optional external assets
  * @property {boolean}  [markdownPaste]        - Convert pasted Markdown text to HTML (default: true)
  * @property {boolean}  [readOnly]             - Start editor in read-only / non-editable mode
  * @property {boolean}  [spellcheck]           - Enable browser spellcheck in the editable area (default: true)
@@ -117,6 +120,9 @@ export const defaultOptions = {
   theme: 'light',
   codeHighlight: true,
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
+  cspNonce: '',
+  externalAssetCrossOrigin: 'anonymous',
+  externalAssetReferrerPolicy: 'no-referrer',
   markdownPaste: true,
   historyLimit: 100,
   // Max combined size (chars) of all stacked undo/redo snapshots. Guards

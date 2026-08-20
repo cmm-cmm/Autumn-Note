@@ -4,6 +4,7 @@
 
 import { createElement, on, makeDraggable } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
+import { secureExternalAsset } from '../core/externalAsset.js';
 
 /** Fallback stylesheet URL when `options.fontAwesomeCDN` is absent. Mirrors settings.js. */
 const FONT_AWESOME_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
@@ -73,8 +74,7 @@ export class IconDialog extends BaseDialog {
     link.id   = 'an-fontawesome-css';
     link.rel  = 'stylesheet';
     link.href = href;
-    link.crossOrigin = 'anonymous';
-    link.referrerPolicy = 'no-referrer';
+    secureExternalAsset(link, this.context.options);
     document.head.appendChild(link);
   }
 

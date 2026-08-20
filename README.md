@@ -160,6 +160,28 @@ Found a vulnerability? Please follow [SECURITY.md](SECURITY.md) rather than open
 ### Server-side rendering
 The package is safe to `import` in a Node/SSR context — no module reads `document`, `window` or `navigator` at import time, so the React and Vue wrappers work under Next.js and Nuxt. Editors are only created when you call `create()` in the browser.
 
+### Optional external assets
+The editor itself ships zero runtime dependencies, but two features fetch a file from a CDN the first time they are needed:
+
+| Feature | Asset | Turn it off with | Point it elsewhere with |
+|---|---|---|---|
+| Code-block highlighting | Prism core, theme, and one grammar per language used | `codeHighlight: false` | `codeHighlightCDN` |
+| Icon picker | Font Awesome stylesheet, only when the page has none | `fontAwesomeAutoInject: false` | `fontAwesomeCDN` |
+
+Injected `<link>`/`<script>` elements carry `crossorigin="anonymous"` and `referrerpolicy="no-referrer"`, and a `cspNonce` if you supply one. Nothing is fetched when the host page already provides Prism or Font Awesome.
+
+**`Tracking Prevention blocked access to storage for …` in the console.** This is Microsoft Edge, not the editor. Edge's Tracking Prevention denies storage access (cookies, `localStorage`) to subresources loaded from domains on its tracking-protection list, and logs one line per attempt. `cdn.jsdelivr.net` is on that list; the default `cdnjs.cloudflare.com` is not. The asset still downloads and Prism still highlights — Prism never touches storage — so this is console noise rather than a failure. To silence it, either leave `codeHighlightCDN` at its default or self-host:
+
+```js
+AutumnNote.create('#editor', {
+  // Serve prism.min.js, themes/ and components/ from your own origin.
+  // A trailing slash is fine — it is normalised before the paths are appended.
+  codeHighlightCDN: '/vendor/prism',
+});
+```
+
+Self-hosting also removes the third-party request entirely, which is usually what a strict CSP wants anyway. Alternatively, load Prism yourself before calling `create()` — the editor detects `window.Prism` and injects nothing.
+
 ---
 
 ## Installation
@@ -596,7 +618,10 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `maxWords` | `number` | `0` | Maximum word count. `0` = unlimited. Shows warning in statusbar. |
 | `tableHeaderRow` | `boolean` | `false` | Insert a `<thead>` header row when creating new tables. |
 | `codeHighlight` | `boolean` | `true` | Auto-load Prism.js for syntax highlighting inside `<pre><code>` blocks. |
-| `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base CDN URL for Prism assets. |
+| `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base URL for Prism assets; override to self-host. A trailing slash is normalised away. See [Optional external assets](#optional-external-assets). |
+| `cspNonce` | `string` | `''` | CSP nonce applied to dynamically injected Prism and Font Awesome assets. |
+| `externalAssetCrossOrigin` | `string` | `'anonymous'` | `crossorigin` value for optional external assets; set `''` to omit it. |
+| `externalAssetReferrerPolicy` | `string` | `'no-referrer'` | Referrer policy for optional external assets; set `''` to omit it. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
 | `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |
@@ -787,6 +812,7 @@ src/
 │   │   ├── key.js            Keyboard key constants
 │   │   ├── lists.js          Array helpers
 │   │   ├── env.js            Browser/platform detection (lazy — SSR-safe)
+│   │   ├── count.js         Word/character counting shared by the statusbar and the limits
 │   │   ├── detectLang.js     Code-block language detection for Prism highlighting
 │   │   ├── markdown.js       Bidirectional HTML ↔ Markdown conversion (with GFM checklists)
 │   │   └── sanitise.js       DOM-based HTML and URL sanitiser (string or nodes)

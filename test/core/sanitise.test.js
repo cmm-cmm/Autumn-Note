@@ -255,6 +255,31 @@ describe('sanitiseHTML', () => {
   });
 });
 
+describe('sanitiseHTML adversarial corpus', () => {
+  const protocolVariants = [
+    'javascript:', 'JaVaScRiPt:', 'java\nscript:', 'java\rscript:', 'java\tscript:',
+    'java&#10;script:', 'java&#x0a;script:', 'javascript&#58;', 'vbscript:',
+    'data:text/html;base64,PHNjcmlwdD4=',
+  ];
+
+  it.each(protocolVariants)('rejects encoded or obfuscated navigation protocol %s', (protocol) => {
+    const host = document.createElement('div');
+    host.innerHTML = sanitiseHTML(`<a href="${protocol}alert(1)">link</a>`);
+    expect(host.querySelector('a')?.hasAttribute('href')).toBe(false);
+  });
+
+  it('removes event handlers regardless of casing across representative elements', () => {
+    const tags = ['img', 'svg', 'math', 'table', 'video', 'a'];
+    for (const tag of tags) {
+      const host = document.createElement('div');
+      host.innerHTML = sanitiseHTML(`<${tag} oNeRrOr="alert(1)" ONCLICK="alert(2)">x</${tag}>`);
+      for (const element of host.querySelectorAll('*')) {
+        expect([...element.attributes].some((attribute) => attribute.name.startsWith('on'))).toBe(false);
+      }
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // sanitiseUrl
 // ---------------------------------------------------------------------------

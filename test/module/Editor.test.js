@@ -826,3 +826,80 @@ describe('Editor.setHTML node adoption', () => {
     editor.destroy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// maxWords / maxChars enforcement
+// ---------------------------------------------------------------------------
+
+describe('Editor limit enforcement', () => {
+  const mount = (html, options) => {
+    const context = makeContext(html);
+    context.options = options;
+    const editor = new Editor(context);
+    editor.initialize();
+    return { context, editor, editable: context.layoutInfo.editable };
+  };
+
+  /** Dispatches a beforeinput and reports whether the editor blocked it. */
+  const typing = (editable, init) =>
+    !editable.dispatchEvent(
+      new InputEvent('beforeinput', { bubbles: true, cancelable: true, ...init })
+    );
+
+  it('blocks a space once the word limit is reached', () => {
+    const { editor, editable } = mount('<p>one two three</p>', { maxWords: 3 });
+    expect(typing(editable, { inputType: 'insertText', data: ' ' })).toBe(true);
+    editor.destroy();
+  });
+
+  it('still lets the current word be finished', () => {
+    const { editor, editable } = mount('<p>one two three</p>', { maxWords: 3 });
+    expect(typing(editable, { inputType: 'insertText', data: 'x' })).toBe(false);
+    editor.destroy();
+  });
+
+  it('enforces the word limit in scripts that do not space their words', () => {
+    // Splitting on whitespace read this whole paragraph as one word, so the
+    // limit never fired and maxWords was decorative in Japanese and Chinese.
+    const { editor, editable } = mount('<p>私は学生です。これはペンです。それは本です。</p>', { maxWords: 3 });
+    expect(typing(editable, { inputType: 'insertText', data: ' ' })).toBe(true);
+    editor.destroy();
+  });
+
+  it('counts words the way the statusbar counts them, across blocks', () => {
+    // Three separate paragraphs are three words; reading textContent would
+    // glue them into one and let the user past the limit.
+    const { editor, editable } = mount('<p>one</p><p>two</p><p>three</p>', { maxWords: 3 });
+    expect(typing(editable, { inputType: 'insertText', data: ' ' })).toBe(true);
+    editor.destroy();
+  });
+
+  it('blocks insertion once the character limit is reached', () => {
+    const { editor, editable } = mount('<p>0123456789</p>', { maxChars: 10 });
+    expect(typing(editable, { inputType: 'insertText', data: 'x' })).toBe(true);
+    editor.destroy();
+  });
+
+  it('never blocks deletion, undo or redo', () => {
+    const { editor, editable } = mount('<p>0123456789</p>', { maxChars: 10 });
+    for (const inputType of ['deleteContentBackward', 'deleteContentForward', 'historyUndo', 'historyRedo']) {
+      expect(typing(editable, { inputType })).toBe(false);
+    }
+    editor.destroy();
+  });
+
+  it('does nothing at all when no limit is configured', () => {
+    const { editor, editable } = mount('<p>0123456789</p>', {});
+    expect(typing(editable, { inputType: 'insertText', data: 'x' })).toBe(false);
+    expect(editor._limitCounter).toBeNull();
+    editor.destroy();
+  });
+
+  it('reports the limit through the configured callback', () => {
+    const onCharLimitReached = vi.fn();
+    const { editor, editable } = mount('<p>0123456789</p>', { maxChars: 10, onCharLimitReached });
+    typing(editable, { inputType: 'insertText', data: 'x' });
+    expect(onCharLimitReached).toHaveBeenCalled();
+    editor.destroy();
+  });
+});

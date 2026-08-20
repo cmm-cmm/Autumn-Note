@@ -1460,3 +1460,88 @@ describe('markdownToHTML — bounded cost', () => {
     expect(performance.now() - start).toBeLessThan(1000);
   });
 });
+
+// ---------------------------------------------------------------------------
+// A sublist parked beside its item must not take the item down with it
+// ---------------------------------------------------------------------------
+
+describe('htmlToMarkdown — sublist nested as a sibling', () => {
+  it('keeps the indented item instead of dropping it', () => {
+    // execCommand('indent') produces exactly this, and paste carries it in from
+    // other editors. The sublist is not inside any <li>, so the converter used
+    // to walk past it and return "- a\n- c" — deleting "b" from the export.
+    const md = htmlToMarkdown('<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>');
+    expect(md).toBe('- a\n  - b\n- c');
+  });
+
+  it('keeps it for ordered lists too', () => {
+    const md = htmlToMarkdown('<ol><li>a</li><ol><li>b</li></ol><li>c</li></ol>');
+    expect(md).toBe('1. a\n  1. b\n2. c');
+  });
+
+  it('survives a full round trip without losing the item', () => {
+    const damaged = '<ul><li>a</li><ul><li>b</li></ul><li>c</li></ul>';
+    const once = htmlToMarkdown(damaged);
+    const twice = htmlToMarkdown(markdownToHTML(once));
+    expect(twice).toBe(once);
+    expect(twice).toContain('b');
+  });
+
+  it('does not mutate the caller’s DOM while repairing its own copy', () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<ul><li>a</li><ul><li>b</li></ul></ul>';
+    const before = host.innerHTML;
+    htmlToMarkdown(host.innerHTML);
+    expect(host.innerHTML).toBe(before);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Single-column tables
+// ---------------------------------------------------------------------------
+
+describe('markdownToHTML — single-column tables', () => {
+  const rows = (md) => {
+    const host = document.createElement('div');
+    host.innerHTML = markdownToHTML(md);
+    return host;
+  };
+
+  it('keeps the body rows instead of dropping them into a paragraph', () => {
+    // The body-row loop demanded more than one cell, so every row of a
+    // one-column table fell through and rendered as literal "| x |" text.
+    const host = rows('| h |\n| --- |\n| x |');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.querySelector('tbody td').textContent).toBe('x');
+    expect(host.textContent).not.toContain('|');
+  });
+
+  it('keeps several body rows', () => {
+    const host = rows('| h |\n| --- |\n| x |\n| y |\n| z |');
+    expect([...host.querySelectorAll('tbody td')].map((c) => c.textContent)).toEqual(['x', 'y', 'z']);
+  });
+
+  it('still stops at the paragraph after the table', () => {
+    const host = rows('| h |\n| --- |\n| x |\n\nafter');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.querySelector('p').textContent).toBe('after');
+  });
+
+  it('stops at a following line that is not a row', () => {
+    const host = rows('| h |\n| --- |\n| x |\nplain text');
+    expect(host.querySelectorAll('tbody tr')).toHaveLength(1);
+    expect(host.textContent).toContain('plain text');
+  });
+
+  it('round-trips a one-column table unchanged', () => {
+    const md = '| h |\n| --- |\n| x |';
+    expect(htmlToMarkdown(markdownToHTML(md))).toBe(md);
+  });
+
+  it('does not turn a setext heading into a table', () => {
+    // The bare (no outer pipes) form still needs two cells, or prose with a
+    // pipe above a --- line would be read as a table.
+    const host = rows('a | b\n---');
+    expect(host.querySelector('table')).toBeNull();
+  });
+});

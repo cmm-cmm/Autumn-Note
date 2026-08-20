@@ -136,6 +136,17 @@ export function insertTextNative(text, editable) {
 }
 
 /**
+ * Inserts a soft line break without relying on execCommand('insertLineBreak').
+ * Kept as a named operation so callers do not have to encode editing semantics
+ * as an HTML string.
+ * @param {HTMLElement} [editable]
+ * @returns {boolean} false when there is no usable selection
+ */
+export function insertLineBreakNative(editable) {
+  return insertTextNative('\n', editable);
+}
+
+/**
  * True when `node` sits in content that preserves whitespace.
  *
  * Checks the tag first because jsdom does not apply the UA stylesheet's

@@ -2,6 +2,7 @@
 // Shows a horizontal action bar above (or below) the hovered code block,
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
 import { createElement, on } from '../core/dom.js';
+import { secureExternalAsset } from '../core/externalAsset.js';
 
 const SHOW_DELAY = 100;
 const HIDE_DELAY = 180;
@@ -60,6 +61,7 @@ export class CodeTooltip {
     this._lineNumbersBtn = null;
     this._langSelect = null;
     this._prismScript = null; // script element while Prism is loading
+    this._asyncDisposers = [];
   }
 
   initialize() {
@@ -98,6 +100,8 @@ export class CodeTooltip {
 
   destroy() {
     this._clearTimers();
+    this._asyncDisposers.forEach((dispose) => dispose());
+    this._asyncDisposers = [];
     this._disposers.forEach((d) => d());
     this._disposers = [];
     this._el?.remove();
@@ -396,6 +400,7 @@ export class CodeTooltip {
     // contenteditable stores line breaks as <br> elements; Prism reads textContent
     // which drops <br> entirely, collapsing all lines into one. Convert first.
     const applyPrism = () => {
+      if (!this.context._alive || !codeEl.isConnected || !_w.Prism) return;
       codeEl.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
       _w.Prism.highlightElement(codeEl);
       this.context.invoke('editor.afterCommand');
@@ -413,18 +418,31 @@ export class CodeTooltip {
         return;
       } else if (this._prismScript) {
         // Prism core is still loading — highlight once it arrives, then load grammar if needed
-        this._prismScript.addEventListener('load', () => {
+        this._onScriptLoad(this._prismScript, () => {
           if (_w.Prism.languages[lang]) {
             applyPrism();
           } else {
             this._loadPrismComponent(lang, applyPrism);
           }
-        }, { once: true });
+        });
         return;
       }
     }
 
     this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * The `codeHighlightCDN` option with any trailing slashes removed, so the
+   * paths appended below never produce a `//`. A doubled slash is not merely
+   * cosmetic: it makes the URL a different cache key from the canonical one,
+   * so the browser re-fetches assets the page may already hold, and it breaks
+   * the `querySelector('[src="..."]')` de-duplication whenever two call sites
+   * spell the base differently.
+   * @returns {string}
+   */
+  _cdnBase() {
+    return String(this.context.options.codeHighlightCDN ?? '').replace(/\/+$/, '');
   }
 
   /**
@@ -434,7 +452,7 @@ export class CodeTooltip {
   _ensurePrism() {
     const _w = /** @type {any} */ (globalThis);
     if (!this.context.options.codeHighlight || _w.Prism) return;
-    const cdn = this.context.options.codeHighlightCDN;
+    const cdn = this._cdnBase();
     const themeHref = `${cdn}/themes/prism-tomorrow.min.css`;
     const scriptSrc = `${cdn}/prism.min.js`;
 
@@ -442,6 +460,7 @@ export class CodeTooltip {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = themeHref;
+      secureExternalAsset(link, this.context.options);
       document.head.appendChild(link);
     }
 
@@ -454,9 +473,19 @@ export class CodeTooltip {
     const script = document.createElement('script');
     script.dataset.manual = ''; // prevent auto-highlight on load
     script.src = scriptSrc;
+    secureExternalAsset(script, this.context.options);
     this._prismScript = script;
-    script.addEventListener('load', () => { this._prismScript = null; }, { once: true });
+    this._onScriptLoad(script, () => { this._prismScript = null; });
     document.head.appendChild(script);
+  }
+
+  /** Register a removable one-shot script callback so destroy() cancels stale work. */
+  _onScriptLoad(script, callback) {
+    const handler = () => {
+      if (this.context._alive) callback();
+    };
+    script.addEventListener('load', handler, { once: true });
+    this._asyncDisposers.push(() => script.removeEventListener('load', handler));
   }
 
   /**
@@ -468,23 +497,31 @@ export class CodeTooltip {
    */
   _loadPrismComponent(lang, cb) {
     const _w = /** @type {any} */ (globalThis);
-    const cdn = this.context.options.codeHighlightCDN;
-    const src = `${cdn}/components/prism-${lang}.min.js`;
+    const src = `${this._cdnBase()}/components/prism-${lang}.min.js`;
     // Avoid loading the same component twice
     if (document.querySelector(`script[src="${src}"]`)) {
       // Already in DOM — might still be loading; poll briefly then call cb
       const poll = setInterval(() => {
+        if (!this.context._alive) {
+          clearInterval(poll);
+          return;
+        }
         if (_w.Prism?.languages[lang]) {
           clearInterval(poll);
           cb();
         }
       }, 50);
-      setTimeout(() => clearInterval(poll), 3000); // give up after 3s
+      const timeout = setTimeout(() => clearInterval(poll), 3000); // give up after 3s
+      this._asyncDisposers.push(() => {
+        clearInterval(poll);
+        clearTimeout(timeout);
+      });
       return;
     }
     const s = document.createElement('script');
     s.src = src;
-    s.addEventListener('load', /** @type {EventListener} */ (cb), { once: true });
+    secureExternalAsset(s, this.context.options);
+    this._onScriptLoad(s, cb);
     document.head.appendChild(s);
   }
 

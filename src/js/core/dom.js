@@ -250,6 +250,34 @@ export function placeCaret(el) {
  * @param {Node} node
  * @returns {boolean}
  */
+/**
+ * Moves a list the browser left as a direct child of another list into the item
+ * it belongs to.
+ *
+ * `execCommand('indent')` nests a sublist as a *sibling* of the item it
+ * indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML
+ * that no engine repairs on re-parse. The damage is not cosmetic: a sublist
+ * that is not inside an `<li>` belongs to no item, so Markdown export dropped
+ * it and a round trip deleted the indented item from the document.
+ *
+ * Idempotent, so it is safe to run after any list mutation.
+ * @param {Element|Document|null} root - subtree to repair, in place
+ */
+export function repairListNesting(root) {
+  if (!root?.querySelectorAll) return;
+  for (const list of root.querySelectorAll('ul > ul, ul > ol, ol > ul, ol > ol')) {
+    const prev = list.previousElementSibling;
+    if (prev && prev.nodeName === 'LI') {
+      prev.appendChild(list);
+    } else if (list.parentNode) {
+      // A sublist with no item before it — give it one rather than dropping it.
+      const li = list.ownerDocument.createElement('li');
+      list.parentNode.insertBefore(li, list);
+      li.appendChild(list);
+    }
+  }
+}
+
 export function isInsideEditable(node) {
   return !!closest(node, isEditable);
 }

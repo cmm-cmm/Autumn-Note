@@ -62,6 +62,7 @@ context.on('eventName', callback)           // subscribe to editor events
 
 | File | Purpose |
 |---|---|
+| `count.js` | Word/character counting — one implementation for the statusbar and the maxWords/maxChars limits |
 | `dom.js` | DOM helpers (createElement, on, closest, …) |
 | `range.js` | Selection & Range API wrappers |
 | `func.js` | mergeDeep, debounce, general utils |

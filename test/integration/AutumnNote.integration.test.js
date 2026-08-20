@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import AutumnNote from '../../src/js/index.js';
+import { version as packageVersion } from '../../package.json';
 
 if (typeof document.queryCommandState !== 'function') {
   Object.defineProperty(document, 'queryCommandState', {
@@ -31,6 +32,10 @@ afterEach(() => {
 });
 
 describe('AutumnNote integration', () => {
+  it('reports the package version through the public API', () => {
+    expect(AutumnNote.version).toBe(packageVersion);
+  });
+
   it('creates, resolves, and destroys instance via public API', () => {
     const ta = document.createElement('textarea');
     ta.id = 'ed';
@@ -61,6 +66,21 @@ describe('AutumnNote integration', () => {
     expect(ta.value).toBe('<p>fresh now</p>');
 
     editor.destroy();
+  });
+
+  it('recreates a fresh instance on the same element after direct Context.destroy()', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+
+    const first = AutumnNote.create(host);
+    await first.destroy();
+
+    expect(AutumnNote.getInstance(host)).toBeNull();
+    const second = AutumnNote.create(host);
+    expect(second).not.toBe(first);
+    expect(second._alive).toBe(true);
+
+    await second.destroy();
   });
 
   it('supports readOnly mode and custom module registration', () => {

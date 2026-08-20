@@ -80,10 +80,23 @@ export function resolvedImports(file, code) {
   return out;
 }
 
+/**
+ * Resolve a child_process invocation for npm. Recent Node versions reject
+ * spawning .cmd shims directly on Windows, so run the fixed command through
+ * cmd.exe there. All arguments are constants owned by this script.
+ */
+export function npmInvocation(platform = process.platform, comspec = process.env.ComSpec) {
+  const args = ['pack', '--dry-run', '--ignore-scripts', '--json'];
+  return platform === 'win32'
+    ? { command: comspec || 'cmd.exe', args: ['/d', '/s', '/c', 'npm', ...args] }
+    : { command: 'npm', args };
+}
+
 function main() {
+  const { command, args } = npmInvocation();
   const raw = execFileSync(
-    'npm',
-    ['pack', '--dry-run', '--ignore-scripts', '--json'],
+    command,
+    args,
     { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
   );
 

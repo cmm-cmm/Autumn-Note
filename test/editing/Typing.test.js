@@ -288,7 +288,7 @@ describe('Typing Shift+Enter', () => {
   beforeEach(() => { document.execCommand = vi.fn(); });
   afterEach(() => { delete document.execCommand; });
 
-  it('Shift+Enter calls insertLineBreak and returns true', () => {
+  it('Shift+Enter inserts a native line break and returns true', () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';
     editable.innerHTML = '<p>hello</p>';
@@ -302,7 +302,8 @@ describe('Typing Shift+Enter', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    expect(document.execCommand).toHaveBeenCalledWith('insertLineBreak', false, null);
+    expect(editable.querySelector('p').innerHTML).toBe('hello<br>');
+    expect(document.execCommand).not.toHaveBeenCalled();
   });
 });
 
@@ -945,5 +946,114 @@ describe('Typing checklist Enter — extractAfterContent error fallback', () => 
     expect(items[1].textContent.replace(/[ ​]/g, '')).toBe('');
 
     setEndSpy.mockRestore();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tab inside a table
+// ---------------------------------------------------------------------------
+
+describe('Typing Tab in a table', () => {
+  const mount = (html) => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = html;
+    document.body.appendChild(editable);
+    return editable;
+  };
+
+  const caretIn = (node, offset = 0) => {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
+
+  /** The cell the caret is currently in, as "TAG:text". */
+  const currentCell = () => {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return null;
+    let node = sel.getRangeAt(0).startContainer;
+    if (node.nodeType === 3) node = node.parentElement;
+    const cell = node.closest('td, th');
+    return cell ? `${cell.nodeName}:${cell.textContent.trim()}` : null;
+  };
+
+  const tab = (editable, shiftKey = false) => {
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true, shiftKey });
+    return handleKeydown(event, editable, {});
+  };
+
+  const GRID = '<table><tbody><tr><td>a1</td><td>b1</td></tr><tr><td>a2</td><td>b2</td></tr></tbody></table>';
+
+  it('walks forward through the cells instead of typing spaces into them', () => {
+    // It used to fall through to the default branch and insert tabSize spaces,
+    // silently editing the cell it was meant to leave.
+    const editable = mount(GRID);
+    caretIn(editable.querySelectorAll('td')[0].firstChild, 2);
+
+    expect(tab(editable)).toBe(true);
+    expect(currentCell()).toBe('TD:b1');
+    tab(editable);
+    expect(currentCell()).toBe('TD:a2');
+    expect(editable.textContent).toBe('a1b1a2b2');
+  });
+
+  it('walks backward on Shift+Tab, across thead and tbody', () => {
+    const editable = mount(
+      '<table><thead><tr><th>h1</th><th>h2</th></tr></thead><tbody><tr><td>a2</td><td>b2</td></tr></tbody></table>'
+    );
+    caretIn(editable.querySelectorAll('td')[1].firstChild, 2);
+
+    tab(editable, true);
+    expect(currentCell()).toBe('TD:a2');
+    tab(editable, true);
+    expect(currentCell()).toBe('TH:h2');
+    tab(editable, true);
+    expect(currentCell()).toBe('TH:h1');
+  });
+
+  it('stays put in the first cell rather than inserting anything', () => {
+    const editable = mount(GRID);
+    caretIn(editable.querySelectorAll('td')[0].firstChild, 0);
+
+    expect(tab(editable, true)).toBe(true);
+    expect(currentCell()).toBe('TD:a1');
+    expect(editable.textContent).toBe('a1b1a2b2');
+  });
+
+  it('adds a row when tabbing out of the last cell', () => {
+    const editable = mount(GRID);
+    caretIn(editable.querySelectorAll('td')[3].firstChild, 2);
+
+    tab(editable);
+
+    expect(editable.querySelectorAll('tr')).toHaveLength(3);
+    expect(editable.querySelectorAll('tr')[2].children).toHaveLength(2);
+    expect(currentCell()).toBe('TD:');
+  });
+
+  it('makes the appended row body cells even below a header row', () => {
+    const editable = mount('<table><thead><tr><th>h1</th><th>h2</th></tr></thead></table>');
+    caretIn(editable.querySelectorAll('th')[1].firstChild, 2);
+
+    tab(editable);
+
+    const added = editable.querySelectorAll('tr')[1];
+    expect(added).toBeTruthy();
+    expect([...added.children].map((c) => c.nodeName)).toEqual(['TD', 'TD']);
+  });
+
+  it('leaves Tab alone outside a table', () => {
+    const editable = mount('<p>plain</p>');
+    caretIn(editable.querySelector('p').firstChild, 5);
+    handleKeydown(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+      editable,
+      { tabSize: 4 }
+    );
+    expect(editable.textContent).toBe('plain    ');
   });
 });

@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-20
+
+### Added
+
+- **`cspNonce`, `externalAssetCrossOrigin` and `externalAssetReferrerPolicy` options.** The two optional CDN fetches — Prism for code highlighting, Font Awesome for the icon picker — are the only things the editor injects into `document.head`, and under a strict CSP they were unreachable: there was no way to stamp a nonce onto them. All three now flow through one helper, so the icon stylesheet is covered by the same policy as the Prism assets instead of hard-coding its own `crossorigin`.
+
+- **A native path for `insertLineBreak`.** The fourth insertion command to leave `document.execCommand`, exposed as a named operation so callers express editing intent rather than an HTML string. It falls back to `execCommand` when there is no usable selection, as the other three do.
+
+### Fixed
+
+- **A `codeHighlightCDN` ending in `/` produced `//` in every Prism URL.** Bases copied from a CDN's own UI usually carry the trailing slash — `https://cdn.jsdelivr.net/npm/prismjs@1.29.0/` — and the paths were appended to it verbatim. The doubled slash is a different cache key from the canonical URL, so assets the browser already held were fetched again, and it broke the `querySelector` de-duplication that stops a second editor on the page re-injecting the same script. Trailing slashes are normalised away before the paths are appended.
+
+- **`Context.destroy()` left the editor registered on its host element.** The factory caches instances in a `WeakMap` keyed by element and only cleared it from `AutumnNote.destroy()` — but `destroy()` on the context is public API too, and React StrictMode calls exactly that before recreating the editor on the same node in development. The second `create()` then handed back the destroyed context. The context releases its own registry entry now, so both entry points agree.
+
+- **Prism callbacks kept firing after the editor was destroyed.** Script `load` listeners and the grammar-availability poll outlived `destroy()`, so a slow CDN response would highlight into a detached tree or poll for three seconds against a dead context. Both are registered as disposers and cancelled on teardown.
+
+- **`AutumnNote.version` was a hand-maintained string.** It read `'2.5.0'` in a package published as 2.6.0. It is taken from `package.json` at build time now, so it cannot drift again.
+
+- **Indenting a list item deleted it from the Markdown export.** `execCommand('indent')` nests the new sublist as a *sibling* of the item it indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML that no engine repairs on re-parse. A sublist in that position belongs to no item, so `getMarkdown()` returned `- a\n- c` and a round trip through Markdown removed the indented item from the document.
+
+  The structure is repaired where it is created, so saved content is valid HTML rather than something every consumer has to know about. `htmlToMarkdown()` also repairs its own parsed copy, because the same shape arrives by paste from other editors.
+
+- **Outdenting a nested list item merged it into the item above, in Firefox.** `execCommand('outdent')` turned `<li>a<ul><li>b</li></ul></li>` into `<li>a<br>b</li>` there — three items became two and the Markdown came out with a hard line break inside the first — while Chromium restored the item. Since indent is now symmetric across engines, outdent had to be: the nested case is a DOM transform, so every engine does the same thing. Outdenting a top-level item into a paragraph still goes through `execCommand`, where the engines already agree.
+
+- **Undo threw the caret to the top of the document.** `History` recorded a selection by looking for its container among the text nodes, so a selection anchored on an *element* — which is what `setStartAfter` leaves behind, and therefore what the native insertion path produces — always serialised as offset 0. Offsets are measured with a Range now, which handles both.
+
+  Undoing to a state that never recorded a selection at all — the one `reset()` pushes after `setHTML`, before the editor has been focused — now places the caret where the two states first differ, which is exactly where the undone edit happened.
+
+- **A one-column Markdown table lost every body row.** The row-collecting loop demanded more than one cell per line, so `| h |` / `| --- |` / `| x |` produced a header-only table followed by a paragraph of literal `| x |` — and a Markdown round trip of any document containing one was not stable. A line that starts with a pipe is a row whatever its cell count now; the pipe-less form still needs two cells, or prose containing a pipe above a `---` line would be read as a table instead of a setext heading.
+
+- **`maxWords` did nothing in Chinese, Japanese, Thai and every other script that does not space its words.** The limit split on whitespace, which reads an entire such document as one word, while the statusbar segmented properly — so the counter went red at 12/3 and typing carried on. Both now count through one shared implementation, so the number that stops the user is the number they can see. It also no longer reads `innerText`, which was forcing a layout pass on every keystroke in any editor with a limit set.
+
+- **Tab inside a table typed spaces into the cell.** It fell through to the default branch, so the key that every comparable editor uses to cross a table silently edited it instead. Tab moves to the next cell, Shift+Tab to the previous — across `<thead>` and `<tbody>` — and Tab in the last cell appends a row and lands in it. Shift+Tab in the first cell stays put rather than inserting anything. Tab outside a table is unchanged.
+
+---
+
 ---
 
 ## [2.6.0] - 2026-08-18

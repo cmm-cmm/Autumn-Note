@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { packedFiles, resolvedImports, stripComments } from '../../scripts/check-package-files.mjs';
+import {
+  npmInvocation, packedFiles, resolvedImports, stripComments,
+} from '../../scripts/check-package-files.mjs';
+
+describe('npmInvocation', () => {
+  it('uses cmd.exe on Windows and direct npm elsewhere', () => {
+    expect(npmInvocation('win32', 'C:\\Windows\\System32\\cmd.exe')).toEqual({
+      command: 'C:\\Windows\\System32\\cmd.exe',
+      args: ['/d', '/s', '/c', 'npm', 'pack', '--dry-run', '--ignore-scripts', '--json'],
+    });
+    expect(npmInvocation('linux')).toEqual({
+      command: 'npm',
+      args: ['pack', '--dry-run', '--ignore-scripts', '--json'],
+    });
+  });
+});
 
 describe('packedFiles', () => {
   const files = [{ path: 'dist/index.js' }, { path: 'src/js/i18n/vi.js' }];

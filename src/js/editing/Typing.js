@@ -4,8 +4,8 @@
  */
 
 import { key, isKey } from '../core/key.js';
-import { closestPara, isLi } from '../core/dom.js';
-import { execCommand, outdent } from './Style.js';
+import { closestPara, isLi, placeCaret } from '../core/dom.js';
+import { execCommand, indent, outdent } from './Style.js';
 import { currentRange } from '../core/range.js';
 
 // ---------------------------------------------------------------------------
@@ -16,6 +16,65 @@ import { currentRange } from '../core/range.js';
 const _FA_PATTERN = /\bfa-/;
 const isFAIcon = (n) => !!(n?.nodeName === 'I' && _FA_PATTERN.test(n.className || ''));
 const isZwsAnchor = (n) => !!(n?.nodeType === Node.TEXT_NODE && (n.textContent === '\u200B' || n.textContent === ''));
+
+/**
+ * Moves the caret to the next (or previous) cell of the table holding `node`.
+ *
+ * Tab from the last cell appends a row, matching every comparable editor —
+ * it is how a table gets filled in without reaching for the mouse. Shift+Tab
+ * from the first cell has nowhere to go and stays put rather than falling
+ * through to a handler that would insert whitespace.
+ * @param {Node} node - the selection's start container
+ * @param {HTMLElement} editable
+ * @param {boolean} back - true for Shift+Tab
+ * @returns {boolean} false when the caret is not in a table, so the caller
+ *   can carry on with its other Tab rules
+ */
+function moveTableCell(node, editable, back) {
+  const start = /** @type {Element|null} */ (
+    node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement ?? null
+  );
+  const cell = /** @type {HTMLTableCellElement|null} */ (start?.closest('td, th') ?? null);
+  if (!cell || !editable.contains(cell)) return false;
+
+  const table = cell.closest('table');
+  if (!table || !editable.contains(table)) return false;
+
+  const cells = /** @type {HTMLTableCellElement[]} */ (Array.from(table.querySelectorAll('td, th')));
+  const index = cells.indexOf(cell);
+  const target = cells[index + (back ? -1 : 1)];
+
+  if (target) {
+    placeCaret(target);
+    return true;
+  }
+  if (back) return true; // first cell: consumed, but nowhere to go
+
+  const added = appendRowLike(/** @type {HTMLTableRowElement|null} */ (cell.closest('tr')));
+  const first = /** @type {HTMLElement|null} */ (added?.firstElementChild ?? null);
+  if (first) placeCaret(first);
+  return true;
+}
+
+/**
+ * Appends a row with the same number of cells as `row`, after it.
+ * @param {HTMLTableRowElement|null} row
+ * @returns {HTMLTableRowElement|null} the new row
+ */
+function appendRowLike(row) {
+  if (!row?.parentNode) return null;
+  const fresh = document.createElement('tr');
+  for (const cell of row.cells) {
+    // Always <td>: a new row below a header row is body content, not another
+    // header.
+    const td = document.createElement('td');
+    td.appendChild(document.createElement('br'));
+    if (cell.hasAttribute('style')) td.setAttribute('style', cell.getAttribute('style'));
+    fresh.appendChild(td);
+  }
+  row.parentNode.insertBefore(fresh, row.nextSibling);
+  return fresh;
+}
 
 /**
  * Extracts the content from `startContainer:startOffset` to the end of `li`.
@@ -214,13 +273,21 @@ export function handleKeydown(event, editable, options = {}) {
     const range = currentRange(editable);
     if (!range) return false;
 
+    // Inside a table, Tab walks the cells. Without this it fell through to the
+    // default branch and typed tabSize spaces into the cell — a dead key that
+    // quietly edited the content.
+    if (moveTableCell(range.sc, editable, event.shiftKey)) {
+      event.preventDefault();
+      return true;
+    }
+
     const para = closestPara(range.sc, editable);
     if (para && isLi(para)) {
       event.preventDefault();
       if (event.shiftKey) {
         outdent();
       } else {
-        execCommand('indent');
+        indent();
       }
       return true;
     }
