@@ -1,6 +1,6 @@
 {
   "name": "autumnnote",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "WYSIWYG rich-text editor built with vanilla JavaScript \u2014 zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue\u00a03 wrappers included.",
   "type": "module",
   "main": "dist/autumnnote.cjs",

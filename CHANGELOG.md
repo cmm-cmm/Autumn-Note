@@ -9,9 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-20
+
+### Added
+
+- **`cspNonce`, `externalAssetCrossOrigin` and `externalAssetReferrerPolicy` options.** The two optional CDN fetches — Prism for code highlighting, Font Awesome for the icon picker — are the only things the editor injects into `document.head`, and under a strict CSP they were unreachable: there was no way to stamp a nonce onto them. All three now flow through one helper, so the icon stylesheet is covered by the same policy as the Prism assets instead of hard-coding its own `crossorigin`.
+
+- **A native path for `insertLineBreak`.** The fourth insertion command to leave `document.execCommand`, exposed as a named operation so callers express editing intent rather than an HTML string. It falls back to `execCommand` when there is no usable selection, as the other three do.
+
 ### Fixed
 
 - **A `codeHighlightCDN` ending in `/` produced `//` in every Prism URL.** Bases copied from a CDN's own UI usually carry the trailing slash — `https://cdn.jsdelivr.net/npm/prismjs@1.29.0/` — and the paths were appended to it verbatim. The doubled slash is a different cache key from the canonical URL, so assets the browser already held were fetched again, and it broke the `querySelector` de-duplication that stops a second editor on the page re-injecting the same script. Trailing slashes are normalised away before the paths are appended.
+
+- **`Context.destroy()` left the editor registered on its host element.** The factory caches instances in a `WeakMap` keyed by element and only cleared it from `AutumnNote.destroy()` — but `destroy()` on the context is public API too, and React StrictMode calls exactly that before recreating the editor on the same node in development. The second `create()` then handed back the destroyed context. The context releases its own registry entry now, so both entry points agree.
+
+- **Prism callbacks kept firing after the editor was destroyed.** Script `load` listeners and the grammar-availability poll outlived `destroy()`, so a slow CDN response would highlight into a detached tree or poll for three seconds against a dead context. Both are registered as disposers and cancelled on teardown.
+
+- **`AutumnNote.version` was a hand-maintained string.** It read `'2.5.0'` in a package published as 2.6.0. It is taken from `package.json` at build time now, so it cannot drift again.
 
 - **Indenting a list item deleted it from the Markdown export.** `execCommand('indent')` nests the new sublist as a *sibling* of the item it indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML that no engine repairs on re-parse. A sublist in that position belongs to no item, so `getMarkdown()` returned `- a\n- c` and a round trip through Markdown removed the indented item from the document.
 
