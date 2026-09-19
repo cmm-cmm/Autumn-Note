@@ -69,6 +69,16 @@ const ALLOWED_STYLE_PROPS = new Set([
  * `image-set()` and `src()` are covered alongside `url()` — all three fetch an
  * external resource, so allowing them would let pasted content phone home.
  */
+/**
+ * Properties whose value is further restricted. Indentation is a
+ * non-negative length: a negative margin could move pasted content off-screen
+ * to hide it, or over the page around the editor.
+ */
+const STYLE_VALUE_RULES = {
+  'margin-left': /^(0|\d+(\.\d+)?(px|em|rem|%))$/,
+  'margin-right': /^(0|\d+(\.\d+)?(px|em|rem|%))$/,
+};
+
 const DANGEROUS_STYLE_VALUE_RE = /url\s*\(|image-set\s*\(|src\s*\(|expression\s*\(|@import|javascript:|vbscript:|behavior\s*:|-moz-binding/i;
 
 /** Trusted hosts for iframe embeds when allowIframes is enabled. */
@@ -249,6 +259,10 @@ function sanitiseStyleValue(value) {
     if (!prop || !val) continue;
     if (!ALLOWED_STYLE_PROPS.has(prop)) continue;
     if (DANGEROUS_STYLE_VALUE_RE.test(val)) continue;
+    // A CSS escape can spell a function name the pattern above looks for
+    // (u\\72l( is url(). No value the editor writes needs one.
+    if (val.includes('\\')) continue;
+    if (STYLE_VALUE_RULES[prop] && !STYLE_VALUE_RULES[prop].test(val)) continue;
     kept.push(`${prop}: ${val}`);
   }
   return kept.join('; ');

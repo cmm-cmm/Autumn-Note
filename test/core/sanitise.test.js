@@ -556,3 +556,19 @@ describe('sanitiseToBody', () => {
     expect(host.ownerDocument).toBe(document);
   });
 });
+
+describe('style values the formatting engine writes', () => {
+  it('keeps font-family and a non-negative indentation', () => {
+    expect(sanitiseHTML('<p style="margin-left: 80px"><span style="font-family: Georgia">x</span></p>'))
+      .toBe('<p style="margin-left: 80px"><span style="font-family: Georgia">x</span></p>');
+  });
+
+  it('drops a negative margin, which could move content off-screen or over the page', () => {
+    expect(sanitiseHTML('<p style="margin-left: -99999px; color: red">x</p>')).toBe('<p style="color: red">x</p>');
+    expect(sanitiseHTML('<p style="margin-right: calc(0px - 50vw)">x</p>')).toBe('<p>x</p>');
+  });
+
+  it('drops a value with a CSS escape, which can spell url(', () => {
+    expect(sanitiseHTML('<span style="font-family: u\\72l(//evil.test)">x</span>')).toBe('<span>x</span>');
+  });
+});
