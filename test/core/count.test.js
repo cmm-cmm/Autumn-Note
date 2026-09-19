@@ -99,3 +99,11 @@ describe('TextCounter', () => {
     expect(new TextCounter().counts(host(''))).toEqual({ words: 0, chars: 0 });
   });
 });
+
+describe('zero-width caret anchors', () => {
+  it('are not counted as characters', () => {
+    const root = document.createElement('div');
+    root.innerHTML = '<p>ab<b>\u200B</b></p><p><i class="fa x"></i>\u200Bc</p>';
+    expect(new TextCounter().counts(root)).toEqual({ words: 2, chars: 3 });
+  });
+});

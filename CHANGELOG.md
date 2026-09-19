@@ -25,13 +25,16 @@ the same state on Chromium, Firefox and WebKit. See
 - Removing underline or strikethrough inside `<code>` or nested formatting needed special cases; it now works everywhere the same way.
 - Turning a list back into paragraphs, switching list type and outdenting keep the selection where it was.
 - Text composed with an IME just after a superscript or subscript is moved back into it (the previous code toggled the format for the next character instead).
+- **Inserting an emoji or icon could overwrite text on the host page.** The dialogs wrote into whatever was selected when they opened, including a selection outside the editor; they now only insert inside the editor.
+- **Markdown export and import disagreed**: underline, colour/font spans, superscript and subscript were exported in forms the importer showed as literal text, so `setMarkdown(getMarkdown())` corrupted them. An icon inside bold text also exported as a stray `**`.
+- The character count (and `maxChars`) counted the invisible zero-width spaces the editor places after icons and in checklist items.
 
 ### Changed
 
 These can affect existing integrations:
 
 - **Different markup for some commands**: strikethrough writes `<s>` (not `<strike>`); colour, highlight, font family and font size write `<span style>` (never `<font>`); indenting a paragraph sets `margin-left: 40px` (`margin-right` in RTL) instead of wrapping it in a borderless `<blockquote>`. Existing content in the old forms is still read and edited correctly.
-- **The sanitiser allows `font-family`, `margin-left` and `margin-right`** in inline styles, so fonts and indentation survive `setHTML()`, paste and auto-save restore.
+- **The sanitiser allows `font-family`, `margin-left` and `margin-right`** in inline styles, so fonts and indentation survive `setHTML()`, paste and auto-save restore. Margins must be non-negative lengths, and any style value containing a CSS escape (`\`) is dropped, since an escape can spell `url(`.
 - **Copy and cut use the async Clipboard API**, which browsers only offer in secure contexts (HTTPS, localhost). Where it is missing, the context-menu Copy/Cut and the code/link copy buttons do nothing rather than fall back; a cut never deletes text that did not reach the clipboard.
 - **Remove link removes the whole link** the selection touches; **Create link on part of a link** relinks just that part.
 - **Bold is not reported as active inside headings**, which are bold by style rather than by markup.

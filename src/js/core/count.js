@@ -145,7 +145,9 @@ export class TextCounter {
           words: counted[i],
           // Newlines are separators, not characters the reader typed — and the
           // ones inside a <pre> were never counted either.
-          chars: child.key.replaceAll('\n', '').length,
+          // Zero-width spaces are caret anchors the editor inserts (after icons,
+          // in checklist items, in a formatting placeholder), not content.
+          chars: child.key.replace(/[\n\u200B]/g, '').length,
         };
         this._cache.set(child.node, entry);
         words += entry.words;
