@@ -35,6 +35,24 @@ function makeDialog(options = {}) {
 }
 
 describe('IconDialog insertion caret behavior', () => {
+  it('never writes into a selection outside the editor', async () => {
+    const { dialog, editable } = makeDialog();
+    await dialog.show();
+    const outside = document.createElement('p');
+    outside.textContent = 'PAGE TEXT';
+    document.body.appendChild(outside);
+    const range = document.createRange();
+    range.selectNodeContents(outside);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    dialog._selectIcon('star');
+    dialog._onInsert();
+
+    expect(outside.textContent).toBe('PAGE TEXT');
+    expect(editable.querySelector('p i.fa-star')).not.toBeNull();
+  });
+
   it('keeps caret after inserted icon at end of line', async () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';

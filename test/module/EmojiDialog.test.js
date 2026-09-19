@@ -170,6 +170,22 @@ describe('EmojiDialog._filterEmojis', () => {
 // ── _onEmojiClick ─────────────────────────────────────────────────────────────
 
 describe('EmojiDialog._onEmojiClick', () => {
+  it('never writes into a selection outside the editor', () => {
+    const { ctx, ed } = makeDialog();
+    const outside = document.createElement('p');
+    outside.textContent = 'PAGE TEXT';
+    document.body.appendChild(outside);
+    const range = document.createRange();
+    range.selectNodeContents(outside);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+
+    ed._onEmojiClick('X');
+
+    expect(outside.textContent).toBe('PAGE TEXT');
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p>helloX</p>');
+  });
+
   it('inserts emoji into editable and calls afterCommand', async () => {
     const { ed, ctx } = makeDialog();
     await ed.show();

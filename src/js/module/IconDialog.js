@@ -363,9 +363,14 @@ export class IconDialog extends BaseDialog {
     // 2. Get the now-live range from the selection
     const sel = globalThis.getSelection();
     let range = (sel?.rangeCount ?? 0) > 0 ? sel.getRangeAt(0) : null;
+    // A selection elsewhere on the page (the dialog was opened while the
+    // host page had text selected) must never be written into.
+    if (range && !editable.contains(range.commonAncestorContainer)) range = null;
     if (!range) {
+      // End of the last paragraph, not loose after it
+      const last = editable.lastElementChild;
       range = document.createRange();
-      range.selectNodeContents(editable);
+      range.selectNodeContents(last && /^(P|H[1-6]|DIV|BLOCKQUOTE)$/.test(last.nodeName) ? last : editable);
       range.collapse(false);
     }
 
