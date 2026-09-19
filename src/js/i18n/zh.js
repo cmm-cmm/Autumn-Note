@@ -168,6 +168,7 @@ export const zh = {
     title:     '键盘快捷键',
     ariaLabel: '键盘快捷键',
     close:     '关闭',
+    customCategory: '自定义',
     shortcuts: [
       {
         category: '文字格式',

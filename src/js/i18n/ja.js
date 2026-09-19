@@ -168,6 +168,7 @@ export const ja = {
     title:     'キーボードショートカット',
     ariaLabel: 'キーボードショートカット',
     close:     '閉じる',
+    customCategory: 'カスタム',
     shortcuts: [
       {
         category: 'テキスト書式',

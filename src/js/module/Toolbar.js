@@ -4,10 +4,8 @@
  */
 
 import { createElement, on, portalOf } from '../core/dom.js';
-import { getButton } from './Buttons.js';
-
-/** Resolve a toolbar item: string → registry lookup, object → pass-through. */
-const _resolveBtn = (item) => (typeof item === 'string') ? getButton(item) : item;
+import { resolveButton, resolveIcon } from './Buttons.js';
+import { resolvePalette } from '../core/palette.js';
 
 // Module-level cache for FontAwesome detection.
 // Evaluated once per page load so all Toolbar instances on the same page agree
@@ -106,6 +104,14 @@ const _FA_MAP = new Map([
   ['print',         'fa-print'],
 ]);
 
+/** Built-in dropdowns whose list comes from an option (see settings.js). */
+const SELECT_ITEM_OPTIONS = {
+  fontFamily: 'fontFamilies',
+  fontSize: 'fontSizes',
+  lineHeight: 'lineHeights',
+  paragraphStyle: 'paragraphStyles',
+};
+
 export class Toolbar {
   /**
    * @param {import('../Context.js').Context} context
@@ -142,7 +148,7 @@ export class Toolbar {
     this._initRovingFocus();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
-        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+        .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),
     );
     return this;
   }
@@ -162,6 +168,16 @@ export class Toolbar {
   // Build
   // ---------------------------------------------------------------------------
 
+  /**
+   * Resolves a toolbar item: a string is looked up in this editor's `buttons`
+   * option, then the global registry; an object passes through.
+   * @param {string|object} item
+   * @returns {object|undefined}
+   */
+  _resolveBtn(item) {
+    return (typeof item === 'string') ? resolveButton(item, this.options) : item;
+  }
+
   _buildButtons() {
     const toolbar = this.options.toolbar || [];
     // Build into a DocumentFragment so all groups are appended in a single
@@ -170,7 +186,7 @@ export class Toolbar {
     toolbar.forEach((group) => {
       const groupEl = createElement('div', { class: 'an-btn-group' });
       group.forEach((item) => {
-        const btnDef = _resolveBtn(item);
+        const btnDef = this._resolveBtn(item);
         if (!btnDef) {
           console.warn(`[AutumnNote] Toolbar: button "${item}" not found in registry. Skipped.`);
           return;
@@ -212,8 +228,11 @@ export class Toolbar {
       'aria-expanded': 'false',
     });
 
-    // Set icon — inline SVG (table) with optional FontAwesome fallback
-    if (this._faReady) {
+    // Set icon — custom icon, else inline SVG (table) with optional FontAwesome fallback
+    const customIcon = resolveIcon(this.options, [def.name, def.icon]);
+    if (customIcon) {
+      btn.innerHTML = customIcon;
+    } else if (this._faReady) {
       const faPrefix = this.options.fontAwesomeClass || 'fas';
       btn.innerHTML = `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`;
     } else {
@@ -326,19 +345,10 @@ export class Toolbar {
   /**
    * Creates a split color-picker widget:
    *   [icon + strip | ▾] — left applies current color, right opens swatch popup.
-   * @param {{ name: string, type: 'colorpicker', tooltip: string, defaultColor: string, action: Function }} def
+   * @param {{ name: string, type: 'colorpicker', icon?: string, tooltip: string, defaultColor: string, action: Function }} def
    * @returns {HTMLDivElement}
    */
   _createColorPicker(def) {
-    const PRESETS = [
-      // Grayscale
-      '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
-      // Saturated
-      '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
-      // Pastel
-      '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
-    ];
-
     let currentColor = def.defaultColor || '#000000';
 
     const wrap = createElement('div', { class: 'an-color-picker-wrap' });
@@ -360,7 +370,7 @@ export class Toolbar {
       ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`
       : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
 
-    applyBtn.innerHTML = iconSvg;
+    applyBtn.innerHTML = resolveIcon(this.options, [def.name, def.icon]) ?? iconSvg;
     const strip = createElement('span', { class: 'an-color-strip' });
     strip.style.background = currentColor;
     applyBtn.appendChild(strip);
@@ -382,9 +392,7 @@ export class Toolbar {
     popup.style.display = 'none';
 
     const swatches = createElement('div', { class: 'an-color-swatches' });
-    const userSwatches = Array.isArray(this.options.colorSwatches) ? this.options.colorSwatches : [];
-    const allColors = [...new Set([...userSwatches, ...PRESETS])];
-    allColors.forEach((color) => {
+    resolvePalette(this.options).forEach((color) => {
       const sw = createElement('div', { class: 'an-color-swatch', title: color, 'data-color': color });
       sw.style.background = color;
       swatches.appendChild(sw);
@@ -529,8 +537,11 @@ export class Toolbar {
    * @returns {HTMLSelectElement}
    */
   _createSelect(def) {
-    const items = (def.name === 'fontFamily')
-      ? (this.options.fontFamilies || [])
+    // Built-in dropdowns take their list from an option when one is set
+    const optionKey = SELECT_ITEM_OPTIONS[def.name];
+    const fromOption = optionKey ? this.options[optionKey] : null;
+    const items = Array.isArray(fromOption) && (fromOption.length || def.name === 'fontFamily')
+      ? fromOption
       : (def.items || []);
 
     const cls = def.selectClass ? `an-select ${def.selectClass}` : 'an-select';
@@ -618,10 +629,14 @@ export class Toolbar {
       ...(typeof btnDef.isActive === 'function' ? { 'aria-pressed': 'false' } : {}),
     });
 
-    // Render icon: prefer FontAwesome if enabled; otherwise fall back to SVG or text.
+    // Render icon: a custom icon (icons option / registerIcon) wins; then
+    // FontAwesome if enabled; otherwise the built-in SVG, or text.
     const faPrefix = this.options.fontAwesomeClass || 'fas';
     const useFaNow = this._faReady;
-    if (useFaNow) {
+    const customIcon = resolveIcon(this.options, [btnDef.name, btnDef.icon]);
+    if (customIcon) {
+      btn.innerHTML = customIcon;
+    } else if (useFaNow) {
       const faName = _FA_MAP.get(btnDef.icon) || _FA_MAP.get(btnDef.name) || null;
       if (faName) {
         btn.innerHTML = `<i class="${faPrefix} ${faName}" aria-hidden="true"></i>`;
@@ -848,7 +863,7 @@ export class Toolbar {
     this._initRovingFocus();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
-        .map(_resolveBtn).filter(Boolean).map((b) => [b.name, b]),
+        .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),
     );
     this.refresh();
   }

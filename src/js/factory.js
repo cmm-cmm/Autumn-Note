@@ -9,7 +9,7 @@
  */
 
 import { Context, _customModules, _globalPlugins } from './Context.js';
-import { registerButton, buttons } from './module/Buttons.js';
+import { registerButton, registerIcon, buttons } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 import { registerLocale } from './i18n/index.js';
 import { version as packageVersion } from '../../package.json';
@@ -150,6 +150,14 @@ const AutumnNote = {
    * @returns {typeof AutumnNote}
    */
   registerButton(btnDef) { registerButton(btnDef); return this; },
+
+  /**
+   * Registers an icon for every editor, keyed by button name or icon id.
+   * @param {string} name
+   * @param {string} icon - SVG/HTML markup, or a CSS class list
+   * @returns {typeof AutumnNote}
+   */
+  registerIcon(name, icon) { registerIcon(name, icon); return this; },
 
   /**
    * Registers a locale so `lang: '<code>'` can select it.

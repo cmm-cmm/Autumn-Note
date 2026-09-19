@@ -12,12 +12,9 @@
  */
 
 import { on, portalOf } from '../core/dom.js';
+import { resolvePalette } from '../core/palette.js';
+import { resolveIcon } from './Buttons.js';
 
-const COLOR_PRESETS = [
-  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
-  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
-  '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
-];
 
 // Minimal SVG icon set — only what the bubble toolbar needs.
 const _S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -144,6 +141,7 @@ export class BubbleToolbar {
     const items = this.options.bubbleToolbarItems || ['bold', 'italic', 'underline', 'link', 'foreColor', 'hiliteColor', 'removeFormat'];
     for (const name of items) {
       if (!_ICONS[name]) continue;
+      const icon = resolveIcon(this.options, [name]) ?? _ICONS[name];
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.dataset.name = name;
@@ -154,7 +152,7 @@ export class BubbleToolbar {
         btn.className = 'an-bubble-btn an-bubble-btn--color';
         const iconWrap = document.createElement('span');
         iconWrap.className = 'an-bubble-btn-svg';
-        iconWrap.innerHTML = _ICONS[name];
+        iconWrap.innerHTML = icon;
         const strip = document.createElement('span');
         strip.className = 'an-bubble-color-strip';
         strip.style.background = name === 'foreColor' ? '#000000' : 'transparent';
@@ -162,7 +160,7 @@ export class BubbleToolbar {
         btn.appendChild(strip);
       } else {
         btn.className = 'an-bubble-btn';
-        btn.innerHTML = _ICONS[name];
+        btn.innerHTML = icon;
       }
 
       btn.addEventListener('mousedown', (e) => {
@@ -203,7 +201,7 @@ export class BubbleToolbar {
     const palette = document.createElement('div');
     palette.className = 'an-context-color-palette';
 
-    COLOR_PRESETS.forEach((color) => {
+    resolvePalette(this.options).forEach((color) => {
       const sw = document.createElement('div');
       sw.className = 'an-context-color-swatch';
       sw.title = color;

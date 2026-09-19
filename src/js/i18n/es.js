@@ -167,6 +167,7 @@ export const es = {
     title:     'Atajos de teclado',
     ariaLabel: 'Atajos de teclado',
     close:     'Cerrar',
+    customCategory: 'Personalizados',
     shortcuts: [
       {
         category: 'Formato de texto',

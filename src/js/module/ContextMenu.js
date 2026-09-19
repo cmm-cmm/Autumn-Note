@@ -1,6 +1,7 @@
 ﻿// ContextMenu.js - Right-click context menu for editor actions
 import { createElement, on, portalOf } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
+import { resolvePalette } from '../core/palette.js';
 
 // SVG icon map — 16×16 Heroicons-style paths
 const ICONS = {
@@ -37,14 +38,6 @@ const ICONS = {
   back:           `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
 };
 
-const COLOR_PRESETS = [
-  // Grayscale
-  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
-  // Saturated
-  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
-  // Pastel
-  '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
-];
 
 function makeColorSubItems(colorType) {
   const label = colorType === 'foreColor' ? 'Text Color' : 'Highlight Color';
@@ -227,7 +220,7 @@ export class ContextMenu {
       // Color palette item — renders inline color swatches
       if (it.colorPalette) {
         const palette = createElement('div', { class: 'an-context-color-palette' });
-        COLOR_PRESETS.forEach((color) => {
+        resolvePalette(this.options).forEach((color) => {
           const sw = createElement('div', {
             class: 'an-context-color-swatch',
             title: color,

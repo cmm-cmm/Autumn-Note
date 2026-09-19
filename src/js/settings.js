@@ -3,7 +3,7 @@
  * Inspired by Summernote's settings.js
  */
 
-import { defaultToolbar } from './module/Buttons.js';
+import { defaultToolbar, DEFAULT_FONT_SIZES, DEFAULT_LINE_HEIGHTS, DEFAULT_PARAGRAPH_STYLES } from './module/Buttons.js';
 
 /**
  * @typedef {object} AsnOptions
@@ -32,6 +32,13 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {string}   [defaultFontFamily]    - Default font family applied to the editable area on init
  * @property {string}   [defaultFontSize]      - Default font size applied to the editable area on init (e.g. '14px')
  * @property {string[]} [fontFamilies]         - Font families shown in the font-family toolbar dropdown
+ * @property {string[]} [fontSizes]            - Sizes shown in the font-size dropdown (CSS lengths, e.g. '14px')
+ * @property {string[]} [lineHeights]          - Values shown in the line-height dropdown
+ * @property {Array<{value: string, label: string}>} [paragraphStyles] - Block formats in the paragraph-style dropdown
+ * @property {string[]|null} [colorPalette]    - Replaces the built-in colour swatches (toolbar, bubble toolbar, context menu)
+ * @property {Object<string, string>|null} [icons] - Per-editor icon overrides keyed by button or icon name: SVG markup or a CSS class list
+ * @property {Object<string, object>|object[]|null} [buttons] - Per-editor button definitions, referenced by name in `toolbar`
+ * @property {Object<string, *>|null} [keyMap]  - Keyboard shortcut overrides, e.g. { 'Mod+F': false, 'Mod+Shift+X': 'strikethrough' }
  * @property {Function} [onChange]             - Callback on content change
  * @property {Function} [onFocus]              - Callback on focus
  * @property {Function} [onBlur]               - Callback on blur
@@ -147,6 +154,18 @@ export const defaultOptions = {
   defaultFontFamily: 'Arial',
   // Default font size applied to the editor and shown in the size dropdown when no explicit size is set
   defaultFontSize: '14px',
+  // Lists behind the toolbar dropdowns. Replace to offer your own values.
+  fontSizes: [...DEFAULT_FONT_SIZES],
+  lineHeights: [...DEFAULT_LINE_HEIGHTS],
+  paragraphStyles: DEFAULT_PARAGRAPH_STYLES.map((item) => ({ ...item })),
+  // Replaces the built-in colour swatches when set (colorSwatches are still prepended).
+  colorPalette: null,
+  // Per-editor icon overrides: { bold: '<svg ...>', italic: 'bi bi-type-italic' }.
+  icons: null,
+  // Per-editor button definitions usable by name in `toolbar`: { myBtn: { icon, tooltip, action } }.
+  buttons: null,
+  // Keyboard shortcut overrides merged over the defaults; false disables one.
+  keyMap: null,
   // Font families shown in the toolbar font-family dropdown
   fontFamilies: [
     'Arial',

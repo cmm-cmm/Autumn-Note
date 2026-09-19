@@ -99,6 +99,18 @@ export interface AsnThemeVars {
   [customProperty: `--an-${string}`]: string | number | undefined;
 }
 
+/**
+ * A keyMap value. Built-in commands: undo, redo, bold, italic, underline,
+ * inlineCode, link, find, findReplace, shortcuts, pastePlainText — or any
+ * toolbar button name. A handler returning `false` lets the key through.
+ */
+export type AsnKeyBinding =
+  | false
+  | null
+  | string
+  | ((context: Context, event: KeyboardEvent) => void | false)
+  | { run: (context: Context, event: KeyboardEvent) => void | false; description?: string };
+
 export interface AsnOptions {
   /** Placeholder text when the editor is empty. */
   placeholder?: string;
@@ -246,6 +258,31 @@ export interface AsnOptions {
   defaultFontSize?: string;
   /** Font families shown in the font-family toolbar dropdown. */
   fontFamilies?: string[];
+  /** Sizes offered by the font-size dropdown (CSS lengths). Default 8px–72px. */
+  fontSizes?: string[];
+  /** Values offered by the line-height dropdown. Default '1.0'–'3.0'. */
+  lineHeights?: string[];
+  /** Block formats offered by the paragraph-style dropdown; `value` is a block tag name. */
+  paragraphStyles?: Array<{ value: string; label: string }>;
+  /** Replaces the built-in colour swatches (toolbar, bubble toolbar, context menu). `colorSwatches` are still prepended. */
+  colorPalette?: string[] | null;
+  /**
+   * Per-editor icon overrides keyed by button name (`bold`) or icon id
+   * (`list-ul`). A value starting with `<` is markup (e.g. an SVG); anything
+   * else is a CSS class list rendered as `<i class="...">`.
+   */
+  icons?: Record<string, string> | null;
+  /**
+   * Per-editor button definitions, usable by name in `toolbar` without the
+   * global registry: `{ save: { icon: 'save', tooltip: 'Save', action } }`.
+   */
+  buttons?: Record<string, Omit<ButtonDef, 'name'> | Omit<DropdownDef, 'name'>> | ToolbarItemDef[] | null;
+  /**
+   * Keyboard shortcuts merged over the defaults. Keys are combos (`Mod+B`,
+   * `Ctrl+Alt+1`; `Mod` = Ctrl or Cmd). Values: `false` to disable, a
+   * built-in command or toolbar button name, a handler, or `{ run, description }`.
+   */
+  keyMap?: Record<string, AsnKeyBinding> | null;
   /** Start the editor in read-only (non-editable) mode. */
   readOnly?: boolean;
   /** Enable browser spellcheck in the editable area (default: true). */
@@ -497,6 +534,8 @@ export interface AsnLocale {
     title: string;
     ariaLabel: string;
     close: string;
+    /** Heading of the section listing `keyMap` shortcuts. */
+    customCategory: string;
     shortcuts: Array<{ category: string; items: Array<{ keys: string; action: string }> }>;
   };
   contextMenu: Record<string, string>;
@@ -870,6 +909,13 @@ export interface AutumnNoteStatic {
    * referenced by string name in toolbar configuration.
    */
   registerButton(btnDef: ToolbarItemDef): this;
+
+  /**
+   * Registers an icon for every editor, keyed by button name or icon id.
+   * `icon` is SVG/HTML markup, or a CSS class list such as `'bi bi-type-bold'`.
+   * The per-editor `icons` option takes precedence.
+   */
+  registerIcon(name: string, icon: string): this;
   registerSlashCommand(command: SlashCommand): this;
 
   /**

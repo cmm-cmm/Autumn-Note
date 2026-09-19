@@ -168,6 +168,7 @@ export const vi = {
     title:     'Phím tắt bàn phím',
     ariaLabel: 'Phím tắt bàn phím',
     close:     'Đóng',
+    customCategory: 'Tùy chỉnh',
     shortcuts: [
       {
         category: 'Định dạng văn bản',

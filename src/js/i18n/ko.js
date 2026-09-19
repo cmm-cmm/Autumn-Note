@@ -167,6 +167,7 @@ export const ko = {
     title:     '키보드 단축키',
     ariaLabel: '키보드 단축키',
     close:     '닫기',
+    customCategory: '사용자 지정',
     shortcuts: [
       {
         category: '텍스트 서식',

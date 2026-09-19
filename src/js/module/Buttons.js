@@ -81,14 +81,130 @@ export function registerButton(btnDef) {
 }
 
 /**
- * Looks up a button definition by name from the global registry.
- * Returns undefined when not found.
+ * Looks up a button definition by name: buttons registered via
+ * registerButton() first, then the pre-built ones. Returns undefined when
+ * not found.
  * @param {string} name
  * @returns {object|undefined}
  */
 export function getButton(name) {
-  return _buttonRegistry.get(name);
+  return _buttonRegistry.get(name) ?? _builtinButtons().get(name);
 }
+
+/** @type {Map<string, object>|null} */
+let _builtinByName = null;
+
+/**
+ * The pre-built buttons keyed by their `name` (`bold`, `fontSize`, ...), so a
+ * toolbar can be configured with plain strings — `[['bold', 'italic']]` —
+ * which works from JSON, framework props and the UMD build alike. Built
+ * lazily because the definitions below are declared after this function.
+ * @returns {Map<string, object>}
+ */
+function _builtinButtons() {
+  _builtinByName ??= new Map(
+    Object.values(buttons)
+      .filter((def) => def && !Array.isArray(def) && typeof (/** @type {any} */ (def)).name === 'string')
+      .map((def) => [/** @type {any} */ (def).name, def]),
+  );
+  return _builtinByName;
+}
+
+/**
+ * Resolves a button name for one editor: its own `buttons` option first
+ * (an object keyed by name, or an array of definitions), then the global
+ * registry. Lets two editors on a page define different buttons of the same
+ * name without touching the global registry.
+ * @param {string} name
+ * @param {{ buttons?: Record<string, object>|object[]|null }} [options]
+ * @returns {object|undefined}
+ */
+export function resolveButton(name, options) {
+  const own = options?.buttons;
+  if (Array.isArray(own)) {
+    const found = own.find((def) => def?.name === name);
+    if (found) return found;
+  } else if (own && typeof own === 'object' && own[name]) {
+    return { name, ...own[name] };
+  }
+  return getButton(name);
+}
+
+// ---------------------------------------------------------------------------
+// Icon registry
+// ---------------------------------------------------------------------------
+
+/**
+ * Icons registered via AutumnNote.registerIcon(), keyed by button or icon name.
+ * @type {Map<string, string>}
+ */
+export const _iconRegistry = new Map();
+
+/**
+ * Registers an icon for every editor. `icon` is SVG/HTML markup (anything
+ * starting with `<`) or a CSS class list such as `'bi bi-type-bold'`.
+ * @param {string} name - a button name (`bold`) or an icon id (`list-ul`)
+ * @param {string} icon
+ */
+export function registerIcon(name, icon) {
+  if (typeof name !== 'string' || typeof icon !== 'string') {
+    console.warn('[AutumnNote] registerIcon: name and icon must be strings.');
+    return;
+  }
+  _iconRegistry.set(name, icon);
+}
+
+/**
+ * Turns an icon value into markup: markup passes through, anything else is a
+ * CSS class list rendered as `<i class="..." aria-hidden="true">`.
+ * @param {string} icon
+ * @returns {string}
+ */
+function _iconMarkup(icon) {
+  const value = icon.trim();
+  if (value.startsWith('<')) return value;
+  const cls = value.replace(/["<>&]/g, '');
+  return `<i class="${cls}" aria-hidden="true"></i>`;
+}
+
+/**
+ * Looks up a custom icon for a control, trying each name in order against the
+ * editor's `icons` option and then the global registry. Returns null when none
+ * is set, so the caller falls back to its built-in icon.
+ * @param {{ icons?: Record<string, string>|null }} options
+ * @param {Array<string|undefined>} names - e.g. [button name, icon id]
+ * @returns {string|null}
+ */
+export function resolveIcon(options, names) {
+  const own = options?.icons;
+  for (const name of names) {
+    if (!name) continue;
+    const icon = (own && typeof own[name] === 'string') ? own[name] : _iconRegistry.get(name);
+    if (typeof icon === 'string' && icon.trim()) return _iconMarkup(icon);
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Default dropdown lists (overridable per editor: fontSizes, lineHeights,
+// paragraphStyles — see settings.js)
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_FONT_SIZES = ['8px', '10px', '11px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '72px'];
+
+export const DEFAULT_LINE_HEIGHTS = ['1.0', '1.15', '1.5', '1.75', '2.0', '2.5', '3.0'];
+
+export const DEFAULT_PARAGRAPH_STYLES = [
+  { value: 'p',          label: 'Normal' },
+  { value: 'h1',         label: 'H1'     },
+  { value: 'h2',         label: 'H2'     },
+  { value: 'h3',         label: 'H3'     },
+  { value: 'h4',         label: 'H4'     },
+  { value: 'h5',         label: 'H5'     },
+  { value: 'h6',         label: 'H6'     },
+  { value: 'blockquote', label: 'Quote'  },
+  { value: 'pre',        label: 'Code'   },
+];
 
 // ---------------------------------------------------------------------------
 // Style buttons
@@ -175,7 +291,7 @@ export const fontSizeBtn = {
   tooltip: 'Font Size',
   placeholder: 'Size',
   selectClass: 'an-select-narrow',
-  items: ['8px', '10px', '11px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '48px', '72px'],
+  items: DEFAULT_FONT_SIZES,
   action: (ctx, value) => Style.fontSize(value, ctx.layoutInfo.editable),
   getValue: (ctx) => {
     try {
@@ -245,17 +361,7 @@ export const paragraphStyleBtn = {
   tooltip: 'Paragraph Style',
   placeholder: 'Style',
   selectClass: 'an-select-style',
-  items: [
-    { value: 'p',          label: 'Normal' },
-    { value: 'h1',         label: 'H1'     },
-    { value: 'h2',         label: 'H2'     },
-    { value: 'h3',         label: 'H3'     },
-    { value: 'h4',         label: 'H4'     },
-    { value: 'h5',         label: 'H5'     },
-    { value: 'h6',         label: 'H6'     },
-    { value: 'blockquote', label: 'Quote'  },
-    { value: 'pre',        label: 'Code'   },
-  ],
+  items: DEFAULT_PARAGRAPH_STYLES,
   action: (_ctx, value) => Style.formatBlock(value),
   getValue: () => {
     try {
@@ -276,7 +382,7 @@ export const lineHeightBtn = {
   tooltip: 'Line Height',
   placeholder: '\u2195 Line',
   selectClass: 'an-select-narrow',
-  items: ['1.0', '1.15', '1.5', '1.75', '2.0', '2.5', '3.0'],
+  items: DEFAULT_LINE_HEIGHTS,
   action: (_ctx, value) => Style.lineHeight(value),
   getValue: () => {
     try {

@@ -7,7 +7,8 @@
 import { History } from '../editing/History.js';
 import * as Style from '../editing/Style.js';
 import { insertTable } from '../editing/Table.js';
-import { isModifier } from '../core/key.js';
+import { resolveKeyMap, matchesCombo } from '../core/keymap.js';
+import { resolveButton } from './Buttons.js';
 import { handleKeydown } from '../editing/Typing.js';
 import { on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
@@ -21,6 +22,25 @@ import { detectLang } from '../core/detectLang.js';
  * every keystroke and was rebuilding this set each time.
  */
 const TRAPPING_TAGS = new Set(['PRE', 'BLOCKQUOTE', 'TABLE', 'FIGURE', 'UL', 'OL', 'HR']);
+
+/**
+ * Commands a keyMap entry can name. `preventDefault: false` lets the browser
+ * keep handling the key (plain-text paste still needs the native paste event).
+ * @type {Record<string, { run: (editor: Editor) => void, preventDefault?: boolean }>}
+ */
+const EDITOR_COMMANDS = {
+  undo:           { run: (ed) => ed.undo() },
+  redo:           { run: (ed) => ed.redo() },
+  bold:           { run: (ed) => ed.bold() },
+  italic:         { run: (ed) => ed.italic() },
+  underline:      { run: (ed) => ed.underline() },
+  inlineCode:     { run: (ed) => ed.inlineCode() },
+  link:           { run: (ed) => ed.context.invoke('linkDialog.show') },
+  find:           { run: (ed) => ed.context.invoke('findReplace.show', 'find') },
+  findReplace:    { run: (ed) => ed.context.invoke('findReplace.show', 'replace') },
+  shortcuts:      { run: (ed) => ed.context.invoke('shortcutsDialog.show') },
+  pastePlainText: { run: (ed) => ed.context.invoke('clipboard.setForcePlain', true), preventDefault: false },
+};
 
 export class Editor {
   /**
@@ -234,51 +254,54 @@ export class Editor {
     // Let Typing module handle special keys (Tab, Enter etc.)
     if (handleKeydown(event, editable, this.options)) return;
 
-    // Built-in shortcuts
-    if (isModifier(event, 'z') && !event.shiftKey) {
-      event.preventDefault();
-      this.undo();
-      return;
-    }
-    if ((isModifier(event, 'z') && event.shiftKey) || isModifier(event, 'y')) {
-      event.preventDefault();
-      this.redo();
-      return;
-    }
-    if (isModifier(event, 'b')) { event.preventDefault(); this.bold(); return; }
-    if (isModifier(event, 'i')) { event.preventDefault(); this.italic(); return; }
-    if (isModifier(event, 'u')) { event.preventDefault(); this.underline(); return; }
-    if (isModifier(event, 'k')) { event.preventDefault(); this.context.invoke('linkDialog.show'); return; }
+    this._runShortcut(event);
+  }
 
-    // Ctrl+Shift+V — paste as plain text (signals Clipboard module)
-    if (isModifier(event, 'v') && event.shiftKey) {
-      this.context.invoke('clipboard.setForcePlain', true);
-      return; // let the native paste event fire
+  /**
+   * Runs the keyMap binding matching this keydown, if any.
+   * @param {KeyboardEvent} event
+   * @returns {boolean} whether a binding handled the key
+   */
+  _runShortcut(event) {
+    if (!event.ctrlKey && !event.metaKey && !event.altKey) return false;
+    for (const binding of this.getKeyBindings()) {
+      if (!matchesCombo(event, binding.parsed)) continue;
+      const { command } = binding;
+      if (typeof command === 'function') {
+        if (command(this.context, event) !== false) event.preventDefault();
+        return true;
+      }
+      const builtin = EDITOR_COMMANDS[command];
+      if (builtin) {
+        if (builtin.preventDefault !== false) event.preventDefault();
+        builtin.run(this);
+        return true;
+      }
+      // Any toolbar button name works as a command
+      const btnDef = resolveButton(command, this.options);
+      if (btnDef && typeof btnDef.action === 'function' && !btnDef.type) {
+        event.preventDefault();
+        btnDef.action(this.context);
+        this.afterCommand();
+        return true;
+      }
+      console.warn(`[AutumnNote] keyMap: unknown command "${command}".`);
+      return false;
     }
+    return false;
+  }
 
-    // Show keyboard shortcuts dialog: Ctrl+Shift+/
-    if (event.key === '/' && event.shiftKey && event.ctrlKey && !event.metaKey) {
-      event.preventDefault();
-      this.context.invoke('shortcutsDialog.show');
-      return;
+  /**
+   * The active shortcut bindings: DEFAULT_KEYMAP merged with `options.keyMap`.
+   * Cached until the option object changes (updateOptions replaces it).
+   * @returns {import('../core/keymap.js').KeyBinding[]}
+   */
+  getKeyBindings() {
+    if (!this._keyBindings || this._keyMapSource !== this.options.keyMap) {
+      this._keyMapSource = this.options.keyMap;
+      this._keyBindings = resolveKeyMap(this.options.keyMap);
     }
-    // Find: Ctrl+F
-    if (isModifier(event, 'f')) {
-      event.preventDefault();
-      this.context.invoke('findReplace.show', 'find');
-      return;
-    }
-    // Ctrl+H — Find & Replace
-    if (isModifier(event, 'h')) {
-      event.preventDefault();
-      this.context.invoke('findReplace.show', 'replace');
-      return;
-    }
-    // Ctrl+` — Inline Code
-    if (isModifier(event, '`')) {
-      event.preventDefault();
-      this.inlineCode();
-    }
+    return this._keyBindings;
   }
 
   // ---------------------------------------------------------------------------

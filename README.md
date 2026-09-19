@@ -524,6 +524,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `AutumnNote.registerLocale(code, locale)` | Registers a locale so `lang: '<code>'` can select it. Only English ships in the ESM build — see [Languages](#languages). |
 | `AutumnNote.registerModule(name, Class)` | Registers a custom module included in every future instance. |
 | `AutumnNote.registerButton(btnDef)` | Adds a button to the global registry. Call `editor.invoke('toolbar.rebuild')` afterwards to render it on existing instances. |
+| `AutumnNote.registerIcon(name, icon)` | Sets the icon for a button or icon name in every editor: SVG markup, or a CSS class list such as `'bi bi-type-bold'`. |
 | `AutumnNote.registerSlashCommand(command)` | Adds or replaces a slash-menu command for future instances. |
 | `AutumnNote.use(plugin, options?)` | Installs a plugin globally — see [Plugin API](#plugin-api). |
 | `AutumnNote.hasPlugin(name)` | Returns `true` if a plugin with that name is registered globally. |
@@ -619,6 +620,12 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `defaultFontFamily` | `string` | `'Arial'` | Font shown by default in the font-family dropdown. |
 | `defaultFontSize` | `string` | `'14px'` | Default font size applied to new content. |
 | `fontFamilies` | `string[]` | 10 fonts | Font families available in the font-family dropdown. |
+| `fontSizes` | `string[]` | `8px`–`72px` | Sizes in the font-size dropdown. |
+| `lineHeights` | `string[]` | `'1.0'`–`'3.0'` | Values in the line-height dropdown. |
+| `paragraphStyles` | `{ value, label }[]` | Normal, H1–H6, Quote, Code | Block formats in the paragraph-style dropdown (`value` is a block tag). |
+| `icons` | `object` | `null` | Per-editor icon overrides keyed by button or icon name — SVG markup, or a CSS class list. See [Icons](#icons). |
+| `buttons` | `object \| array` | `null` | Per-editor button definitions, usable by name in `toolbar`. |
+| `keyMap` | `object` | `null` | Keyboard shortcut overrides merged over the defaults. See [Keyboard Shortcuts](#keyboard-shortcuts). |
 | `stickyToolbar` | `boolean` | `false` | Pin the toolbar to the viewport top when the page is scrolled. |
 | `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. height of a fixed nav bar). |
 | `theme` | `string` | `'light'` | Colour theme: `'light'`, `'dark'`, or `'auto'` (follows system preference). Changeable at runtime. |
@@ -639,7 +646,8 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `cspNonce` | `string` | `''` | CSP nonce applied to dynamically injected Prism and Font Awesome assets. |
 | `externalAssetCrossOrigin` | `string` | `'anonymous'` | `crossorigin` value for optional external assets; set `''` to omit it. |
 | `externalAssetReferrerPolicy` | `string` | `'no-referrer'` | Referrer policy for optional external assets; set `''` to omit it. |
-| `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour picker palette. |
+| `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour palette (toolbar, bubble toolbar, context menu). |
+| `colorPalette` | `string[]` | `null` | Replaces the built-in 24-colour palette in the toolbar, bubble toolbar and context menu. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
 | `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |
 | `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |
@@ -717,7 +725,63 @@ Each editor mounts its dialogs, tooltips and menus in its own portal element (`.
 
 ## Toolbar Customisation
 
-The `toolbar` option accepts an array of **groups**. Each group is an array of button definition objects exported from the package:
+The `toolbar` option accepts an array of **groups**. Each group lists buttons by **name** — plain strings, so the config can come from JSON, framework props or the UMD build:
+
+```js
+AutumnNote.create('#editor', {
+  toolbar: [
+    ['paragraphStyle', 'fontSize'],
+    ['bold', 'italic', 'underline', 'strikethrough'],
+    ['ul', 'ol', 'checklist'],
+    ['link', 'image', 'table'],
+    ['undo', 'redo'],
+  ],
+});
+```
+
+Built-in names: `paragraphStyle`, `fontFamily`, `fontSize`, `lineHeight`, `undo`, `redo`, `bold`, `italic`, `underline`, `strikethrough`, `inlineCode`, `superscript`, `subscript`, `foreColor`, `backColor`, `alignLeft`, `alignCenter`, `alignRight`, `alignJustify`, `ul`, `ol`, `checklist`, `indent`, `outdent`, `hr`, `link`, `image`, `video`, `table`, `emoji`, `icon`, `removeFormat`, `direction`, `codeview`, `fullscreen`, `find`, `findReplace`, `print`, `shortcuts`.
+
+### Buttons for one editor
+
+`buttons` defines buttons for a single editor, without touching the global registry — two editors can each have their own `save`:
+
+```js
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic'], ['save']],
+  buttons: {
+    save: { icon: '<svg viewBox="0 0 24 24">…</svg>', tooltip: 'Save', action: (ctx) => save(ctx.getHTML()) },
+  },
+});
+```
+
+### Dropdown lists and colours
+
+```js
+AutumnNote.create('#editor', {
+  fontSizes: ['12px', '14px', '16px', '20px'],
+  lineHeights: ['1.2', '1.5', '2'],
+  paragraphStyles: [{ value: 'p', label: 'Body' }, { value: 'h2', label: 'Title' }],
+  colorPalette: ['#0f172a', '#f97316', '#10b981'], // replaces the 24 defaults
+  colorSwatches: ['#7c3aed'],                       // prepended to the palette
+});
+```
+
+### Icons
+
+Buttons use built-in SVG icons (or Font Awesome when the page loads it). Override any of them per editor with `icons`, or for every editor with `AutumnNote.registerIcon()`. A value starting with `<` is markup; anything else is a CSS class list:
+
+```js
+AutumnNote.registerIcon('bold', 'bi bi-type-bold');            // Bootstrap Icons, all editors
+AutumnNote.create('#editor', {
+  icons: { italic: '<svg viewBox="0 0 24 24">…</svg>', table: 'ti ti-table' },
+});
+```
+
+Keys are button names (`bold`) or icon ids (`list-ul`). The per-editor option wins over `registerIcon()`.
+
+### Button objects
+
+Button definition objects are also exported, for building your own or wrapping a built-in one:
 
 ```js
 import AutumnNote, {
@@ -822,12 +886,40 @@ Object.assign(AutumnNote.defaults, {
 | `Ctrl + B` | Bold |
 | `Ctrl + I` | Italic |
 | `Ctrl + U` | Underline |
+| `Ctrl + K` | Insert / edit link |
+| ``Ctrl + ` `` | Inline code |
+| `Ctrl + Shift + V` | Paste as plain text |
 | `Ctrl + F` | Open Find dialog |
 | `Ctrl + H` | Open Find & Replace dialog |
+| `Ctrl + Shift + /` | Open Keyboard Shortcuts dialog |
 | `Shift + Enter` | Insert line break |
 | `Tab` | Insert spaces / indent list item |
 | `Shift + Tab` | Outdent list item |
-| `Shift + ?` | Open Keyboard Shortcuts dialog |
+
+`Ctrl` is `Cmd` on macOS.
+
+### Changing shortcuts
+
+`keyMap` is merged over the defaults. Combos are written `Mod+B` (`Mod` = Ctrl or Cmd), `Ctrl+Alt+1`, `Mod+Shift+Z`; Shift and Alt must match exactly, so AltGr characters never trigger a Ctrl shortcut. A value can be:
+
+- `false` — disable the default (e.g. give `Ctrl+F` back to the browser)
+- a command name — `undo`, `redo`, `bold`, `italic`, `underline`, `inlineCode`, `link`, `find`, `findReplace`, `shortcuts`, `pastePlainText`, **or any toolbar button name**
+- a function `(context, event) => {}` — return `false` to let the key through
+- `{ run, description }` — a function plus the label the shortcuts dialog shows
+
+```js
+AutumnNote.create('#editor', {
+  keyMap: {
+    'Mod+F': false,                       // browser find
+    'Mod+H': false,
+    'Mod+Shift+F': 'find',                // editor find moves here
+    'Mod+Shift+X': 'strikethrough',       // any toolbar button
+    'Mod+Alt+1': { run: (ctx) => ctx.invoke('editor.formatBlock', 'h1'), description: 'Heading 1' },
+  },
+});
+```
+
+The shortcuts dialog (`Ctrl + Shift + /`) reflects the keyMap: disabled shortcuts disappear and custom ones are listed under *Custom*. Shortcuts need Ctrl, Cmd or Alt; plain keys belong to typing.
 
 > The number of spaces inserted by `Tab` is controlled by the `tabSize` option.
 

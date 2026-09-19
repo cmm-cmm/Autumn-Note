@@ -168,6 +168,7 @@ export const fr = {
     title:     'Raccourcis clavier',
     ariaLabel: 'Raccourcis clavier',
     close:     'Fermer',
+    customCategory: 'Personnalisés',
     shortcuts: [
       {
         category: 'Mise en forme du texte',

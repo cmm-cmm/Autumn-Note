@@ -167,6 +167,7 @@ export const de = {
     title:     'Tastenkürzel',
     ariaLabel: 'Tastenkürzel',
     close:     'Schließen',
+    customCategory: 'Benutzerdefiniert',
     shortcuts: [
       {
         category: 'Textformatierung',

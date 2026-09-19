@@ -176,6 +176,7 @@ export const en = {
     title:     'Keyboard Shortcuts',
     ariaLabel: 'Keyboard Shortcuts',
     close:     'Close',
+    customCategory: 'Custom',
     shortcuts: [
       {
         category: 'Text Formatting',
