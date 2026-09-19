@@ -9,25 +9,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev            # Vite dev server with HMR
-npm run build          # Build ES + UMD + CSS → dist/
-npm run build:demo     # Build demo site (vite.demo.config.js)
-npm run build:cdn      # CDN build with bundle visualizer
-npm run preview        # Preview dist/ locally
+pnpm dev                # Vite dev server with HMR
+pnpm build              # Build ES + UMD + CSS → dist/
+pnpm build:demo         # Build demo site (vite.demo.config.js)
+pnpm build:cdn          # CDN build with bundle visualizer
+pnpm preview            # Preview dist/ locally
 
-npm test               # Run Vitest once (jsdom)
-npm run test:watch     # Vitest in watch mode
-npm run test:coverage  # Vitest with v8 coverage
+pnpm test               # Run Vitest once (jsdom)
+pnpm test:watch         # Vitest in watch mode
+pnpm test:coverage      # Vitest with v8 coverage
 
-npm run lint           # ESLint on src/
-npm run typecheck      # tsc --noEmit (types only, no output)
-npm run analyze        # Bundle size visualization
-npm run bench          # Vitest benchmarks
+pnpm lint               # ESLint on library, tests, wrappers, scripts, configs
+pnpm typecheck          # tsc --noEmit for core + React/Vue wrapper consumers
+pnpm analyze            # Bundle size visualization
+pnpm bench              # Vitest benchmarks
 ```
 
 Run a single test file:
 ```bash
-npx vitest run test/core/dom.test.js
+pnpm vitest run test/core/dom.test.js
 ```
 
 ## Architecture

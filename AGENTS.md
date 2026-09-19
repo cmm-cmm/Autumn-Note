@@ -14,7 +14,7 @@ Development and package usage require Node 22 LTS (22.22.2+) or Node 24.15+ and 
 - `pnpm build:demo` builds the documentation/demo site.
 - `pnpm test` runs the Vitest suite once; `pnpm test:watch` runs it interactively.
 - `pnpm test:coverage` runs tests and enforces coverage thresholds.
-- `pnpm lint` checks `src/` and `test/` with ESLint; `pnpm typecheck` validates JavaScript/JSDoc and wrapper consumers against the declarations.
+- `pnpm lint` checks the library, tests, wrappers, scripts and config files with ESLint; `pnpm typecheck` validates JavaScript/JSDoc and wrapper consumers against the declarations.
 
 ## Coding Style & Naming Conventions
 
@@ -22,7 +22,7 @@ Write ES2022 modules in vanilla JavaScript; do not add runtime dependencies with
 
 ## Testing Guidelines
 
-Vitest runs `test/**/*.test.js` in jsdom. Name tests after the unit or feature, for example `History.test.js`, and place them in the matching test area. Add integration tests for behavior spanning editor modules. Coverage excludes translations and must remain at least 87% lines, 83% statements, 80% functions, and 70% branches.
+Vitest runs `test/**/*.test.js` in jsdom. Name tests after the unit or feature, for example `History.test.js`, and place them in the matching test area. Add integration tests for behavior spanning editor modules. Coverage excludes translations and must stay above the thresholds in `vitest.config.js` (currently 92% lines, 88% statements, 84% functions, 75% branches), which `pnpm test:coverage` enforces.
 
 ## Commit & Pull Request Guidelines
 

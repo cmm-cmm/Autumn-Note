@@ -2,12 +2,12 @@
 
 ## Supported versions
 
-Security fixes land on the latest minor release. Older lines are not backported — upgrading within a major is intended to be a drop-in.
+Security fixes land on the latest minor release of the current major. Older lines are not backported — upgrading within a major is intended to be a drop-in.
 
 | Version | Supported |
 |---|---|
-| 2.1.x | ✅ |
-| 2.0.x | ⚠️ Upgrade to 2.1.x — it contains sanitiser fixes |
+| 3.0.x | ✅ |
+| 2.x | ❌ Upgrade to 3.0.x — see the upgrade notes in the [CHANGELOG](CHANGELOG.md) |
 | < 2.0 | ❌ |
 
 ---

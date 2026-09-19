@@ -13,7 +13,8 @@ Brief description of what this PR does.
 - [ ] Documentation update
 
 ## Checklist
-- [ ] `npm test` passes
-- [ ] `npm run build` succeeds
+- [ ] `pnpm lint` and `pnpm typecheck` pass
+- [ ] `pnpm test` passes
+- [ ] `pnpm build` succeeds
 - [ ] Code follows the existing style
 - [ ] README / CHANGELOG updated if needed
