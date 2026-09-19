@@ -6,8 +6,9 @@ Security fixes land on the latest minor release of the current major. Older line
 
 | Version | Supported |
 |---|---|
-| 3.0.x | ✅ |
-| 2.x | ❌ Upgrade to 3.0.x — see the upgrade notes in the [CHANGELOG](CHANGELOG.md) |
+| 3.1.x | ✅ |
+| 3.0.x | ⚠️ Upgrade to 3.1.x |
+| 2.x | ❌ Upgrade to 3.1.x — see the upgrade notes in the [CHANGELOG](CHANGELOG.md) |
 | < 2.0 | ❌ |
 
 ---

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-09-19
+
 The editor no longer uses `document.execCommand`. Every formatting command is
 now the editor's own DOM transform, so it produces the same markup and reports
 the same state on Chromium, Firefox and WebKit. See

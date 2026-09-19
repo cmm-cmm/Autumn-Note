@@ -113,7 +113,8 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Features</div>
-        <a class="sidebar-link" href="#whats-new">What's New v3.0.0</a>
+        <a class="sidebar-link" href="#whats-new-3-1">What's New v3.1.0</a>
+        <a class="sidebar-link sub" href="#whats-new">What's New v3.0.0</a>
         <a class="sidebar-link sub" href="#whats-new-1-8">v1.8.0 highlights</a>
         <a class="sidebar-link" href="#events">Callbacks &amp; Events</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
@@ -638,6 +639,30 @@ const editor = AutumnNote.create('#editor', {
           <tr><td class="opt-name">defaultToolbar</td><td>Full default toolbar array</td><td>array</td></tr>
         </tbody>
       </table></div>
+    </section>
+
+    <!-- ── What's New v3.1.0 ── -->
+    <section class="docs-section" id="whats-new-3-1" aria-label="What's New">
+      <h2 class="section-h">What's New <span class="badge">v3.1.0</span></h2>
+      <p class="docs-p">Version 3.1 replaces the browser's deprecated <code>document.execCommand</code> with the editor's own formatting engine. Bold, colours, fonts, links, headings, lists and indentation now produce the same markup and toolbar state on Chrome, Firefox and Safari.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Same result on every browser</h3>
+      <p class="docs-p">Every command is a DOM transform the editor performs itself, tested on Chromium, Firefox and WebKit. Toolbar buttons read their state from the document, so they show exactly what the command toggles — including underline inside inline code, where the old API got it wrong.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Markup changes</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li>Strikethrough is written as <code>&lt;s&gt;</code> (not <code>&lt;strike&gt;</code>).</li>
+        <li>Colour, highlight, font family and font size are <code>&lt;span style&gt;</code>, never <code>&lt;font&gt;</code>.</li>
+        <li>Indenting a paragraph sets <code>margin-left: 40px</code> instead of wrapping it in a borderless <code>&lt;blockquote&gt;</code>.</li>
+        <li>Existing content in the old forms is still read and edited correctly.</li>
+      </ul>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Copy and cut</h3>
+      <p class="docs-p">The context-menu Copy/Cut and the copy buttons use the async Clipboard API, which browsers only provide on HTTPS and localhost. A cut never deletes text that did not reach the clipboard.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Fixes</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li>Inserting an emoji or icon could overwrite text selected elsewhere on the page.</li>
+        <li><code>setMarkdown(getMarkdown())</code> now keeps underline, colour/font spans, superscript and subscript.</li>
+        <li>The character count no longer includes invisible caret anchors.</li>
+      </ul>
+      <p class="docs-p">Full list in the <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
     </section>
 
     <!-- ── What's New v3.0.0 ── -->

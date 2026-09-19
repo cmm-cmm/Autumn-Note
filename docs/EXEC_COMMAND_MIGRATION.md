@@ -56,7 +56,7 @@ Existing content keeps working: the engine reads `<strong>`, `<em>`, `<strike>`,
 | Stage | Shipped |
 |---|---|
 | 1. Insertion commands (`insertHTML`, `insertText`, `insertHorizontalRule`, `insertLineBreak`) | 2.5.0 – 2.7.0 |
-| 2. Link creation and removal | Unreleased |
-| 3. Block and list commands | Unreleased (nested-item outdent was already native) |
-| 4. Inline formatting and style queries | Unreleased |
-| 5. Adapter removed, copy/cut on the Clipboard API | Unreleased |
+| 2. Link creation and removal | 3.1.0 |
+| 3. Block and list commands | 3.1.0 (nested-item outdent was already native) |
+| 4. Inline formatting and style queries | 3.1.0 |
+| 5. Adapter removed, copy/cut on the Clipboard API | 3.1.0 |
