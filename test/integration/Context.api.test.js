@@ -73,6 +73,43 @@ describe('Context runtime module toggles', () => {
   });
 });
 
+// ── Event bus parity ─────────────────────────────────────────────────────────
+// These used to be called straight off `options`, so ctx.on() never saw them.
+
+describe('event bus parity with option callbacks', () => {
+  it('delivers focus and blur to both on() listeners and option callbacks', () => {
+    const onFocus = vi.fn();
+    const editor = makeEditor({ onFocus });
+    const focusListener = vi.fn();
+    const blurListener = vi.fn();
+    editor.on('focus', focusListener);
+    editor.on('blur', blurListener);
+
+    editor.layoutInfo.editable.dispatchEvent(new FocusEvent('focus'));
+    editor.layoutInfo.editable.dispatchEvent(new FocusEvent('blur'));
+
+    expect(focusListener).toHaveBeenCalledWith(editor);
+    expect(onFocus).toHaveBeenCalledWith(editor);
+    expect(blurListener).toHaveBeenCalledWith(editor);
+    editor.destroy();
+  });
+
+  it('delivers destroy to on() listeners', () => {
+    const editor = makeEditor();
+    const listener = vi.fn();
+    editor.on('destroy', listener);
+    editor.destroy();
+    expect(listener).toHaveBeenCalledWith(editor);
+  });
+
+  it('triggerEvent returns the last defined handler result', () => {
+    const editor = makeEditor({ onPaste: () => '<p>from option</p>' });
+    editor.on('paste', () => false);
+    expect(editor.triggerEvent('paste', { text: '', html: null })).toBe('<p>from option</p>');
+    editor.destroy();
+  });
+});
+
 // ── statusbar option (#119) ──────────────────────────────────────────────────
 
 describe('statusbar option', () => {

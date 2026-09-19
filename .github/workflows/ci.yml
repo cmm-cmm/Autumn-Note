@@ -8,6 +8,35 @@ on:
   workflow_dispatch:
 
 jobs:
+  # The main job pins Node 22. This one runs the unit tests on the other
+  # supported lines, so runtime changes (e.g. Node 25's global localStorage
+  # shadowing jsdom's) show up in CI instead of on a contributor's machine.
+  test-node-versions:
+    strategy:
+      fail-fast: false
+      matrix:
+        # 20.x is still in `engines` but pnpm 11 needs Node >= 22.13, so it
+        # cannot be installed here.
+        node: [24, 'latest']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.3
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
   build:
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

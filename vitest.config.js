@@ -1,5 +1,13 @@
 import { defineConfig } from 'vitest/config';
 
+// Node 25 ships an experimental global `localStorage` that shadows jsdom's and
+// has no methods unless --localstorage-file is given. Turn it off in the test
+// workers so the jsdom Storage is what the editor sees. Older Node versions
+// don't know the flag, so only pass it where it exists.
+const execArgv = process.allowedNodeEnvironmentFlags.has('--experimental-webstorage')
+  ? ['--no-experimental-webstorage']
+  : [];
+
 export default defineConfig({
   test: {
     environment: 'jsdom',
@@ -7,6 +15,7 @@ export default defineConfig({
     include: ['test/**/*.test.js'],
     exclude: ['test/browser/**'],
     pool: 'forks',
+    execArgv,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'clover', 'json', 'lcov'],

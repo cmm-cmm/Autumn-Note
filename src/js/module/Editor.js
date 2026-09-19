@@ -82,9 +82,7 @@ export class Editor {
       const sel = globalThis.getSelection();
       if (sel?.rangeCount > 0 && editable.contains(sel.anchorNode)) {
         this.context.invoke('toolbar.refresh');
-        if (typeof this.options.onSelectionChange === 'function') {
-          this.options.onSelectionChange(this.context);
-        }
+        this.context.triggerEvent('selectionChange', this.context);
       }
     };
 
@@ -274,6 +272,7 @@ export class Editor {
     if (isModifier(event, 'h')) {
       event.preventDefault();
       this.context.invoke('findReplace.show', 'replace');
+      return;
     }
     // Ctrl+` — Inline Code
     if (isModifier(event, '`')) {
@@ -315,9 +314,7 @@ export class Editor {
 
     if (maxChars && chars >= maxChars) {
       event.preventDefault();
-      if (typeof this.options.onCharLimitReached === 'function') {
-        this.options.onCharLimitReached(this.context);
-      }
+      this.context.triggerEvent('charLimitReached', this.context);
       return;
     }
 
@@ -325,9 +322,7 @@ export class Editor {
     if (maxWords && (event.data === ' ' || type === 'insertParagraph' || type === 'insertLineBreak')) {
       if (words >= maxWords) {
         event.preventDefault();
-        if (typeof this.options.onWordLimitReached === 'function') {
-          this.options.onWordLimitReached(this.context);
-        }
+        this.context.triggerEvent('wordLimitReached', this.context);
       }
     }
   }

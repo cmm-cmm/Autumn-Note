@@ -507,7 +507,7 @@ describe('Clipboard._onDrop', () => {
   });
 
   it('fires a pasteError event for an oversized dropped .md file', () => {
-    const { cb, ctx } = makeClipboard({ maxPasteSize: 0.000001 });
+    const { cb, ctx } = makeClipboard({ maxPasteSize: 10 });
     const mdFile = new File(['#'.repeat(1000)], 'notes.md', { type: 'text/markdown' });
     const event = {
       dataTransfer: { files: [mdFile] },
@@ -663,7 +663,7 @@ describe('Clipboard._onPaste', () => {
   });
 
   it('fires a pasteError event and does not insert when paste content exceeds maxPasteSize', () => {
-    const { cb, ctx } = makeClipboard({ maxPasteSize: 0.000001 });
+    const { cb, ctx } = makeClipboard({ maxPasteSize: 10 });
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'a'.repeat(1000) });
     const callsBefore = document.execCommand.mock.calls.length;
     cb._onPaste(event);
@@ -716,12 +716,34 @@ describe('Clipboard._onPaste', () => {
     expect(stripSpy).toHaveBeenCalled();
   });
 
-  it('calls onPaste hook when provided', () => {
-    const onPaste = vi.fn();
-    const { cb } = makeClipboard({ onPaste });
+  it('fires the paste event with the clipboard payload', () => {
+    const { cb, ctx } = makeClipboard();
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'text' });
     cb._onPaste(event);
-    expect(onPaste).toHaveBeenCalledWith(expect.objectContaining({ text: 'text' }));
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('paste', expect.objectContaining({ text: 'text' }));
+  });
+
+  it('cancels the paste when a paste handler returns false', () => {
+    const { cb, ctx } = makeClipboard({ pasteAsPlainText: true });
+    ctx.triggerEvent.mockImplementation((name) => (name === 'paste' ? false : undefined));
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'text' });
+    const callsBefore = document.execCommand.mock.calls.length;
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
+  });
+
+  it('inserts sanitised replacement HTML returned by a paste handler', () => {
+    const { cb, ctx } = makeClipboard();
+    ctx.triggerEvent.mockImplementation((name) =>
+      (name === 'paste' ? '<p>swapped<img src=x onerror="alert(1)"></p>' : undefined));
+    const event = makePasteEvent(['text/plain'], { 'text/plain': 'original' });
+    cb._onPaste(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    const call = document.execCommand.mock.calls.at(-1);
+    expect(call[0]).toBe('insertHTML');
+    expect(call[2]).toContain('swapped');
+    expect(call[2]).not.toContain('onerror');
   });
 
   it('handles image item in clipboard', () => {

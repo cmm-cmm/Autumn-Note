@@ -228,7 +228,11 @@ export interface AsnOptions {
   /** Insert a header row (<thead>) when creating new tables. */
   tableHeaderRow?: boolean;
   /** Callback fired after every paste event. */
-  onPaste?: (data: { text: string; html: string | null }) => void;
+  /**
+   * Fired on every paste before anything is inserted. Return `false` to cancel
+   * the paste, or an HTML string to insert instead (it is sanitised).
+   */
+  onPaste?: (data: { text: string; html: string | null }) => void | false | string;
   /** Callback fired when pasted or dropped content cannot be processed. */
   onPasteError?: (error: PasteErrorData) => void;
   /** Additional color swatches shown at the top of the color picker. */
@@ -255,7 +259,7 @@ export interface AsnOptions {
   autoSaveRestoreTimeout?: number;
   /** Callback fired after the user chooses to restore a draft. */
   onAutoSaveRestore?: (html: string, context: Context) => void;
-  /** Maximum paste size in MB before paste is silently dropped (0 = unlimited). Default: 5. */
+  /** Maximum paste size in bytes; larger pastes are dropped and `pasteError` fires (0 = unlimited). Default: 5242880 (5 MB). */
   maxPasteSize?: number;
   /** Minimum image dimension in px during resize (width and height). Default: 20. */
   minImageSize?: number;
@@ -555,13 +559,14 @@ export declare class Context {
   invoke(path: string, ...args: unknown[]): unknown;
 
   /** Subscribes to an editor event. Returns an unsubscribe function. */
-  on(eventName: string, handler: (...args: unknown[]) => void): () => void;
+  on(eventName: string, handler: (...args: any[]) => unknown): () => void;
 
   /** Unsubscribes from an editor event. */
   off(eventName: string, handler: (...args: unknown[]) => void): void;
 
   /** Triggers an editor event. */
-  triggerEvent(eventName: string, ...args: unknown[]): void;
+  /** Fires an event; returns the last value a handler returned (other than undefined). */
+  triggerEvent(eventName: string, ...args: unknown[]): unknown;
 
   /** Applies runtime-safe option changes without recreating the editor. */
   updateOptions(overrides: Partial<AsnOptions>): this;

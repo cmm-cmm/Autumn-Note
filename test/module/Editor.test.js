@@ -895,11 +895,17 @@ describe('Editor limit enforcement', () => {
     editor.destroy();
   });
 
-  it('reports the limit through the configured callback', () => {
-    const onCharLimitReached = vi.fn();
-    const { editor, editable } = mount('<p>0123456789</p>', { maxChars: 10, onCharLimitReached });
+  it('reports the limit through the charLimitReached event', () => {
+    const { context, editor, editable } = mount('<p>0123456789</p>', { maxChars: 10 });
     typing(editable, { inputType: 'insertText', data: 'x' });
-    expect(onCharLimitReached).toHaveBeenCalled();
+    expect(context.triggerEvent).toHaveBeenCalledWith('charLimitReached', context);
+    editor.destroy();
+  });
+
+  it('reports the word limit through the wordLimitReached event', () => {
+    const { context, editor, editable } = mount('<p>one two three</p>', { maxWords: 3 });
+    typing(editable, { inputType: 'insertText', data: ' ' });
+    expect(context.triggerEvent).toHaveBeenCalledWith('wordLimitReached', context);
     editor.destroy();
   });
 });

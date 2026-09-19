@@ -104,9 +104,7 @@ export class AutoSaveRestore {
     this.context.clearHistory();
     this._removeBanner();
 
-    if (typeof this.options.onAutoSaveRestore === 'function') {
-      this.options.onAutoSaveRestore(draftHtml, this.context);
-    }
+    this.context.triggerEvent('autoSaveRestore', draftHtml, this.context);
   }
 
   _discard() {

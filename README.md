@@ -560,20 +560,27 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 
 ### Events
 
+Every event reaches both `editor.on(name, fn)` listeners and the matching `on<Name>` option callback (e.g. `paste` → `onPaste`).
+
 | Name | Payload | Description |
 |---|---|---|
 | `change` | `html: string` | Fired after every content mutation. Debounced internally. |
 | `focus` | `context` | Editor gained focus. |
 | `blur` | `context` | Editor lost focus. |
 | `init` | `context` | Fired once after the editor has fully initialised. |
-| `imageUpload` | `files: FileList` | Fired when images are dropped or pasted (when `onImageUpload` is provided). |
 | `imageError` | `{ file, message, error?, retry? }` | Fired when an image is rejected (e.g. over `maxImageSize`) or an upload fails. `retry()` is present on upload failures and re-sends that one file. |
-| `paste` | `{ text, html }` | Fired after every paste event. |
+| `paste` | `{ text, html }` | Fired on every paste, before the editor inserts anything. Return `false` to cancel the paste, or an HTML string to insert instead (it is sanitised). |
 | `pasteError` | `{ message, size?, maxBytes? }` | Fired when paste/drop exceeds `maxPasteSize` or a dropped Markdown file cannot be read. |
 | `selectionChange` | `context` | Fired when the cursor or selection changes. |
 | `destroy` | `context` | Fired just before the editor is destroyed. |
 | `charLimitReached` | `context` | Fired when `maxChars` is hit. |
 | `wordLimitReached` | `context` | Fired when `maxWords` is hit. |
+| `autoSave` | `{ key, html, savedAt }` | Fired after an auto-save write. |
+| `autoSaveError` | `{ key, error }` | Fired when an auto-save write fails. |
+| `autoSaveRestore` | `html, context` | Fired after the user restores a draft from the restore banner. |
+| `optionsChange` | `overrides` | Fired after `updateOptions()`. |
+
+Image uploads are not an event: they go to the `onImageUpload` handler, whose return value the editor uses.
 
 ---
 

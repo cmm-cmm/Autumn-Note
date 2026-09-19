@@ -1,10 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   getVisualColIndex,
   getCellAtVisualCol,
   getCellAfterVisualCol,
   buildGridMap,
 } from '../../src/js/module/table-grid.js';
+
+// Each test builds tables with the same ids. Left in the document they become
+// duplicate ids, and jsdom 30 resolves `el.querySelector('#id')` through the
+// document-wide id index — so a later test would get an earlier table's cell.
+afterEach(() => {
+  document.body.innerHTML = '';
+});
 
 /**
  * @param {string} html - the innerHTML of a <table>

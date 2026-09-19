@@ -149,9 +149,7 @@ export class Context {
     // Apply plugins registered globally via AutumnNote.use()
     this._applyGlobalPlugins();
 
-    if (typeof this.options.onInit === 'function') {
-      this.options.onInit(this);
-    }
+    this.triggerEvent('init', this);
 
     return this;
   }
@@ -280,16 +278,12 @@ export class Context {
     const d0 = on(editable, 'input', () => this._syncToTarget());
     const d1 = on(editable, 'focus', () => {
       this.layoutInfo.container.classList.add('an-focused');
-      if (typeof this.options.onFocus === 'function') {
-        this.options.onFocus(this);
-      }
+      this.triggerEvent('focus', this);
     });
     const d2 = on(editable, 'blur', () => {
       this.layoutInfo.container.classList.remove('an-focused');
       this._syncToTarget();
-      if (typeof this.options.onBlur === 'function') {
-        this.options.onBlur(this);
-      }
+      this.triggerEvent('blur', this);
     });
     // Sync textarea/input value on every change so form.submit() always gets fresh content
     const d3 = this.on('change', (html) => this._syncToTarget(html));
@@ -399,19 +393,31 @@ export class Context {
   }
 
   /**
-   * Triggers an editor event.
+   * Triggers an editor event: every `on(eventName)` listener, then the
+   * matching `on<EventName>` option callback.
+   *
+   * Returns the last value a handler returned (other than `undefined`), so
+   * events like `paste` can let a handler veto (`false`) or replace the payload.
    * @param {string} eventName
    * @param {...*} args
+   * @returns {*}
    */
   triggerEvent(eventName, ...args) {
-    const handlers = this._listeners.get(eventName) || [];
-    handlers.forEach((h) => h(...args));
+    let result;
+    // Copy: a handler may unsubscribe itself while we iterate.
+    const handlers = [...(this._listeners.get(eventName) || [])];
+    for (const h of handlers) {
+      const r = h(...args);
+      if (r !== undefined) result = r;
+    }
 
     // Also call options callback if present (e.g. onChange)
     const cbName = 'on' + eventName.charAt(0).toUpperCase() + eventName.slice(1);
     if (typeof this.options[cbName] === 'function') {
-      this.options[cbName](...args);
+      const r = this.options[cbName](...args);
+      if (r !== undefined) result = r;
     }
+    return result;
   }
 
   // ---------------------------------------------------------------------------
@@ -816,9 +822,7 @@ export class Context {
       document.body.classList.remove('an-theme-auto');
     }
 
-    if (typeof this.options.onDestroy === 'function') {
-      this.options.onDestroy(this);
-    }
+    this.triggerEvent('destroy', this);
 
     this._alive = false;
     this._releaseInstance?.();

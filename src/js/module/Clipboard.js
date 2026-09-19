@@ -222,6 +222,15 @@ export class Clipboard {
     this._forcePlain = !!val;
   }
 
+  /**
+   * `maxPasteSize` in bytes (0 = unlimited). Defaults to 5 MB.
+   * @returns {number}
+   */
+  _maxPasteBytes() {
+    const limit = this.options.maxPasteSize;
+    return typeof limit === 'number' && limit >= 0 ? limit : 5 * 1024 * 1024;
+  }
+
   _onPaste(event) {
     const clipboardData = event.clipboardData || /** @type {any} */ (globalThis).clipboardData;
     if (!clipboardData) return;
@@ -230,15 +239,15 @@ export class Clipboard {
     const forcePlain = this._forcePlain;
     this._forcePlain = false;
 
-    // Enforce maxPasteSize limit (default 5 MB)
-    const maxBytes = (this.options.maxPasteSize ?? 5) * 1024 * 1024;
+    // Enforce maxPasteSize limit (bytes, default 5 MB)
+    const maxBytes = this._maxPasteBytes();
     if (maxBytes > 0) {
       const text = clipboardData.getData('text/plain') || '';
       const html = clipboardData.getData('text/html') || '';
       const size = Math.max(text.length, html.length);
       if (size > maxBytes) {
         event.preventDefault();
-        const message = `Pasted content (${size} bytes) exceeds the ${this.options.maxPasteSize ?? 5} MB paste size limit.`;
+        const message = `Pasted content (${size} bytes) exceeds the ${maxBytes}-byte paste size limit.`;
         this.context.triggerEvent('pasteError', { size, maxBytes, message });
         console.warn(`[AutumnNote] ${message}`);
         return;
@@ -258,12 +267,21 @@ export class Clipboard {
       }
     }
 
-    // Fire onPaste hook so consumers can observe / intercept
-    if (typeof this.options.onPaste === 'function') {
-      this.options.onPaste({
-        text: clipboardData.getData('text/plain') || '',
-        html: clipboardData.types.includes('text/html') ? clipboardData.getData('text/html') : null,
-      });
+    // `paste` event / onPaste: a handler may return false to cancel the paste,
+    // or an HTML string to insert instead (it is still sanitised).
+    const verdict = this.context.triggerEvent('paste', {
+      text: clipboardData.getData('text/plain') || '',
+      html: clipboardData.types.includes('text/html') ? clipboardData.getData('text/html') : null,
+    });
+    if (verdict === false) {
+      event.preventDefault();
+      return;
+    }
+    if (typeof verdict === 'string') {
+      event.preventDefault();
+      execCommand('insertHTML', sanitiseHTML(verdict));
+      this.context.invoke('editor.afterCommand');
+      return;
     }
 
     // 2. Force plain-text only — strip all formatting
@@ -363,9 +381,9 @@ export class Clipboard {
    * @param {File} file
    */
   _insertMarkdownFile(file) {
-    const maxBytes = (this.options.maxPasteSize ?? 5) * 1024 * 1024;
+    const maxBytes = this._maxPasteBytes();
     if (maxBytes > 0 && file.size > maxBytes) {
-      const message = `Dropped file "${file.name}" (${file.size} bytes) exceeds the ${this.options.maxPasteSize ?? 5} MB paste size limit.`;
+      const message = `Dropped file "${file.name}" (${file.size} bytes) exceeds the ${maxBytes}-byte paste size limit.`;
       this.context.triggerEvent('pasteError', { size: file.size, maxBytes, message });
       console.warn(`[AutumnNote] ${message}`);
       return;

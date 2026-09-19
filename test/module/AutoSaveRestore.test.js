@@ -9,18 +9,22 @@ const DRAFT_HTML = '<p>Saved draft content</p>';
 const makeContext = (optOverrides = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
+  const options = {
+    autoSave: true,
+    autoSaveRestore: true,
+    autoSaveKey: DRAFT_KEY,
+    autoSaveRestoreTimeout: 7,
+    ...optOverrides,
+  };
   return {
     locale: en,
     layoutInfo: { container },
-    options: {
-      autoSave: true,
-      autoSaveRestore: true,
-      autoSaveKey: DRAFT_KEY,
-      autoSaveRestoreTimeout: 7,
-      ...optOverrides,
-    },
+    options,
     setHTML: vi.fn(),
     clearHistory: vi.fn(),
+    // Mirrors Context.triggerEvent's option-callback dispatch
+    triggerEvent: vi.fn((name, ...args) =>
+      options[`on${name[0].toUpperCase()}${name.slice(1)}`]?.(...args)),
   };
 };
 

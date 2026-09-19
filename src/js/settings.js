@@ -61,7 +61,8 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxChars]             - Maximum character count (0 = unlimited). Shows warning in statusbar.
  * @property {number}   [maxWords]             - Maximum word count (0 = unlimited). Shows warning in statusbar.
  * @property {boolean}  [tableHeaderRow]       - Insert a header row (<thead><th>) when creating tables
- * @property {Function} [onPaste]              - Callback fired on every paste: ({ text, html }) => void
+ * @property {Function} [onPaste]              - Fired on every paste before insertion: ({ text, html }) => void | false | string.
+ *   Return false to cancel the paste, or an HTML string to insert instead (sanitised).
  * @property {Function} [onPasteError]         - Callback fired when pasted or dropped content cannot be processed
  * @property {Function} [onSelectionChange]    - Callback fired on cursor/selection change: (context) => void
  * @property {string[]} [colorSwatches]        - Custom brand colour swatches prepended to the colour-picker palette
@@ -220,7 +221,7 @@ export const defaultOptions = {
   // Add stable data-an-block-id attributes to top-level document blocks.
   blockIds: false,
 
-  // Maximum paste size in bytes (default 5 MB). Pastes larger than this are silently dropped.
+  // Maximum paste size in bytes (default 5 MB, 0 = unlimited). Larger pastes are dropped and fire `pasteError`.
   maxPasteSize: 5 * 1024 * 1024,
   // Minimum image dimension in px during resize (width and height). Prevents images from being
   // resized below this value.
