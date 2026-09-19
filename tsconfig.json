@@ -6,9 +6,13 @@
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
-    "strict": false,
+    // Every strict check except the two that would need ~1000 JSDoc casts
+    // across the JS sources (null checks, implicit any); tighten those per module.
+    "strict": true,
     "noImplicitAny": false,
-    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": false,
     "lib": ["ES2022", "DOM"],
     "types": []
   },

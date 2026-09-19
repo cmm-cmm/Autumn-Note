@@ -33,7 +33,7 @@ export class MarkdownShortcuts {
   initialize() {
     if (!this.options.markdownShortcuts) return this;
     const editable = this.context.layoutInfo.editable;
-    const d1 = on(editable, 'keydown', /** @param {KeyboardEvent} e */ (e) => this._onKeydown(e));
+    const d1 = on(editable, 'keydown', (e) => this._onKeydown(/** @type {KeyboardEvent} */ (e)));
     const d2 = on(editable, 'input', () => this._onInput());
     this._disposers.push(d1, d2);
     return this;

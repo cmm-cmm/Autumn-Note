@@ -22,6 +22,7 @@ export function clamp(val, min, max) {
  */
 export function debounce(fn, delay) {
   let timer;
+  /** @this {any} */
   return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), delay);
@@ -37,6 +38,7 @@ export function debounce(fn, delay) {
 export function throttle(fn, limit) {
   let lastCall = -Infinity;
   let trailingTimer = null;
+  /** @this {any} */
   return function (...args) {
     const now = performance.now();
     const elapsed = now - lastCall;
