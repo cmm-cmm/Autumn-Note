@@ -16,8 +16,12 @@ import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
 
-/** Formatting elements with nothing inside, as serialised by innerHTML. */
-const EMPTY_INLINE_RE = /<(b|i|u|s|sup|sub|span|strong|em|strike|font)(?:\s[^>]*)?><\/\1>/g;
+/**
+ * Empty formatting elements, as serialised by innerHTML: attribute-less ones,
+ * and spans with only a style (a colour or size chosen and never typed in).
+ * An empty element with a class is left alone — that is how an icon looks.
+ */
+const EMPTY_INLINE_RE = /<(b|i|u|s|sup|sub|strong|em|strike)><\/\1>|<span(?: style="[^"]*")?><\/span>/g;
 
 /**
  * Removes empty formatting elements, repeatedly, so nested ones go too.

@@ -55,6 +55,15 @@ const isElement = (node) => !!node && node.nodeType === 1;
 /** @param {Node|null} node */
 export const isBlockNode = (node) => isElement(node) && BLOCK_TAGS.has(node.nodeName);
 
+/**
+ * Whether `el` is content rather than formatting: an element with nothing
+ * inside it (a Font Awesome `<i class="fa-…">` icon) or a read-only island
+ * (a mention). Unwrapping the first would delete it; merging either would
+ * turn two into one.
+ * @param {Element} el
+ */
+const isContentElement = (el) => !el.hasChildNodes() || el.getAttribute('contenteditable') === 'false';
+
 /** @param {Node} node */
 function indexOf(node) {
   let i = 0;
@@ -235,7 +244,7 @@ function leavesIn(range, host) {
  * block. Each run gets the two boundary points it spans.
  * @param {Range} range
  * @param {Element} host
- * @returns {{ block: Element, start: [Node, number], end: [Node, number] }[]}
+ * @returns {{ block: Element, start: () => [Node, number], end: () => [Node, number] }[]}
  */
 function runsIn(range, host) {
   const leaves = leavesIn(range, host);
@@ -250,14 +259,18 @@ function runsIn(range, host) {
       cur.last = leaf;
     }
   }
+  // Boundaries next to a node are resolved when the run is processed: an
+  // earlier run in the same block (one broken by a nested list) may have
+  // split or wrapped nodes and shifted the child indexes.
+  const { startContainer, startOffset, endContainer, endOffset } = range;
   return runs.map(({ block, first, last }) => ({
     block,
-    start: first === range.startContainer && first.nodeType === 3
-      ? [first, range.startOffset]
-      : [first.parentNode, indexOf(first)],
-    end: last === range.endContainer && last.nodeType === 3
-      ? [last, range.endOffset]
-      : [last.parentNode, indexOf(last) + 1],
+    start: () => (first === startContainer && first.nodeType === 3
+      ? [first, startOffset]
+      : [first.parentNode, indexOf(first)]),
+    end: () => (last === endContainer && last.nodeType === 3
+      ? [last, endOffset]
+      : [last.parentNode, indexOf(last) + 1]),
   }));
 }
 
@@ -342,12 +355,15 @@ function mergeInline(el) {
   let n = el.firstChild;
   while (n) {
     const next = n.nextSibling;
-    if (isElement(n) && FORMATTING_TAGS.has(n.nodeName) && !n.hasChildNodes()) {
+    // An emptied attribute-less wrapper is what a split or a lifted caret
+    // placeholder leaves; one with attributes may be an icon — keep it.
+    if (isElement(n) && FORMATTING_TAGS.has(n.nodeName) && !n.hasChildNodes() && n.attributes.length === 0) {
       n.remove();
       n = next;
       continue;
     }
-    if (isElement(n) && isElement(next) && FORMATTING_TAGS.has(n.nodeName) && sameShape(n, next)) {
+    if (isElement(n) && isElement(next) && FORMATTING_TAGS.has(n.nodeName) && sameShape(n, next)
+        && !isContentElement(n) && !isContentElement(next)) {
       while (next.firstChild) n.appendChild(next.firstChild);
       next.remove();
       continue; // compare n with its new next sibling
@@ -402,7 +418,7 @@ function transformRuns(host, range, transform) {
   const runs = runsIn(range, host);
   const blocks = new Set();
   for (const run of runs) {
-    const nodes = isolate(run.block, run.start, run.end);
+    const nodes = isolate(run.block, run.start(), run.end());
     for (const box of wrapRuns(nodes, () => document.createElement('span'))) {
       transform(box);
       unwrap(box);
@@ -520,6 +536,7 @@ function stripFormat(el, fmt) {
  * @param {InlineFormat} fmt
  */
 function clearFormatOn(el, fmt) {
+  if (isContentElement(el)) return;
   if (fmt.tags.has(el.nodeName)) {
     // A <b style="color:red"> keeps its colour as a span.
     if (el.getAttribute('style')) {
@@ -772,6 +789,7 @@ export function removeFormat(editable) {
   if (!host) return false;
   return transformRuns(host, range, (box) => {
     for (const el of [...box.querySelectorAll('*')].reverse()) {
+      if (isContentElement(el)) continue;
       if (REMOVABLE_TAGS.has(el.nodeName)) unwrap(el);
       else if (!isBlockNode(el)) el.removeAttribute('style');
     }

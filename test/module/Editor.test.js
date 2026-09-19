@@ -35,6 +35,12 @@ describe('Editor content helpers', () => {
     expect(context.invoke).toHaveBeenCalledWith('clipboard.resolveImages', '<p>ab</p>');
   });
 
+  it('getHTML drops empty caret placeholders but keeps icons', () => {
+    const context = makeContext('<p>a<b></b><span style="color: red;"></span><i class="fas fa-star"></i></p>');
+    const editor = new Editor(context);
+    expect(editor.getHTML()).toBe('<p>a<i class="fas fa-star"></i></p>');
+  });
+
   it('isEmpty treats media as non-empty content', () => {
     const context = makeContext('<p>\u00a0</p>');
     const editor = new Editor(context);

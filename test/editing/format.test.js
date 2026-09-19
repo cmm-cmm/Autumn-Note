@@ -170,6 +170,38 @@ describe('inline formats', () => {
   });
 });
 
+describe('content elements are never treated as formatting', () => {
+  it('keeps an icon when removing italic around it', () => {
+    setup('<p><i>{ab</i><i class="fas fa-star"></i><i>cd}</i></p>');
+    F.setInline('italic', false);
+    expect(host.innerHTML).toBe('<p>ab<i class="fas fa-star"></i>cd</p>');
+  });
+
+  it('keeps an icon through removeFormat', () => {
+    setup('<p>{ab<i class="fas fa-star"></i>cd}</p>');
+    F.removeFormat();
+    expect(host.innerHTML).toBe('<p>ab<i class="fas fa-star"></i>cd</p>');
+  });
+
+  it('keeps two identical icons side by side as two', () => {
+    setup('<p>{ab<i class="fa x"></i><i class="fa x"></i>cd}</p>');
+    F.setInline('bold');
+    expect(host.innerHTML).toBe('<p><b>ab<i class="fa x"></i><i class="fa x"></i>cd</b></p>');
+  });
+
+  it('does not merge two identical mentions', () => {
+    setup('<p>a{b<span class="an-mention" contenteditable="false">@x</span><span class="an-mention" contenteditable="false">@x</span>c}</p>');
+    F.setInline('bold');
+    expect(host.querySelectorAll('.an-mention')).toHaveLength(2);
+  });
+
+  it('formats both runs of a list item broken by a nested list', () => {
+    setup('<ul><li>a{bc<ul><li>x</li></ul>de}f</li></ul>');
+    F.setInline('bold');
+    expect(host.innerHTML.replace(/[{}]/g, '')).toBe('<ul><li>a<b>bc</b><ul><li><b>x</b></li></ul><b>de</b>f</li></ul>');
+  });
+});
+
 describe('collapsed selections format what is typed next', () => {
   it('opens a placeholder inside a new element', () => {
     setup('<p>ab|c</p>');
