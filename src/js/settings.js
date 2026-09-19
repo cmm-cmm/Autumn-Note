@@ -13,6 +13,7 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {number}   [maxHeight]            - Maximum height in px (0 = unlimited)
  * @property {boolean}  [focus]                - Auto-focus on init
  * @property {boolean}  [resizable]            - Show resize handle
+ * @property {boolean}  [statusbar]            - Show the statusbar (word/char count, resize handle)
  * @property {Array}    [toolbar]              - Toolbar button group config
  * @property {boolean}  [useBootstrap]         - Use Bootstrap button classes on toolbar buttons
  * @property {string}   [toolbarButtonClass]   - CSS classes for Bootstrap toolbar buttons
@@ -87,6 +88,8 @@ export const defaultOptions = {
   maxHeight: 0,
   focus: false,
   resizable: true,
+  // false hides the statusbar; word/char counts stay available through the API
+  statusbar: true,
   toolbar: defaultToolbar,
   // UI integration options
   // If `useBootstrap` is true, toolbar buttons will use the Bootstrap button classes

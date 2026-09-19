@@ -1009,8 +1009,14 @@
   border-radius: 0 0 $an-radius $an-radius;
 }
 
+// `display: flex` above would otherwise override the hidden attribute
+.an-statusbar[hidden] {
+  display: none;
+}
+
 // When there is no statusbar, the editable area is the last child — round its bottom corners
-.an-container > .an-editable:last-child {
+.an-container > .an-editable:last-child,
+.an-container.an-no-statusbar > .an-editable {
   border-radius: 0 0 $an-radius $an-radius;
 }
 

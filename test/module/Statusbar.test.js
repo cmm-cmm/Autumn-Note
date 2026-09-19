@@ -238,4 +238,41 @@ describe('Statusbar', () => {
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     status.destroy();
   });
+
+  it('stays visible by default', () => {
+    const context = makeContext();
+    const status = new Statusbar(context);
+    status.initialize();
+    expect(status.el.hidden).toBe(false);
+    expect(context.layoutInfo.container.classList.contains('an-no-statusbar')).toBe(false);
+    status.destroy();
+  });
+
+  it('hides itself when statusbar is false but keeps counting', () => {
+    const context = makeContext({ statusbar: false });
+    const status = new Statusbar(context);
+    status.initialize();
+    expect(status.el.hidden).toBe(true);
+    expect(context.layoutInfo.container.classList.contains('an-no-statusbar')).toBe(true);
+
+    context.layoutInfo.editable.textContent = 'one two three';
+    expect(status.getWordCount()).toBe(3);
+    expect(status.getCharCount()).toBeGreaterThan(0);
+
+    status.destroy();
+    expect(context.layoutInfo.container.classList.contains('an-no-statusbar')).toBe(false);
+  });
+
+  it('applyVisibility() follows option changes', () => {
+    const context = makeContext({ statusbar: false });
+    const status = new Statusbar(context);
+    status.initialize();
+
+    context.options.statusbar = true;
+    status.applyVisibility();
+    expect(status.el.hidden).toBe(false);
+    expect(context.layoutInfo.container.classList.contains('an-no-statusbar')).toBe(false);
+
+    status.destroy();
+  });
 });

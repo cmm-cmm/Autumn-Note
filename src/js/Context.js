@@ -444,6 +444,7 @@ export class Context {
     // Start/stop option-gated modules (bubbleToolbar, mention, slashMenu, ...)
     // so toggling them here behaves the same as passing them to create().
     this._syncOptionalModules();
+    if (Object.hasOwn(overrides, 'statusbar')) this.invoke('statusbar.applyVisibility');
     this.invoke('statusbar.update');
     this.triggerEvent('optionsChange', { ...overrides });
     return this;

@@ -73,6 +73,33 @@ describe('Context runtime module toggles', () => {
   });
 });
 
+// ── statusbar option (#119) ──────────────────────────────────────────────────
+
+describe('statusbar option', () => {
+  it('hides the statusbar at create time without breaking the count API', () => {
+    const editor = makeEditor({ statusbar: false, readOnly: true });
+    expect(editor.layoutInfo.statusbar.hidden).toBe(true);
+    expect(editor.layoutInfo.container.classList.contains('an-no-statusbar')).toBe(true);
+    expect(editor.getWordCount()).toBe(2);
+    editor.destroy();
+  });
+
+  it('toggles at runtime through updateOptions()', () => {
+    const editor = makeEditor();
+    const bar = editor.layoutInfo.statusbar;
+    expect(bar.hidden).toBe(false);
+
+    editor.updateOptions({ statusbar: false });
+    expect(bar.hidden).toBe(true);
+
+    editor.updateOptions({ statusbar: true });
+    expect(bar.hidden).toBe(false);
+    // Counters were skipped while hidden; they must be current again.
+    expect(bar.querySelector('.an-word-count').textContent).toContain('2');
+    editor.destroy();
+  });
+});
+
 // ── Auto-save lifecycle ──────────────────────────────────────────────────────
 
 describe('Context auto-save lifecycle', () => {

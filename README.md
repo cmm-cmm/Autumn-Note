@@ -587,6 +587,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `maxHeight` | `number` | `0` | Maximum resizable height in pixels. `0` = unlimited. |
 | `focus` | `boolean` | `false` | Automatically focus the editor on creation. |
 | `resizable` | `boolean` | `true` | Show the resize handle at the bottom of the editor. |
+| `statusbar` | `boolean` | `true` | Show the statusbar (word/char count, resize handle). Set `false` to hide it, e.g. for a read-only viewer. `getWordCount()`/`getCharCount()` keep working. |
 | `toolbar` | `Array[]` | all buttons | Toolbar layout. See [Toolbar Customisation](#toolbar-customisation). |
 | `toolbarOverflow` | `string` | `'wrap'` | Toolbar overflow strategy: `'wrap'` or `'scroll'`. |
 | `useBootstrap` | `boolean` | `false` | Apply Bootstrap CSS classes to toolbar buttons. |

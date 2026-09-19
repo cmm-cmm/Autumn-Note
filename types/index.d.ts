@@ -92,6 +92,12 @@ export interface AsnOptions {
   focus?: boolean;
   /** Show the resize handle in the statusbar. */
   resizable?: boolean;
+  /**
+   * Show the statusbar (word/char count and resize handle). Default `true`.
+   * When `false` the bar is hidden, but `getWordCount()`/`getCharCount()`
+   * keep working. Can be toggled at runtime with `updateOptions()`.
+   */
+  statusbar?: boolean;
   /** Toolbar button group configuration. */
   toolbar?: Array<Array<ToolbarItemDef | string>>;
   /** Use Bootstrap button classes on toolbar buttons. */

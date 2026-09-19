@@ -72,11 +72,26 @@ export class Statusbar {
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);
 
+    this.applyVisibility();
     this.update();
     return this;
   }
 
+  /**
+   * Shows or hides the bar to match `options.statusbar`. The module keeps
+   * running while hidden so getWordCount()/getCharCount() stay accurate.
+   */
+  applyVisibility() {
+    if (!this.el) return;
+    const visible = this.options.statusbar !== false;
+    this.el.hidden = !visible;
+    // The editable's rounded bottom corners key off this class: a hidden
+    // statusbar is still the container's last child, so :last-child can't tell.
+    this.context.layoutInfo.container?.classList.toggle('an-no-statusbar', !visible);
+  }
+
   destroy() {
+    this.context.layoutInfo.container?.classList.remove('an-no-statusbar');
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this._dragDisposers) {
@@ -189,6 +204,8 @@ export class Statusbar {
 
   update() {
     if (!this._wordCountEl || !this._charCountEl) return;
+    // Nobody can see the counters; skip the per-keystroke count.
+    if (this.el?.hidden) return;
     const { words, chars } = this._counts();
     const maxWords = this.options.maxWords || 0;
     const maxChars = this.options.maxChars || 0;
