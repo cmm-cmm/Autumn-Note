@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The other jobs pin Node 24, the oldest supported line (`engines`). This one
-  # runs the unit tests on the newest LTS and the newest release, so runtime
+  # The other jobs pin Node 22, the oldest supported line (`engines`). This one
+  # runs the unit tests on Node 24 and the newest release, so runtime
   # changes (e.g. Node 25's global localStorage shadowing jsdom's) show up in CI
   # instead of on a contributor's machine.
   test-node-versions:
     strategy:
       fail-fast: false
       matrix:
-        node: ['lts/*', 'latest']
+        node: [24, 'latest']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -120,7 +120,7 @@ jobs:
           version: 11.1.3
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
