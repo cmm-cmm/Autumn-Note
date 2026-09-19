@@ -199,10 +199,10 @@ function _domToMd(node, depth = 0) {
     case 'span': {
       // Markdown has no native underline/color/size syntax; pass through as
       // raw inline HTML for the specific styles the editor's own toolbar
-      // creates (foreColor/backColor/fontSize) — other noise spans (e.g. from
+      // creates (foreColor/backColor/fontSize/fontName) — other noise spans (e.g. from
       // pasted content) are unwrapped to plain text as before.
       const style = el.getAttribute('style') || '';
-      if (/\b(color|background-color|font-size)\s*:/.test(style)) {
+      if (/\b(color|background-color|font-size|font-family)\s*:/.test(style)) {
         return `<span style="${_escAttr(style)}">${inner()}</span>`;
       }
       return inner();

@@ -591,7 +591,7 @@ export class Toolbar {
     // Save the editor selection when the user starts interacting with the
     // dropdown (mousedown fires before the editor loses focus).  When the
     // change handler runs, focus has moved to the <select>; we restore the
-    // saved range so execCommand / fontSize() act on the intended text.
+    // saved range so the command acts on the intended text.
     /** @type {Range|null} */
     let _savedRange = null;
     const dMousedown = on(select, 'mousedown', () => {
@@ -829,7 +829,7 @@ export class Toolbar {
     this.el.querySelectorAll('select[data-btn]').forEach((select) => {
       const def = btnMap.get(/** @type {HTMLElement} */ (select).dataset.btn);
       if (!def || typeof def.getValue !== 'function') return;
-      // queryCommandValue returns the font name, possibly quoted — strip quotes
+      // A font name may come back quoted — strip quotes
       let raw = (def.getValue(this.context) || '').replace(/["']/g, '').trim();
       // Fallback: when no selection/font set, use the configured default font
       if (!raw) {

@@ -188,13 +188,13 @@ describe('Typing Tab key', () => {
   beforeEach(() => { document.execCommand = vi.fn(); });
   afterEach(() => { delete document.execCommand; });
 
-  it('Tab inside a <li> calls execCommand("indent") and returns true', () => {
+  it('Tab inside a <li> nests it under the item above and returns true', () => {
     const editable = document.createElement('div');
     editable.contentEditable = 'true';
-    editable.innerHTML = '<ul><li>Item</li></ul>';
+    editable.innerHTML = '<ul><li>First</li><li>Item</li></ul>';
     document.body.appendChild(editable);
 
-    const li = editable.querySelector('li');
+    const li = editable.querySelectorAll('li')[1];
     const textNode = li.firstChild;
     setCaret(textNode, 0);
 
@@ -203,7 +203,8 @@ describe('Typing Tab key', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    expect(document.execCommand).toHaveBeenCalledWith('indent', false, null);
+    expect(editable.innerHTML).toBe('<ul><li>First<ul><li>Item</li></ul></li></ul>');
+    expect(document.execCommand).not.toHaveBeenCalled();
   });
 
   it('Shift+Tab inside a <li> calls outdent and returns true', () => {
@@ -221,8 +222,9 @@ describe('Typing Tab key', () => {
 
     expect(consumed).toBe(true);
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    // outdent() calls execCommand('outdent') for regular (non-checklist) lists
-    expect(document.execCommand).toHaveBeenCalledWith('outdent', false, null);
+    // A top-level item outdents to a paragraph
+    expect(editable.innerHTML).toBe('<p>Item</p>');
+    expect(document.execCommand).not.toHaveBeenCalled();
   });
 
   it('Tab inside a <pre> inserts 4 spaces by default and returns true', () => {

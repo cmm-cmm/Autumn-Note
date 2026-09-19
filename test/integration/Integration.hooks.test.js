@@ -134,12 +134,16 @@ describe('videoProviders and iframeHosts', () => {
   });
 
   it('sanitises insertVideo input, keeping allowed iframes', () => {
-    const exec = vi.spyOn(document, 'execCommand').mockImplementation(() => true);
     const editor = makeEditor({ iframeHosts: ['player.twitch.tv'] });
+    const caret = document.createRange();
+    caret.selectNodeContents(editor.layoutInfo.editable);
+    caret.collapse(false);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(caret);
     editor.invoke('editor.insertVideo',
       '<div class="an-video-wrapper"><iframe src="https://player.twitch.tv/?v=1"></iframe>' +
       '<img src=x onerror="alert(1)"><script>alert(2)</script></div>');
-    const html = exec.mock.calls.find(([cmd]) => cmd === 'insertHTML')[2];
+    const html = editor.layoutInfo.editable.innerHTML;
     expect(html).toContain('https://player.twitch.tv/?v=1');
     expect(html).not.toContain('onerror');
     expect(html).not.toContain('<script');

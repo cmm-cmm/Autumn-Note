@@ -12,8 +12,15 @@ const setCollapsedCursor = (node, offset) => {
   sel.addRange(range);
 };
 
+// The formatting engine only writes inside editable content; these tests
+// build their fixtures straight into <body>, so make that the editing host.
+beforeEach(() => {
+  document.body.setAttribute('contenteditable', 'true');
+});
+
 afterEach(() => {
   document.body.innerHTML = '';
+  document.body.removeAttribute('contenteditable');
 });
 
 // ---------------------------------------------------------------------------
@@ -21,82 +28,78 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('fontSize', () => {
-  // jsdom does not implement execCommand; stub it so fontSize() can run
-  // its span-replacement logic without throwing.
-  beforeEach(() => {
-    document.execCommand = () => false;
-  });
-  afterEach(() => {
-    delete document.execCommand;
-  });
+  const select = (node, start, end) => {
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
 
-  it('replaces font[size="7"] placeholder elements with styled <span>s', () => {
-    // Simulate what execCommand('fontSize','7') would insert into the DOM.
+  it('wraps the selection in a span with the size', () => {
     const scope = document.createElement('div');
-    scope.innerHTML = '<p><font size="7">Hello</font></p>';
+    scope.innerHTML = '<p>Hello world</p>';
     document.body.appendChild(scope);
+    select(scope.querySelector('p').firstChild, 0, 5);
 
     fontSize('18px', scope);
 
-    const span = scope.querySelector('span');
-    expect(span).not.toBeNull();
-    expect(span.style.fontSize).toBe('18px');
-    expect(span.textContent).toBe('Hello');
-    // Original <font> element must be removed
+    expect(scope.innerHTML).toBe('<p><span style="font-size: 18px;">Hello</span> world</p>');
     expect(scope.querySelector('font')).toBeNull();
   });
 
-  it('replaces multiple font placeholder elements when selection spans several nodes', () => {
+  it('keeps the inline markup inside the selection', () => {
     const scope = document.createElement('div');
-    scope.innerHTML = '<p><font size="7">A</font><font size="7">B</font></p>';
+    scope.innerHTML = '<p><strong>Bold text</strong></p>';
     document.body.appendChild(scope);
-
-    fontSize('14px', scope);
-
-    const spans = scope.querySelectorAll('span');
-    expect(spans.length).toBe(2);
-    spans.forEach((s) => expect(s.style.fontSize).toBe('14px'));
-    expect(scope.querySelector('font')).toBeNull();
-  });
-
-  it('preserves child nodes of the replaced <font> element', () => {
-    const scope = document.createElement('div');
-    scope.innerHTML = '<p><font size="7"><strong>Bold text</strong></font></p>';
-    document.body.appendChild(scope);
+    select(scope.querySelector('strong').firstChild, 0, 9);
 
     fontSize('12px', scope);
 
     const span = scope.querySelector('span');
-    expect(span).not.toBeNull();
-    expect(span.querySelector('strong')).not.toBeNull();
+    expect(span.style.fontSize).toBe('12px');
     expect(span.querySelector('strong').textContent).toBe('Bold text');
   });
 
-  it('does not create spans when no font[size="7"] placeholder exists', () => {
+  it('resizes an earlier size span instead of nesting a new one', () => {
     const scope = document.createElement('div');
-    scope.innerHTML = '<p>No font elements here</p>';
+    scope.innerHTML = '<p><span style="font-size: 20px;">Sized</span></p>';
     document.body.appendChild(scope);
+    select(scope.querySelector('span').firstChild, 0, 5);
 
     fontSize('14px', scope);
 
-    expect(scope.querySelector('span')).toBeNull();
+    expect(scope.innerHTML).toBe('<p><span style="font-size: 14px;">Sized</span></p>');
   });
 
-  it('scopes replacement to the provided editable — does not touch elements outside', () => {
-    const outside = document.createElement('div');
-    outside.innerHTML = '<font size="7">Outside</font>';
-    document.body.appendChild(outside);
-
+  it('with a caret, opens a sized placeholder for the next typed text', () => {
     const scope = document.createElement('div');
-    scope.innerHTML = '<p><font size="7">Inside</font></p>';
+    scope.innerHTML = '<p>ab</p>';
     document.body.appendChild(scope);
+    setCollapsedCursor(scope.querySelector('p').firstChild, 1);
+
+    fontSize('24px', scope);
+
+    const span = scope.querySelector('span');
+    expect(span.style.fontSize).toBe('24px');
+    expect(span.textContent).toBe('\u200B');
+    expect(window.getSelection().getRangeAt(0).startContainer.parentNode).toBe(span);
+  });
+
+  it('does nothing to a selection outside the given editable', () => {
+    const outside = document.createElement('p');
+    outside.textContent = 'Outside';
+    document.body.appendChild(outside);
+    const scope = document.createElement('div');
+    scope.innerHTML = '<p>Inside</p>';
+    document.body.appendChild(scope);
+    select(outside.firstChild, 0, 7);
 
     fontSize('20px', scope);
 
-    // Scope's font element should be replaced
-    expect(scope.querySelector('font')).toBeNull();
-    // Outside element should be untouched
-    expect(outside.querySelector('font')).not.toBeNull();
+    expect(outside.innerHTML).toBe('Outside');
+    expect(scope.querySelector('span')).toBeNull();
   });
 });
 
@@ -446,68 +449,38 @@ describe('toggleChecklist — range selection including the editable root (#33)'
 // underline() — manual unwrap when inside <u> and queryCommandState is false
 // ---------------------------------------------------------------------------
 
-describe('underline — manual unwrap path', () => {
-  let execMock;
-
-  beforeEach(() => {
-    execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => false), configurable: true, writable: true });
-  });
-
-  afterEach(() => {
-    delete document.queryCommandState;
-  });
-
-  function makeSelectionMock(range) {
-    return { rangeCount: 1, getRangeAt: () => range, removeAllRanges: vi.fn(), addRange: vi.fn() };
-  }
-
-  it('manually unwraps <u> element when queryCommandState returns false', () => {
+describe('underline', () => {
+  it('removes the underline at a caret inside <u>, keeping the text', () => {
     const p = document.createElement('p');
     p.innerHTML = '<u>hello world</u>';
     document.body.appendChild(p);
-    const uEl = p.querySelector('u');
-    const textNode = uEl.firstChild;
-
-    const range = document.createRange();
-    range.setStart(textNode, 0);
-    range.collapse(true);
-    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+    setCollapsedCursor(p.querySelector('u').firstChild, 5);
 
     underline();
-    vi.unstubAllGlobals();
 
-    // All children should have been moved out of <u>
-    expect(uEl.textContent).toBe('');
-    // Text is accessible from <p>
-    expect(p.textContent).toBe('hello world');
-    // execCommand should NOT have been called (manual path returns early)
-    expect(execMock).not.toHaveBeenCalled();
+    // The caret steps out of the underline for what is typed next
+    expect(p.textContent.replaceAll('\u200B', '')).toBe('hello world');
+    const at = window.getSelection().getRangeAt(0).startContainer;
+    expect(at.parentElement.closest('u')).toBeNull();
   });
 
-  it('falls through to execCommand when inside <u> but queryCommandState returns true', () => {
-    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => true), configurable: true, writable: true });
+  it('removes an underline inside inline <code>, where execCommand misreported it', () => {
     const p = document.createElement('p');
-    p.innerHTML = '<u>text</u>';
+    p.innerHTML = '<code><u>x</u></code>';
     document.body.appendChild(p);
-    const uEl = p.querySelector('u');
     const range = document.createRange();
-    range.setStart(uEl.firstChild, 0);
-    range.collapse(true);
-    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+    range.selectNodeContents(p.querySelector('u'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
 
     underline();
-    vi.unstubAllGlobals();
 
-    expect(execMock).toHaveBeenCalledWith('underline', false, null);
+    expect(p.innerHTML).toBe('<code>x</code>');
   });
 
   it('does nothing when no selection exists', () => {
-    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+    window.getSelection().removeAllRanges();
     expect(() => underline()).not.toThrow();
-    vi.unstubAllGlobals();
-    expect(execMock).not.toHaveBeenCalled();
   });
 });
 
@@ -515,86 +488,50 @@ describe('underline — manual unwrap path', () => {
 // strikethrough() — manual unwrap when inside <s> and queryCommandState is false
 // ---------------------------------------------------------------------------
 
-describe('strikethrough — manual unwrap path', () => {
-  let execMock;
+describe('strikethrough', () => {
+  const selectAll = (el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  };
 
-  beforeEach(() => {
-    execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => false), configurable: true, writable: true });
-  });
-
-  afterEach(() => {
-    delete document.queryCommandState;
-    vi.unstubAllGlobals();
-  });
-
-  function makeSelectionMock(range) {
-    return { rangeCount: 1, getRangeAt: () => range, removeAllRanges: vi.fn(), addRange: vi.fn() };
-  }
-
-  it('manually unwraps <s> element when queryCommandState returns false', () => {
+  it('removes <s>', () => {
     const p = document.createElement('p');
     p.innerHTML = '<s>struck text</s>';
     document.body.appendChild(p);
-    const sEl = p.querySelector('s');
-    const textNode = sEl.firstChild;
-
-    const range = document.createRange();
-    range.setStart(textNode, 0);
-    range.collapse(true);
-    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+    selectAll(p.querySelector('s'));
 
     strikethrough();
-    vi.unstubAllGlobals();
 
-    // Text moved out of <s>
-    expect(sEl.textContent).toBe('');
-    expect(p.textContent).toBe('struck text');
-    expect(execMock).not.toHaveBeenCalled();
+    expect(p.innerHTML).toBe('struck text');
   });
 
-  it('manually unwraps <strike> element when queryCommandState returns false', () => {
+  it('removes the legacy <strike> too', () => {
     const p = document.createElement('p');
     p.innerHTML = '<strike>old strike</strike>';
     document.body.appendChild(p);
-    const strikeEl = p.querySelector('strike');
-    const textNode = strikeEl.firstChild;
-
-    const range = document.createRange();
-    range.setStart(textNode, 0);
-    range.collapse(true);
-    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+    selectAll(p.querySelector('strike'));
 
     strikethrough();
-    vi.unstubAllGlobals();
 
-    expect(strikeEl.textContent).toBe('');
-    expect(p.textContent).toBe('old strike');
-    expect(execMock).not.toHaveBeenCalled();
+    expect(p.innerHTML).toBe('old strike');
   });
 
-  it('falls through to execCommand when inside <s> but queryCommandState is true', () => {
-    Object.defineProperty(document, 'queryCommandState', { value: vi.fn(() => true), configurable: true, writable: true });
+  it('applies <s> to unformatted text', () => {
     const p = document.createElement('p');
-    p.innerHTML = '<s>text</s>';
+    p.innerHTML = 'text';
     document.body.appendChild(p);
-    const sEl = p.querySelector('s');
-    const range = document.createRange();
-    range.setStart(sEl.firstChild, 0);
-    range.collapse(true);
-    vi.stubGlobal('getSelection', () => makeSelectionMock(range));
+    selectAll(p);
 
     strikethrough();
-    vi.unstubAllGlobals();
 
-    expect(execMock).toHaveBeenCalledWith('strikeThrough', false, null);
+    expect(p.innerHTML).toBe('<s>text</s>');
   });
 
   it('does nothing when no selection', () => {
-    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
+    window.getSelection().removeAllRanges();
     expect(() => strikethrough()).not.toThrow();
-    vi.unstubAllGlobals();
   });
 });
 
@@ -870,33 +807,21 @@ describe('outdent — checklist item to paragraph', () => {
     expect(p.contains(sel.getRangeAt(0).startContainer)).toBe(true);
   });
 
-  it('falls through to execCommand("outdent") when cursor is not inside a checklist item', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-
+  it('outdents an indented paragraph outside a checklist by one step', () => {
     const p = document.createElement('p');
+    p.style.marginLeft = '80px';
     p.textContent = 'Regular paragraph';
     document.body.appendChild(p);
     setCollapsedCursor(p.firstChild, 3);
 
     outdent();
 
-    expect(execMock).toHaveBeenCalledWith('outdent', false, null);
-
-    delete document.execCommand;
+    expect(p.style.marginLeft).toBe('40px');
   });
 
-  it('falls through to execCommand("outdent") when there is no selection', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-    vi.stubGlobal('getSelection', () => ({ rangeCount: 0 }));
-
-    outdent();
-
-    expect(execMock).toHaveBeenCalledWith('outdent', false, null);
-
-    vi.unstubAllGlobals();
-    delete document.execCommand;
+  it('does nothing when there is no selection', () => {
+    window.getSelection().removeAllRanges();
+    expect(() => outdent()).not.toThrow();
   });
 });
 
@@ -950,28 +875,18 @@ describe('insertUnorderedList — list-type transitions', () => {
     expect(Array.from(result.querySelectorAll('li')).map((li) => li.textContent)).toEqual(['A', 'B']);
   });
 
-  it('already a plain <ul>: falls through to execCommand (toggle off)', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-
-    const ul = document.createElement('ul');
-    ul.innerHTML = '<li>A</li>';
-    document.body.appendChild(ul);
-    setCollapsedCursor(ul.querySelector('li').firstChild, 0);
+  it('already a plain <ul>: turns the item back into a paragraph', () => {
+    const list = document.createElement('ul');
+    list.innerHTML = '<li>A</li>';
+    document.body.appendChild(list);
+    setCollapsedCursor(list.querySelector('li').firstChild, 0);
 
     insertUnorderedList();
 
-    expect(execMock).toHaveBeenCalledWith('insertUnorderedList', false, null);
-    // Direct DOM manipulation must not have run — still a plain <ul>
-    expect(document.body.querySelector('ul').classList.contains('an-checklist')).toBe(false);
-
-    delete document.execCommand;
+    expect(document.body.innerHTML).toBe('<p>A</p>');
   });
 
-  it('cursor not in any list: falls through to execCommand', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-
+  it('cursor not in any list: makes the paragraph a list item', () => {
     const p = document.createElement('p');
     p.textContent = 'plain text';
     document.body.appendChild(p);
@@ -979,9 +894,7 @@ describe('insertUnorderedList — list-type transitions', () => {
 
     insertUnorderedList();
 
-    expect(execMock).toHaveBeenCalledWith('insertUnorderedList', false, null);
-
-    delete document.execCommand;
+    expect(document.body.innerHTML).toBe('<ul><li>plain text</li></ul>');
   });
 });
 
@@ -1015,27 +928,18 @@ describe('insertOrderedList — list-type transitions', () => {
     expect(Array.from(result.querySelectorAll('li')).map((li) => li.textContent)).toEqual(['A', 'B']);
   });
 
-  it('already a plain <ol>: falls through to execCommand (toggle off)', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-
-    const ol = document.createElement('ol');
-    ol.innerHTML = '<li>A</li>';
-    document.body.appendChild(ol);
-    setCollapsedCursor(ol.querySelector('li').firstChild, 0);
+  it('already a plain <ol>: turns the item back into a paragraph', () => {
+    const list = document.createElement('ol');
+    list.innerHTML = '<li>A</li>';
+    document.body.appendChild(list);
+    setCollapsedCursor(list.querySelector('li').firstChild, 0);
 
     insertOrderedList();
 
-    expect(execMock).toHaveBeenCalledWith('insertOrderedList', false, null);
-    expect(document.body.querySelector('ol').classList.contains('an-checklist')).toBe(false);
-
-    delete document.execCommand;
+    expect(document.body.innerHTML).toBe('<p>A</p>');
   });
 
-  it('cursor not in any list: falls through to execCommand', () => {
-    const execMock = vi.fn(() => true);
-    Object.defineProperty(document, 'execCommand', { value: execMock, configurable: true, writable: true });
-
+  it('cursor not in any list: makes the paragraph a list item', () => {
     const p = document.createElement('p');
     p.textContent = 'plain text';
     document.body.appendChild(p);
@@ -1043,9 +947,7 @@ describe('insertOrderedList — list-type transitions', () => {
 
     insertOrderedList();
 
-    expect(execMock).toHaveBeenCalledWith('insertOrderedList', false, null);
-
-    delete document.execCommand;
+    expect(document.body.innerHTML).toBe('<ol><li>plain text</li></ol>');
   });
 });
 

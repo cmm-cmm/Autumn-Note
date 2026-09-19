@@ -2,6 +2,9 @@
 import { createElement, on, portalOf } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
 import { resolvePalette } from '../core/palette.js';
+import { copySelection, cutSelection } from '../core/clipboard.js';
+import * as Style from '../editing/Style.js';
+import { insertHTMLNative, insertTextNative } from '../editing/insert.js';
 
 // SVG icon map — 16×16 Heroicons-style paths
 const ICONS = {
@@ -49,8 +52,8 @@ function makeColorSubItems(colorType) {
 }
 
 const defaultItems = [
-  { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: () => document.execCommand('cut') },
-  { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => document.execCommand('copy') },
+  { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: (ctx) => { cutSelection(() => ctx.invoke('editor.afterCommand')); } },
+  { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => { copySelection(); } },
   { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
     if (!navigator.clipboard) return;
     const editable = ctx.layoutInfo?.editable;
@@ -59,10 +62,9 @@ const defaultItems = [
     const doInsert = (html, text) => {
       editable.focus();
       if (html) {
-        const clean = sanitiseHTML(html);
-        document.execCommand('insertHTML', false, clean);
+        insertHTMLNative(sanitiseHTML(html), editable);
       } else if (text) {
-        document.execCommand('insertText', false, text);
+        insertTextNative(text, editable);
       }
       ctx.invoke('editor.afterCommand');
     };
@@ -466,7 +468,7 @@ export class ContextMenu {
     const sel = globalThis.getSelection();
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
-    document.execCommand(type, false, color);
+    Style.applyStyle(type === 'foreColor' ? 'color' : 'background-color', color, editable);
     this.context.invoke('editor.afterCommand');
     this.hide();
   }
@@ -539,48 +541,18 @@ export class ContextMenu {
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
 
-    // Strip existing inline formatting so we start from a clean state.
-    // After removeFormat, bold/italic/underline/strikethrough are guaranteed off.
-    document.execCommand('removeFormat');
+    // Start from a clean state, then set each copied format explicitly.
+    Style.removeFormat(editable);
+    for (const name of ['bold', 'italic', 'underline', 'strikethrough']) {
+      if (fmt[name]) Style.setInline(name, true, editable);
+    }
 
-    // Apply each format positively — no toggle-check needed after removeFormat.
-    if (fmt.bold)          document.execCommand('bold');
-    if (fmt.italic)        document.execCommand('italic');
-    if (fmt.underline)     document.execCommand('underline');
-    if (fmt.strikethrough) document.execCommand('strikeThrough');
-
-    if (fmt.color) document.execCommand('foreColor', false, fmt.color);
+    if (fmt.color) Style.applyStyle('color', fmt.color, editable);
 
     const isTransparent = (c) => !c || c === 'rgba(0, 0, 0, 0)' || c === 'transparent';
-    if (!isTransparent(fmt.backgroundColor)) {
-      document.execCommand('hiliteColor', false, fmt.backgroundColor);
-    }
-
-    // Font family — apply BEFORE font-size DOM manipulation so the selection is still intact.
-    if (fmt.fontFamily) {
-      document.execCommand('fontName', false, fmt.fontFamily);
-    }
-
-    // Font size — use a unique data-marker to avoid touching pre-existing font[size="7"] nodes.
-    if (fmt.fontSize) {
-      const marker = `fs-${Date.now()}`;
-      // Snapshot pre-existing font[size="7"] BEFORE execCommand so we don't accidentally
-      // replace nodes that were already in the document (the comment below was aspirational
-      // but the original code never actually excluded them — this Set approach is the fix).
-      const preExisting = new Set(editable.querySelectorAll('font[size="7"]'));
-      document.execCommand('fontSize', false, '7');
-      // Mark only the NEWLY created font[size="7"] elements.
-      editable.querySelectorAll('font[size="7"]').forEach((el) => {
-        if (!preExisting.has(el)) /** @type {HTMLElement} */ (el).dataset.anTmp = marker;
-      });
-      editable.querySelectorAll(`[data-an-tmp="${marker}"]`).forEach((el) => {
-        const span = document.createElement('span');
-        span.style.fontSize = fmt.fontSize;
-        el.parentNode.insertBefore(span, el);
-        while (el.firstChild) span.appendChild(el.firstChild);
-        el.remove();
-      });
-    }
+    if (!isTransparent(fmt.backgroundColor)) Style.applyStyle('background-color', fmt.backgroundColor, editable);
+    if (fmt.fontFamily) Style.applyStyle('font-family', fmt.fontFamily, editable);
+    if (fmt.fontSize) Style.applyStyle('font-size', fmt.fontSize, editable);
 
     this.context.invoke('editor.afterCommand');
   }
@@ -596,7 +568,7 @@ export class ContextMenu {
     sel.removeAllRanges();
     sel.addRange(this._savedRange.cloneRange());
 
-    document.execCommand('removeFormat');
+    Style.removeFormat(editable);
 
     const range = sel.getRangeAt(0);
     const root = range.commonAncestorContainer;

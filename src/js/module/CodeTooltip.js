@@ -3,6 +3,7 @@
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
 import { createElement, on, portalOf } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
+import { writeClipboard } from '../core/clipboard.js';
 
 const SHOW_DELAY = 100;
 const HIDE_DELAY = 180;
@@ -304,18 +305,7 @@ export class CodeTooltip {
     const pre = this._activePre;
     if (!pre) return;
     const text = pre.textContent || '';
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => this._flashCopied()).catch(() => {});
-    } else {
-      // Fallback for older browsers
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); this._flashCopied(); } catch (_) { void _; }
-      ta.remove();
-    }
+    writeClipboard({ text }).then(() => this._flashCopied()).catch(() => {});
   }
 
   _flashCopied() {

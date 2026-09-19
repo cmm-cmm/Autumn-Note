@@ -403,10 +403,9 @@ describe('CodeTooltip._copyCode clipboard fallback', () => {
     Object.defineProperty(navigator, 'clipboard', { value: origClipboard, configurable: true });
   });
 
-  it('calls _flashCopied after execCommand fallback succeeds', () => {
+  it('does not claim a copy without the Clipboard API', async () => {
     const origClipboard = navigator.clipboard;
     Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
-    Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
 
     const { ctx, ct } = makeTooltip();
     const pre = ctx.layoutInfo.editable.querySelector('pre');
@@ -414,8 +413,9 @@ describe('CodeTooltip._copyCode clipboard fallback', () => {
     const flashSpy = vi.spyOn(ct, '_flashCopied');
 
     ct._copyCode();
+    await new Promise((r) => setTimeout(r, 0));
 
-    expect(flashSpy).toHaveBeenCalled();
+    expect(flashSpy).not.toHaveBeenCalled();
     Object.defineProperty(navigator, 'clipboard', { value: origClipboard, configurable: true });
   });
 });

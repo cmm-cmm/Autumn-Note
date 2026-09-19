@@ -254,7 +254,8 @@ export function placeCaret(el) {
  * Moves a list the browser left as a direct child of another list into the item
  * it belongs to.
  *
- * `execCommand('indent')` nests a sublist as a *sibling* of the item it
+ * `execCommand('indent')`, which the editor used before it had its own
+ * formatting engine, nested a sublist as a *sibling* of the item it
  * indents — `<ul><li>a</li><ul><li>b</li></ul></ul>` — which is invalid HTML
  * that no engine repairs on re-parse. The damage is not cosmetic: a sublist
  * that is not inside an `<li>` belongs to no item, so Markdown export dropped

@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { MarkdownShortcuts } from '../../src/js/module/MarkdownShortcuts.js';
 
-// execCommand is not implemented in jsdom
-if (typeof document.execCommand !== 'function') {
-  Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
-}
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -55,7 +51,7 @@ describe('MarkdownShortcuts lifecycle', () => {
     const e = new KeyboardEvent('keydown', { key: ' ', bubbles: true });
     ctx.layoutInfo.editable.dispatchEvent(e);
     // triggerEvent only fires if a rule matches; post-destroy it should not
-    expect(document.execCommand).not.toHaveBeenCalled();
+    expect(ctx.triggerEvent).not.toHaveBeenCalled();
   });
 });
 
@@ -494,22 +490,22 @@ describe('MarkdownShortcuts extended block rules', () => {
   it.each([['####', 4], ['#####', 5], ['######', 6]])(
     'converts %s to a heading (previously only H1–H3 were supported)',
     (marker, level) => {
-      const { fired } = fireSpace(marker);
+      const { fired, ctx } = fireSpace(marker);
       expect(fired).toBe(true);
-      expect(document.execCommand).toHaveBeenCalledWith('formatBlock', false, `h${level}`);
+      expect(ctx.layoutInfo.editable.innerHTML).toBe(`<h${level}><br></h${level}>`);
     },
   );
 
   it('accepts the ) ordered-list delimiter', () => {
-    const { fired } = fireSpace('1)');
+    const { fired, ctx } = fireSpace('1)');
     expect(fired).toBe(true);
-    expect(document.execCommand).toHaveBeenCalledWith('insertOrderedList');
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<ol><li><br></li></ol>');
   });
 
   it('accepts + as an unordered-list marker', () => {
-    const { fired } = fireSpace('+');
+    const { fired, ctx } = fireSpace('+');
     expect(fired).toBe(true);
-    expect(document.execCommand).toHaveBeenCalledWith('insertUnorderedList');
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<ul><li><br></li></ul>');
   });
 
   it('starts a [x] item already ticked', () => {
@@ -545,6 +541,7 @@ describe('MarkdownShortcuts extended block rules', () => {
     ctx.layoutInfo.editable.appendChild(p);
     setCursorAt(p.firstChild, 3);
     expect(ms._applyEnterRule()).toBe(true);
-    expect(document.execCommand).toHaveBeenCalledWith('formatBlock', false, 'pre');
+    expect(ctx.layoutInfo.editable.querySelector('pre')).not.toBeNull();
+    expect(ctx.layoutInfo.editable.querySelector('p')).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 /**
  * Editor.js - Core editing command module
- * Wraps all execCommand calls, undo/redo, and fires events via the context.
+ * Runs the formatting commands, undo/redo, and fires events via the context.
  * Inspired by Summernote's Editor module.
  */
 
@@ -15,6 +15,20 @@ import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
 import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
+
+/** Formatting elements with nothing inside, as serialised by innerHTML. */
+const EMPTY_INLINE_RE = /<(b|i|u|s|sup|sub|span|strong|em|strike|font)(?:\s[^>]*)?><\/\1>/g;
+
+/**
+ * Removes empty formatting elements, repeatedly, so nested ones go too.
+ * @param {string} html
+ * @returns {string}
+ */
+function stripEmptyInline(html) {
+  let prev;
+  do { prev = html; html = html.replace(EMPTY_INLINE_RE, ''); } while (html !== prev);
+  return html;
+}
 
 /**
  * Blocks the caret cannot be placed after, so the editable always keeps a
@@ -93,7 +107,12 @@ export class Editor {
     // Keyboard shortcuts
     const onKeydown = (event) => this._onKeydown(event);
     // Catch ALL content mutations: typing, IME, spellcheck, voice, drag-drop text.
-    const onInput = () => this.afterCommand();
+    const onInput = (event) => {
+      // Text typed into a caret placeholder (bold/colour/size chosen with
+      // nothing selected) no longer needs the zero-width space holding it open.
+      if (!event?.isComposing) Style.absorbPlaceholder(editable);
+      this.afterCommand();
+    };
     // Hard-enforce maxChars / maxWords before content is mutated
     const onBeforeInput = (event) => this._enforceLimit(event);
     // Refresh toolbar on selection change, scoped to this editor
@@ -212,7 +231,7 @@ export class Editor {
     // the inserted characters. During composition the browser may place the
     // provisional text outside the current <sup>/<sub> element. When
     // compositionend fires we detect whether the cursor escaped the sup/sub
-    // context and re-apply the command so the composed character stays inside.
+    // context and move the composed text back into it.
     /** @type {string|null} 'superscript' | 'subscript' | null */
     let _compositionSupSub = null;
     const onCompositionStart = () => {
@@ -227,7 +246,7 @@ export class Editor {
         else _compositionSupSub = null;
       }
     };
-    const onCompositionEnd = () => {
+    const onCompositionEnd = (event) => {
       const tag = _compositionSupSub;
       _compositionSupSub = null;
       if (!tag) return;
@@ -238,8 +257,19 @@ export class Editor {
       const el = /** @type {Element} */ (node);
       const inContext = tag === 'superscript' ? el?.closest('sup') : el?.closest('sub');
       if (!inContext) {
-        // The composed character escaped the sup/sub — re-apply the format.
-        document.execCommand(tag);
+        // The composed text escaped the sup/sub — select it and format it.
+        const range = sel.getRangeAt(0);
+        const len = (event?.data || '').length;
+        const text = range.startContainer;
+        if (len && text.nodeType === Node.TEXT_NODE && range.startOffset >= len) {
+          const composed = document.createRange();
+          composed.setStart(text, range.startOffset - len);
+          composed.setEnd(text, range.startOffset);
+          sel.removeAllRanges();
+          sel.addRange(composed);
+          Style.setInline(tag, true, editable);
+          globalThis.getSelection()?.collapseToEnd();
+        }
       }
     };
     this._disposers.push(
@@ -439,8 +469,10 @@ export class Editor {
    * @returns {string}
    */
   getHTML() {
-    // Strip zero-width spaces inserted after icons to allow caret placement.
-    const raw = this.context.layoutInfo.editable.innerHTML.replaceAll('\u200B', '');
+    // Strip zero-width spaces inserted after icons to allow caret placement,
+    // and the formatting elements a caret placeholder leaves empty when bold
+    // or a colour was chosen with nothing selected and never typed into.
+    const raw = stripEmptyInline(this.context.layoutInfo.editable.innerHTML.replaceAll('\u200B', ''));
     // Replace any blob: URLs (lightweight DOM references to pasted/dropped images)
     // with their original data URLs so the returned HTML is fully self-contained.
     return this.context.invoke('clipboard.resolveImages', raw) ?? raw;
@@ -698,13 +730,10 @@ export class Editor {
     const rel = this._newTabRel();
     const hasText = sel.toString().trim().length > 0;
     if (hasText) {
-      Style.execCommand('createLink', safeUrl);
-      if (openInNewTab) {
-        const link = this._getClosestAnchor();
-        if (link) {
-          /** @type {Element} */ (link).setAttribute('target', '_blank');
-          /** @type {Element} */ (link).setAttribute('rel', rel);
-        }
+      for (const link of Style.createLink(safeUrl, this.context.layoutInfo.editable)) {
+        if (!openInNewTab) continue;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', rel);
       }
     } else {
       const displayText = this._escapeAttr(text || safeUrl);
@@ -732,7 +761,7 @@ export class Editor {
    * Removes the link from the selected anchor.
    */
   unlink() {
-    Style.execCommand('unlink');
+    Style.unlink(this.context.layoutInfo.editable);
     this.afterCommand();
   }
 
@@ -782,17 +811,6 @@ export class Editor {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
-
-  _getClosestAnchor() {
-    const sel = globalThis.getSelection();
-    if (!sel || sel.rangeCount === 0) return null;
-    let node = sel.getRangeAt(0).startContainer;
-    while (node) {
-      if (node.nodeName === 'A') return node;
-      node = node.parentNode;
-    }
-    return null;
-  }
 
   /**
    * Escapes a string for safe use inside an HTML attribute value.

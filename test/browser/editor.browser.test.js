@@ -101,7 +101,7 @@ describe('Autumn Note in a real browser', () => {
     expect(editable.innerHTML).not.toContain('onclick');
   });
 
-  // The transforms below run entirely through Selection/Range and execCommand.
+  // The transforms below run entirely through Selection and Range.
   // jsdom stubs both, so the unit suite can only prove the code path is taken —
   // whether the resulting DOM is right is a question only a real engine answers.
   function selectContentsOf(node) {

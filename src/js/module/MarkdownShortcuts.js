@@ -21,6 +21,7 @@
  */
 
 import { on } from '../core/dom.js';
+import * as Style from '../editing/Style.js';
 
 export class MarkdownShortcuts {
   /** @param {import('../Context.js').Context} context */
@@ -172,19 +173,20 @@ export class MarkdownShortcuts {
 
   _convertToHeading(level) {
     this._selectLineAndDelete();
-    document.execCommand('formatBlock', false, `h${level}`);
+    Style.formatBlock(`h${level}`);
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
   _convertToBlockquote() {
     this._selectLineAndDelete();
-    document.execCommand('formatBlock', false, 'blockquote');
+    Style.formatBlock('blockquote');
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
   _convertToList(type) {
     this._selectLineAndDelete();
-    document.execCommand(type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList');
+    if (type === 'ul') Style.insertUnorderedList();
+    else Style.insertOrderedList();
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
@@ -214,7 +216,7 @@ export class MarkdownShortcuts {
 
   _convertToCodeBlock() {
     this._selectLineAndDelete();
-    document.execCommand('formatBlock', false, 'pre');
+    Style.formatBlock('pre');
     this.context.triggerEvent('change', this.context.getHTML());
   }
 

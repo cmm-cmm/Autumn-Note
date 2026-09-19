@@ -1,6 +1,9 @@
 /**
- * Style.js - Inline / block style detection and application utilities
- * Rewritten from Summernote's approach using vanilla JS + execCommand fallback
+ * Style.js - Formatting commands and style queries.
+ *
+ * Every command is a DOM transform from format.js (inline, block, list, link)
+ * or insert.js (insertion). None of them calls `document.execCommand`: see
+ * docs/EXEC_COMMAND_MIGRATION.md.
  */
 
 import { closest, isElement, isPara, repairListNesting } from '../core/dom.js';
@@ -8,188 +11,119 @@ import { currentRange } from '../core/range.js';
 import {
   insertHTMLNative, insertTextNative, insertLineBreakNative, insertHorizontalRuleNative,
 } from './insert.js';
+import * as F from './format.js';
+
+export {
+  isInlineActive, setInline, applyStyle, removeFormat, createLink, unlink,
+  currentBlockTag, currentFontFamily, currentAlign, absorbPlaceholder,
+} from './format.js';
 
 // ---------------------------------------------------------------------------
-// execCommand wrappers (still the most compatible way in contenteditable)
+// Command dispatch
 // ---------------------------------------------------------------------------
+
+/** `<font size>` 1–7 as pixel sizes, for the legacy `fontSize` command value. */
+const LEGACY_FONT_SIZES = ['10px', '13px', '16px', '18px', '24px', '32px', '48px'];
 
 /**
- * Applies a document execCommand.
+ * The commands `execCommand` accepts, under the names `document.execCommand`
+ * gave them so existing plugin code keeps working.
+ * @type {Record<string, (value: any) => boolean|void>}
+ */
+const COMMANDS = {
+  bold: () => F.setInline('bold'),
+  italic: () => F.setInline('italic'),
+  underline: () => F.setInline('underline'),
+  strikeThrough: () => F.setInline('strikethrough'),
+  superscript: () => F.setInline('superscript'),
+  subscript: () => F.setInline('subscript'),
+  foreColor: (v) => F.applyStyle('color', String(v)),
+  hiliteColor: (v) => F.applyStyle('background-color', String(v)),
+  backColor: (v) => F.applyStyle('background-color', String(v)),
+  fontName: (v) => F.applyStyle('font-family', String(v)),
+  fontSize: (v) => F.applyStyle('font-size', /^[1-7]$/.test(String(v)) ? LEGACY_FONT_SIZES[Number(v) - 1] : String(v)),
+  formatBlock: (v) => F.formatBlock(String(v)),
+  justifyLeft: () => F.align('left'),
+  justifyCenter: () => F.align('center'),
+  justifyRight: () => F.align('right'),
+  justifyFull: () => F.align('justify'),
+  indent: () => indent(),
+  outdent: () => outdent(),
+  insertUnorderedList: () => insertUnorderedList(),
+  insertOrderedList: () => insertOrderedList(),
+  createLink: (v) => F.createLink(String(v)).length > 0,
+  unlink: () => F.unlink(),
+  removeFormat: () => F.removeFormat(),
+  insertHTML: (v) => insertHTMLNative(String(v ?? '')),
+  insertText: (v) => insertTextNative(String(v ?? '')),
+  insertLineBreak: () => insertLineBreakNative(),
+  insertHorizontalRule: () => insertHorizontalRuleNative(),
+};
+
+/**
+ * Runs a formatting command on the current selection. The names are those of
+ * `document.execCommand`, which this replaces; nothing here calls it.
  * @param {string} cmd
- * @param {string} [value]
- * @returns {boolean}
+ * @param {any} [value]
+ * @returns {boolean} false when the command is unknown or had nothing to act on
  */
 export function execCommand(cmd, value = null) {
-  // Stage 1 of the execCommand migration: the three insertion commands have
-  // native Range-based implementations. They are tried first and report false
-  // when there is no usable selection, in which case the deprecated command
-  // still runs — the compatibility adapter docs/EXEC_COMMAND_MIGRATION.md calls
-  // for, so nothing stops working while the native paths are proven.
-  if (cmd === 'insertHTML' && insertHTMLNative(String(value ?? ''))) return true;
-  if (cmd === 'insertText' && insertTextNative(String(value ?? ''))) return true;
-  if (cmd === 'insertLineBreak' && insertLineBreakNative()) return true;
-  if (cmd === 'insertHorizontalRule' && insertHorizontalRuleNative()) return true;
-  return document.execCommand(cmd, false, value);
+  const run = COMMANDS[cmd];
+  if (!run) {
+    console.warn(`[AutumnNote] execCommand: unsupported command "${cmd}".`);
+    return false;
+  }
+  return run(value) !== false;
 }
 
 // ---------------------------------------------------------------------------
 // Inline style helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Bolds / unbolds the selection.
- */
-export const bold = () => execCommand('bold');
+/** Bolds / unbolds the selection. */
+export const bold = () => F.setInline('bold');
 
-/**
- * Italicises / un-italicises the selection.
- */
-export const italic = () => execCommand('italic');
+/** Italicises / un-italicises the selection. */
+export const italic = () => F.setInline('italic');
 
-/**
- * Underlines / un-underlines the selection.
- * Falls back to manual DOM manipulation when inside <code> where
- * execCommand's state detection is unreliable.
- */
-export function underline() {
-  const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return;
-  let container = sel.getRangeAt(0).commonAncestorContainer;
-  if (container.nodeType === 3) container = container.parentElement;
-  // Check if we're inside a <u> (DOM truth), to guard against unreliable queryCommandState
-  const uEl = /** @type {Element|null} */ (container)?.closest('u');
-  const nativeState = document.queryCommandState('underline');
-  if (uEl && !nativeState) {
-    // Browser doesn't recognise the underline state (e.g. inside <code>).
-    // Manually unwrap the <u> element.
-    const parent = uEl.parentNode;
-    while (uEl.firstChild) parent.insertBefore(uEl.firstChild, uEl);
-    uEl.remove();
-    return;
-  }
-  execCommand('underline');
-}
+/** Underlines / un-underlines the selection. */
+export const underline = () => F.setInline('underline');
 
-/**
- * Strikethrough / removes strikethrough.
- * Falls back to manual DOM manipulation inside nested formats where
- * execCommand's state detection is unreliable (mirrors underline() logic).
- */
-export function strikethrough() {
-  const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return;
-  // Use startContainer for consistent detection across collapsed and range
-  // selections — commonAncestorContainer can miss ancestor <s>/<strike> tags
-  // when the selection spans across nested inline elements.
-  let sc = sel.getRangeAt(0).startContainer;
-  if (sc.nodeType === 3) sc = sc.parentElement;
-  const sEl = /** @type {Element|null} */ (sc)?.closest('s') || /** @type {Element|null} */ (sc)?.closest('strike');
-  const nativeState = document.queryCommandState('strikeThrough');
-  if (sEl && !nativeState) {
-    // Browser doesn’t recognise the strikethrough state (e.g. inside <code>
-    // or deeply nested inline formats). Manually unwrap the <s>/<strike>.
-    const parent = sEl.parentNode;
-    while (sEl.firstChild) parent.insertBefore(sEl.firstChild, sEl);
-    sEl.remove();
-    return;
-  }
-  execCommand('strikeThrough');
-}
+/** Strikethrough / removes strikethrough. */
+export const strikethrough = () => F.setInline('strikethrough');
 
-/**
- * Superscript toggle.
- */
-export const superscript = () => execCommand('superscript');
+/** Superscript toggle. */
+export const superscript = () => F.setInline('superscript');
 
-/**
- * Subscript toggle.
- */
-export const subscript = () => execCommand('subscript');
+/** Subscript toggle. */
+export const subscript = () => F.setInline('subscript');
 
 /**
  * Sets the foreground colour of the selected text.
  * @param {string} color - CSS colour string
  */
-export const foreColor = (color) => execCommand('foreColor', color);
+export const foreColor = (color) => F.applyStyle('color', color);
 
 /**
  * Sets the background (highlight) colour of the selected text.
  * @param {string} color - CSS colour string
  */
-export const backColor = (color) => execCommand('hiliteColor', color);
+export const backColor = (color) => F.applyStyle('background-color', color);
 
 /**
- * Sets the font name for the selection.
+ * Sets the font family for the selection.
  * @param {string} name
  */
-export const fontName = (name) => execCommand('fontName', name);
+export const fontName = (name) => F.applyStyle('font-family', name);
 
 /**
- * Sets the font size (in pt or with unit) for the selection.
- * Uses a span-based approach to set px sizes precisely.
+ * Sets the font size for the selection, or for what is typed next when the
+ * selection is collapsed.
  * @param {string} size - e.g. '14px'
- * @param {HTMLElement|Document} [editable] - scoping element to avoid touching nodes outside this editor
+ * @param {HTMLElement|Document} [editable] - restricts the command to this editor
  */
 export function fontSize(size, editable = document) {
-  const sel = globalThis.getSelection();
-  const wasCollapsed = !sel?.rangeCount || sel.getRangeAt(0).collapsed;
-
-  // B-I-3/4: For a collapsed (caret) selection the browser's execCommand
-  // 'fontSize' leaves an internal "pending" state of size-7 (=48px) instead of
-  // creating a <font> element, so the very next typed character comes out at
-  // 48px. Fix: bypass execCommand entirely for collapsed selections and directly
-  // insert a span with the requested size, placing the cursor inside it.
-  // Only applies when there IS an active selection (sel.rangeCount > 0); when
-  // there is no selection at all (e.g. jsdom unit tests) fall through to the
-  // execCommand path so the font-replacement logic still runs.
-  if (wasCollapsed && sel?.rangeCount > 0) {
-    try {
-      const range = sel.getRangeAt(0);
-      const span = document.createElement('span');
-      span.style.fontSize = size;
-      const zwsNode = document.createTextNode('\u200B');
-      span.appendChild(zwsNode);
-      range.insertNode(span);
-      const nr = document.createRange();
-      nr.setStart(zwsNode, zwsNode.textContent.length);
-      nr.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(nr);
-    } catch (_) { void _; /* ignore range errors on unusual DOM structures */ }
-    return;
-  }
-
-  // Non-collapsed selection (or no selection — handles jsdom test setup where
-  // <font size="7"> elements are injected directly without a live selection):
-  // use execCommand placeholder approach then replace <font> with <span>.
-  execCommand('fontSize', '7');
-  const scope = editable instanceof HTMLElement ? editable : document;
-  const newSpans = [];
-  scope.querySelectorAll('font[size="7"]').forEach((el) => {
-    const span = document.createElement('span');
-    span.style.fontSize = size;
-    el.parentNode.insertBefore(span, el);
-    while (el.firstChild) span.appendChild(el.firstChild);
-    el.remove();
-    newSpans.push(span);
-  });
-
-  // Re-select all replaced content so toolbar getValue() reads the new size
-  // (B-I-1/2: without this re-selection the toolbar dropdown stays on the old
-  // value until the next selectionchange event).
-  if (!wasCollapsed && sel && newSpans.length > 0) {
-    const first = newSpans[0];
-    const last  = newSpans.at(-1);
-    try {
-      const nr = document.createRange();
-      const startNode = first.firstChild || first;
-      const endNode   = last.lastChild  || last;
-      nr.setStart(startNode, 0);
-      nr.setEnd(endNode, endNode.nodeType === Node.TEXT_NODE ? endNode.textContent.length : endNode.childNodes.length);
-      sel.removeAllRanges();
-      sel.addRange(nr);
-    } catch (_) { void _; /* ignore range errors on unusual DOM structures */ }
-  }
+  F.applyStyle('font-size', size, editable instanceof HTMLElement ? editable : undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -197,39 +131,30 @@ export function fontSize(size, editable = document) {
 // ---------------------------------------------------------------------------
 
 /**
- * Wraps the selection in the given block tag (p, h1-h6, blockquote, pre).
+ * Changes the selected blocks to the given tag (p, h1-h6, blockquote, pre).
  * @param {string} tagName
  */
-export const formatBlock = (tagName) => execCommand('formatBlock', `<${tagName}>`);
+export const formatBlock = (tagName) => F.formatBlock(tagName);
 
-/**
- * Left-aligns the current block.
- */
-export const justifyLeft = () => execCommand('justifyLeft');
+/** Left-aligns the current block. */
+export const justifyLeft = () => F.align('left');
 
-/**
- * Center-aligns the current block.
- */
-export const justifyCenter = () => execCommand('justifyCenter');
+/** Center-aligns the current block. */
+export const justifyCenter = () => F.align('center');
 
-/**
- * Right-aligns the current block.
- */
-export const justifyRight = () => execCommand('justifyRight');
+/** Right-aligns the current block. */
+export const justifyRight = () => F.align('right');
 
-/**
- * Fully justifies the current block.
- */
-export const justifyFull = () => execCommand('justifyFull');
+/** Fully justifies the current block. */
+export const justifyFull = () => F.align('justify');
 
 /**
  * Indents the list or block.
  */
 export function indent() {
-  execCommand('indent');
-  // execCommand leaves the new sublist as a sibling of the item it indented.
-  // Repair it here rather than teaching every consumer of the HTML about a
-  // shape the spec does not allow — see repairListNesting.
+  F.indent();
+  // Content from older versions (or pasted) can hold a sublist as a sibling
+  // of its item; repair it while we are here — see repairListNesting.
   repairListNesting(_selectionListRoot());
 }
 
@@ -252,8 +177,7 @@ function _selectionListRoot() {
 /**
  * Outdents the list or block.
  * G.5: When cursor is inside a checklist item, "outdent" means converting
- * that item back to a regular <p> element rather than calling execCommand
- * (which would destroy the ul > li checklist structure).
+ * that item back to a regular <p> element.
  */
 export function outdent() {
   const sel = globalThis.getSelection();
@@ -261,56 +185,13 @@ export function outdent() {
     let container = sel.getRangeAt(0).commonAncestorContainer;
     if (container.nodeType === 3) container = container.parentElement;
     const checkLi = /** @type {Element|null} */ (container)?.closest('.an-checklist li');
-    if (checkLi) {
+    // A nested checklist item moves up a level like any other item.
+    if (checkLi && !checkLi.parentElement?.closest('li')) {
       _checklistItemToP(/** @type {HTMLElement} */ (checkLi));
       return;
     }
   }
-  if (_outdentNestedItem()) return;
-  execCommand('outdent');
-}
-
-/**
- * Lifts the list item holding the caret out of its sublist, in the DOM.
- *
- * `execCommand('outdent')` does not agree across engines here. Firefox
- * dissolves the item into the one above it — `<li>a<ul><li>b</li></ul></li>`
- * becomes `<li>a<br>b</li>`, so three items turn into two and the Markdown
- * comes out as a hard line break inside the first. Chromium restores the item.
- * Indent is symmetric on every engine now, so outdent has to be too.
- *
- * Only the nested case is handled here; outdenting a top-level item into a
- * paragraph still goes through execCommand, where the engines agree.
- * @returns {boolean} false when the caret is not in a nested list item
- */
-function _outdentNestedItem() {
-  const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return false;
-
-  let node = sel.getRangeAt(0).startContainer;
-  if (node.nodeType === 3) node = node.parentElement;
-  const li = /** @type {Element|null} */ (node)?.closest?.('li');
-  if (!li) return false;
-
-  const sublist = li.parentElement;
-  if (!sublist || (sublist.nodeName !== 'UL' && sublist.nodeName !== 'OL')) return false;
-
-  const outerItem = sublist.parentElement;
-  if (!outerItem || outerItem.nodeName !== 'LI' || !outerItem.parentNode) return false;
-
-  // Items below this one stay below it, nested under it — outdenting one item
-  // must not promote the rest of the sublist with it.
-  const following = [];
-  for (let next = li.nextElementSibling; next; next = next.nextElementSibling) following.push(next);
-  if (following.length) {
-    const carrier = li.ownerDocument.createElement(sublist.nodeName.toLowerCase());
-    following.forEach((item) => carrier.appendChild(item));
-    li.appendChild(carrier);
-  }
-
-  outerItem.parentNode.insertBefore(li, outerItem.nextSibling);
-  if (!sublist.children.length) sublist.remove();
-  return true;
+  F.outdent();
 }
 
 /**
@@ -372,22 +253,6 @@ function _checklistItemToP(checkLi) {
 }
 
 /**
- * Inserts an unordered (bulleted) list, or converts the current list to `<ul>`.
- *
- * When the cursor is already inside a list, direct DOM manipulation is used to
- * transition between list types — `execCommand` alone cannot handle checklist →
- * UL/OL conversions because it has no awareness of the `an-checklist` class or
- * the checkbox `<input>` elements.
- *
- * Transition paths:
- * - **Checklist → UL**: strips `an-checklist` class and all checkbox inputs;
- *   converts `<ol>` container to `<ul>` via `changeTagName()` if needed.
- * - **OL → UL**: swaps the container tag via `changeTagName()`.
- * - **UL → paragraphs**: falls back to `execCommand('insertUnorderedList')`
- *   which toggles the list off (browser-native behaviour).
- * - **No list → UL**: falls back to `execCommand('insertUnorderedList')`.
- */
-/**
  * Helper to get the closest ul/ol element containing the current selection.
  * @returns {Element|null}
  */
@@ -408,43 +273,50 @@ function stripChecklist(listEl) {
   listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.remove());
 }
 
+/**
+ * Inserts an unordered (bulleted) list, or converts the current list to `<ul>`.
+ *
+ * Checklists are converted here, since only this module knows about the
+ * `an-checklist` class and the checkbox `<input>` elements.
+ *
+ * Transition paths:
+ * - **Checklist → UL**: strips `an-checklist` class and all checkbox inputs;
+ *   converts `<ol>` container to `<ul>` via `changeTagName()` if needed.
+ * - **OL → UL**: swaps the container tag via `changeTagName()`.
+ * - **UL → paragraphs**: the selected items become paragraphs (`toggleList`).
+ * - **No list → UL**: the selected blocks become list items (`toggleList`).
+ */
 export function insertUnorderedList() {
   const listEl = getSelectedList();
   if (listEl) {
     if (listEl.classList.contains('an-checklist')) {
       // Checklist → UL: strip checkboxes and class, swap tag if needed
       stripChecklist(listEl);
-      if (listEl.tagName === 'OL') {
-        changeTagName(listEl, 'ul');
-      }
+      if (listEl.tagName === 'OL') F.toggleList('ul');
     } else if (listEl.tagName === 'OL') {
       // OL → UL: swap container tag
-      changeTagName(listEl, 'ul');
+      F.toggleList('ul');
     } else {
-      // Already UL → toggle off via execCommand
-      execCommand('insertUnorderedList');
+      // Already UL → back to paragraphs
+      F.toggleList('ul');
     }
   } else {
-    // Not in a list → create new UL via execCommand
-    execCommand('insertUnorderedList');
+    F.toggleList('ul');
   }
 }
 
 /**
  * Inserts an ordered (numbered) list, or converts the current list to `<ol>`.
  *
- * When the cursor is already inside a list, direct DOM manipulation is used to
- * transition between list types — `execCommand` alone cannot handle checklist →
- * UL/OL conversions because it has no awareness of the `an-checklist` class or
- * the checkbox `<input>` elements.
+ * Checklists are converted here, since only this module knows about the
+ * `an-checklist` class and the checkbox `<input>` elements.
  *
  * Transition paths:
  * - **Checklist → OL**: strips `an-checklist` class and all checkbox inputs;
  *   converts container to `<ol>` via `changeTagName()`.
  * - **UL → OL**: swaps the container tag via `changeTagName()`.
- * - **OL → paragraphs**: falls back to `execCommand('insertOrderedList')`
- *   which toggles the list off (browser-native behaviour).
- * - **No list → OL**: falls back to `execCommand('insertOrderedList')`.
+ * - **OL → paragraphs**: the selected items become paragraphs (`toggleList`).
+ * - **No list → OL**: the selected blocks become list items (`toggleList`).
  */
 export function insertOrderedList() {
   const listEl = getSelectedList();
@@ -452,17 +324,16 @@ export function insertOrderedList() {
     if (listEl.classList.contains('an-checklist')) {
       // Checklist → OL: strip checkboxes and class, swap to <ol>
       stripChecklist(listEl);
-      changeTagName(listEl, 'ol');
+      if (listEl.tagName === 'UL') F.toggleList('ol');
     } else if (listEl.tagName === 'UL') {
       // UL → OL: swap container tag
-      changeTagName(listEl, 'ol');
+      F.toggleList('ol');
     } else {
-      // Already OL → toggle off via execCommand
-      execCommand('insertOrderedList');
+      // Already OL → back to paragraphs
+      F.toggleList('ol');
     }
   } else {
-    // Not in a list → create new OL via execCommand
-    execCommand('insertOrderedList');
+    F.toggleList('ol');
   }
 }
 
@@ -542,12 +413,12 @@ export function currentStyle(editable) {
   const computed = globalThis.getComputedStyle(el);
 
   return {
-    bold: document.queryCommandState('bold'),
-    italic: document.queryCommandState('italic'),
-    underline: document.queryCommandState('underline'),
-    strikethrough: document.queryCommandState('strikeThrough'),
-    superscript: document.queryCommandState('superscript'),
-    subscript: document.queryCommandState('subscript'),
+    bold: F.isInlineActive('bold', editable),
+    italic: F.isInlineActive('italic', editable),
+    underline: F.isInlineActive('underline', editable),
+    strikethrough: F.isInlineActive('strikethrough', editable),
+    superscript: F.isInlineActive('superscript', editable),
+    subscript: F.isInlineActive('subscript', editable),
     fontSize: computed.fontSize,
     fontFamily: computed.fontFamily,
     color: computed.color,
@@ -747,11 +618,7 @@ export function toggleChecklist() {
     }
   } else {
     // Selection is not in a list: build the checklist directly via DOM
-    // manipulation. execCommand('insertUnorderedList') is intentionally
-    // avoided here — its behaviour on collapsed/empty selections and
-    // non-standard blocks (e.g. <section>) is too inconsistent across
-    // browsers (and a no-op in jsdom), which left toggleChecklist() as a
-    // silent no-op in those cases.
+    // manipulation.
     // The editable root itself is a <div> and must never be treated as a
     // "block" to convert/replace/remove — otherwise selections that include
     // raw text nodes sitting directly inside it (e.g. the first line typed

@@ -53,6 +53,9 @@ const BEACON_ATTRS = new Set(['ping']);
 const ALLOWED_STYLE_PROPS = new Set([
   'color', 'background-color', 'font-size', 'line-height',
   'text-align', 'vertical-align',
+  // The font dropdown and block indentation, since the formatting engine
+  // writes them as styles (execCommand wrote <font face> and a <blockquote>).
+  'font-family', 'margin-left', 'margin-right',
   'width', 'min-width', 'height', 'min-height',
   'border-width', 'border-style', 'border-color', 'padding',
   // The code block's word-wrap toggle persists as `white-space: pre-wrap` on

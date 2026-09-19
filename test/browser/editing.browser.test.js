@@ -1,11 +1,10 @@
 import AutumnNote from '../../src/js/index.js';
 
 /**
- * The jsdom suites cover the repair, the offset maths and the Tab rules in
- * isolation. This one covers the thing a user actually does, on the engine that
- * produces the damage: `execCommand('indent')` is what nests a sublist beside
- * its item, and jsdom implements neither execCommand nor Selection well enough
- * to see it.
+ * The jsdom suites cover the list transforms, the offset maths and the Tab
+ * rules in isolation. This one covers the thing a user actually does, on each
+ * real engine — where `execCommand('indent')` used to nest a sublist beside its
+ * item, before the editor did its own list editing.
  */
 describe('editing flows in a real browser', () => {
   let target;
@@ -57,7 +56,7 @@ describe('editing flows in a real browser', () => {
   });
 
   it('outdents back to where it started, on every engine', () => {
-    // Firefox's execCommand('outdent') dissolved the item into the one above —
+    // Firefox's execCommand('outdent') used to dissolve the item into the one above —
     // `<li>a<ul><li>b</li></ul></li>` came back as `<li>a<br>b</li>`, three
     // items becoming two — so the nested case is done in the DOM instead.
     mount('<ul><li>a</li><li>b</li><li>c</li></ul>');

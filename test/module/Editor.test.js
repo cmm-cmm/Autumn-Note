@@ -341,13 +341,17 @@ describe('Editor insert API', () => {
     vi.useRealTimers();
   });
 
-  it('insertVideo inserts HTML via execCommand', () => {
+  it('insertVideo inserts the embed at the caret', () => {
     vi.useFakeTimers();
     const context = makeContext('<p>text</p>');
     const editor = new Editor(context);
+    const caret = document.createRange();
+    caret.setStart(context.layoutInfo.editable.querySelector('p').firstChild, 4);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(caret);
     const html = '<div class="an-video-wrapper"><iframe src="https://www.youtube.com/embed/test"></iframe></div>';
     editor.insertVideo(html);
-    expect(document.execCommand).toHaveBeenCalled();
+    expect(context.layoutInfo.editable.querySelector('iframe')?.getAttribute('src')).toBe('https://www.youtube.com/embed/test');
     vi.useRealTimers();
   });
 
@@ -622,8 +626,7 @@ describe('Editor insertLink with selection', () => {
     expect(() => editor.insertLink('https://example.com', 'link', true)).not.toThrow();
   });
 
-  it('insertLink with openInNewTab=true sets target/rel on found anchor', () => {
-    // Put an <a> in the DOM so _getClosestAnchor() can find it via DOM traversal
+  it('insertLink with openInNewTab=true sets target/rel on the new link', () => {
     const context = makeContext('<p><a href="https://old.com">click me</a></p>');
     const editor = new Editor(context);
     const a = context.layoutInfo.editable.querySelector('a');
@@ -632,9 +635,13 @@ describe('Editor insertLink with selection', () => {
     range.setEnd(a.firstChild, 5); // select "click"
     window.getSelection().addRange(range);
     editor.insertLink('https://example.com', 'click me', true);
-    // _getClosestAnchor walks up from the text node and finds <a>
-    expect(a.getAttribute('target')).toBe('_blank');
-    expect(a.getAttribute('rel')).toBe('noopener noreferrer');
+    // The selected part is relinked; the rest keeps the old link
+    const link = context.layoutInfo.editable.querySelector('a[href="https://example.com"]');
+    expect(link.textContent).toBe('click');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(context.layoutInfo.editable.querySelector('a[href="https://old.com"]').textContent).toBe(' me');
+    void a;
   });
 });
 
@@ -724,39 +731,6 @@ describe('Editor setMarkdown / getMarkdown', () => {
     const md = editor.getMarkdown();
     expect(typeof md).toBe('string');
     expect(md).toContain('Hello');
-  });
-});
-
-// ── _getClosestAnchor ─────────────────────────────────────────────────────────
-
-describe('Editor._getClosestAnchor', () => {
-  it('returns null when no selection', () => {
-    const context = makeContext();
-    const editor = new Editor(context);
-    expect(editor._getClosestAnchor()).toBeNull();
-  });
-
-  it('returns anchor element when cursor is inside a link', () => {
-    const context = makeContext('<p><a href="https://example.com">link text</a></p>');
-    const editor = new Editor(context);
-    const a = context.layoutInfo.editable.querySelector('a');
-    const tn = a.firstChild;
-    const r = document.createRange();
-    r.setStart(tn, 0);
-    r.collapse(true);
-    window.getSelection().addRange(r);
-    expect(editor._getClosestAnchor()).toBe(a);
-  });
-
-  it('returns null when cursor is not inside a link', () => {
-    const context = makeContext('<p>hello</p>');
-    const editor = new Editor(context);
-    const tn = context.layoutInfo.editable.querySelector('p').firstChild;
-    const r = document.createRange();
-    r.setStart(tn, 0);
-    r.collapse(true);
-    window.getSelection().addRange(r);
-    expect(editor._getClosestAnchor()).toBeNull();
   });
 });
 

@@ -1,16 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BubbleToolbar } from '../../src/js/module/BubbleToolbar.js';
 
-// jsdom stubs
-for (const [cmd, val] of [
-  ['queryCommandState', false],
-  ['queryCommandValue', ''],
-  ['execCommand',       true],
-]) {
-  if (typeof document[cmd] !== 'function') {
-    Object.defineProperty(document, cmd, { value: () => val, configurable: true, writable: true });
-  }
-}
 
 vi.stubGlobal('requestAnimationFrame', (cb) => { cb(); return 0; });
 vi.stubGlobal('cancelAnimationFrame', () => {});
@@ -246,10 +236,6 @@ describe('BubbleToolbar color picker open/close', () => {
 // ── _applyColor ───────────────────────────────────────────────────────────────
 
 describe('BubbleToolbar._applyColor', () => {
-  beforeEach(() => {
-    // Ensure execCommand is a mock that can be spied on
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
-  });
 
   function setEditorSelection(bt) {
     const editable = bt.context.layoutInfo.editable;
@@ -263,26 +249,20 @@ describe('BubbleToolbar._applyColor', () => {
     bt._savedRange = range.cloneRange();
   }
 
-  it('calls execCommand with foreColor', () => {
+  it('colours the saved selection', () => {
     const { bt } = makeBubble();
     setEditorSelection(bt);
     bt._applyColor('foreColor', '#ff0000');
-    expect(document.execCommand).toHaveBeenCalledWith('foreColor', false, '#ff0000');
+    const span = bt.context.layoutInfo.editable.querySelector('span');
+    expect(span.style.color).toBe('rgb(255, 0, 0)');
+    expect(span.textContent).toHaveLength(5);
   });
 
-  it('calls execCommand with hiliteColor', () => {
+  it('highlights the saved selection (the same in every engine)', () => {
     const { bt } = makeBubble();
     setEditorSelection(bt);
     bt._applyColor('hiliteColor', '#ffff00');
-    expect(document.execCommand).toHaveBeenCalledWith('hiliteColor', false, '#ffff00');
-  });
-
-  it('falls back to backColor when hiliteColor fails', () => {
-    vi.spyOn(document, 'execCommand').mockImplementation((cmd) => cmd !== 'hiliteColor');
-    const { bt } = makeBubble();
-    setEditorSelection(bt);
-    bt._applyColor('hiliteColor', '#ffff00');
-    expect(document.execCommand).toHaveBeenCalledWith('backColor', false, '#ffff00');
+    expect(bt.context.layoutInfo.editable.querySelector('span').style.backgroundColor).toBe('rgb(255, 255, 0)');
   });
 
   it('updates color strip on the button', () => {
@@ -296,8 +276,9 @@ describe('BubbleToolbar._applyColor', () => {
   it('does nothing when no savedRange', () => {
     const { bt } = makeBubble();
     bt._savedRange = null;
+    const before = bt.context.layoutInfo.editable.innerHTML;
     bt._applyColor('foreColor', '#ff0000');
-    expect(document.execCommand).not.toHaveBeenCalled();
+    expect(bt.context.layoutInfo.editable.innerHTML).toBe(before);
   });
 
   it('calls context.invoke afterCommand', () => {
@@ -320,8 +301,13 @@ describe('BubbleToolbar._applyColor', () => {
 
 describe('BubbleToolbar._syncActive', () => {
   it('applies an-active to buttons whose command is active', () => {
-    vi.spyOn(document, 'queryCommandState').mockImplementation((cmd) => cmd === 'bold');
     const { bt } = makeBubble();
+    const editable = bt.context.layoutInfo.editable;
+    editable.innerHTML = '<p><b>bold</b></p>';
+    const range = document.createRange();
+    range.selectNodeContents(editable.querySelector('b'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
     bt._syncActive();
     const boldBtn = bt._el.querySelector('[data-name="bold"]');
     expect(boldBtn.classList.contains('an-active')).toBe(true);
@@ -701,20 +687,8 @@ describe('BubbleToolbar contextMenu event handlers', () => {
 
   it('_syncActive covers strikethrough active state', () => {
     const { bt } = makeBubble();
-    Object.defineProperty(document, 'queryCommandState', {
-      value: (cmd) => cmd === 'strikeThrough',
-      configurable: true,
-      writable: true,
-    });
-
     bt._show(MOCK_RECT);
-    bt._syncActive();
-
-    Object.defineProperty(document, 'queryCommandState', {
-      value: () => false,
-      configurable: true,
-      writable: true,
-    });
+    expect(() => bt._syncActive()).not.toThrow();
   });
 });
 
@@ -771,15 +745,15 @@ describe('BubbleToolbar _ACTIONS — action function bodies', () => {
     bt.destroy();
   });
 
-  it('clicking removeFormat button calls execCommand removeFormat and afterCommand', () => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
+  it('clicking removeFormat button strips formatting and calls afterCommand', () => {
     const ctx = makeContext({ bubbleToolbarItems: ['removeFormat'] });
+    ctx.layoutInfo.editable.innerHTML = '<p><b>Hello</b> world</p>';
     const bt = new BubbleToolbar(ctx);
     bt.initialize();
 
     // Set up a real selection so the removeFormat logic can use it
     const editable = ctx.layoutInfo.editable;
-    const textNode = editable.querySelector('p').firstChild;
+    const textNode = editable.querySelector('b').firstChild;
     const range = document.createRange();
     range.setStart(textNode, 0);
     range.setEnd(textNode, 5);
@@ -787,23 +761,26 @@ describe('BubbleToolbar _ACTIONS — action function bodies', () => {
 
     const btn = bt._el.querySelector('[data-name="removeFormat"]');
     btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-    expect(document.execCommand).toHaveBeenCalledWith('removeFormat');
+    expect(editable.innerHTML).toBe('<p>Hello world</p>');
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
     bt.destroy();
   });
 
-  it('_syncActive calls strikeThrough queryCommandState when button is in toolbar', () => {
-    vi.spyOn(document, 'queryCommandState').mockImplementation((cmd) => cmd === 'strikeThrough');
+  it('_syncActive marks strikethrough active inside <s>', () => {
     const ctx = makeContext({ bubbleToolbarItems: ['strikethrough'] });
+    ctx.layoutInfo.editable.innerHTML = '<p><s>gone</s></p>';
     const bt = new BubbleToolbar(ctx);
     bt.initialize();
+    const range = document.createRange();
+    range.selectNodeContents(ctx.layoutInfo.editable.querySelector('s'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
     bt._syncActive();
-    expect(document.queryCommandState).toHaveBeenCalledWith('strikeThrough');
+    expect(bt._el.querySelector('[data-name="strikethrough"]').classList.contains('an-active')).toBe(true);
     bt.destroy();
   });
 
   it('removeFormat removes inline style attribute from styled elements in selection (line 61)', () => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
     const ctx = makeContext({ bubbleToolbarItems: ['removeFormat'] });
     // Put a styled span in the editable so the removeFormat loop covers line 61
     ctx.layoutInfo.editable.innerHTML = '<p><span style="color:red">Hello world</span></p>';
@@ -818,7 +795,9 @@ describe('BubbleToolbar _ACTIONS — action function bodies', () => {
 
     const btn = bt._el.querySelector('[data-name="removeFormat"]');
     btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-    expect(span.hasAttribute('style')).toBe(false);
+    // The coloured span is split and its selected part unwrapped
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p>Hello<span style="color:red"> world</span></p>');
+    void span;
     bt.destroy();
   });
 });

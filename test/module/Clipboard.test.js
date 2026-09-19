@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Clipboard } from '../../src/js/module/Clipboard.js';
 
-if (typeof document.execCommand !== 'function') {
-  Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
-}
+// The editable the last context was built with. Insertion is a real DOM
+// operation now, so what a paste inserted is simply what the editable holds.
+let lastEditable = null;
+const inserted = () => lastEditable?.innerHTML ?? '';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -15,6 +16,12 @@ const makeContext = (opts = {}) => {
   const editable = document.createElement('div');
   editable.contentEditable = 'true';
   document.body.appendChild(editable);
+  lastEditable = editable;
+  // A caret in the editable, as a real paste has one.
+  const caret = document.createRange();
+  caret.setStart(editable, 0);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(caret);
   return {
     layoutInfo: { editable },
     options: {
@@ -460,7 +467,6 @@ describe('Clipboard._onDrop', () => {
   });
 
   it('converts a dropped .md file to HTML and inserts it', async () => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
     const { cb } = makeClipboard();
     const mdFile = new File(['# Heading'], 'notes.md', { type: 'text/markdown' });
     const event = {
@@ -470,12 +476,12 @@ describe('Clipboard._onDrop', () => {
       clientX: 100,
       clientY: 100,
     };
-    const callsBefore = document.execCommand.mock.calls.length;
+    const callsBefore = inserted();
     cb._onDrop(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    await vi.waitFor(() => expect(document.execCommand.mock.calls.length).toBeGreaterThan(callsBefore));
-    const call = document.execCommand.mock.calls.at(-1);
-    expect(call).toEqual(['insertHTML', false, expect.stringContaining('<h1>Heading</h1>')]);
+    await vi.waitFor(() => expect(inserted()).not.toBe(callsBefore));
+    const call = [null, null, inserted()];
+    expect(call[2]).toContain('<h1>Heading</h1>');
   });
 
   it('is a no-op for a dropped file that is neither an image nor a .md file (regression)', () => {
@@ -530,7 +536,7 @@ describe('Clipboard._onDrop', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { cb, ctx } = makeClipboard();
     const mdFile = new File(['# Heading'], 'broken.md', { type: 'text/markdown' });
-    const callsBefore = document.execCommand.mock.calls.length;
+    const callsBefore = inserted();
 
     cb._insertMarkdownFile(mdFile);
 
@@ -542,16 +548,13 @@ describe('Clipboard._onDrop', () => {
       message: 'Failed to read dropped markdown file "broken.md".',
     });
     expect(ctx.invoke).not.toHaveBeenCalledWith('editor.afterCommand');
-    expect(document.execCommand.mock.calls).toHaveLength(callsBefore);
+    expect(inserted()).toBe(callsBefore);
   });
 });
 
 // ── _onPaste ──────────────────────────────────────────────────────────────────
 
 describe('Clipboard._onPaste', () => {
-  beforeEach(() => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
-  });
 
   function makePasteEvent(types, dataMap = {}) {
     return {
@@ -567,9 +570,9 @@ describe('Clipboard._onPaste', () => {
 
   it('returns early when no clipboardData', () => {
     const { cb } = makeClipboard();
-    const callsBefore = document.execCommand.mock.calls.length;
+    const callsBefore = inserted();
     expect(() => cb._onPaste({ clipboardData: null })).not.toThrow();
-    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
+    expect(inserted()).toBe(callsBefore);
   });
 
   it('pastes as plain text when forcePlain is true', () => {
@@ -578,7 +581,7 @@ describe('Clipboard._onPaste', () => {
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'Hello World' });
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('Hello World'));
+    expect(inserted()).toEqual(expect.stringContaining('Hello World'));
     expect(cb._forcePlain).toBe(false);
   });
 
@@ -587,14 +590,14 @@ describe('Clipboard._onPaste', () => {
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'Plain only' });
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.any(String));
+    expect(inserted()).toEqual(expect.any(String));
   });
 
   it('converts multi-line plain text to paragraphs', () => {
     const { cb } = makeClipboard({ pasteAsPlainText: true });
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'Line 1\nLine 2' });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('<p>');
   });
 
@@ -603,7 +606,7 @@ describe('Clipboard._onPaste', () => {
     const event = makePasteEvent(['text/plain'], { 'text/plain': '# Heading\n\nParagraph' });
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('h1'));
+    expect(inserted()).toEqual(expect.stringContaining('h1'));
   });
 
   it('strips YAML frontmatter from a raw .md paste', () => {
@@ -611,7 +614,7 @@ describe('Clipboard._onPaste', () => {
     const md = '---\ntitle: My Post\nauthor: Jane\n---\n\n# Heading';
     const event = makePasteEvent(['text/plain'], { 'text/plain': md });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('h1');
     expect(call[2]).not.toContain('title');
     expect(call[2]).not.toContain('hr');
@@ -622,7 +625,7 @@ describe('Clipboard._onPaste', () => {
     const md = '| A | B |\n| --- | --- |\n| 1 | 2 |';
     const event = makePasteEvent(['text/plain'], { 'text/plain': md });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('table');
     expect(call[2]).toContain('th');
     expect(call[2]).toContain('td');
@@ -633,7 +636,7 @@ describe('Clipboard._onPaste', () => {
     const md = '# Notes\n\nSee [ref link][1] and a footnote[^a].\n\n[1]: https://example.com\n[^a]: footnote body';
     const event = makePasteEvent(['text/plain'], { 'text/plain': md });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('href="https://example.com"');
     expect(call[2]).toContain('sup');
     expect(call[2]).not.toContain('footnote body');
@@ -646,7 +649,7 @@ describe('Clipboard._onPaste', () => {
       'text/plain': '# Heading',
     });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('<h1>Heading</h1>');
   });
 
@@ -657,7 +660,7 @@ describe('Clipboard._onPaste', () => {
       'text/plain': '# Heading',
     });
     cb._onPaste(event);
-    const call = document.execCommand.mock.calls.at(-1);
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('<table');
     expect(call[2]).not.toContain('<h1>');
   });
@@ -665,11 +668,11 @@ describe('Clipboard._onPaste', () => {
   it('fires a pasteError event and does not insert when paste content exceeds maxPasteSize', () => {
     const { cb, ctx } = makeClipboard({ maxPasteSize: 10 });
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'a'.repeat(1000) });
-    const callsBefore = document.execCommand.mock.calls.length;
+    const callsBefore = inserted();
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', expect.objectContaining({ size: 1000 }));
-    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
+    expect(inserted()).toBe(callsBefore);
   });
 
   it('sanitises HTML when text/html is in clipboard (pasteCleanHTML default)', () => {
@@ -680,7 +683,7 @@ describe('Clipboard._onPaste', () => {
     });
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand).toHaveBeenCalledWith('insertHTML', false, expect.stringContaining('Hello'));
+    expect(inserted()).toEqual(expect.stringContaining('Hello'));
   });
 
   it('calls _cleanWordHtml for Word content', () => {
@@ -727,10 +730,10 @@ describe('Clipboard._onPaste', () => {
     const { cb, ctx } = makeClipboard({ pasteAsPlainText: true });
     ctx.triggerEvent.mockImplementation((name) => (name === 'paste' ? false : undefined));
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'text' });
-    const callsBefore = document.execCommand.mock.calls.length;
+    const callsBefore = inserted();
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(document.execCommand.mock.calls.length).toBe(callsBefore);
+    expect(inserted()).toBe(callsBefore);
   });
 
   it('inserts sanitised replacement HTML returned by a paste handler', () => {
@@ -740,8 +743,7 @@ describe('Clipboard._onPaste', () => {
     const event = makePasteEvent(['text/plain'], { 'text/plain': 'original' });
     cb._onPaste(event);
     expect(event.preventDefault).toHaveBeenCalled();
-    const call = document.execCommand.mock.calls.at(-1);
-    expect(call[0]).toBe('insertHTML');
+    const call = [null, null, inserted()];
     expect(call[2]).toContain('swapped');
     expect(call[2]).not.toContain('onerror');
   });
@@ -862,13 +864,6 @@ describe('Clipboard image upload handler', () => {
     const cb = new Clipboard(ctx);
     cb.initialize();
     const editable = ctx.layoutInfo.editable;
-    // jsdom has no execCommand; the shared stub returns true without inserting,
-    // so placeholder assertions would pass vacuously. Make insertHTML actually
-    // append, which is what the browser does at the caret.
-    vi.spyOn(document, 'execCommand').mockImplementation((cmd, _ui, html) => {
-      if (cmd === 'insertHTML') editable.insertAdjacentHTML('beforeend', String(html));
-      return true;
-    });
     return { ctx, cb, editable };
   };
 

@@ -718,18 +718,57 @@ describe('ContextMenu default item actions', () => {
     return btn;
   }
 
-  it('clicking cut item calls document.execCommand cut', () => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
-    const { cm } = makeMenu();
+  /** Selects the first `length` characters of the editable's first paragraph. */
+  function selectStart(ctx, length) {
+    const text = ctx.layoutInfo.editable.querySelector('p').firstChild;
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, length);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+
+  function stubClipboard(writeText) {
+    const orig = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    return () => Object.defineProperty(navigator, 'clipboard', { value: orig, configurable: true });
+  }
+
+  it('clicking cut item copies the selection, then deletes it', async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    const restore = stubClipboard(writeText);
+    const { cm, ctx } = makeMenu();
+    const before = ctx.layoutInfo.editable.querySelector('p').textContent;
+    selectStart(ctx, 2);
     clickItem(cm, 'cut');
-    expect(document.execCommand).toHaveBeenCalledWith('cut');
+    await vi.waitFor(() => expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand'));
+    expect(writeText).toHaveBeenCalledWith(before.slice(0, 2));
+    expect(ctx.layoutInfo.editable.querySelector('p').textContent).toBe(before.slice(2));
+    restore();
   });
 
-  it('clicking copy item calls document.execCommand copy', () => {
-    vi.spyOn(document, 'execCommand').mockReturnValue(true);
-    const { cm } = makeMenu();
+  it('keeps the text when the clipboard refuses a cut', async () => {
+    const writeText = vi.fn(() => Promise.reject(new Error('denied')));
+    const restore = stubClipboard(writeText);
+    const { cm, ctx } = makeMenu();
+    const before = ctx.layoutInfo.editable.querySelector('p').textContent;
+    selectStart(ctx, 2);
+    clickItem(cm, 'cut');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(ctx.layoutInfo.editable.querySelector('p').textContent).toBe(before);
+    restore();
+  });
+
+  it('clicking copy item writes the selection to the clipboard', async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    const restore = stubClipboard(writeText);
+    const { cm, ctx } = makeMenu();
+    const before = ctx.layoutInfo.editable.querySelector('p').textContent;
+    selectStart(ctx, 3);
     clickItem(cm, 'copy');
-    expect(document.execCommand).toHaveBeenCalledWith('copy');
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(before.slice(0, 3)));
+    expect(ctx.layoutInfo.editable.querySelector('p').textContent).toBe(before);
+    restore();
   });
 
   it('clicking bold item invokes editor.bold', () => {

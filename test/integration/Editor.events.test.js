@@ -745,6 +745,26 @@ describe('Editor IME composition events', () => {
     expect(() => editable.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))).not.toThrow();
     editor.destroy();
   });
+  it('moves text composed outside a superscript back into it', () => {
+    const { editor } = makeEditor();
+    const editable = editor.layoutInfo.editable;
+    editable.innerHTML = '<p>x<sup>2</sup></p>';
+    const caret = (node, offset) => {
+      const range = document.createRange();
+      range.setStart(node, offset);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+    };
+    caret(editable.querySelector('sup').firstChild, 1);
+    editable.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+    // The engine put the composed text after the <sup>
+    editable.querySelector('p').appendChild(document.createTextNode('ab'));
+    caret(editable.querySelector('p').lastChild, 2);
+    editable.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: 'ab' }));
+
+    expect(editable.innerHTML).toBe('<p>x<sup>2ab</sup></p>');
+    editor.destroy();
+  });
 });
 
 // ── fixChecklistCursor ────────────────────────────────────────────────────────

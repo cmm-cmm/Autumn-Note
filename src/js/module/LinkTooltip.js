@@ -1,6 +1,8 @@
 // LinkTooltip.js - Hover tooltip for links inside the editor
 // Displays a small action bar with: visit link, edit link, unlink
 import { createElement, on, portalOf } from '../core/dom.js';
+import { writeClipboard } from '../core/clipboard.js';
+import * as Style from '../editing/Style.js';
 
 const ICONS = {
   open:   `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
@@ -198,17 +200,7 @@ export class LinkTooltip {
   _copyLink() {
     const url = this._activeAnchor?.getAttribute('href');
     if (url) {
-      navigator.clipboard.writeText(url).catch(() => {
-        // Fallback for environments where clipboard API is unavailable
-        const ta = document.createElement('textarea');
-        ta.value = url;
-        ta.style.position = 'fixed';
-        ta.style.opacity  = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-      });
+      writeClipboard({ text: url }).catch(() => {});
     }
     // Brief visual feedback  
     if (this._copyBtn) {
@@ -237,14 +229,14 @@ export class LinkTooltip {
     if (!anchor) return;
     this._hide();
 
-    // Select the anchor text, then remove the link
+    // Put the caret in the link, then remove it (unlink takes the whole link)
     const sel = globalThis.getSelection();
     const range = document.createRange();
-    range.selectNode(anchor);
+    range.selectNodeContents(anchor);
     sel.removeAllRanges();
     sel.addRange(range);
 
-    document.execCommand('unlink');
+    Style.unlink(this.context.layoutInfo.editable);
     this.context.invoke('editor.afterCommand');
   }
 }

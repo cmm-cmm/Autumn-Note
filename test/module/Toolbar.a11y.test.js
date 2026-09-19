@@ -47,12 +47,19 @@ describe('toolbar ARIA semantics', () => {
   it('keeps aria-pressed in step with the .active class on refresh', () => {
     const toolbar = mount();
     const bold = /** @type {HTMLElement} */ (toolbar.querySelector('button[data-btn="bold"]'));
-    document.queryCommandState = () => true;
+    ctx.setHTML('<p><b>bold</b> plain</p>');
+    const select = (node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+    };
+    select(ctx.layoutInfo.editable.querySelector('b'));
     ctx.invoke('toolbar._doRefresh');
     expect(bold.classList.contains('active')).toBe(true);
     expect(bold.getAttribute('aria-pressed')).toBe('true');
 
-    document.queryCommandState = () => false;
+    select(ctx.layoutInfo.editable.querySelector('p').lastChild);
     ctx.invoke('toolbar._doRefresh');
     expect(bold.classList.contains('active')).toBe(false);
     expect(bold.getAttribute('aria-pressed')).toBe('false');

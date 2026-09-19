@@ -46,29 +46,20 @@ import {
   buttons,
 } from '../../src/js/module/Buttons.js';
 
-// Stub execCommand and queryCommand* globally
+// document.execCommand is a tripwire: no button may reach it any more.
 let execCommandMock;
-let queryCommandStateMock;
-let queryCommandValueMock;
 
 beforeEach(() => {
   execCommandMock = vi.fn(() => true);
-  queryCommandStateMock = vi.fn(() => false);
-  queryCommandValueMock = vi.fn(() => '');
-
   Object.defineProperty(document, 'execCommand', {
     value: execCommandMock, configurable: true, writable: true,
-  });
-  Object.defineProperty(document, 'queryCommandState', {
-    value: queryCommandStateMock, configurable: true, writable: true,
-  });
-  Object.defineProperty(document, 'queryCommandValue', {
-    value: queryCommandValueMock, configurable: true, writable: true,
   });
   vi.stubGlobal('requestAnimationFrame', (cb) => { cb(); return 0; });
 });
 
 afterEach(() => {
+  expect(execCommandMock).not.toHaveBeenCalled();
+  delete document.execCommand;
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
   try { window.getSelection().removeAllRanges(); } catch (_) { void _; }
@@ -87,6 +78,31 @@ const makeCtx = (overrides = {}) => {
     invoke: vi.fn(),
     ...overrides,
   };
+};
+
+/**
+ * An editor context whose editable holds `html`, with `{`/`}` marking the
+ * selection inside one text node (the whole first text node when absent).
+ */
+const selectIn = (html) => {
+  const ctx = makeCtx();
+  const { editable } = ctx.layoutInfo;
+  editable.innerHTML = html.replace(/[{}]/g, '');
+  const text = [...editable.querySelectorAll('*'), editable]
+    .flatMap((el) => [...el.childNodes]).find((n) => n.nodeType === 3);
+  const start = html.indexOf('{');
+  const range = document.createRange();
+  if (start === -1) {
+    range.selectNodeContents(text);
+  } else {
+    const plainBefore = html.slice(0, start).replace(/<[^>]*>/g, '');
+    const inner = html.slice(start + 1, html.indexOf('}')).replace(/<[^>]*>/g, '');
+    range.setStart(text, plainBefore.length);
+    range.setEnd(text, plainBefore.length + inner.length);
+  }
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  return ctx;
 };
 
 // ── Button contract ────────────────────────────────────────────────────────────
@@ -140,74 +156,46 @@ describe('registerButton / getButton', () => {
 // ── Inline style button actions ─────────────────────────────────────────────────
 
 describe('Style button actions', () => {
-  it('boldBtn.action calls execCommand bold', () => {
-    boldBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('bold', false, null);
+  it.each([
+    ['boldBtn', boldBtn, '<p><b>hello</b></p>'],
+    ['italicBtn', italicBtn, '<p><i>hello</i></p>'],
+    ['strikeBtn', strikeBtn, '<p><s>hello</s></p>'],
+    ['superscriptBtn', superscriptBtn, '<p><sup>hello</sup></p>'],
+    ['subscriptBtn', subscriptBtn, '<p><sub>hello</sub></p>'],
+  ])('%s.action formats the selection', (_name, def, expected) => {
+    const ctx = selectIn('<p>hello</p>');
+    def.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe(expected);
   });
 
-  it('italicBtn.action calls execCommand italic', () => {
-    italicBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('italic', false, null);
+  it('removeFormatBtn.action strips inline formatting', () => {
+    const ctx = selectIn('<p><b>hello</b></p>');
+    removeFormatBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p>hello</p>');
   });
 
-  it('strikeBtn.action calls execCommand strikeThrough', () => {
-    const p = document.createElement('p');
-    p.textContent = 'test';
-    document.body.appendChild(p);
-    const range = document.createRange();
-    range.selectNodeContents(p.firstChild);
-    window.getSelection().addRange(range);
-    strikeBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('strikeThrough', false, null);
-  });
-
-  it('superscriptBtn.action calls execCommand superscript', () => {
-    superscriptBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('superscript', false, null);
-  });
-
-  it('subscriptBtn.action calls execCommand subscript', () => {
-    subscriptBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('subscript', false, null);
-  });
-
-  it('removeFormatBtn.action calls execCommand removeFormat', () => {
-    removeFormatBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('removeFormat', false, null);
-  });
-
-  it('hrBtn.action calls execCommand insertHorizontalRule', () => {
-    hrBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('insertHorizontalRule', false, null);
+  it('hrBtn.action inserts a horizontal rule', () => {
+    const ctx = selectIn('<p>hello</p>');
+    window.getSelection().collapseToEnd();
+    hrBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.querySelector('hr')).not.toBeNull();
   });
 });
 
 // ── isActive callbacks ─────────────────────────────────────────────────────────
 
 describe('isActive callbacks', () => {
-  it('boldBtn.isActive returns queryCommandState result', () => {
-    queryCommandStateMock.mockReturnValueOnce(true);
-    expect(boldBtn.isActive()).toBe(true);
-  });
-
-  it('italicBtn.isActive returns queryCommandState result', () => {
-    queryCommandStateMock.mockReturnValueOnce(true);
-    expect(italicBtn.isActive()).toBe(true);
-  });
-
-  it('strikeBtn.isActive returns queryCommandState result', () => {
-    queryCommandStateMock.mockReturnValueOnce(true);
-    expect(strikeBtn.isActive()).toBe(true);
-  });
-
-  it('superscriptBtn.isActive returns queryCommandState result', () => {
-    queryCommandStateMock.mockReturnValueOnce(true);
-    expect(superscriptBtn.isActive()).toBe(true);
-  });
-
-  it('subscriptBtn.isActive returns queryCommandState result', () => {
-    queryCommandStateMock.mockReturnValueOnce(true);
-    expect(subscriptBtn.isActive()).toBe(true);
+  it.each([
+    ['boldBtn', boldBtn, 'b'],
+    ['italicBtn', italicBtn, 'em'],
+    ['strikeBtn', strikeBtn, 'del'],
+    ['superscriptBtn', superscriptBtn, 'sup'],
+    ['subscriptBtn', subscriptBtn, 'sub'],
+  ])('%s.isActive reads the format from the DOM', (_name, def, tag) => {
+    const on = selectIn(`<p><${tag}>hello</${tag}></p>`);
+    expect(def.isActive(on)).toBe(true);
+    const off = selectIn('<p>hello</p>');
+    expect(def.isActive(off)).toBe(false);
   });
 
   it('codeviewBtn.isActive delegates to context.invoke', () => {
@@ -227,78 +215,62 @@ describe('isActive callbacks', () => {
 // ── underlineBtn.isActive — complex path ──────────────────────────────────────
 
 describe('underlineBtn.isActive', () => {
-  it('returns false when queryCommandState returns false and no <u> ancestor', () => {
-    queryCommandStateMock.mockReturnValue(false);
-    // No selection → returns false
-    expect(underlineBtn.isActive()).toBe(false);
+  it('returns false with no selection', () => {
+    window.getSelection().removeAllRanges();
+    expect(underlineBtn.isActive(makeCtx())).toBe(false);
   });
 
-  it('returns true when queryCommandState returns true', () => {
-    queryCommandStateMock.mockReturnValue(true);
-    expect(underlineBtn.isActive()).toBe(true);
+  it('returns true inside <u>, including inside inline code', () => {
+    expect(underlineBtn.isActive(selectIn('<p><u>underlined</u></p>'))).toBe(true);
+    expect(underlineBtn.isActive(selectIn('<p><code><u>code</u></code></p>'))).toBe(true);
   });
 
-  it('returns true when cursor is inside <u> even if queryCommandState is false', () => {
-    // Set up DOM with <u> element and a selection inside it
-    const div = document.createElement('div');
-    div.innerHTML = '<u>underlined text</u>';
-    document.body.appendChild(div);
-    const textNode = div.querySelector('u').firstChild;
-    const range = document.createRange();
-    range.setStart(textNode, 0);
-    range.collapse(true);
-    window.getSelection().addRange(range);
-
-    queryCommandStateMock.mockReturnValue(false);
-    expect(underlineBtn.isActive()).toBe(true);
+  it('returns true for an inline text-decoration underline', () => {
+    expect(underlineBtn.isActive(selectIn('<p><span style="text-decoration: underline;">x</span></p>'))).toBe(true);
   });
 });
 
 // ── Alignment button actions ───────────────────────────────────────────────────
 
 describe('Alignment button actions', () => {
-  it('alignLeftBtn.action calls execCommand justifyLeft', () => {
-    alignLeftBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('justifyLeft', false, null);
+  it.each([
+    ['alignCenterBtn', alignCenterBtn, 'center'],
+    ['alignRightBtn', alignRightBtn, 'right'],
+    ['alignJustifyBtn', alignJustifyBtn, 'justify'],
+  ])('%s.action sets text-align on the block', (_name, def, value) => {
+    const ctx = selectIn('<p>hello</p>');
+    def.action(ctx);
+    expect(ctx.layoutInfo.editable.querySelector('p').style.textAlign).toBe(value);
   });
 
-  it('alignCenterBtn.action calls execCommand justifyCenter', () => {
-    alignCenterBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('justifyCenter', false, null);
-  });
-
-  it('alignRightBtn.action calls execCommand justifyRight', () => {
-    alignRightBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('justifyRight', false, null);
-  });
-
-  it('alignJustifyBtn.action calls execCommand justifyFull', () => {
-    alignJustifyBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('justifyFull', false, null);
+  it('alignLeftBtn.action clears the alignment', () => {
+    const ctx = selectIn('<p style="text-align: center;">hello</p>');
+    alignLeftBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p>hello</p>');
   });
 });
 
 // ── List / indent button actions ───────────────────────────────────────────────
 
 describe('List and indent button actions', () => {
-  it('ulBtn.action calls execCommand insertUnorderedList', () => {
-    ulBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('insertUnorderedList', false, null);
+  it('ulBtn.action makes a bulleted list', () => {
+    const ctx = selectIn('<p>hello</p>');
+    ulBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<ul><li>hello</li></ul>');
   });
 
-  it('olBtn.action calls execCommand insertOrderedList', () => {
-    olBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('insertOrderedList', false, null);
+  it('olBtn.action makes a numbered list', () => {
+    const ctx = selectIn('<p>hello</p>');
+    olBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<ol><li>hello</li></ol>');
   });
 
-  it('indentBtn.action calls execCommand indent', () => {
-    indentBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('indent', false, null);
-  });
-
-  it('outdentBtn.action calls execCommand outdent', () => {
-    outdentBtn.action();
-    expect(execCommandMock).toHaveBeenCalledWith('outdent', false, null);
+  it('indentBtn.action and outdentBtn.action move a paragraph by one step', () => {
+    const ctx = selectIn('<p>hello</p>');
+    indentBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.querySelector('p').style.marginLeft).toBe('40px');
+    outdentBtn.action(ctx);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p>hello</p>');
   });
 });
 
@@ -451,14 +423,16 @@ describe('directionBtn.action', () => {
 // ── foreColorBtn / backColorBtn actions ───────────────────────────────────────
 
 describe('Color button actions', () => {
-  it('foreColorBtn.action calls execCommand foreColor', () => {
-    foreColorBtn.action(null, '#ff0000');
-    expect(execCommandMock).toHaveBeenCalledWith('foreColor', false, '#ff0000');
+  it('foreColorBtn.action colours the selection', () => {
+    const ctx = selectIn('<p>hello</p>');
+    foreColorBtn.action(ctx, '#ff0000');
+    expect(ctx.layoutInfo.editable.querySelector('span').style.color).toBe('rgb(255, 0, 0)');
   });
 
-  it('backColorBtn.action calls execCommand hiliteColor', () => {
-    backColorBtn.action(null, '#ffff00');
-    expect(execCommandMock).toHaveBeenCalledWith('hiliteColor', false, '#ffff00');
+  it('backColorBtn.action highlights the selection', () => {
+    const ctx = selectIn('<p>hello</p>');
+    backColorBtn.action(ctx, '#ffff00');
+    expect(ctx.layoutInfo.editable.querySelector('span').style.backgroundColor).toBe('rgb(255, 255, 0)');
   });
 });
 
@@ -499,48 +473,40 @@ describe('fontSizeBtn.getValue', () => {
 // ── fontFamilyBtn getValue ────────────────────────────────────────────────────
 
 describe('fontFamilyBtn.getValue', () => {
-  it('returns queryCommandValue result for fontName', () => {
-    queryCommandValueMock.mockReturnValue('Arial');
-    const val = fontFamilyBtn.getValue();
-    expect(val).toBe('Arial');
+  it('returns the first family of the font at the selection', () => {
+    const ctx = selectIn('<p><span style="font-family: &quot;Courier New&quot;, monospace;">code</span></p>');
+    expect(fontFamilyBtn.getValue(ctx)).toBe('Courier New');
   });
 
-  it('returns empty string when queryCommandValue returns empty', () => {
-    queryCommandValueMock.mockReturnValue('');
-    expect(fontFamilyBtn.getValue()).toBe('');
+  it('returns an empty string without a selection', () => {
+    window.getSelection().removeAllRanges();
+    expect(fontFamilyBtn.getValue(makeCtx())).toBe('');
   });
 });
 
 // ── fontFamilyBtn action ──────────────────────────────────────────────────────
 
 describe('fontFamilyBtn.action', () => {
-  it('calls execCommand fontName', () => {
-    fontFamilyBtn.action(null, 'Georgia');
-    expect(execCommandMock).toHaveBeenCalledWith('fontName', false, 'Georgia');
+  it('sets the font family as a style', () => {
+    const ctx = selectIn('<p>hello</p>');
+    fontFamilyBtn.action(ctx, 'Georgia');
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<p><span style="font-family: Georgia;">hello</span></p>');
   });
 });
 
 // ── paragraphStyleBtn action / getValue ───────────────────────────────────────
 
 describe('paragraphStyleBtn', () => {
-  it('action calls execCommand formatBlock', () => {
-    paragraphStyleBtn.action(null, 'h2');
-    expect(execCommandMock).toHaveBeenCalledWith('formatBlock', false, '<h2>');
+  it('action changes the block', () => {
+    const ctx = selectIn('<p>hello</p>');
+    paragraphStyleBtn.action(ctx, 'h2');
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<h2>hello</h2>');
   });
 
-  it('getValue returns p when queryCommandValue returns div', () => {
-    queryCommandValueMock.mockReturnValue('div');
-    expect(paragraphStyleBtn.getValue()).toBe('p');
-  });
-
-  it('getValue returns p when queryCommandValue returns empty', () => {
-    queryCommandValueMock.mockReturnValue('');
-    expect(paragraphStyleBtn.getValue()).toBe('p');
-  });
-
-  it('getValue returns lowercase block tag', () => {
-    queryCommandValueMock.mockReturnValue('H2');
-    expect(paragraphStyleBtn.getValue()).toBe('h2');
+  it('getValue reports the block tag, and p for a div', () => {
+    expect(paragraphStyleBtn.getValue(selectIn('<h2>hello</h2>'))).toBe('h2');
+    expect(paragraphStyleBtn.getValue(selectIn('<div>hello</div>'))).toBe('p');
+    expect(paragraphStyleBtn.getValue(selectIn('<p>hello</p>'))).toBe('p');
   });
 });
 

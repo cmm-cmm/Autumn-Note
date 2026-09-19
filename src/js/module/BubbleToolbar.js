@@ -13,6 +13,7 @@
 
 import { on, portalOf } from '../core/dom.js';
 import { resolvePalette } from '../core/palette.js';
+import * as Style from '../editing/Style.js';
 import { resolveIcon } from './Buttons.js';
 
 
@@ -44,8 +45,8 @@ const _ACTIONS = {
     const editable = ctx.layoutInfo?.editable;
     if (!editable) return;
     editable.focus();
-    document.execCommand('removeFormat');
-    // Also strip inline style attributes which execCommand('removeFormat') misses
+    Style.removeFormat(editable);
+    // Also strip inline style attributes left on blocks and links
     const sel = globalThis.getSelection();
     if (sel?.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
       const range = sel.getRangeAt(0);
@@ -66,10 +67,10 @@ const _ACTIONS = {
 };
 
 const _ACTIVE = {
-  bold:          () => document.queryCommandState('bold'),
-  italic:        () => document.queryCommandState('italic'),
-  underline:     () => document.queryCommandState('underline'),
-  strikethrough: () => document.queryCommandState('strikeThrough'),
+  bold:          (ctx) => Style.isInlineActive('bold', ctx?.layoutInfo?.editable),
+  italic:        (ctx) => Style.isInlineActive('italic', ctx?.layoutInfo?.editable),
+  underline:     (ctx) => Style.isInlineActive('underline', ctx?.layoutInfo?.editable),
+  strikethrough: (ctx) => Style.isInlineActive('strikethrough', ctx?.layoutInfo?.editable),
 };
 
 const _COLOR_TYPES = { foreColor: true, hiliteColor: true };
@@ -303,7 +304,7 @@ export class BubbleToolbar {
     this._pickerType = null;
   }
 
-  /** Restore the saved selection, apply execCommand, update the color strip, then close the picker. */
+  /** Restore the saved selection, apply the colour, update the color strip, then close the picker. */
   _applyColor(type, color) {
     const editable = this.context.layoutInfo?.editable;
     if (!editable || !this._savedRange) return;
@@ -313,11 +314,7 @@ export class BubbleToolbar {
     sel.removeAllRanges();
     try { sel.addRange(this._savedRange.cloneRange()); } catch (_) { void _; return; }
 
-    // Firefox does not support 'hiliteColor'; fall back to 'backColor'
-    const cmd = type === 'hiliteColor' ? 'hiliteColor' : type;
-    if (!document.execCommand(cmd, false, color) && cmd === 'hiliteColor') {
-      document.execCommand('backColor', false, color);
-    }
+    Style.applyStyle(type === 'hiliteColor' ? 'background-color' : 'color', color, editable);
     this.context.invoke('editor.afterCommand');
 
     // Update the color strip on the corresponding button
@@ -389,7 +386,7 @@ export class BubbleToolbar {
     if (!this._btnCache) return;
     this._btnCache.forEach((btn) => {
       const activeFn = _ACTIVE[/** @type {HTMLElement} */ (btn).dataset.name];
-      btn.classList.toggle('an-active', !!(activeFn?.()));
+      btn.classList.toggle('an-active', !!(activeFn?.(this.context)));
     });
   }
 

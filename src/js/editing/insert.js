@@ -1,16 +1,10 @@
 /**
- * insert.js — native replacements for the insertion `execCommand`s.
+ * insert.js — Range-based insertion: HTML, text, line breaks, horizontal rules.
  *
- * Stage 1 of docs/EXEC_COMMAND_MIGRATION.md. `insertHTML`, `insertText` and
- * `insertHorizontalRule` are the easiest commands to leave behind: they do not
- * have to reason about overlapping inline formatting the way `bold` or
- * `fontName` do, so a Range-based implementation is a straight substitution
- * rather than a rewrite of the formatting model.
- *
- * Each function returns `false` when there is no usable selection, which is the
- * caller's signal to fall back to `document.execCommand`. That keeps the
- * compatibility adapter the migration doc asks for: nothing silently stops
- * working while the native paths are proven in browsers.
+ * Stage 1 of docs/EXEC_COMMAND_MIGRATION.md, and the selection helpers the
+ * formatting engine (format.js) shares. Each function returns `false` when
+ * there is no usable selection — nothing is inserted then, where
+ * `document.execCommand` used to be the fallback.
  *
  * The HTML given to `insertHTMLNative` is inserted as-is — callers sanitise
  * first, exactly as they did before.
@@ -27,7 +21,7 @@
  * @param {Node|null} node
  * @returns {Element|null}
  */
-function _editableHost(node) {
+export function editableHost(node) {
   let cur = node && node.nodeType === 1 ? /** @type {Element} */ (node) : node?.parentElement;
   while (cur) {
     const flag = cur.getAttribute?.('contenteditable') ?? /** @type {HTMLElement} */ (cur).contentEditable;
@@ -45,14 +39,12 @@ function _editableHost(node) {
  *
  * With an explicit `editable` that means inside it; without one it means inside
  * *some* contenteditable host. The second check matters: `Style.execCommand`
- * does not know which editor it is acting for, and `document.execCommand` is
- * itself a no-op when the selection sits outside editable content. Without the
- * check a stale selection elsewhere in the page would have the native path
- * cheerfully insert into it.
+ * does not know which editor it is acting for. Without the check a stale
+ * selection elsewhere in the page would be written into.
  * @param {HTMLElement|Document} [editable]
  * @returns {Range|null}
  */
-function _usableRange(editable) {
+export function usableRange(editable) {
   const sel = globalThis.getSelection?.();
   if (!sel || sel.rangeCount === 0) return null;
   const range = sel.getRangeAt(0);
@@ -60,7 +52,7 @@ function _usableRange(editable) {
     const root = /** @type {HTMLElement} */ (editable);
     return root.contains(range.commonAncestorContainer) ? range : null;
   }
-  return _editableHost(range.commonAncestorContainer) ? range : null;
+  return editableHost(range.commonAncestorContainer) ? range : null;
 }
 
 /**
@@ -84,7 +76,7 @@ function _caretAfter(node) {
  * @returns {boolean} false when there is no usable selection
  */
 export function insertHTMLNative(html, editable) {
-  const range = _usableRange(editable);
+  const range = usableRange(editable);
   if (!range) return false;
 
   const template = document.createElement('template');
@@ -110,7 +102,7 @@ export function insertHTMLNative(html, editable) {
  * @returns {boolean} false when there is no usable selection
  */
 export function insertTextNative(text, editable) {
-  const range = _usableRange(editable);
+  const range = usableRange(editable);
   if (!range) return false;
 
   range.deleteContents();
@@ -136,7 +128,7 @@ export function insertTextNative(text, editable) {
 }
 
 /**
- * Inserts a soft line break without relying on execCommand('insertLineBreak').
+ * Inserts a soft line break (<br>).
  * Kept as a named operation so callers do not have to encode editing semantics
  * as an HTML string.
  * @param {HTMLElement} [editable]
@@ -176,7 +168,7 @@ function _inPreformatted(node, editable) {
  * @returns {boolean} false when there is no usable selection
  */
 export function insertHorizontalRuleNative(editable) {
-  const range = _usableRange(editable);
+  const range = usableRange(editable);
   if (!range) return false;
 
   const hr = document.createElement('hr');

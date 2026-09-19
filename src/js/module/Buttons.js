@@ -211,22 +211,18 @@ export const DEFAULT_PARAGRAPH_STYLES = [
 // Style buttons
 // ---------------------------------------------------------------------------
 
-export const boldBtn = btn('bold', 'bold', 'Bold (Ctrl+B)', () => Style.bold(), () => document.queryCommandState('bold'));
-export const italicBtn = btn('italic', 'italic', 'Italic (Ctrl+I)', () => Style.italic(), () => document.queryCommandState('italic'));
-export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', () => Style.underline(), () => {
-  // queryCommandState('underline') is unreliable inside <code> elements;
-  // also check for a <u> ancestor in the DOM using startContainer for
-  // consistent behaviour across both collapsed and range selections.
-  if (document.queryCommandState('underline')) return true;
-  const sel = globalThis.getSelection();
-  if (!sel?.rangeCount) return false;
-  let sc = sel.getRangeAt(0).startContainer;
-  if (sc.nodeType === 3) sc = sc.parentElement;
-  return !!(/** @type {Element} */ (sc)?.closest('u'));
-});
-export const strikeBtn = btn('strikethrough', 'strikethrough', 'Strikethrough', () => Style.strikethrough(), () => document.queryCommandState('strikeThrough'));
-export const superscriptBtn = btn('superscript', 'superscript', 'Superscript', () => Style.superscript(), () => document.queryCommandState('superscript'));
-export const subscriptBtn = btn('subscript', 'subscript', 'Subscript', () => Style.subscript(), () => document.queryCommandState('subscript'));
+/**
+ * Whether an inline format is on at the selection, read from the DOM.
+ * @param {string} name
+ */
+const inlineActive = (name) => (ctx) => Style.isInlineActive(name, ctx?.layoutInfo?.editable);
+
+export const boldBtn = btn('bold', 'bold', 'Bold (Ctrl+B)', () => Style.bold(), inlineActive('bold'));
+export const italicBtn = btn('italic', 'italic', 'Italic (Ctrl+I)', () => Style.italic(), inlineActive('italic'));
+export const underlineBtn = btn('underline', 'underline', 'Underline (Ctrl+U)', () => Style.underline(), inlineActive('underline'));
+export const strikeBtn = btn('strikethrough', 'strikethrough', 'Strikethrough', () => Style.strikethrough(), inlineActive('strikethrough'));
+export const superscriptBtn = btn('superscript', 'superscript', 'Superscript', () => Style.superscript(), inlineActive('superscript'));
+export const subscriptBtn = btn('subscript', 'subscript', 'Subscript', () => Style.subscript(), inlineActive('subscript'));
 
 // ---------------------------------------------------------------------------
 // Alignment buttons
@@ -346,9 +342,7 @@ export const fontFamilyBtn = {
   type: 'select',
   tooltip: 'Font Family',
   action: (ctx, value) => Style.fontName(value),
-  getValue: () => {
-    try { return document.queryCommandValue('fontName') || ''; } catch { return ''; }
-  },
+  getValue: (ctx) => Style.currentFontFamily(ctx?.layoutInfo?.editable),
 };
 
 // ---------------------------------------------------------------------------
@@ -364,11 +358,9 @@ export const paragraphStyleBtn = {
   selectClass: 'an-select-style',
   items: DEFAULT_PARAGRAPH_STYLES,
   action: (_ctx, value) => Style.formatBlock(value),
-  getValue: () => {
-    try {
-      const raw = document.queryCommandValue('formatBlock').toLowerCase().replace(/[<>]/g, '');
-      return raw === 'div' ? 'p' : (raw || 'p');
-    } catch { return ''; }
+  getValue: (ctx) => {
+    const tag = Style.currentBlockTag(ctx?.layoutInfo?.editable);
+    return tag === 'div' ? 'p' : tag;
   },
 };
 
