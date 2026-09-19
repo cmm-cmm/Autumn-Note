@@ -1,42 +1,62 @@
 # `execCommand` Migration
 
-Autumn Note currently centralizes most formatting through `Style.execCommand`, with a small number of direct calls in editor modules. Browser support remains adequate, but `document.execCommand()` is deprecated and must not be used for new features.
+**Status: complete.** Autumn Note no longer calls `document.execCommand`, `document.queryCommandState` or `document.queryCommandValue` anywhere. Every command is a DOM transform the editor performs itself, and the result is the same on Chromium, Firefox, WebKit and jsdom.
 
-## Migration order
+`document.execCommand()` is deprecated, and it was also the source of cross-engine bugs: Chromium wrote `<b>` where others wrote `<span style>`, fonts came out as `<font>` tags, `queryCommandState('underline')` was wrong inside `<code>`, and Firefox merged a list item into the one above it on outdent.
 
-1. Replace insertion commands (`insertHTML`, `insertText`, horizontal rules) with `Range.deleteContents()` and `Range.insertNode()`. Preserve selection and dispatch the existing change event once per operation.
-2. Replace link creation/removal with range extraction plus `<a>` wrapping/unwrapping. Continue routing URLs through the shared sanitizer.
-3. Replace block/list commands with DOM transforms scoped to the selected blocks. Preserve checklist and nested-list behavior.
-4. Replace inline formatting with semantic element wrapping and explicit normalization of overlapping ranges.
-5. Retain `execCommand` behind a compatibility adapter until equivalent browser tests pass, then remove the adapter.
+## Where things live
 
-Each stage must keep the public `Context.invoke('editor.*')` API unchanged and add Chromium, Firefox, WebKit, jsdom, undo/redo, collapsed-selection, multi-block-selection, and paste regression coverage.
-
-## Status
-
-| Stage | State |
+| Concern | Module |
 |---|---|
-| 1. Insertion commands | **Done** — `insertHTML`, `insertText` and `insertHorizontalRule` in 2.5.0, `insertLineBreak` in 2.7.0 |
-| 2. Link creation/removal | Not started |
-| 3. Block/list commands | Partial — nested-item outdent is a DOM transform, because `execCommand('outdent')` disagrees across engines (Firefox merges the item into the one above). Indent still delegates, with its output repaired. |
-| 4. Inline formatting | Not started |
-| 5. Remove the adapter | Blocked on 2–4 |
+| Insertion: HTML, text, line breaks, horizontal rules | `src/js/editing/insert.js` |
+| Inline formats, styles (colour, highlight, font, size), links, blocks, alignment, lists, indentation, and the state queries | `src/js/editing/format.js` |
+| Command names, checklists, inline code, line height | `src/js/editing/Style.js` |
+| Copy and cut | `src/js/core/clipboard.js` (async Clipboard API) |
 
-### Stage 1 as shipped
+`Style.execCommand(name, value)` still exists for plugins and keeps the `document.execCommand` command names (`bold`, `foreColor`, `formatBlock`, `insertHTML`, …), but it dispatches to the functions above. An unknown name logs a warning and returns `false`.
 
-`src/js/editing/insert.js` holds `insertHTMLNative`, `insertTextNative`, `insertLineBreakNative` and `insertHorizontalRuleNative`. `Style.execCommand` tries the native path first and falls back to `document.execCommand` for everything else:
+## How the formatting engine works
 
-```js
-if (cmd === 'insertHTML' && insertHTMLNative(String(value ?? ''))) return true;
-if (cmd === 'insertText' && insertTextNative(String(value ?? ''))) return true;
-if (cmd === 'insertLineBreak' && insertLineBreakNative()) return true;
-if (cmd === 'insertHorizontalRule' && insertHorizontalRuleNative()) return true;
-return document.execCommand(cmd, false, value);
-```
+Inline commands share one technique:
 
-Two conventions the later stages should follow:
+1. Split the selection into **runs**, one per leaf block it touches.
+2. **Split** every inline ancestor at the run's two ends, so the selected content becomes whole children of the block.
+3. **Wrap or unwrap** those children.
+4. **Merge** adjacent elements that are now identical, healing the splits.
 
-- **Report failure, do not throw.** Each function returns `false` when there is no usable selection, and that return value *is* the compatibility adapter — the caller falls back rather than losing the edit.
-- **Refuse selections outside editable content.** `Style.execCommand` does not know which editor instance it is acting for, and `document.execCommand` is itself a no-op outside a contenteditable host. Without that check a stale selection elsewhere in the page would be written into.
+The selection is carried across as character offsets from the editing host, which none of these steps change.
 
-Because `insertHTML` is the substrate for paste, drop, slash-menu insertion, upload placeholders and most toolbar buttons, stage 1 is exercised far beyond its own tests — the whole suite is regression coverage for it.
+A collapsed selection (a caret) formats what is typed next: the engine opens an empty element held open by a zero-width space and puts the caret in it. `absorbPlaceholder()` drops that space once real text is typed, and `getHTML()` strips both the space and any placeholder left empty.
+
+State is read from the DOM (`isInlineActive`, `currentBlockTag`, `currentFontFamily`), so a toolbar button shows exactly what its command toggles. `<b>`/`<strong>` and `font-weight: bold` count as bold, and so on for the other formats. Headings are not reported as bold.
+
+## Output
+
+| Command | Before (varied by engine) | Now |
+|---|---|---|
+| Bold, italic, underline | `<b>`, `<i>`, `<u>` or styled spans | `<b>`, `<i>`, `<u>` |
+| Strikethrough | `<strike>` | `<s>` |
+| Text colour, highlight | `<font color>` or `<span style>` | `<span style="color: …">`, `<span style="background-color: …">` |
+| Font family | `<font face>` | `<span style="font-family: …">` |
+| Font size | `<font size="7">`, rewritten to a span | `<span style="font-size: …">` |
+| Indent a paragraph | `<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">` | `margin-left: 40px` on the block (`margin-right` in RTL) |
+| Indent a list item | a sublist beside the item, then repaired | a sublist inside the item above |
+| Outdent a top-level list item | engine-dependent | a paragraph |
+
+Existing content keeps working: the engine reads `<strong>`, `<em>`, `<strike>`, `<del>`, `<font>` and styled spans, and outdenting content inside the old borderless blockquote unwraps it. The sanitiser allows `font-family`, `margin-left` and `margin-right` in inline styles so the new output survives `setHTML()`, paste and auto-save restore.
+
+## Conventions
+
+- **Report failure, do not throw.** Each function returns `false` when there is no usable selection.
+- **Refuse selections outside editable content.** Without an explicit editable, a command only acts inside *some* contenteditable host, so a stale selection elsewhere on the page is never written into.
+- **Test in jsdom and on every engine.** `test/editing/format.test.js` covers the transforms and the selection they leave. `test/browser/format.browser.test.js` runs the same suite on Chromium, Firefox and WebKit, and adds real typing after a formatting command.
+
+## History
+
+| Stage | Shipped |
+|---|---|
+| 1. Insertion commands (`insertHTML`, `insertText`, `insertHorizontalRule`, `insertLineBreak`) | 2.5.0 – 2.7.0 |
+| 2. Link creation and removal | Unreleased |
+| 3. Block and list commands | Unreleased (nested-item outdent was already native) |
+| 4. Inline formatting and style queries | Unreleased |
+| 5. Adapter removed, copy/cut on the Clipboard API | Unreleased |

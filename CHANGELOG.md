@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The editor no longer uses `document.execCommand`. Every formatting command is
+now the editor's own DOM transform, so it produces the same markup and reports
+the same state on Chromium, Firefox and WebKit. See
+`docs/EXEC_COMMAND_MIGRATION.md`.
+
+### Added
+
+- **A formatting engine** (`src/js/editing/format.js`) covering inline formats, colours and fonts, links, block formats, alignment, lists and indentation. Its tests run in jsdom and, unchanged, on all three browser engines.
+- `Style` exports the state queries the toolbar uses (`isInlineActive`, `currentBlockTag`, `currentFontFamily`, `currentAlign`) and explicit setters (`setInline(name, on)`, `applyStyle(prop, value)`, `removeFormat`, `createLink`, `unlink`).
+
+### Fixed
+
+- Toolbar and bubble-toolbar buttons showed the wrong state in several places: underline and strikethrough inside inline code, and mixed selections. State is now read from the document itself.
+- Removing underline or strikethrough inside `<code>` or nested formatting needed special cases; it now works everywhere the same way.
+- Turning a list back into paragraphs, switching list type and outdenting keep the selection where it was.
+- Text composed with an IME just after a superscript or subscript is moved back into it (the previous code toggled the format for the next character instead).
+
+### Changed
+
+These can affect existing integrations:
+
+- **Different markup for some commands**: strikethrough writes `<s>` (not `<strike>`); colour, highlight, font family and font size write `<span style>` (never `<font>`); indenting a paragraph sets `margin-left: 40px` (`margin-right` in RTL) instead of wrapping it in a borderless `<blockquote>`. Existing content in the old forms is still read and edited correctly.
+- **The sanitiser allows `font-family`, `margin-left` and `margin-right`** in inline styles, so fonts and indentation survive `setHTML()`, paste and auto-save restore.
+- **Copy and cut use the async Clipboard API**, which browsers only offer in secure contexts (HTTPS, localhost). Where it is missing, the context-menu Copy/Cut and the code/link copy buttons do nothing rather than fall back; a cut never deletes text that did not reach the clipboard.
+- **Remove link removes the whole link** the selection touches; **Create link on part of a link** relinks just that part.
+- **Bold is not reported as active inside headings**, which are bold by style rather than by markup.
+- `Style.execCommand()` keeps the `document.execCommand` command names but never calls it; an unsupported name logs a warning and returns `false`.
+
 ## [3.0.1] - 2026-09-19
 
 A maintenance release from a repository review. The editor's runtime code is

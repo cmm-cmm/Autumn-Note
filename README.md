@@ -985,7 +985,8 @@ src/
 │   ├── editing/
 │   │   ├── History.js        Undo/redo stack (configurable depth)
 │   │   ├── insert.js         Range-based insertHTML/insertText/insertHorizontalRule
-│   │   ├── Style.js          Formatting commands (native insertion, execCommand fallback)
+│   │   ├── Style.js          Formatting commands and style queries
+│   │   ├── format.js         Formatting engine (inline, block, list, link transforms)
 │   │   ├── Table.js          Table creation and cell manipulation
 │   │   └── Typing.js         Tab/Enter/ArrowKey behaviour and FA icon caret handling
 │   ├── module/

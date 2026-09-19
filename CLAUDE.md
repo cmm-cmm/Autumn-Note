@@ -65,6 +65,7 @@ context.on('eventName', callback)           // subscribe to editor events
 | `count.js` | Word/character counting — one implementation for the statusbar and the maxWords/maxChars limits |
 | `keymap.js` | Keyboard shortcut table (`DEFAULT_KEYMAP`), combo parsing/matching; `keyMap` option merges over it |
 | `palette.js` | The one colour palette shared by toolbar, bubble toolbar and context menu (`colorPalette`/`colorSwatches`) |
+| `clipboard.js` | Async Clipboard API writes for copy/cut (no `execCommand('copy')`) |
 | `dom.js` | DOM helpers (createElement, on, closest, …) |
 | `range.js` | Selection & Range API wrappers |
 | `func.js` | mergeDeep, debounce, general utils |
@@ -76,7 +77,8 @@ context.on('eventName', callback)           // subscribe to editor events
 
 - **`History.js`** — undo/redo stack of DOM snapshots
 - **`insert.js`** — Range-based `insertHTML`/`insertText`/`insertHorizontalRule`; each returns `false` when it cannot act so the caller falls back
-- **`Style.js`** — formatting commands (native insertion first, `execCommand` fallback + direct DOM list/checklist transitions)
+- **`Style.js`** — formatting commands and style queries; dispatches to `format.js` / `insert.js` and owns the checklist transitions
+- **`format.js`** — the formatting engine: inline formats, styles, links, blocks, lists and indentation as DOM transforms (split → wrap/unwrap → merge), plus the state queries the toolbar reads
 - **`Table.js`** — table creation and cell manipulation
 - **`Typing.js`** — Tab/Enter/Arrow key overrides
 
@@ -113,7 +115,7 @@ Environment is jsdom (simulated browser). Use `globals: true` — no explicit im
 
 - **Zero runtime dependencies** — do not introduce any.
 - The sanitiser in `core/sanitise.js` is security-critical; changes there need careful review.
-- `execCommand` is being retired in stages — see `docs/EXEC_COMMAND_MIGRATION.md`. The three insertion commands are native already; the rest still route through `document.execCommand`, which remains the only reliable cross-browser formatting API for contenteditable. Do not replace a command without a complete alternative and browser coverage on all three engines.
+- Never call `document.execCommand` or `document.queryCommand*` — every command is a DOM transform in `editing/format.js` / `editing/insert.js` (see `docs/EXEC_COMMAND_MIGRATION.md`), and copy/cut go through `core/clipboard.js`. A formatting change needs a jsdom test in `test/editing/format.test.js`, which `test/browser/format.browser.test.js` also runs on Chromium, Firefox and WebKit.
 - Toolbar config is a 2D array of button names or definition objects. A name resolves through `resolveButton()`: the editor's `buttons` option, then `registerButton()`, then the built-in buttons by `name`.
 - Floating UI (dialogs, tooltips, popovers, menus) mounts into the editor's portal via `portalOf(this.context)` from `core/dom.js` — never `document.body` directly. The portal carries the theme class and `themeVars`; `renderer.applyAppearance()` keeps container and portal in sync and is re-run by `updateOptions()`.
 - Styles read design tokens as `var(--an-*, <SCSS fallback>)`. Dark-mode rules go through the `an-dark-theme` / `an-dark-scope` mixins so `theme: 'dark'` and `'auto'` cannot drift apart.
