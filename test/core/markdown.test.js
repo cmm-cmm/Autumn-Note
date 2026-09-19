@@ -1545,3 +1545,29 @@ describe('markdownToHTML — single-column tables', () => {
     expect(host.querySelector('table')).toBeNull();
   });
 });
+
+describe('round trip of what Markdown cannot express natively', () => {
+  const roundTrip = (html) => markdownToHTML(htmlToMarkdown(html));
+
+  it('reads back underline and styled spans the exporter writes as raw HTML', () => {
+    expect(roundTrip('<p><u>u</u> <span style="font-family: Georgia;">f</span></p>'))
+      .toBe('<p><u>u</u> <span style="font-family: Georgia;">f</span></p>');
+  });
+
+  it('reads back superscript and subscript', () => {
+    expect(roundTrip('<p>x<sup>2</sup> H<sub>2</sub>O</p>')).toBe('<p>x<sup>2</sup> H<sub>2</sub>O</p>');
+  });
+
+  it('leaves a lone caret or tilde in prose alone', () => {
+    expect(markdownToHTML('about ~ 5 and 2 ^ 3')).toBe('<p>about ~ 5 and 2 ^ 3</p>');
+  });
+
+  it('writes nothing for an empty inline element such as an icon', () => {
+    expect(htmlToMarkdown('<p><b>ab<i class="fas fa-star"></i></b></p>')).toBe('**ab**');
+  });
+
+  it('does not turn other escaped HTML into markup', () => {
+    expect(markdownToHTML('<script>alert(1)</script> <span onclick="x">y</span>'))
+      .not.toMatch(/<script|<span onclick/);
+  });
+});

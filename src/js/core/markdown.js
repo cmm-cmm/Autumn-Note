@@ -175,6 +175,12 @@ function _domToMd(node, depth = 0) {
   const el = /** @type {Element} */ (node);
   const tag = el.nodeName.toLowerCase();
   const inner = () => Array.from(el.childNodes).map(n => _domToMd(n, depth)).join('');
+  // Emphasis around nothing — an icon is an empty <i> — would come out as a
+  // bare `**` and pair up with the next marker in the document.
+  const wrap = (open, close = open) => {
+    const content = inner();
+    return content.trim() ? `${open}${content}${close}` : content;
+  };
 
   switch (tag) {
     case 'p':
@@ -187,15 +193,15 @@ function _domToMd(node, depth = 0) {
     case 'h5':       return `\n\n##### ${inner()}\n\n`;
     case 'h6':       return `\n\n###### ${inner()}\n\n`;
     case 'strong':
-    case 'b':        return `**${inner()}**`;
+    case 'b':        return wrap('**');
     case 'em':
-    case 'i':        return `*${inner()}*`;
+    case 'i':        return wrap('*');
     case 'del':
     case 's':
-    case 'strike':   return `~~${inner()}~~`;
-    case 'sup':      return `^${inner()}^`;
-    case 'sub':      return `~${inner()}~`;
-    case 'u':        return `<u>${inner()}</u>`;
+    case 'strike':   return wrap('~~');
+    case 'sup':      return wrap('^');
+    case 'sub':      return wrap('~');
+    case 'u':        return wrap('<u>', '</u>');
     case 'span': {
       // Markdown has no native underline/color/size syntax; pass through as
       // raw inline HTML for the specific styles the editor's own toolbar
@@ -1069,6 +1075,17 @@ function _applyEmphasisAndCode(text) {
   text = text.replace(/\*([^*\n]+?)\*/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/(?<!\w)_([^_\n]+?)_(?!\w)/g, (_, c) => `<em>${c}</em>`);
   text = text.replace(/~~([^~\n]+?)~~/g, (_, c) => `<del>${c}</del>`);
+  // Superscript and subscript as the exporter writes them (^2^, H~2~O). No
+  // whitespace inside, as in Pandoc, so a stray ^ or ~ in prose is left alone.
+  text = text.replace(/\^([^\s^]+)\^/g, (_, c) => `<sup>${c}</sup>`);
+  text = text.replace(/(?<!~)~([^\s~]+)~(?!~)/g, (_, c) => `<sub>${c}</sub>`);
+  // The raw HTML the exporter emits for what Markdown cannot express —
+  // underline, and colour/size/font spans — arrives escaped by _esc(); turn
+  // exactly those forms back into markup. The result is sanitised by every
+  // caller, which is what decides which styles survive.
+  text = text.replace(/&lt;u&gt;(.+?)&lt;\/u&gt;/g, (_, c) => `<u>${c}</u>`);
+  text = text.replace(/&lt;span style=(?:&quot;|")([^"<>&]*(?:&amp;[^"<>&]*)*)(?:&quot;|")&gt;(.*?)&lt;\/span&gt;/g,
+    (_, style, c) => `<span style="${style}">${c}</span>`);
   return text;
 }
 
