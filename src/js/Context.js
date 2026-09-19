@@ -8,7 +8,7 @@ import { mergeDeep } from './core/func.js';
 import { registerButton } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 import { resolveLocale } from './i18n/index.js';
-import { renderLayout } from './renderer.js';
+import { renderLayout, createPortal, applyAppearance, resolvePopupContainer } from './renderer.js';
 import { on } from './core/dom.js';
 
 /** Module registry shared across all Context instances (populated via AutumnNote.registerModule). */
@@ -69,6 +69,25 @@ export function getModuleDefs() {
   return _moduleDefs;
 }
 
+/** Options applied by renderer.applyAppearance(); updateOptions() re-applies them. */
+const APPEARANCE_OPTIONS = [
+  'theme', 'themeVars', 'focusColor', 'zIndexOffset',
+  'toolbarOverflow', 'stickyToolbar', 'stickyToolbarOffset',
+];
+
+/** Options the toolbar reads while building its controls; changing one rebuilds it. */
+const TOOLBAR_OPTIONS = [
+  'toolbar', 'useFontAwesome', 'fontAwesomeClass', 'useBootstrap', 'toolbarButtonClass',
+  'icons', 'buttons', 'fontFamilies', 'fontSizes', 'lineHeights', 'paragraphStyles',
+  'colorPalette', 'colorSwatches',
+];
+
+/**
+ * Options read once while the whole editor UI (every dialog and tooltip) is
+ * built. Changing them later is stored but has no visible effect, so warn.
+ */
+const CREATE_ONLY_OPTIONS = ['lang'];
+
 /** Global plugin registry (populated via AutumnNote.use()). Applied to every new Context. */
 export const _globalPlugins = new Map();
 
@@ -84,7 +103,7 @@ export class Context {
     /** @type {import('./i18n/index.js').AsnLocale} */
     this.locale = resolveLocale(this.options.lang);
 
-    /** @type {{ container: HTMLElement, editable: HTMLElement, toolbar?: HTMLElement, statusbar?: HTMLElement }} */
+    /** @type {{ container: HTMLElement, editable: HTMLElement, portal?: HTMLElement, toolbar?: HTMLElement, statusbar?: HTMLElement }} */
     this.layoutInfo = /** @type {any} */ ({});
 
     /** @type {Map<string, Function[]>} */
@@ -116,6 +135,12 @@ export class Context {
     const { container, editable } = renderLayout(this.targetEl, this.options);
     this.layoutInfo.container = container;
     this.layoutInfo.editable = editable;
+
+    // Floating UI (dialogs, tooltips, menus) mounts here rather than straight
+    // into document.body, so it picks up this editor's theme and colours.
+    const portal = createPortal(this.options);
+    this.layoutInfo.portal = portal;
+    applyAppearance(container, portal, this.options);
 
     // 2. Register core modules
     this._registerModules();
@@ -446,7 +471,18 @@ export class Context {
     if (Object.hasOwn(overrides, 'maxHeight')) {
       editable.style.maxHeight = this.options.maxHeight ? `${this.options.maxHeight}px` : '';
     }
-    if (Object.hasOwn(overrides, 'toolbar')) this.invoke('toolbar.rebuild');
+    if (TOOLBAR_OPTIONS.some((key) => Object.hasOwn(overrides, key))) this.invoke('toolbar.rebuild');
+    if (APPEARANCE_OPTIONS.some((key) => Object.hasOwn(overrides, key))) {
+      applyAppearance(container, this.layoutInfo.portal ?? null, this.options);
+    }
+    if (Object.hasOwn(overrides, 'popupContainer') && this.layoutInfo.portal) {
+      resolvePopupContainer(this.options.popupContainer).appendChild(this.layoutInfo.portal);
+    }
+    if (Object.hasOwn(overrides, 'resizable')) this.invoke('statusbar.applyResizable');
+    const createOnly = CREATE_ONLY_OPTIONS.filter((key) => Object.hasOwn(overrides, key));
+    if (createOnly.length) {
+      console.warn(`[AutumnNote] updateOptions: ${createOnly.join(', ')} only take effect when the editor is created; destroy and re-create it to apply.`);
+    }
     // Start/stop option-gated modules (bubbleToolbar, mention, slashMenu, ...)
     // so toggling them here behaves the same as passing them to create().
     this._syncOptionalModules();
@@ -807,20 +843,12 @@ export class Context {
     this._disposers = [];
 
     const container = this.layoutInfo.container;
-    const wasDark = container?.classList.contains('an-theme-dark');
-    const wasAuto = container?.classList.contains('an-theme-auto');
     if (container?.parentNode) {
       // Restore original element
       this.targetEl.style.display = '';
       container.remove();
     }
-    // Clean up body theme classes if no other editors of that type remain
-    if (wasDark && !document.querySelector('.an-container.an-theme-dark')) {
-      document.body.classList.remove('an-theme-dark');
-    }
-    if (wasAuto && !document.querySelector('.an-container.an-theme-auto')) {
-      document.body.classList.remove('an-theme-auto');
-    }
+    this.layoutInfo.portal?.remove();
 
     this.triggerEvent('destroy', this);
 

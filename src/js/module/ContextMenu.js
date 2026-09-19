@@ -1,5 +1,5 @@
 ﻿// ContextMenu.js - Right-click context menu for editor actions
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, portalOf } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
 
 // SVG icon map — 16×16 Heroicons-style paths
@@ -127,7 +127,7 @@ export class ContextMenu {
   initialize() {
     this.el = createElement('div', { class: 'an-contextmenu', role: 'menu', 'aria-hidden': 'true' });
     this.el.style.display = 'none';
-    document.body.appendChild(this.el);
+    portalOf(this.context).appendChild(this.el);
 
     this._renderItems(this._items);
 

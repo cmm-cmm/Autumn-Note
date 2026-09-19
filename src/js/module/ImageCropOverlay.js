@@ -11,7 +11,7 @@
 //  - All pointer listeners are document-level and are torn down after each
 //    interaction to avoid leaks.
 
-import { on } from '../core/dom.js';
+import { on, portalOf } from '../core/dom.js';
 
 // Minimum crop box dimension in CSS pixels
 const MIN_SIZE = 20;
@@ -158,7 +158,7 @@ export class ImageCropOverlay {
     scrim.className = 'an-crop-scrim';
     // Prevent scroll during crop
     scrim.style.cssText = `
-      position:fixed; inset:0; z-index:10100;
+      position:fixed; inset:0; z-index:calc(10100 + var(--an-z-offset, 0));
       cursor:crosshair;
       background: rgba(0,0,0,0.55);
     `;
@@ -173,7 +173,7 @@ export class ImageCropOverlay {
     const cropBox = document.createElement('div');
     cropBox.className = 'an-crop-box';
     cropBox.style.cssText = `
-      position:fixed; z-index:10101;
+      position:fixed; z-index:calc(10101 + var(--an-z-offset, 0));
       box-sizing:border-box;
       border:2px solid ${ACCENT};
       cursor:move;
@@ -274,7 +274,7 @@ export class ImageCropOverlay {
     const toolbar = document.createElement('div');
     toolbar.className = 'an-crop-toolbar';
     toolbar.style.cssText = `
-      position:fixed; z-index:10102;
+      position:fixed; z-index:calc(10102 + var(--an-z-offset, 0));
       background:#1e1e2e; border-radius:6px;
       padding:5px 8px; display:flex; gap:6px;
       align-items:center;
@@ -305,9 +305,9 @@ export class ImageCropOverlay {
       on(toolbar, 'mousedown', (e) => e.stopPropagation()),
     );
 
-    document.body.appendChild(scrim);
-    document.body.appendChild(cropBox);
-    document.body.appendChild(toolbar);
+    portalOf(this.context).appendChild(scrim);
+    portalOf(this.context).appendChild(cropBox);
+    portalOf(this.context).appendChild(toolbar);
 
     this._scrim   = scrim;
     this._cropBox = cropBox;
@@ -547,7 +547,7 @@ export class ImageCropOverlay {
     banner.setAttribute('role', 'alert');
     banner.style.cssText = [
       'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
-      'z-index:10200', 'max-width:420px', 'width:max-content',
+      'z-index:calc(10200 + var(--an-z-offset, 0))', 'max-width:420px', 'width:max-content',
       'background:#7f1d1d', 'color:#fecaca', 'border:1px solid #b91c1c',
       'border-radius:8px', 'padding:12px 18px',
       'font:13px/1.5 system-ui,sans-serif',
@@ -555,7 +555,7 @@ export class ImageCropOverlay {
       'pointer-events:auto',
     ].join(';');
     banner.textContent = msg;
-    document.body.appendChild(banner);
+    portalOf(this.context).appendChild(banner);
     setTimeout(() => { banner.remove(); }, 4000);
   }
 

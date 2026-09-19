@@ -163,9 +163,29 @@ describe('isPlainObject', () => {
     expect(isPlainObject('str')).toBe(false);
     expect(isPlainObject(42)).toBe(false);
   });
+
+  it('accepts null-prototype objects', () => {
+    expect(isPlainObject(Object.create(null))).toBe(true);
+  });
+
+  it('rejects DOM nodes and class instances', () => {
+    class Adapter { save() {} }
+    expect(isPlainObject(document.createElement('div'))).toBe(false);
+    expect(isPlainObject(new Adapter())).toBe(false);
+    expect(isPlainObject(new Map())).toBe(false);
+    expect(isPlainObject(new Date())).toBe(false);
+  });
 });
 
 describe('mergeDeep', () => {
+  it('keeps class instances intact instead of copying them', () => {
+    class Adapter { save() { return 'saved'; } }
+    const adapter = new Adapter();
+    const merged = mergeDeep({ autoSaveAdapter: null }, { autoSaveAdapter: adapter });
+    expect(merged.autoSaveAdapter).toBe(adapter);
+    expect(merged.autoSaveAdapter.save()).toBe('saved');
+  });
+
   it('merges source properties into target', () => {
     const result = mergeDeep({ a: 1 }, { b: 2 });
     expect(result).toEqual({ a: 1, b: 2 });

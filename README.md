@@ -33,12 +33,13 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 6. [Plugin API](#plugin-api)
 7. [API](#api)
 8. [Options](#options)
-9. [Toolbar Customisation](#toolbar-customisation)
-10. [Keyboard Shortcuts](#keyboard-shortcuts)
-11. [Mentions](#mentions)
-12. [Project Structure](#project-structure)
-13. [Comparison](#comparison)
-14. [License](#license)
+9. [Theming](#theming)
+10. [Toolbar Customisation](#toolbar-customisation)
+11. [Keyboard Shortcuts](#keyboard-shortcuts)
+12. [Mentions](#mentions)
+13. [Project Structure](#project-structure)
+14. [Comparison](#comparison)
+15. [License](#license)
 
 ---
 
@@ -359,12 +360,16 @@ const editor = AutumnNote.create('#my-editor', {
 
 ```js
 const editor = AutumnNote.create('#my-editor', { theme: 'dark' });
+// or follow the OS setting, and switch later without re-creating
+editor.updateOptions({ theme: 'auto' });
 ```
+
+The theme applies to that editor only — a light and a dark editor can share a page. See [Theming](#theming) for colours.
 
 ### Read-only preview
 
 ```js
-const preview = AutumnNote.create('#preview', { readOnly: true });
+const preview = AutumnNote.create('#preview', { readOnly: true, statusbar: false });
 preview.setHTML(savedHtml);
 ```
 
@@ -616,7 +621,10 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `fontFamilies` | `string[]` | 10 fonts | Font families available in the font-family dropdown. |
 | `stickyToolbar` | `boolean` | `false` | Pin the toolbar to the viewport top when the page is scrolled. |
 | `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. height of a fixed nav bar). |
-| `theme` | `string` | `'light'` | Colour theme: `'light'`, `'dark'`, or `'auto'` (follows system preference). |
+| `theme` | `string` | `'light'` | Colour theme: `'light'`, `'dark'`, or `'auto'` (follows system preference). Changeable at runtime. |
+| `themeVars` | `object` | `null` | Design-token overrides for this editor, e.g. `{ primary: '#f97316', radius: '10px' }`. See [Theming](#theming). |
+| `zIndexOffset` | `number` | `0` | Added to the z-index of every floating layer (tooltips, popovers, dialogs, fullscreen), e.g. to sit above a host modal. |
+| `popupContainer` | `string \| Element \| ShadowRoot` | `null` | Where dialogs, tooltips and menus mount (default `document.body`). Use inside a focus-trapping modal or a shadow root. The element must not set `transform`, `filter` or `contain`. |
 | `readOnly` | `boolean` | `false` | Start the editor in non-editable (read-only) mode with toolbar hidden. |
 | `spellcheck` | `boolean` | `true` | Enable browser spellcheck in the editable area. |
 | `direction` | `string` | `'ltr'` | Text direction: `'ltr'` or `'rtl'`. |
@@ -663,6 +671,49 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `onWordLimitReached` | `Function` | `null` | `(context) => void` — called when `maxWords` is hit. |
 
 ---
+
+## Theming
+
+Every colour, radius and font the editor uses is a CSS custom property with a built-in fallback, so you can theme it without a Sass build.
+
+| Token | Light default | Used for |
+|---|---|---|
+| `--an-primary` | `#3b82f6` | Accent: active buttons, links, focus ring, selections |
+| `--an-primary-hover` | `#2563eb` | Accent hover |
+| `--an-border` | `#d1d5db` | Borders and separators |
+| `--an-bg` | `#ffffff` | Editor and dialog background |
+| `--an-bg-toolbar` | `#f9fafb` | Toolbar background |
+| `--an-bg-btn-hover` | `#f3f4f6` | Button hover |
+| `--an-bg-btn-active` | `#dbeafe` | Active (pressed) button |
+| `--an-text` | `#111827` | Text |
+| `--an-muted` | `#6b7280` | Secondary text, placeholders |
+| `--an-statusbar-bg` | `#f9fafb` | Statusbar background |
+| `--an-radius` / `--an-radius-sm` | `6px` / `4px` | Corner radii |
+| `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
+| `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
+| `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
+
+Three ways to set them, from broadest to narrowest:
+
+```css
+/* 1. Every editor on the page */
+:root { --an-primary: #f97316; --an-radius: 10px; }
+
+/* 2. Dark mode only (theme: 'dark', or 'auto' when the OS is dark) */
+.an-theme-dark { --an-bg: #0b1020; }
+@media (prefers-color-scheme: dark) { .an-theme-auto { --an-bg: #0b1020; } }
+```
+
+```js
+// 3. One editor, including its dialogs and tooltips; changeable at runtime
+const editor = AutumnNote.create('#editor', {
+  themeVars: { primary: '#f97316', 'bg-toolbar': '#fff7ed' },
+});
+editor.updateOptions({ themeVars: null });          // drop all overrides
+editor.updateOptions({ themeVars: { primary: '#10b981' } });
+```
+
+Each editor mounts its dialogs, tooltips and menus in its own portal element (`.an-portal`), which carries the editor's theme class and `themeVars`. Use `popupContainer` to put that portal somewhere other than `document.body`.
 
 ## Toolbar Customisation
 

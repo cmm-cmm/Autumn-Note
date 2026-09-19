@@ -398,3 +398,13 @@ export function makeDraggable(handle, box) {
   handle.addEventListener('mousedown', onMousedown);
   return () => handle.removeEventListener('mousedown', onMousedown);
 }
+
+/**
+ * Where an editor mounts its floating UI (dialogs, tooltips, popovers): its
+ * portal, or `document.body` when there is none (e.g. a bare test context).
+ * @param {{ layoutInfo?: { portal?: HTMLElement } }} context
+ * @returns {HTMLElement}
+ */
+export function portalOf(context) {
+  return context?.layoutInfo?.portal || document.body;
+}

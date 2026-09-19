@@ -1,7 +1,7 @@
 // VideoTooltip.js - Hover tooltip for video wrappers inside the editor
 // Displays a horizontal action bar below (or above) the selected video,
 // similar in appearance and interaction to LinkTooltip.
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, portalOf } from '../core/dom.js';
 import { BaseMediaTooltip } from './BaseMediaTooltip.js';
 
 const ICONS = {
@@ -17,7 +17,7 @@ const ICONS = {
 export class VideoTooltip extends BaseMediaTooltip {
   initialize() {
     this._el = this._buildTooltip();
-    document.body.appendChild(this._el);
+    portalOf(this.context).appendChild(this._el);
 
     const editable = this.context.layoutInfo.editable;
 

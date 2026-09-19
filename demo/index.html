@@ -436,10 +436,10 @@ import '../src/js/i18n/all.js';
     let isDark = false;
 
     function applyTheme(editorCtx, editorROCtx) {
-      // Toggle an-theme-dark on both editor containers
+      // Switch both editors (and their dialogs/tooltips) between themes
       [editorCtx, editorROCtx].forEach((ctx) => {
         if (!ctx) return;
-        ctx.layoutInfo.container.classList.toggle('an-theme-dark', isDark);
+        ctx.updateOptions({ theme: isDark ? 'dark' : 'light' });
       });
       // Toggle demo outer wrapper dark styling
       demoOuter.classList.toggle('is-dark', isDark);

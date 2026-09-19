@@ -3,7 +3,7 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, portalOf } from '../core/dom.js';
 import { getButton } from './Buttons.js';
 
 /** Resolve a toolbar item: string → registry lookup, object → pass-through. */
@@ -319,7 +319,7 @@ export class Toolbar {
     });
 
     wrap.appendChild(btn);
-    document.body.appendChild(popup);
+    portalOf(this.context).appendChild(popup);
     return /** @type {HTMLDivElement} */ (wrap);
   }
 
@@ -488,7 +488,7 @@ export class Toolbar {
     });
 
     const d5 = on(document, 'click', (e) => {
-      // popup is in document.body, not inside wrap — check both
+      // popup is in the editor portal, not inside wrap — check both
       if (isOpen && !wrap.contains(/** @type {Node} */ (e.target)) && !popup.contains(/** @type {Node} */ (e.target))) closePopup();
     });
 
@@ -514,12 +514,12 @@ export class Toolbar {
       if (idx !== -1) this._colorPickerClosers.splice(idx, 1);
     });
 
-    // Append popup to document.body so it escapes all overflow-clipping and
+    // Append popup to the editor portal so it escapes all overflow-clipping and
     // contain:layout ancestors (contain:layout makes the container a fixed-pos
     // containing block per the CSS Contain spec, breaking viewport coordinates).
     wrap.appendChild(applyBtn);
     wrap.appendChild(arrowBtn);
-    document.body.appendChild(popup);
+    portalOf(this.context).appendChild(popup);
     return /** @type {HTMLDivElement} */ (wrap);
   }
 

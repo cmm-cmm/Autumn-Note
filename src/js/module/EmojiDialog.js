@@ -3,7 +3,7 @@
  * Click an emoji to insert it directly at the caret — no extra "Insert" step.
  */
 
-import { createElement, on, makeDraggable } from '../core/dom.js';
+import { createElement, on, makeDraggable, portalOf } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 
 /**
@@ -66,7 +66,7 @@ export class EmojiDialog extends BaseDialog {
         this._cats = EMOJI_CATS;
         this._list = EMOJI_LIST;
         this._dialog = this._buildDialog();
-        document.body.appendChild(this._dialog);
+        portalOf(this.context).appendChild(this._dialog);
       }
     }
     this._activeCat = 'all';

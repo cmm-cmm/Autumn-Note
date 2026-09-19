@@ -2,7 +2,7 @@
  * IconDialog.js - Browse and insert FontAwesome Free icons
  */
 
-import { createElement, on, makeDraggable } from '../core/dom.js';
+import { createElement, on, makeDraggable, portalOf } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 
@@ -100,7 +100,7 @@ export class IconDialog extends BaseDialog {
         this._cats = ICON_CATEGORIES;
         this._list = ICON_LIST;
         this._dialog = this._buildDialog();
-        document.body.appendChild(this._dialog);
+        portalOf(this.context).appendChild(this._dialog);
       }
     }
     this._selectedIcon = null;

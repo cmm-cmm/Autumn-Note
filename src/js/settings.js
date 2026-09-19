@@ -43,7 +43,10 @@ import { defaultToolbar } from './module/Buttons.js';
  * @property {Function} [onImageError]         - Callback when an image upload error occurs
  * @property {boolean}  [stickyToolbar]        - Stick the toolbar to the viewport top when scrolling
  * @property {number}   [stickyToolbarOffset]  - Top offset in px for sticky toolbar (e.g. fixed nav height)
- * @property {string}   [theme]                - 'light' (default) | 'dark'
+ * @property {string}   [theme]                - 'light' (default) | 'dark' | 'auto' (follows the OS colour scheme)
+ * @property {Object<string, string|number>|null} [themeVars] - Design-token overrides, e.g. { primary: '#f97316' } (see README "Theming")
+ * @property {number}   [zIndexOffset]         - Added to the z-index of every floating layer (default 0)
+ * @property {string|Element|ShadowRoot|null} [popupContainer] - Where floating UI mounts (default document.body)
  * @property {boolean}  [codeHighlight]        - Auto-load Prism.js for syntax highlighting of code blocks
  * @property {string}   [codeHighlightCDN]     - CDN base URL for Prism assets, or your own origin to self-host (defaults to cdnjs). A trailing slash is normalised away.
  * @property {string}   [cspNonce]             - CSP nonce applied to dynamically injected scripts/styles
@@ -123,6 +126,12 @@ export const defaultOptions = {
   stickyToolbar: false,
   stickyToolbarOffset: 0,
   theme: 'light',
+  // Design-token overrides for this editor, e.g. { primary: '#f97316', radius: '10px' }.
+  themeVars: null,
+  // Added to the z-index of every floating layer, e.g. to sit above a host modal.
+  zIndexOffset: 0,
+  // Where dialogs, tooltips and menus mount: selector, element or ShadowRoot (null = document.body).
+  popupContainer: null,
   codeHighlight: true,
   codeHighlightCDN: 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0',
   cspNonce: '',

@@ -1,4 +1,4 @@
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable, portalOf } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
 
 /**
@@ -32,7 +32,7 @@ export class BaseDialog {
 
   initialize() {
     this._dialog = this._buildDialog();
-    document.body.appendChild(this._dialog);
+    portalOf(this.context).appendChild(this._dialog);
     return this;
   }
 

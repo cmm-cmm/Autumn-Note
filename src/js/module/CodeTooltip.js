@@ -1,7 +1,7 @@
 // CodeTooltip.js - Hover tooltip for <pre> code blocks inside the editor
 // Shows a horizontal action bar above (or below) the hovered code block,
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, portalOf } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 
 const SHOW_DELAY = 100;
@@ -66,7 +66,7 @@ export class CodeTooltip {
 
   initialize() {
     this._el = this._buildTooltip();
-    document.body.appendChild(this._el);
+    portalOf(this.context).appendChild(this._el);
     this._ensurePrism();
 
     const editable = this.context.layoutInfo.editable;

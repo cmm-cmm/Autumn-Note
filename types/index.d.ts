@@ -79,6 +79,26 @@ export interface CollaborationAdapter {
   onLocalChange?(html: string, context: Context): void | Promise<void>;
 }
 
+/** Built-in design tokens accepted by `themeVars` (any `--an-*` key also passes through). */
+export interface AsnThemeVars {
+  primary?: string;
+  'primary-hover'?: string;
+  border?: string;
+  bg?: string;
+  'bg-toolbar'?: string;
+  'bg-btn-hover'?: string;
+  'bg-btn-active'?: string;
+  text?: string;
+  muted?: string;
+  'statusbar-bg'?: string;
+  radius?: string;
+  'radius-sm'?: string;
+  'font-family'?: string;
+  'font-size'?: string;
+  'line-height'?: string;
+  [customProperty: `--an-${string}`]: string | number | undefined;
+}
+
 export interface AsnOptions {
   /** Placeholder text when the editor is empty. */
   placeholder?: string;
@@ -180,8 +200,29 @@ export interface AsnOptions {
   stickyToolbar?: boolean;
   /** Top offset in px for sticky toolbar (e.g. height of a fixed nav bar). */
   stickyToolbarOffset?: number;
-  /** Colour theme: 'light' (default) | 'dark'. */
+  /**
+   * Colour theme: 'light' (default), 'dark', or 'auto' (follows the OS
+   * `prefers-color-scheme`). Can be changed at runtime with `updateOptions()`.
+   */
   theme?: 'light' | 'dark' | 'auto';
+  /**
+   * Design-token overrides applied to this editor and its floating UI, e.g.
+   * `{ primary: '#f97316', radius: '10px' }`. Keys are token names (`primary`)
+   * or full custom properties (`--an-primary`). See README "Theming".
+   */
+  themeVars?: AsnThemeVars | null;
+  /**
+   * Added to the z-index of every floating layer (tooltips, popovers, dialogs,
+   * fullscreen). Use it to lift the editor's UI above a host modal. Default 0.
+   */
+  zIndexOffset?: number;
+  /**
+   * Where the editor mounts its floating UI: a selector, an element or a
+   * ShadowRoot. Default `document.body`. Use it inside a modal that traps
+   * focus, or a shadow root. The element must not have `transform`, `filter`
+   * or `contain` set, because floating UI is positioned against the viewport.
+   */
+  popupContainer?: string | Element | ShadowRoot | null;
   /** Auto-load Prism.js for syntax highlighting inside code blocks. */
   codeHighlight?: boolean;
   /** CDN base URL for Prism assets. */

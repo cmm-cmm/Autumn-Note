@@ -70,16 +70,6 @@ export function renderLayout(targetEl, options) {
 
   container.appendChild(editable);
 
-  // Apply theme — also add to body so floating elements (dialogs, tooltips,
-  // popovers) appended to document.body inherit the CSS rules.
-  if (options.theme === 'dark') {
-    container.classList.add('an-theme-dark');
-    document.body.classList.add('an-theme-dark');
-  } else if (options.theme === 'auto') {
-    container.classList.add('an-theme-auto');
-    document.body.classList.add('an-theme-auto');
-  }
-
   // Read-only mode
   if (options.readOnly) {
     container.classList.add('an-disabled');
@@ -94,27 +84,101 @@ export function renderLayout(targetEl, options) {
     container.classList.add('an-dir-rtl');
   }
 
-  // Toolbar overflow
-  if (options.toolbarOverflow === 'scroll') {
-    container.classList.add('an-toolbar-overflow-scroll');
-  }
-
-  // Configure sticky toolbar
-  if (options.stickyToolbar) {
-    container.classList.add('an-sticky-toolbar');
-    if (options.stickyToolbarOffset) {
-      container.style.setProperty('--an-sticky-top', `${options.stickyToolbarOffset}px`);
-    }
-  }
-
-  // Custom focus ring colour
-  if (options.focusColor) {
-    container.style.setProperty('--an-focus-color', options.focusColor);
-  }
+  // Theme, colours, z-index offset, sticky/overflow toolbar modes
+  applyAppearance(container, null, options);
 
   // Hide the original element; keep it in DOM for form submission
   targetEl.style.display = 'none';
   targetEl.after(container);
 
   return { container, editable };
+}
+
+const THEME_CLASSES = ['an-theme-dark', 'an-theme-auto'];
+
+/**
+ * Turns a `themeVars` key into a custom property name: `primary` and
+ * `--an-primary` both become `--an-primary`.
+ * @param {string} key
+ * @returns {string}
+ */
+function _themeVarName(key) {
+  return key.startsWith('--') ? key : `--an-${key}`;
+}
+
+/**
+ * Creates the element an editor mounts its floating UI into (dialogs,
+ * tooltips, popovers, menus). One per editor, so the editor's theme and
+ * colours reach its floating UI without touching `document.body`.
+ *
+ * `display: contents` (see .an-portal in the stylesheet) keeps it out of
+ * layout; its children still position against the viewport.
+ * @param {import('./settings.js').AsnOptions} options
+ * @returns {HTMLElement}
+ */
+export function createPortal(options) {
+  const portal = createElement('div', { class: 'an-portal', 'data-an-portal': '' });
+  resolvePopupContainer(options.popupContainer).appendChild(portal);
+  return portal;
+}
+
+/**
+ * Resolves the `popupContainer` option to a node that can hold the portal.
+ * Falls back to `document.body` for a missing selector or an invalid value.
+ * @param {string|Element|ShadowRoot|null|undefined} value
+ * @returns {Element|ShadowRoot}
+ */
+export function resolvePopupContainer(value) {
+  if (typeof value === 'string' && value) {
+    const found = document.querySelector(value);
+    if (found) return found;
+    console.warn(`[AutumnNote] popupContainer "${value}" matched nothing; using document.body.`);
+  } else if (value && typeof (/** @type {any} */ (value)).appendChild === 'function') {
+    return /** @type {Element|ShadowRoot} */ (value);
+  }
+  return document.body;
+}
+
+/**
+ * Applies the look-and-feel options to the container and, when given, the
+ * portal. Idempotent — it first clears what it set last time — so
+ * updateOptions() can call it again after any of these options change.
+ *
+ * Covers: theme, themeVars, focusColor, zIndexOffset, toolbarOverflow,
+ * stickyToolbar, stickyToolbarOffset.
+ * @param {HTMLElement} container
+ * @param {HTMLElement|null} portal
+ * @param {import('./settings.js').AsnOptions} options
+ */
+export function applyAppearance(container, portal, options) {
+  const targets = portal ? [container, portal] : [container];
+  const themeClass = options.theme === 'dark' ? 'an-theme-dark'
+    : options.theme === 'auto' ? 'an-theme-auto' : null;
+
+  for (const el of targets) {
+    el.classList.remove(...THEME_CLASSES);
+    if (themeClass) el.classList.add(themeClass);
+
+    // Clear every custom property this function owns, then set the current ones.
+    for (const prop of Array.from(el.style)) {
+      if (prop.startsWith('--an-')) el.style.removeProperty(prop);
+    }
+    const vars = options.themeVars;
+    if (vars && typeof vars === 'object') {
+      for (const [key, value] of Object.entries(vars)) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          el.style.setProperty(_themeVarName(key), String(value));
+        }
+      }
+    }
+    if (options.focusColor) el.style.setProperty('--an-focus-color', options.focusColor);
+    const zOffset = Number(options.zIndexOffset) || 0;
+    if (zOffset) el.style.setProperty('--an-z-offset', String(Math.trunc(zOffset)));
+  }
+
+  container.classList.toggle('an-toolbar-overflow-scroll', options.toolbarOverflow === 'scroll');
+  container.classList.toggle('an-sticky-toolbar', Boolean(options.stickyToolbar));
+  if (options.stickyToolbar && options.stickyToolbarOffset) {
+    container.style.setProperty('--an-sticky-top', `${options.stickyToolbarOffset}px`);
+  }
 }

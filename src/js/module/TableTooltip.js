@@ -1,7 +1,7 @@
 // TableTooltip.js - Hover tooltip for tables inside the editor
 // Shows a horizontal action bar above (or below) the hovered table,
 // similar in appearance and interaction to ImageTooltip / VideoTooltip.
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, portalOf } from '../core/dom.js';
 import { ICONS } from './table-icons.js';
 import {
   getVisualColIndex,
@@ -53,16 +53,16 @@ export class TableTooltip {
 
   initialize() {
     this._el = this._buildTooltip();
-    document.body.appendChild(this._el);
+    portalOf(this.context).appendChild(this._el);
 
     this._sizePopover = this._buildSizePopover();
-    document.body.appendChild(this._sizePopover);
+    portalOf(this.context).appendChild(this._sizePopover);
 
     this._shadePopover = this._buildCellShadePopover();
-    document.body.appendChild(this._shadePopover);
+    portalOf(this.context).appendChild(this._shadePopover);
 
     this._borderColorPopover = this._buildBorderColorPopover();
-    document.body.appendChild(this._borderColorPopover);
+    portalOf(this.context).appendChild(this._borderColorPopover);
 
     const editable = this.context.layoutInfo.editable;
     this._editable = editable;

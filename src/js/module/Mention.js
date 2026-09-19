@@ -23,7 +23,7 @@
  * }
  */
 
-import { on } from '../core/dom.js';
+import { on, portalOf } from '../core/dom.js';
 
 export class Mention {
   /** @param {import('../Context.js').Context} context */
@@ -104,7 +104,7 @@ export class Mention {
       if (item) this._highlightItem(+item.dataset.index);
     });
 
-    document.body.appendChild(el);
+    portalOf(this.context).appendChild(el);
     this._dropdown = el;
   }
 

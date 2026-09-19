@@ -39,6 +39,10 @@ export class Statusbar {
     this.el = null;
     this._disposers = [];
     /** @type {HTMLElement|null} */
+    this._handle = null;
+    /** @type {Array<() => void>} */
+    this._handleDisposers = [];
+    /** @type {HTMLElement|null} */
     this._wordCountEl = null;
     /** @type {HTMLElement|null} */
     this._charCountEl = null;
@@ -53,17 +57,6 @@ export class Statusbar {
   initialize() {
     this.el = createElement('div', { class: 'an-statusbar' });
 
-    // Resize handle
-    if (this.options.resizable !== false) {
-      const handle = createElement('div', {
-        class: 'an-resize-handle',
-        title: this.context.locale.statusbar.resizeHandle,
-        'aria-hidden': 'true',
-      });
-      this._bindResize(handle);
-      this.el.appendChild(handle);
-    }
-
     // Counters
     this._wordCountEl = createElement('span', { class: 'an-word-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
     this._charCountEl = createElement('span', { class: 'an-char-count', 'aria-live': 'polite', 'aria-atomic': 'true' });
@@ -72,9 +65,33 @@ export class Statusbar {
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);
 
+    this.applyResizable();
     this.applyVisibility();
     this.update();
     return this;
+  }
+
+  /**
+   * Adds or removes the resize handle to match `options.resizable`.
+   */
+  applyResizable() {
+    if (!this.el) return;
+    const wanted = this.options.resizable !== false;
+    if (wanted && !this._handle) {
+      const handle = createElement('div', {
+        class: 'an-resize-handle',
+        title: this.context.locale.statusbar.resizeHandle,
+        'aria-hidden': 'true',
+      });
+      this._handleDisposers = this._bindResize(handle);
+      this.el.prepend(handle);
+      this._handle = handle;
+    } else if (!wanted && this._handle) {
+      this._handleDisposers.forEach((d) => d());
+      this._handleDisposers = [];
+      this._handle.remove();
+      this._handle = null;
+    }
   }
 
   /**
@@ -94,6 +111,9 @@ export class Statusbar {
     this.context.layoutInfo.container?.classList.remove('an-no-statusbar');
     this._disposers.forEach((d) => d());
     this._disposers = [];
+    this._handleDisposers.forEach((d) => d());
+    this._handleDisposers = [];
+    this._handle = null;
     if (this._dragDisposers) {
       this._dragDisposers.forEach((d) => d());
       this._dragDisposers = null;
@@ -106,6 +126,11 @@ export class Statusbar {
   // Resize logic
   // ---------------------------------------------------------------------------
 
+  /**
+   * Wires drag-to-resize onto the handle.
+   * @param {HTMLElement} handle
+   * @returns {Array<() => void>} disposers for the handle listeners
+   */
   _bindResize(handle) {
     let startY = 0;
     let startH = 0;
@@ -182,9 +207,10 @@ export class Statusbar {
       ];
     };
 
-    const d1 = on(handle, 'mousedown', onMouseDown);
-    const d2 = on(handle, 'touchstart', onTouchStart);
-    this._disposers.push(d1, d2);
+    return [
+      on(handle, 'mousedown', onMouseDown),
+      on(handle, 'touchstart', onTouchStart),
+    ];
   }
 
   // ---------------------------------------------------------------------------

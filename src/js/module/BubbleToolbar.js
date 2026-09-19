@@ -11,7 +11,7 @@
  * Any name not found in the built-in map is silently ignored.
  */
 
-import { on } from '../core/dom.js';
+import { on, portalOf } from '../core/dom.js';
 
 const COLOR_PRESETS = [
   '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
@@ -186,7 +186,7 @@ export class BubbleToolbar {
       el.appendChild(btn);
     }
 
-    document.body.appendChild(el);
+    portalOf(this.context).appendChild(el);
     this._el = el;
     // Cache button references once — avoids querySelectorAll on every selectionchange
     this._btnCache = Array.from(el.querySelectorAll('.an-bubble-btn'));
@@ -248,7 +248,7 @@ export class BubbleToolbar {
 
     picker.appendChild(palette);
     picker.appendChild(customRow);
-    document.body.appendChild(picker);
+    portalOf(this.context).appendChild(picker);
 
     this._picker = picker;
     const pickerAny = /** @type {any} */ (picker);

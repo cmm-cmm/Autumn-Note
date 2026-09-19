@@ -13,7 +13,7 @@
  * in `_onInput`, not lazily when the menu is rendered.
  */
 
-import { on } from '../core/dom.js';
+import { on, portalOf } from '../core/dom.js';
 
 export class SlashMenu {
   /** @param {import('../Context.js').Context} context */
@@ -106,7 +106,7 @@ export class SlashMenu {
       if (item) this._highlight(+item.dataset.index);
     });
 
-    document.body.appendChild(el);
+    portalOf(this.context).appendChild(el);
     this._menu = el;
     return el;
   }

@@ -143,12 +143,18 @@ export function mergeDeep(target, source) {
 }
 
 /**
- * Checks if value is a plain object.
+ * Checks if value is a plain object (an object literal or Object.create(null)).
+ *
+ * DOM nodes and class instances are not: mergeDeep() used to recurse into
+ * them, which turned a `popupContainer` element into a detached copy and
+ * stripped the prototype methods off class-based adapters.
  * @param {*} val
  * @returns {boolean}
  */
 export function isPlainObject(val) {
-  return val !== null && typeof val === 'object' && !Array.isArray(val);
+  if (val === null || typeof val !== 'object') return false;
+  const proto = Object.getPrototypeOf(val);
+  return proto === Object.prototype || proto === null;
 }
 
 /**
