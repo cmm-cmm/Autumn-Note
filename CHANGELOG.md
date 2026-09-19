@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+A customisation release, prompted by #119 (hide the statusbar). Reviewing it
+showed that much of the editor's look and behaviour could only be changed by
+forking: colours lived in SCSS that the package does not ship, shortcuts were an
+if-chain, and dropdown lists and palettes were constants.
+
+### Added
+
+- **`statusbar: false` hides the statusbar** (#119), e.g. for a read-only viewer. Word and character counts stay available through the API, and it can be toggled with `updateOptions()`.
+- **Theming through CSS custom properties.** Every colour, radius and font token is a `--an-*` property with the old value as fallback, so an app can theme the editor from `:root`, per mode from `.an-theme-dark`, or per editor through the new **`themeVars`** option — no Sass build. See README → Theming.
+- **Each editor mounts its dialogs, tooltips and menus in its own portal** (`.an-portal`), which carries the editor's theme and `themeVars`. **`popupContainer`** puts it somewhere other than `document.body` (a focus-trapping modal, a shadow root); **`zIndexOffset`** lifts every floating layer.
+- **`icons`** option and **`AutumnNote.registerIcon()`**: SVG markup or a CSS class list per button or icon name.
+- **Toolbar buttons by name**: `toolbar: [['bold', 'italic']]` works with the built-in buttons, so a toolbar can come from JSON, framework props or the UMD build. **`buttons`** defines buttons for a single editor.
+- **`fontSizes`, `lineHeights`, `paragraphStyles`** and **`colorPalette`** options. `colorPalette` and `colorSwatches` now apply to the toolbar, bubble toolbar and context menu alike.
+- **`keyMap`**: disable a shortcut (`'Mod+F': false` gives Ctrl+F back to the browser), rebind it to a built-in command or any toolbar button, or bind a handler. The shortcuts dialog follows the keyMap.
+- **`beforeCommand` event / `onBeforeCommand`**: fired before toolbar, shortcut, context-menu and bubble-toolbar commands; return `false` to cancel.
+- **`paste` handlers can veto or rewrite a paste**: return `false`, or an HTML string to insert instead (sanitised).
+- **`linkDefaults`** (open in new tab, `rel`, default protocol), **`videoProviders`** and **`iframeHosts`**.
+- **`updateOptions()` applies** `theme`, `themeVars`, `focusColor`, `zIndexOffset`, `toolbarOverflow`, `stickyToolbar`, `stickyToolbarOffset`, `resizable`, `popupContainer`, and rebuilds the toolbar for toolbar options. Changing `lang` warns that it only applies at creation.
+- Accessible names (editor, toolbar, statistics, table size, find buttons, bubble toolbar) are localised in all eight languages.
+
+### Fixed
+
+- **`theme: 'dark'` darkened the host page.** It put `an-theme-dark` on `<body>`, which the dark rules then matched — setting the page's own background and colour — and every light editor on the same page turned dark too. `<body>` is no longer touched.
+- **`theme: 'auto'` was missing most of the dark styling.** Its rules were a hand-kept copy of the dark theme that had fallen about 190 lines behind (dialogs, shortcuts, table cells stayed light). Both now share one mixin. Seven of the eight `$an-dark-*` SCSS variables were never used; they now feed the dark tokens.
+- **`editor.on('focus' | 'blur' | 'init' | 'destroy' | 'paste' | 'selectionChange' | 'charLimitReached' | 'wordLimitReached' | 'autoSaveRestore')` never fired.** Those callbacks were called straight off the options, bypassing the event bus the README documents them on.
+- **`maxPasteSize` was read as megabytes** while its default (5242880) and docs are in bytes, so the default limit was about 5 TB.
+- **Option objects lost their identity.** `mergeDeep` treated DOM nodes and class instances as plain objects and copied them — an element option became a detached copy, and a class-based `autoSaveAdapter` lost its prototype methods.
+- **`editor.insertVideo(html)` inserted its argument unsanitised.** It now goes through the sanitiser with the iframe allowlist, as `setHTML` does.
+- **The link dialog turned relative links into `https:///path`.** `/path`, `#id`, `?q` and `./x` are left alone.
+- AltGr (reported as Ctrl+Alt on Windows) no longer triggers Ctrl shortcuts; Ctrl+H no longer fell through to the Ctrl+` check.
+- The README said `Shift + ?` opens the shortcuts dialog; it is `Ctrl + Shift + /`.
+- Tests: Node 25's global `localStorage` shadowed jsdom's in the test workers (18 failures on Node 25), and table-grid tests broke under jsdom 30 on duplicate ids. CI now also runs the tests on Node 24 and the latest Node.
+
+### Changed
+
+These can affect existing integrations:
+
+- **Floating UI is no longer a direct child of `<body>`**; it sits inside `.an-portal`. Selectors such as `body > .an-dialog-overlay` need updating.
+- **`<body>` no longer gets `an-theme-dark` / `an-theme-auto`.** Page CSS keyed on those classes should use the editor's container instead.
+- **`maxPasteSize` is bytes, as documented.** A value set in megabytes (e.g. `5`) now means 5 bytes; use `5 * 1024 * 1024`.
+- **Shortcuts match Shift and Alt exactly**: `Ctrl+Shift+B` no longer bolds. Add it through `keyMap` if you relied on it.
+- **`onPaste` return values are used**: `false` cancels the paste and a string replaces it. Other return values are ignored, as before.
+- **`isPlainObject()` (in `core/func.js`) returns false for DOM nodes and class instances.**
+
+
 ## [2.7.1] - 2026-08-20
 
 A documentation and typing release: no runtime behaviour changes, and nothing

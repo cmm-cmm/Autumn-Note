@@ -10,6 +10,7 @@ import {
   isFunction,
   mergeDeep,
   isPlainObject,
+  deepEqual,
   rect2bnd,
 } from '../../src/js/core/func.js';
 
@@ -258,5 +259,21 @@ describe('rect2bnd', () => {
     const result = rect2bnd({ top: -1.6, left: -2.4, width: 5, height: 5, bottom: 3.4, right: 2.6 });
     expect(result.top).toBe(-1.6);
     expect(result.left).toBe(-2.4);
+  });
+});
+
+describe('deepEqual', () => {
+  it('compares plain objects and arrays by content', () => {
+    expect(deepEqual({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] })).toBe(true);
+    expect(deepEqual({ a: 1 }, { a: 1, b: undefined })).toBe(false);
+    expect(deepEqual([['bold']], [['bold'], []])).toBe(false);
+  });
+
+  it('compares functions, nodes and instances by identity', () => {
+    const fn = () => {};
+    expect(deepEqual({ fn }, { fn })).toBe(true);
+    expect(deepEqual({ fn }, { fn: () => {} })).toBe(false);
+    expect(deepEqual(document.createElement('div'), document.createElement('div'))).toBe(false);
+    expect(deepEqual(NaN, NaN)).toBe(true);
   });
 });

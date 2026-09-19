@@ -175,6 +175,19 @@ describe('other runtime options', () => {
     editor.destroy();
   });
 
+  it('does nothing for options passed again unchanged (framework re-renders)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const editor = makeEditor({ lang: 'en', toolbar: [['bold']], themeVars: { primary: '#f97316' } });
+    const rebuild = vi.spyOn(editor._modules.get('toolbar'), 'rebuild');
+    const buttonBefore = editor.layoutInfo.toolbar.querySelector('[data-btn="bold"]');
+    // A wrapper passes a fresh copy of the same options on every render
+    editor.updateOptions({ lang: 'en', toolbar: [['bold']], themeVars: { primary: '#f97316' } });
+    expect(rebuild).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
+    expect(editor.layoutInfo.toolbar.querySelector('[data-btn="bold"]')).toBe(buttonBefore);
+    editor.destroy();
+  });
+
   it('warns when a create-only option changes', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const editor = makeEditor();

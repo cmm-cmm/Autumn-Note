@@ -143,6 +143,26 @@ export function mergeDeep(target, source) {
 }
 
 /**
+ * Structural equality for option values: plain objects and arrays compare by
+ * content, everything else (functions, DOM nodes, class instances) by identity.
+ * @param {*} a
+ * @param {*} b
+ * @returns {boolean}
+ */
+export function deepEqual(a, b) {
+  if (Object.is(a, b)) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((item, i) => deepEqual(item, b[i]));
+  }
+  if (isPlainObject(a) && isPlainObject(b)) {
+    const keys = Object.keys(a);
+    return keys.length === Object.keys(b).length
+      && keys.every((key) => Object.hasOwn(b, key) && deepEqual(a[key], b[key]));
+  }
+  return false;
+}
+
+/**
  * Checks if value is a plain object (an object literal or Object.create(null)).
  *
  * DOM nodes and class instances are not: mergeDeep() used to recurse into

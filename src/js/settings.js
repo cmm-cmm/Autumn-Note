@@ -92,6 +92,13 @@ import { defaultToolbar, DEFAULT_FONT_SIZES, DEFAULT_LINE_HEIGHTS, DEFAULT_PARAG
  * @property {string[]} [bubbleToolbarItems]   - Button names for the bubble toolbar
  * @property {object|null} [mention]            - @mention configuration (onSearch, minChars, ...)
  * @property {boolean}  [slashMenu]            - Show a "/" command palette for quick block insertion (default true)
+ * @property {object[]} [slashCommands]        - Extra slash-menu commands: { id, label, run(context), ... }
+ * @property {Object<string, object>} [documentAdapters] - Import/export adapters keyed by format name
+ * @property {object|null} [collaborationAdapter] - Bridge notified with local HTML changes
+ * @property {Function|null} [imageProcessor]  - (file, { context }) => dataUrl | Promise<dataUrl>; e.g. a Web Worker bridge
+ * @property {boolean}  [blockIds]             - Add stable data-an-block-id attributes to top-level blocks
+ * @property {number}   [maxPasteSize]         - Maximum paste/drop size in bytes (default 5 MB, 0 = unlimited)
+ * @property {number}   [minImageSize]         - Minimum image width/height in px while resizing (default 20)
  * @property {string}   [lang]                 - Display language or partial locale object override
  * @property {{items?: object[]}|null} [contextMenu] - Right-click menu override; `items` replaces the built-in list
  */
@@ -275,6 +282,9 @@ export const defaultOptions = {
   // Bubble toolbar: show a mini floating toolbar above text selections.
   bubbleToolbar: false,
   bubbleToolbarItems: ['bold', 'italic', 'underline', 'link', 'foreColor', 'hiliteColor', 'removeFormat'],
+
+  // Right-click menu override: { items: [...] } replaces the built-in items (null = built-in menu).
+  contextMenu: null,
 
   // @mention support. mention.onSearch(query, callback) must be provided to activate.
   // mention.minChars defaults to 0 — dropdown opens immediately on trigger character.

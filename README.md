@@ -665,11 +665,14 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `minImageSize` | `number` | `20` | Minimum image dimension in px during resize (width and height). |
 | `mention` | `object` | `null` | @mention configuration object. Set `mention.onSearch` to activate. See [Mentions](#mentions). |
 | `contextMenu` | `object` | `null` | Right-click menu override. `contextMenu.items` replaces the built-in list; see `ContextMenuItem` in the type definitions. |
+| `slashMenu` | `boolean` | `true` | Show the `/` command palette when `/` is typed at the start of an empty line. |
 | `slashCommands` | `object[]` | `[]` | Extra entries appended to the `/` command palette. |
 | `historyMaxBytes` | `number` | `10485760` | Combined character budget for the undo/redo snapshot stack (default 10 MB). The oldest snapshots are dropped past it. |
 | `blockIds` | `boolean` | `false` | Add stable `data-an-block-id` attributes to top-level blocks, so an external adapter can address them. |
 | `documentAdapters` | `object` | `{}` | Import/export adapters keyed by format name. |
 | `collaborationAdapter` | `object` | `null` | Bridge notified of local HTML changes. |
+| `autoSaveAdapter` | `object` | `null` | Async persistence for auto-save (`save`, `load`, `remove`) instead of `localStorage`. May be a class instance. |
+| `imageProcessor` | `function` | `null` | `(file, { context }) => dataUrl` — transforms pasted/dropped images before insertion (e.g. compress in a Web Worker). |
 | `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
 | `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
 | `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |

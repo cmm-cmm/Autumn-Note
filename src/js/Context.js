@@ -4,7 +4,7 @@
  * Inspired by Summernote's Context.js
  */
 
-import { mergeDeep } from './core/func.js';
+import { mergeDeep, deepEqual } from './core/func.js';
 import { registerButton } from './module/Buttons.js';
 import { defaultOptions } from './settings.js';
 import { resolveLocale } from './i18n/index.js';
@@ -136,10 +136,10 @@ export class Context {
     this.layoutInfo.container = container;
     this.layoutInfo.editable = editable;
 
-    // Floating UI (dialogs, tooltips, menus) mounts here rather than straight
-    // into document.body, so it picks up this editor's theme and colours.
     editable.setAttribute('aria-label', this.locale.a11y?.editor || 'Rich text editor');
 
+    // Floating UI (dialogs, tooltips, menus) mounts here rather than straight
+    // into document.body, so it picks up this editor's theme and colours.
     const portal = createPortal(this.options);
     this.layoutInfo.portal = portal;
     applyAppearance(container, portal, this.options);
@@ -453,9 +453,14 @@ export class Context {
 
   /** Updates runtime-safe options without recreating the editor. */
   updateOptions(overrides = {}) {
+    const previous = { ...this.options };
     const next = mergeDeep(this.options, overrides);
     Object.keys(this.options).forEach((key) => delete this.options[key]);
     Object.assign(this.options, next);
+    // The framework wrappers pass the whole options object on every change, so
+    // only react to values that actually differ — a React re-render must not
+    // rebuild the toolbar or warn about an unchanged `lang`.
+    const changed = (key) => Object.hasOwn(overrides, key) && !deepEqual(previous[key], this.options[key]);
 
     const { container, editable } = this.layoutInfo;
     if (Object.hasOwn(overrides, 'readOnly')) this.setDisabled(Boolean(this.options.readOnly));
@@ -473,22 +478,22 @@ export class Context {
     if (Object.hasOwn(overrides, 'maxHeight')) {
       editable.style.maxHeight = this.options.maxHeight ? `${this.options.maxHeight}px` : '';
     }
-    if (TOOLBAR_OPTIONS.some((key) => Object.hasOwn(overrides, key))) this.invoke('toolbar.rebuild');
-    if (APPEARANCE_OPTIONS.some((key) => Object.hasOwn(overrides, key))) {
+    if (TOOLBAR_OPTIONS.some(changed)) this.invoke('toolbar.rebuild');
+    if (APPEARANCE_OPTIONS.some(changed)) {
       applyAppearance(container, this.layoutInfo.portal ?? null, this.options);
     }
-    if (Object.hasOwn(overrides, 'popupContainer') && this.layoutInfo.portal) {
+    if (changed('popupContainer') && this.layoutInfo.portal) {
       resolvePopupContainer(this.options.popupContainer).appendChild(this.layoutInfo.portal);
     }
-    if (Object.hasOwn(overrides, 'resizable')) this.invoke('statusbar.applyResizable');
-    const createOnly = CREATE_ONLY_OPTIONS.filter((key) => Object.hasOwn(overrides, key));
+    if (changed('resizable')) this.invoke('statusbar.applyResizable');
+    const createOnly = CREATE_ONLY_OPTIONS.filter(changed);
     if (createOnly.length) {
       console.warn(`[AutumnNote] updateOptions: ${createOnly.join(', ')} only take effect when the editor is created; destroy and re-create it to apply.`);
     }
     // Start/stop option-gated modules (bubbleToolbar, mention, slashMenu, ...)
     // so toggling them here behaves the same as passing them to create().
     this._syncOptionalModules();
-    if (Object.hasOwn(overrides, 'statusbar')) this.invoke('statusbar.applyVisibility');
+    if (changed('statusbar')) this.invoke('statusbar.applyVisibility');
     this.invoke('statusbar.update');
     this.triggerEvent('optionsChange', { ...overrides });
     return this;

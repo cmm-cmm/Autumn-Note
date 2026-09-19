@@ -412,6 +412,7 @@ export interface AsnOptions {
   documentAdapters?: Record<string, DocumentAdapter>;
   /** Optional external image processor, such as a Web Worker bridge. */
   imageProcessor?: (file: File, helpers: { context: Context }) => string | Promise<string>;
+  /** Bridge notified with local HTML changes. */
   collaborationAdapter?: CollaborationAdapter | null;
   /** Adds stable IDs to top-level blocks for external collaboration adapters. */
   blockIds?: boolean;

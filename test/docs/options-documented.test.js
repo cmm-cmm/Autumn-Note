@@ -28,6 +28,24 @@ describe('option documentation', () => {
     expect(undocumented).toEqual([]);
   });
 
+  // A mention anywhere in the README is not documentation — the options table
+  // is where people look up a name, type and default.
+  it('gives every default option its own row in the README options table', () => {
+    const readme = read('README.md');
+    const rows = new Set([...readme.matchAll(/^\| `([a-zA-Z][a-zA-Z0-9]*)` \|/gm)].map((m) => m[1]));
+    const missing = defaultOptionKeys().filter((k) => !rows.has(k));
+    expect(missing).toEqual([]);
+  });
+
+  // The AsnOptions typedef drives editor hints for JS users of settings.js.
+  it('describes every default option in the settings.js JSDoc typedef', () => {
+    const src = read('src/js/settings.js');
+    const typedef = src.slice(0, src.indexOf('export const defaultOptions'));
+    const described = new Set([...typedef.matchAll(/@property \{.*?\}\s+\[([a-zA-Z0-9]+)\]/g)].map((m) => m[1]));
+    const missing = defaultOptionKeys().filter((k) => !described.has(k));
+    expect(missing).toEqual([]);
+  });
+
   it('declares every default option in the published type definitions', () => {
     const types = read('types/index.d.ts');
     const untyped = defaultOptionKeys().filter((k) => !types.includes(`${k}?:`));

@@ -63,6 +63,8 @@ context.on('eventName', callback)           // subscribe to editor events
 | File | Purpose |
 |---|---|
 | `count.js` | Word/character counting — one implementation for the statusbar and the maxWords/maxChars limits |
+| `keymap.js` | Keyboard shortcut table (`DEFAULT_KEYMAP`), combo parsing/matching; `keyMap` option merges over it |
+| `palette.js` | The one colour palette shared by toolbar, bubble toolbar and context menu (`colorPalette`/`colorSwatches`) |
 | `dom.js` | DOM helpers (createElement, on, closest, …) |
 | `range.js` | Selection & Range API wrappers |
 | `func.js` | mergeDeep, debounce, general utils |
@@ -112,5 +114,9 @@ Environment is jsdom (simulated browser). Use `globals: true` — no explicit im
 - **Zero runtime dependencies** — do not introduce any.
 - The sanitiser in `core/sanitise.js` is security-critical; changes there need careful review.
 - `execCommand` is being retired in stages — see `docs/EXEC_COMMAND_MIGRATION.md`. The three insertion commands are native already; the rest still route through `document.execCommand`, which remains the only reliable cross-browser formatting API for contenteditable. Do not replace a command without a complete alternative and browser coverage on all three engines.
-- Toolbar config is a 2D array of button-name strings; custom buttons must be registered in `Buttons.js` before use.
+- Toolbar config is a 2D array of button names or definition objects. A name resolves through `resolveButton()`: the editor's `buttons` option, then `registerButton()`, then the built-in buttons by `name`.
+- Floating UI (dialogs, tooltips, popovers, menus) mounts into the editor's portal via `portalOf(this.context)` from `core/dom.js` — never `document.body` directly. The portal carries the theme class and `themeVars`; `renderer.applyAppearance()` keeps container and portal in sync and is re-run by `updateOptions()`.
+- Styles read design tokens as `var(--an-*, <SCSS fallback>)`. Dark-mode rules go through the `an-dark-theme` / `an-dark-scope` mixins so `theme: 'dark'` and `'auto'` cannot drift apart.
+- Every option callback goes through `context.triggerEvent(name, ...)` (which also calls `on<Name>`), never `options.onX(...)` directly — otherwise `editor.on(name)` listeners miss it.
+- A new option needs a default in `settings.js`, a JSDoc `@property`, a `types/index.d.ts` entry and a README options-table row; `test/docs/options-documented.test.js` enforces all four.
 - Custom modules can be registered globally via `AutumnNote.registerModule('name', Class)` before `create()`.
