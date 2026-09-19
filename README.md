@@ -679,7 +679,7 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `onInit` | `Function` | `null` | `(context) => void` — called once after the editor is initialised. |
 | `onImageUpload` | `Function` | `null` | `(files, { context, setProgress }) => void \| string \| string[] \| Promise<…>` — upload handler; overrides the base64 embed. Return the uploaded URL(s) to have the editor insert them, or nothing to insert them yourself. |
 | `onImageError` | `Function` | `null` | `({ file, message }) => void` — called when an image is rejected. |
-| `onPaste` | `Function` | `null` | `({ text, html }) => void` — called after every paste event. |
+| `onPaste` | `Function` | `null` | `({ text, html }) => void \| false \| string` — called on every paste, before insertion. Return `false` to cancel it or an HTML string to insert instead. See the `paste` event. |
 | `onPasteError` | `Function` | `null` | `({ message, size?, maxBytes? }) => void` — called when pasted or dropped content cannot be processed. |
 | `onSelectionChange` | `Function` | `null` | `(context) => void` — called when cursor or selection changes. |
 | `onDestroy` | `Function` | `null` | `(context) => void` — called just before the editor is destroyed. |
@@ -1055,7 +1055,7 @@ autumn-note-ce/
 
 ### Development commands
 
-Development and package usage require Node 24 LTS (24.11+) or newer and pnpm 11.1.3.
+Development and package usage require Node 22 LTS (22.22.2+) or Node 24.15+ (newer releases included) and pnpm 11.1.3.
 
 ```bash
 pnpm install                           # install all workspace packages

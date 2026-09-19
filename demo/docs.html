@@ -42,7 +42,7 @@
     "description": "Complete API reference for Autumn Note — the zero-dependency vanilla JS WYSIWYG editor. Covers all options, static methods, instance methods, events, toolbar configuration, Plugin API, and TypeScript types.",
     "url": "https://autumn.konexforge.com/docs.html",
     "datePublished": "2026-01-01",
-    "dateModified": "2026-06-30",
+    "dateModified": "2026-09-19",
     "keywords": "wysiwyg editor api, autumnnote options, plugin api, toolbar configuration, typescript",
     "inLanguage": "en",
     "author": { "@type": "Person", "name": "Minh Pham" },
@@ -113,7 +113,8 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Features</div>
-        <a class="sidebar-link" href="#whats-new">What's New v1.8.0</a>
+        <a class="sidebar-link" href="#whats-new">What's New v3.0.0</a>
+        <a class="sidebar-link sub" href="#whats-new-1-8">v1.8.0 highlights</a>
         <a class="sidebar-link" href="#events">Callbacks &amp; Events</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
         <a class="sidebar-link" href="#plugin-api">Plugin API</a>
@@ -152,6 +153,7 @@
         <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
 &lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;</code></pre>
       </div>
+      <div class="callout"><strong>Requirements:</strong> installing from npm needs <strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong>. The editor itself runs in any modern browser — the CDN build has no requirements.</div>
     </section>
 
     <!-- ── Framework Wrappers ── -->
@@ -305,9 +307,10 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">maxHeight</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Maximum height in px. <code>0</code> = unlimited.</td></tr>
             <tr><td class="opt-name">focus</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Auto-focus editor on initialization.</td></tr>
             <tr><td class="opt-name">resizable</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Show drag-handle in statusbar to resize the editor.</td></tr>
+            <tr><td class="opt-name">statusbar</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Show the statusbar (word/char count, resize handle). <code>false</code> hides it, e.g. for a read-only viewer; <code>getWordCount()</code> / <code>getCharCount()</code> keep working.</td></tr>
             <tr><td class="opt-name">readOnly</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Start in read-only (non-editable) mode. Toggle at runtime with <code>setDisabled()</code>.</td></tr>
             <tr><td class="opt-name">spellcheck</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Enable browser spell-check.</td></tr>
-            <tr><td class="opt-name">toolbar</td><td class="opt-type">Array&lt;Array&lt;…&gt;&gt;</td><td class="opt-default">defaultToolbar</td><td class="opt-desc">2D array of button groups. Each item is a <code>ButtonDef</code> object or a registered button name string.</td></tr>
+            <tr><td class="opt-name">toolbar</td><td class="opt-type">Array&lt;Array&lt;…&gt;&gt;</td><td class="opt-default">defaultToolbar</td><td class="opt-desc">2D array of button groups. Each item is a built-in button name (<code>'bold'</code>), a name from <code>buttons</code> / <code>registerButton()</code>, or a <code>ButtonDef</code> object.</td></tr>
             <tr><td class="opt-name">stickyToolbar</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Stick toolbar to viewport top when page is scrolled.</td></tr>
             <tr><td class="opt-name">stickyToolbarOffset</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Top offset in px for sticky toolbar (e.g. fixed nav bar height).</td></tr>
             <tr><td class="opt-name">toolbarOverflow</td><td class="opt-type">'wrap' | 'scroll'</td><td class="opt-default">'wrap'</td><td class="opt-desc">Toolbar overflow strategy when buttons don't fit on one row.</td></tr>
@@ -315,11 +318,18 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">bubbleToolbarItems</td><td class="opt-type">string[]</td><td class="opt-default">see below</td><td class="opt-desc">Button names in the bubble toolbar. Default: <code>['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']</code>.</td></tr>
             <tr><td class="opt-name">theme</td><td class="opt-type">'light' | 'dark' | 'auto'</td><td class="opt-default">'light'</td><td class="opt-desc">Color theme. <code>'auto'</code> follows the OS setting. Switch at runtime with <code>editor.updateOptions({ theme: 'dark' })</code>; colours are customisable through <code>themeVars</code>.</td></tr>
             <tr><td class="opt-name">focusColor</td><td class="opt-type">string | null</td><td class="opt-default">null</td><td class="opt-desc">Custom focus-ring colour (e.g. <code>'#f97316'</code>).</td></tr>
+            <tr><td class="opt-name">themeVars</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Design-token overrides for this editor, e.g. <code>{ primary: '#f97316', radius: '10px' }</code>. See <a href="#whats-new">Theming</a>.</td></tr>
+            <tr><td class="opt-name">zIndexOffset</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Added to the z-index of every floating layer (tooltips, popovers, dialogs, fullscreen) — e.g. to sit above a host modal.</td></tr>
+            <tr><td class="opt-name">popupContainer</td><td class="opt-type">string | Element | ShadowRoot</td><td class="opt-default">null</td><td class="opt-desc">Where dialogs, tooltips and menus mount (default <code>document.body</code>). Use inside a focus-trapping modal or a shadow root.</td></tr>
             <tr><td class="opt-name">direction</td><td class="opt-type">'ltr' | 'rtl'</td><td class="opt-default">'ltr'</td><td class="opt-desc">Text direction for the editable area.</td></tr>
             <tr><td class="opt-name">defaultFontFamily</td><td class="opt-type">string</td><td class="opt-default">'Arial'</td><td class="opt-desc">Default font family applied to the editor on init.</td></tr>
             <tr><td class="opt-name">defaultFontSize</td><td class="opt-type">string</td><td class="opt-default">'14px'</td><td class="opt-desc">Default font size.</td></tr>
             <tr><td class="opt-name">fontFamilies</td><td class="opt-type">string[]</td><td class="opt-default">10 fonts</td><td class="opt-desc">Options shown in the font-family dropdown.</td></tr>
-            <tr><td class="opt-name">colorSwatches</td><td class="opt-type">string[]</td><td class="opt-default">[]</td><td class="opt-desc">Custom hex swatches prepended to all colour pickers.</td></tr>
+            <tr><td class="opt-name">fontSizes</td><td class="opt-type">string[]</td><td class="opt-default">'8px'–'72px'</td><td class="opt-desc">Sizes in the font-size dropdown.</td></tr>
+            <tr><td class="opt-name">lineHeights</td><td class="opt-type">string[]</td><td class="opt-default">'1.0'–'3.0'</td><td class="opt-desc">Values in the line-height dropdown.</td></tr>
+            <tr><td class="opt-name">paragraphStyles</td><td class="opt-type">{ value, label }[]</td><td class="opt-default">Normal, H1–H6, Quote, Code</td><td class="opt-desc">Block formats in the paragraph-style dropdown (<code>value</code> is a block tag).</td></tr>
+            <tr><td class="opt-name">colorSwatches</td><td class="opt-type">string[]</td><td class="opt-default">[]</td><td class="opt-desc">Custom swatches prepended to the colour palette (toolbar, bubble toolbar, context menu).</td></tr>
+            <tr><td class="opt-name">colorPalette</td><td class="opt-type">string[] | null</td><td class="opt-default">null</td><td class="opt-desc">Replaces the built-in 24-colour palette in the toolbar, bubble toolbar and context menu.</td></tr>
             <tr><td class="opt-name">tabSize</td><td class="opt-type">number</td><td class="opt-default">4</td><td class="opt-desc">Spaces inserted per Tab key press (in code blocks).</td></tr>
             <tr><td class="opt-name">maxChars</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Max character count. <code>0</code> = unlimited. Shows warning in statusbar near limit.</td></tr>
             <tr><td class="opt-name">maxWords</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Max word count. <code>0</code> = unlimited.</td></tr>
@@ -327,10 +337,14 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">pasteAsPlainText</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Force plain-text paste — strip all HTML.</td></tr>
             <tr><td class="opt-name">pasteCleanHTML</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Sanitise HTML on paste (removes scripts, event handlers, etc.).</td></tr>
             <tr><td class="opt-name">pasteStripAttributes</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Strip <code>class</code>, <code>style</code>, and <code>data-*</code> attributes from pasted HTML.</td></tr>
+            <tr><td class="opt-name">maxPasteSize</td><td class="opt-type">number</td><td class="opt-default">5242880</td><td class="opt-desc">Maximum paste size in <strong>bytes</strong> (default 5 MB, <code>0</code> = unlimited).</td></tr>
             <tr><td class="opt-name">markdownPaste</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Convert pasted Markdown to HTML.</td></tr>
             <tr><td class="opt-name">markdownShortcuts</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Inline Markdown triggers: <code>**bold**</code>, <code>## heading</code>, <code>- item</code>, etc.</td></tr>
             <tr><td class="opt-name">allowImageUpload</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Allow file uploads in the image dialog.</td></tr>
             <tr><td class="opt-name">maxImageSize</td><td class="opt-type">number</td><td class="opt-default">5</td><td class="opt-desc">Maximum image upload size in MB.</td></tr>
+            <tr><td class="opt-name">linkDefaults</td><td class="opt-type">object</td><td class="opt-default">{ openInNewTab: false, … }</td><td class="opt-desc">Link dialog defaults: <code>openInNewTab</code>, <code>rel</code> (always includes <code>noopener</code>), <code>defaultProtocol</code>. Relative links are never prefixed.</td></tr>
+            <tr><td class="opt-name">videoProviders</td><td class="opt-type">array | null</td><td class="opt-default">null</td><td class="opt-desc">Extra video sources: <code>[{ name, match: RegExp, embed: (match, url) =&gt; embedUrl }]</code>, tried before YouTube/Vimeo.</td></tr>
+            <tr><td class="opt-name">iframeHosts</td><td class="opt-type">string[] | null</td><td class="opt-default">null</td><td class="opt-desc">Extra hostnames whose iframes survive sanitisation (exact hostnames, HTTPS only). List only hosts you trust.</td></tr>
             <tr><td class="opt-name">codeHighlight</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Auto-load Prism.js for syntax highlighting in code blocks.</td></tr>
             <tr><td class="opt-name">codeHighlightCDN</td><td class="opt-type">string</td><td class="opt-default">Prism 1.29 CDN</td><td class="opt-desc">Prism CDN base URL (override to self-host).</td></tr>
             <tr><td class="opt-name">autoSave</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Save content to <code>localStorage</code> on every change.</td></tr>
@@ -340,6 +354,9 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">useBootstrap</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Apply Bootstrap button classes to toolbar buttons.</td></tr>
             <tr><td class="opt-name">useFontAwesome</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Render toolbar icons as Font Awesome glyphs (requires FA CSS).</td></tr>
             <tr><td class="opt-name">fontAwesomeClass</td><td class="opt-type">string</td><td class="opt-default">'fas'</td><td class="opt-desc">FA prefix class (<code>'fas'</code> for v5, <code>'fa-solid'</code> for v6).</td></tr>
+            <tr><td class="opt-name">icons</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Per-editor icon overrides keyed by button or icon name — SVG markup, or a CSS class list.</td></tr>
+            <tr><td class="opt-name">buttons</td><td class="opt-type">object | array | null</td><td class="opt-default">null</td><td class="opt-desc">Per-editor button definitions, usable by name in <code>toolbar</code>.</td></tr>
+            <tr><td class="opt-name">keyMap</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Keyboard shortcut overrides merged over the defaults: <code>false</code> disables, a string rebinds to a command or button, a function handles it.</td></tr>
             <tr><td class="opt-name">tableHeaderRow</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Insert a <code>&lt;thead&gt;</code> row when creating tables.</td></tr>
             <tr><td class="opt-name">mention</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">@mention autocomplete config. See <a href="#mention-options">mention options</a>.</td></tr>
             <tr><td class="opt-name">lang</td><td class="opt-type">string | object</td><td class="opt-default">'en'</td><td class="opt-desc">UI language. Built-in: <code>'en'</code> <code>'vi'</code> <code>'ja'</code> <code>'zh'</code> <code>'fr'</code> <code>'de'</code> <code>'es'</code> <code>'ko'</code>. Pass an object to override individual strings.</td></tr>
@@ -358,7 +375,8 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">onInit</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Fires after all modules have initialised.</td></tr>
             <tr><td class="opt-name">onDestroy</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Fires before the editor is destroyed.</td></tr>
             <tr><td class="opt-name">onSelectionChange</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Fires on cursor or selection change.</td></tr>
-            <tr><td class="opt-name">onPaste</td><td class="opt-type"><code>(data: {text, html}) =&gt; void</code></td><td class="opt-desc">Fires after every paste event.</td></tr>
+            <tr><td class="opt-name">onBeforeCommand</td><td class="opt-type"><code>({ name, value?, source }) =&gt; void | false</code></td><td class="opt-desc">Fires before a toolbar, shortcut, context-menu or bubble-toolbar command. Return <code>false</code> to cancel.</td></tr>
+            <tr><td class="opt-name">onPaste</td><td class="opt-type"><code>(data: {text, html}) =&gt; void | false | string</code></td><td class="opt-desc">Fires on every paste, before insertion. Return <code>false</code> to cancel, or an HTML string to insert instead (sanitised).</td></tr>
             <tr><td class="opt-name">onImageUpload</td><td class="opt-type"><code>(files: File[]) =&gt; void</code></td><td class="opt-desc">Custom image upload handler (replaces default inline embed).</td></tr>
             <tr><td class="opt-name">onImageError</td><td class="opt-type"><code>(err) =&gt; void</code></td><td class="opt-desc">Fires when image upload fails.</td></tr>
             <tr><td class="opt-name">onCharLimitReached</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Fires when <code>maxChars</code> is reached.</td></tr>
@@ -416,8 +434,11 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
       <h3 class="method-h"><code>AutumnNote.registerButton(btnDef)</code></h3>
       <p class="docs-p">Registers a single button definition in the global registry so it can be referenced by name string in toolbar config. Call <code>ctx.invoke('toolbar.rebuild')</code> after registering on an already-running editor.</p>
 
+      <h3 class="method-h"><code>AutumnNote.registerIcon(name, icon)</code></h3>
+      <p class="docs-p">Sets the icon for a button or icon name in every editor: SVG markup, or a CSS class list such as <code>'bi bi-type-bold'</code>. The per-editor <code>icons</code> option wins.</p>
+
       <h3 class="method-h"><code>AutumnNote.version</code></h3>
-      <p class="docs-p">String containing the library version, e.g. <code>'1.3.0'</code>.</p>
+      <p class="docs-p">String containing the library version, e.g. <code>'3.0.0'</code>.</p>
     </section>
 
     <!-- ── Instance API ── -->
@@ -470,6 +491,9 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
 
       <h3 class="method-h"><code>editor.setDisabled(disabled)</code></h3>
       <p class="docs-p">Enables or disables the editor. <code>true</code> = read-only, toolbar hidden.</p>
+
+      <h3 class="method-h"><code>editor.updateOptions(options)</code></h3>
+      <p class="docs-p">Merges options into a live editor. Theme, <code>themeVars</code>, <code>focusColor</code>, <code>zIndexOffset</code>, toolbar options, <code>statusbar</code>, <code>resizable</code> and <code>popupContainer</code> apply immediately; passing an unchanged value does nothing, so framework wrappers can call it on every render.</p>
 
       <h3 class="method-h"><code>editor.downloadHTML(filename?)</code> / <code>.downloadText()</code> / <code>.downloadMarkdown()</code></h3>
       <p class="docs-p">Triggers a browser download of the content in the specified format. Default filenames: <code>'document.html'</code>, <code>'document.txt'</code>, <code>'document.md'</code>.</p>
@@ -537,14 +561,16 @@ const editor = AutumnNote.create('#editor', {
 const unsub = editor.on('change', (html) => { /* ... */ });
 editor.on('selectionChange', (ctx) => { /* cursor moved */ });
 editor.on('focus', (ctx) => { /* ... */ });
-editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
+editor.on('blur',  (ctx) => { /* ... */ });
+editor.on('beforeCommand', ({ name, source }) => name !== 'codeview'); // false cancels
+editor.on('paste', ({ text }) => text.length > 10000 ? false : undefined);</code></pre>
       </div>
     </section>
 
     <!-- ── Toolbar ── -->
     <section class="docs-section" id="toolbar" aria-label="Toolbar">
       <h2 class="section-h">Toolbar Configuration</h2>
-      <p class="docs-p">The <code>toolbar</code> option is a 2D array — each inner array is a button group (separated by a divider). Items can be <code>ButtonDef</code> objects imported from the library, or string names of registered buttons.</p>
+      <p class="docs-p">The <code>toolbar</code> option is a 2D array — each inner array is a button group (separated by a divider). Items can be built-in button names, names from the <code>buttons</code> option or <code>registerButton()</code>, or <code>ButtonDef</code> objects imported from the library.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">import AutumnNote, {
   boldBtn, italicBtn, underlineBtn,
@@ -553,7 +579,12 @@ editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
   defaultToolbar, // full default toolbar
 } from 'autumnnote';
 
-// Custom toolbar
+// By name — works from JSON, framework props or the UMD build
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['link', 'image'], ['undo', 'redo']],
+});
+
+// Or with the exported definitions
 const editor = AutumnNote.create('#editor', {
   toolbar: [
     [boldBtn, italicBtn, underlineBtn],
@@ -609,9 +640,60 @@ const editor = AutumnNote.create('#editor', {
       </table></div>
     </section>
 
-    <!-- ── What's New v1.8.0 ── -->
+    <!-- ── What's New v3.0.0 ── -->
     <section class="docs-section" id="whats-new" aria-label="What's New">
-      <h2 class="section-h">What's New <span class="badge">v1.8.0</span></h2>
+      <h2 class="section-h">What's New <span class="badge">v3.0.0</span></h2>
+      <p class="docs-p">Version 3.0 is a customisation release: the look, shortcuts, icons, buttons and dropdown lists can all be changed per editor without forking or rebuilding the SCSS.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Theming with CSS custom properties</h3>
+      <p class="docs-p">Every colour, radius and font token is a <code>--an-*</code> property. Theme every editor from CSS, per mode from <code>.an-theme-dark</code>, or one editor through <code>themeVars</code> — no Sass build. Themes can be switched at runtime and never touch <code>&lt;body&gt;</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">// Every editor, from CSS
+      .an-container, .an-portal { --an-primary: #f97316; --an-radius: 10px; }
+
+      // One editor
+      const editor = AutumnNote.create('#editor', {
+        theme: 'auto',
+        themeVars: { primary: '#f97316', radius: '10px' },
+      });
+      editor.updateOptions({ theme: 'dark' });   // switch at runtime</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Per-editor portal</h3>
+      <p class="docs-p">Each editor mounts its dialogs, tooltips and menus in its own <code>.an-portal</code>, which carries the editor's theme. <code>popupContainer</code> moves it into a modal or shadow root; <code>zIndexOffset</code> lifts every floating layer.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Icons, buttons, dropdowns and shortcuts</h3>
+      <p class="docs-p">Toolbars accept built-in button names, <code>buttons</code> defines buttons for one editor, and <code>icons</code> / <code>registerIcon()</code> swap icons. <code>keyMap</code> disables or rebinds shortcuts — the shortcuts dialog follows it.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">AutumnNote.create('#editor', {
+        toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['link', 'save']],
+        buttons: {
+          save: { icon: '&lt;svg viewBox="0 0 24 24"&gt;…&lt;/svg&gt;', tooltip: 'Save', action: (ctx) => save(ctx.getHTML()) },
+        },
+        icons: { bold: 'bi bi-type-bold' },
+        fontSizes: ['12px', '14px', '18px', '24px'],
+        keyMap: {
+          'Mod+F': false,                 // give Ctrl+F back to the browser
+          'Mod+S': 'save',                // bind to a toolbar button
+          'Mod+Shift+D': (ctx) => ctx.insertText(new Date().toLocaleDateString()),
+        },
+        onBeforeCommand: ({ name }) => name !== 'codeview' || user.isAdmin,
+      });</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Integration hooks</h3>
+      <p class="docs-p"><code>beforeCommand</code> can cancel any command; <code>paste</code> handlers can cancel or rewrite a paste; <code>linkDefaults</code>, <code>videoProviders</code> and <code>iframeHosts</code> tune links and embeds. <code>statusbar: false</code> hides the statusbar (#119).</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Upgrading from 2.x</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li><strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong> is required to install the package; Node 20 is no longer supported.</li>
+        <li>Floating UI now lives inside <code>.an-portal</code> — selectors such as <code>body &gt; .an-dialog-overlay</code> need updating.</li>
+        <li><code>&lt;body&gt;</code> no longer gets <code>an-theme-dark</code> / <code>an-theme-auto</code>; key page CSS on the editor container instead.</li>
+        <li><code>maxPasteSize</code> is in bytes, as documented — use <code>5 * 1024 * 1024</code>, not <code>5</code>.</li>
+        <li>Shortcuts match Shift and Alt exactly (<code>Ctrl+Shift+B</code> no longer bolds). Add extra combos through <code>keyMap</code>.</li>
+        <li><code>onPaste</code> return values are used: <code>false</code> cancels the paste, a string replaces it.</li>
+      </ul>
+      <p class="docs-p">Full list in the <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
+    </section>
+
+    <!-- ── What's New v1.8.0 ── -->
+    <section class="docs-section" id="whats-new-1-8" aria-label="v1.8.0 highlights">
+      <h2 class="section-h">v1.8.0 highlights</h2>
       <p class="docs-p">Version 1.8.0 expands the public API with new Context methods, adds UMD button definitions, whole-word search, paste size limit, configurable image resize minimum, i18n improvements, and more.</p>
 
       <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Table Sort, CSV Export &amp; Cell Padding</h3>
