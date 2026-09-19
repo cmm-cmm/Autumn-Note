@@ -43,7 +43,7 @@
     "description": "Tài liệu API đầy đủ cho Autumn Note — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Bao gồm tất cả tùy chọn, phương thức tĩnh, phương thức instance, sự kiện, cấu hình toolbar, Plugin API, và kiểu TypeScript.",
     "url": "https://autumn.konexforge.com/docs.html",
     "datePublished": "2026-01-01",
-    "dateModified": "2026-07-11",
+    "dateModified": "2026-09-19",
     "keywords": "wysiwyg editor api, tùy chọn autumnnote, plugin api, cấu hình toolbar, typescript",
     "inLanguage": "vi",
     "author": { "@type": "Person", "name": "Minh Pham" },
@@ -66,7 +66,7 @@
     <a class="brand" href="./" aria-label="Trang chủ Autumn Note">
       <img src="/image/banner.png" width="26" height="26" alt="" />
       <span class="brand-name">Autumn Note</span>
-      <span class="brand-version">v2.7.1</span>
+      <span class="brand-version">v3.0.0</span>
     </a>
     <nav class="header-nav" aria-label="Liên kết trang">
       <a class="nav-link" href="./">Trang chủ</a>
@@ -114,7 +114,8 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Tính năng</div>
-        <a class="sidebar-link" href="#whats-new">Có gì mới v1.8.0</a>
+        <a class="sidebar-link" href="#whats-new">Có gì mới v3.0.0</a>
+        <a class="sidebar-link sub" href="#whats-new-1-8">Điểm nổi bật v1.8.0</a>
         <a class="sidebar-link" href="#events">Callback &amp; Sự kiện</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
         <a class="sidebar-link" href="#plugin-api">Plugin API</a>
@@ -137,7 +138,7 @@
   <main class="docs-main" id="docs-main">
 
     <h1 class="page-title">Tài liệu API</h1>
-    <p class="page-sub">Autumn Note v2.7.1 — Nhanh. Nhẹ. Đáng tin cậy. Hiệu quả.</p>
+    <p class="page-sub">Autumn Note v3.0.0 — Nhanh. Nhẹ. Đáng tin cậy. Hiệu quả.</p>
 
     <!-- ── Installation ── -->
     <section class="docs-section" id="installation" aria-label="Cài đặt">
@@ -153,6 +154,7 @@
         <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
 &lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;</code></pre>
       </div>
+      <div class="callout"><strong>Yêu cầu:</strong> cài từ npm cần <strong>Node 22 LTS (22.22.2+) hoặc Node 24.15+</strong>. Bản thân editor chạy trên mọi trình duyệt hiện đại — bản CDN không có yêu cầu gì.</div>
     </section>
 
     <!-- ── Framework Wrappers ── -->
@@ -306,21 +308,29 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">maxHeight</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Chiều cao tối đa (px). <code>0</code> = không giới hạn.</td></tr>
             <tr><td class="opt-name">focus</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Tự động focus editor khi khởi tạo.</td></tr>
             <tr><td class="opt-name">resizable</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Hiện tay cầm kéo trong statusbar để thay đổi kích thước editor.</td></tr>
+            <tr><td class="opt-name">statusbar</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Hiện statusbar (đếm từ/ký tự, tay cầm resize). <code>false</code> để ẩn, ví dụ cho trình xem chỉ đọc; <code>getWordCount()</code> / <code>getCharCount()</code> vẫn hoạt động.</td></tr>
             <tr><td class="opt-name">readOnly</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Bắt đầu ở chế độ chỉ đọc (không chỉnh sửa). Bật/tắt lúc runtime bằng <code>setDisabled()</code>.</td></tr>
             <tr><td class="opt-name">spellcheck</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Bật kiểm tra chính tả của trình duyệt.</td></tr>
-            <tr><td class="opt-name">toolbar</td><td class="opt-type">Array&lt;Array&lt;…&gt;&gt;</td><td class="opt-default">defaultToolbar</td><td class="opt-desc">Mảng 2 chiều gồm các nhóm nút. Mỗi phần tử là object <code>ButtonDef</code> hoặc tên chuỗi của một nút đã đăng ký.</td></tr>
+            <tr><td class="opt-name">toolbar</td><td class="opt-type">Array&lt;Array&lt;…&gt;&gt;</td><td class="opt-default">defaultToolbar</td><td class="opt-desc">Mảng 2 chiều gồm các nhóm nút. Mỗi phần tử là tên nút có sẵn (<code>'bold'</code>), tên từ <code>buttons</code> / <code>registerButton()</code>, hoặc object <code>ButtonDef</code>.</td></tr>
             <tr><td class="opt-name">stickyToolbar</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Dính toolbar vào đầu viewport khi cuộn trang.</td></tr>
             <tr><td class="opt-name">stickyToolbarOffset</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Khoảng cách từ trên (px) cho toolbar dính (ví dụ: chiều cao thanh nav cố định).</td></tr>
             <tr><td class="opt-name">toolbarOverflow</td><td class="opt-type">'wrap' | 'scroll'</td><td class="opt-default">'wrap'</td><td class="opt-desc">Chiến lược tràn toolbar khi các nút không vừa một hàng.</td></tr>
             <tr><td class="opt-name">bubbleToolbar</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Hiện thanh công cụ nổi nhỏ phía trên văn bản được chọn.</td></tr>
             <tr><td class="opt-name">bubbleToolbarItems</td><td class="opt-type">string[]</td><td class="opt-default">xem bên dưới</td><td class="opt-desc">Tên các nút trong thanh công cụ nổi. Mặc định: <code>['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']</code>.</td></tr>
-            <tr><td class="opt-name">theme</td><td class="opt-type">'light' | 'dark'</td><td class="opt-default">'light'</td><td class="opt-desc">Giao diện màu. Dùng <code>'dark'</code> hoặc bật/tắt qua <code>container.classList.add('an-theme-dark')</code>.</td></tr>
+            <tr><td class="opt-name">theme</td><td class="opt-type">'light' | 'dark' | 'auto'</td><td class="opt-default">'light'</td><td class="opt-desc">Giao diện màu. <code>'auto'</code> theo cài đặt của hệ điều hành. Đổi khi đang chạy bằng <code>editor.updateOptions({ theme: 'dark' })</code>; tùy biến màu qua <code>themeVars</code>.</td></tr>
             <tr><td class="opt-name">focusColor</td><td class="opt-type">string | null</td><td class="opt-default">null</td><td class="opt-desc">Màu viền focus tùy chỉnh (ví dụ: <code>'#f97316'</code>).</td></tr>
+            <tr><td class="opt-name">themeVars</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Ghi đè design token cho editor này, ví dụ <code>{ primary: '#f97316', radius: '10px' }</code>. Xem <a href="#whats-new">Theming</a>.</td></tr>
+            <tr><td class="opt-name">zIndexOffset</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Cộng thêm vào z-index của mọi lớp nổi (tooltip, popover, dialog, fullscreen) — ví dụ để nằm trên modal của trang.</td></tr>
+            <tr><td class="opt-name">popupContainer</td><td class="opt-type">string | Element | ShadowRoot</td><td class="opt-default">null</td><td class="opt-desc">Nơi gắn dialog, tooltip và menu (mặc định <code>document.body</code>). Dùng trong modal giữ focus hoặc shadow root.</td></tr>
             <tr><td class="opt-name">direction</td><td class="opt-type">'ltr' | 'rtl'</td><td class="opt-default">'ltr'</td><td class="opt-desc">Hướng văn bản cho vùng soạn thảo.</td></tr>
             <tr><td class="opt-name">defaultFontFamily</td><td class="opt-type">string</td><td class="opt-default">'Arial'</td><td class="opt-desc">Font mặc định áp dụng cho editor khi khởi tạo.</td></tr>
             <tr><td class="opt-name">defaultFontSize</td><td class="opt-type">string</td><td class="opt-default">'14px'</td><td class="opt-desc">Cỡ chữ mặc định.</td></tr>
             <tr><td class="opt-name">fontFamilies</td><td class="opt-type">string[]</td><td class="opt-default">10 font</td><td class="opt-desc">Các tùy chọn hiển thị trong dropdown chọn font.</td></tr>
-            <tr><td class="opt-name">colorSwatches</td><td class="opt-type">string[]</td><td class="opt-default">[]</td><td class="opt-desc">Các mã màu hex tùy chỉnh thêm vào đầu mọi color picker.</td></tr>
+            <tr><td class="opt-name">fontSizes</td><td class="opt-type">string[]</td><td class="opt-default">'8px'–'72px'</td><td class="opt-desc">Các cỡ chữ trong dropdown cỡ chữ.</td></tr>
+            <tr><td class="opt-name">lineHeights</td><td class="opt-type">string[]</td><td class="opt-default">'1.0'–'3.0'</td><td class="opt-desc">Các giá trị trong dropdown giãn dòng.</td></tr>
+            <tr><td class="opt-name">paragraphStyles</td><td class="opt-type">{ value, label }[]</td><td class="opt-default">Normal, H1–H6, Quote, Code</td><td class="opt-desc">Các định dạng khối trong dropdown kiểu đoạn (<code>value</code> là thẻ khối).</td></tr>
+            <tr><td class="opt-name">colorSwatches</td><td class="opt-type">string[]</td><td class="opt-default">[]</td><td class="opt-desc">Các màu tùy chỉnh thêm vào đầu bảng màu (toolbar, thanh công cụ nổi, menu chuột phải).</td></tr>
+            <tr><td class="opt-name">colorPalette</td><td class="opt-type">string[] | null</td><td class="opt-default">null</td><td class="opt-desc">Thay bảng 24 màu có sẵn trong toolbar, thanh công cụ nổi và menu chuột phải.</td></tr>
             <tr><td class="opt-name">tabSize</td><td class="opt-type">number</td><td class="opt-default">4</td><td class="opt-desc">Số khoảng trắng chèn vào mỗi lần nhấn Tab (trong khối mã).</td></tr>
             <tr><td class="opt-name">maxChars</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Số ký tự tối đa. <code>0</code> = không giới hạn. Hiện cảnh báo trong statusbar khi gần đạt giới hạn.</td></tr>
             <tr><td class="opt-name">maxWords</td><td class="opt-type">number</td><td class="opt-default">0</td><td class="opt-desc">Số từ tối đa. <code>0</code> = không giới hạn.</td></tr>
@@ -328,10 +338,14 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">pasteAsPlainText</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Ép paste dạng văn bản thuần — loại bỏ toàn bộ HTML.</td></tr>
             <tr><td class="opt-name">pasteCleanHTML</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Làm sạch HTML khi paste (loại bỏ script, event handler, v.v.).</td></tr>
             <tr><td class="opt-name">pasteStripAttributes</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Loại bỏ thuộc tính <code>class</code>, <code>style</code>, và <code>data-*</code> khỏi HTML được paste.</td></tr>
+            <tr><td class="opt-name">maxPasteSize</td><td class="opt-type">number</td><td class="opt-default">5242880</td><td class="opt-desc">Kích thước paste tối đa tính bằng <strong>byte</strong> (mặc định 5 MB, <code>0</code> = không giới hạn).</td></tr>
             <tr><td class="opt-name">markdownPaste</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Chuyển đổi Markdown được paste thành HTML.</td></tr>
             <tr><td class="opt-name">markdownShortcuts</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Kích hoạt Markdown nội dòng: <code>**bold**</code>, <code>## heading</code>, <code>- item</code>, v.v.</td></tr>
             <tr><td class="opt-name">allowImageUpload</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Cho phép tải file lên trong hộp thoại chèn ảnh.</td></tr>
             <tr><td class="opt-name">maxImageSize</td><td class="opt-type">number</td><td class="opt-default">5</td><td class="opt-desc">Kích thước tối đa của ảnh tải lên (MB).</td></tr>
+            <tr><td class="opt-name">linkDefaults</td><td class="opt-type">object</td><td class="opt-default">{ openInNewTab: false, … }</td><td class="opt-desc">Mặc định cho dialog link: <code>openInNewTab</code>, <code>rel</code> (luôn có <code>noopener</code>), <code>defaultProtocol</code>. Link tương đối không bao giờ bị thêm tiền tố.</td></tr>
+            <tr><td class="opt-name">videoProviders</td><td class="opt-type">array | null</td><td class="opt-default">null</td><td class="opt-desc">Nguồn video bổ sung: <code>[{ name, match: RegExp, embed: (match, url) =&gt; embedUrl }]</code>, được thử trước YouTube/Vimeo.</td></tr>
+            <tr><td class="opt-name">iframeHosts</td><td class="opt-type">string[] | null</td><td class="opt-default">null</td><td class="opt-desc">Các hostname bổ sung có iframe được giữ lại khi sanitise (đúng hostname, chỉ HTTPS). Chỉ liệt kê host bạn tin cậy.</td></tr>
             <tr><td class="opt-name">codeHighlight</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Tự động tải Prism.js để tô sáng cú pháp trong khối mã.</td></tr>
             <tr><td class="opt-name">codeHighlightCDN</td><td class="opt-type">string</td><td class="opt-default">Prism 1.29 CDN</td><td class="opt-desc">URL gốc CDN của Prism (ghi đè để tự host).</td></tr>
             <tr><td class="opt-name">autoSave</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Lưu nội dung vào <code>localStorage</code> mỗi khi thay đổi.</td></tr>
@@ -341,6 +355,9 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">useBootstrap</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Áp dụng class nút Bootstrap cho các nút toolbar.</td></tr>
             <tr><td class="opt-name">useFontAwesome</td><td class="opt-type">boolean</td><td class="opt-default">true</td><td class="opt-desc">Hiển thị icon toolbar dạng Font Awesome glyph (yêu cầu CSS FA).</td></tr>
             <tr><td class="opt-name">fontAwesomeClass</td><td class="opt-type">string</td><td class="opt-default">'fas'</td><td class="opt-desc">Class prefix FA (<code>'fas'</code> cho v5, <code>'fa-solid'</code> cho v6).</td></tr>
+            <tr><td class="opt-name">icons</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Ghi đè icon theo tên nút hoặc tên icon cho từng editor — mã SVG, hoặc danh sách class CSS.</td></tr>
+            <tr><td class="opt-name">buttons</td><td class="opt-type">object | array | null</td><td class="opt-default">null</td><td class="opt-desc">Định nghĩa nút riêng cho từng editor, dùng được bằng tên trong <code>toolbar</code>.</td></tr>
+            <tr><td class="opt-name">keyMap</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Ghi đè phím tắt, gộp lên bảng mặc định: <code>false</code> để tắt, chuỗi để gán lại cho lệnh hoặc nút, hàm để tự xử lý.</td></tr>
             <tr><td class="opt-name">tableHeaderRow</td><td class="opt-type">boolean</td><td class="opt-default">false</td><td class="opt-desc">Chèn dòng <code>&lt;thead&gt;</code> khi tạo bảng.</td></tr>
             <tr><td class="opt-name">mention</td><td class="opt-type">object | null</td><td class="opt-default">null</td><td class="opt-desc">Cấu hình tự động gợi ý @mention. Xem <a href="#mention-options">tùy chọn mention</a>.</td></tr>
             <tr><td class="opt-name">lang</td><td class="opt-type">string | object</td><td class="opt-default">'en'</td><td class="opt-desc">Ngôn ngữ giao diện. Có sẵn: <code>'en'</code> <code>'vi'</code> <code>'ja'</code> <code>'zh'</code> <code>'fr'</code> <code>'de'</code> <code>'es'</code> <code>'ko'</code>. Truyền một object để ghi đè từng chuỗi riêng lẻ.</td></tr>
@@ -359,7 +376,8 @@ editor.destroy(); // clean up when done</code></pre>
             <tr><td class="opt-name">onInit</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt sau khi tất cả module đã khởi tạo xong.</td></tr>
             <tr><td class="opt-name">onDestroy</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt trước khi editor bị hủy.</td></tr>
             <tr><td class="opt-name">onSelectionChange</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi con trỏ hoặc vùng chọn thay đổi.</td></tr>
-            <tr><td class="opt-name">onPaste</td><td class="opt-type"><code>(data: {text, html}) =&gt; void</code></td><td class="opt-desc">Kích hoạt sau mỗi lần paste.</td></tr>
+            <tr><td class="opt-name">onBeforeCommand</td><td class="opt-type"><code>({ name, value?, source }) =&gt; void | false</code></td><td class="opt-desc">Kích hoạt trước lệnh từ toolbar, phím tắt, menu chuột phải hoặc thanh công cụ nổi. Trả về <code>false</code> để hủy.</td></tr>
+            <tr><td class="opt-name">onPaste</td><td class="opt-type"><code>(data: {text, html}) =&gt; void | false | string</code></td><td class="opt-desc">Kích hoạt ở mỗi lần paste, trước khi chèn. Trả về <code>false</code> để hủy, hoặc chuỗi HTML để chèn thay thế (được sanitise).</td></tr>
             <tr><td class="opt-name">onImageUpload</td><td class="opt-type"><code>(files: File[]) =&gt; void</code></td><td class="opt-desc">Handler tải ảnh tùy chỉnh (thay thế nhúng inline mặc định).</td></tr>
             <tr><td class="opt-name">onImageError</td><td class="opt-type"><code>(err) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi tải ảnh thất bại.</td></tr>
             <tr><td class="opt-name">onCharLimitReached</td><td class="opt-type"><code>(ctx: Context) =&gt; void</code></td><td class="opt-desc">Kích hoạt khi đạt <code>maxChars</code>.</td></tr>
@@ -417,8 +435,11 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
       <h3 class="method-h"><code>AutumnNote.registerButton(btnDef)</code></h3>
       <p class="docs-p">Đăng ký một định nghĩa nút đơn vào registry toàn cục để có thể tham chiếu bằng tên chuỗi trong cấu hình toolbar. Gọi <code>ctx.invoke('toolbar.rebuild')</code> sau khi đăng ký trên một editor đang chạy.</p>
 
+      <h3 class="method-h"><code>AutumnNote.registerIcon(name, icon)</code></h3>
+      <p class="docs-p">Đặt icon cho một tên nút hoặc tên icon ở mọi editor: mã SVG, hoặc danh sách class CSS như <code>'bi bi-type-bold'</code>. Tùy chọn <code>icons</code> của từng editor được ưu tiên.</p>
+
       <h3 class="method-h"><code>AutumnNote.version</code></h3>
-      <p class="docs-p">Chuỗi chứa phiên bản thư viện, ví dụ <code>'1.3.0'</code>.</p>
+      <p class="docs-p">Chuỗi chứa phiên bản thư viện, ví dụ <code>'3.0.0'</code>.</p>
     </section>
 
     <!-- ── Instance API ── -->
@@ -471,6 +492,9 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
 
       <h3 class="method-h"><code>editor.setDisabled(disabled)</code></h3>
       <p class="docs-p">Bật hoặc tắt editor. <code>true</code> = chỉ đọc, ẩn toolbar.</p>
+
+      <h3 class="method-h"><code>editor.updateOptions(options)</code></h3>
+      <p class="docs-p">Gộp tùy chọn vào editor đang chạy. Theme, <code>themeVars</code>, <code>focusColor</code>, <code>zIndexOffset</code>, tùy chọn toolbar, <code>statusbar</code>, <code>resizable</code> và <code>popupContainer</code> áp dụng ngay; truyền lại giá trị không đổi thì không làm gì, nên wrapper framework có thể gọi ở mỗi lần render.</p>
 
       <h3 class="method-h"><code>editor.downloadHTML(filename?)</code> / <code>.downloadText()</code> / <code>.downloadMarkdown()</code></h3>
       <p class="docs-p">Kích hoạt tải nội dung xuống trình duyệt theo định dạng chỉ định. Tên file mặc định: <code>'document.html'</code>, <code>'document.txt'</code>, <code>'document.md'</code>.</p>
@@ -538,14 +562,16 @@ const editor = AutumnNote.create('#editor', {
 const unsub = editor.on('change', (html) => { /* ... */ });
 editor.on('selectionChange', (ctx) => { /* cursor moved */ });
 editor.on('focus', (ctx) => { /* ... */ });
-editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
+editor.on('blur',  (ctx) => { /* ... */ });
+editor.on('beforeCommand', ({ name, source }) => name !== 'codeview'); // false cancels
+editor.on('paste', ({ text }) => text.length > 10000 ? false : undefined);</code></pre>
       </div>
     </section>
 
     <!-- ── Toolbar ── -->
     <section class="docs-section" id="toolbar" aria-label="Toolbar">
       <h2 class="section-h">Cấu hình Toolbar</h2>
-      <p class="docs-p">Tùy chọn <code>toolbar</code> là một mảng 2 chiều — mỗi mảng con là một nhóm nút (ngăn cách bằng dấu phân cách). Phần tử có thể là object <code>ButtonDef</code> import từ thư viện, hoặc tên chuỗi của nút đã đăng ký.</p>
+      <p class="docs-p">Tùy chọn <code>toolbar</code> là một mảng 2 chiều — mỗi mảng con là một nhóm nút (ngăn cách bằng dấu phân cách). Phần tử có thể là tên nút có sẵn, tên từ tùy chọn <code>buttons</code> hoặc <code>registerButton()</code>, hoặc object <code>ButtonDef</code> import từ thư viện.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
         <pre><code class="language-js">import AutumnNote, {
   boldBtn, italicBtn, underlineBtn,
@@ -554,7 +580,12 @@ editor.on('blur',  (ctx) => { /* ... */ });</code></pre>
   defaultToolbar, // full default toolbar
 } from 'autumnnote';
 
-// Custom toolbar
+// Theo tên — dùng được từ JSON, props của framework hoặc bản UMD
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['link', 'image'], ['undo', 'redo']],
+});
+
+// Or with the exported definitions
 const editor = AutumnNote.create('#editor', {
   toolbar: [
     [boldBtn, italicBtn, underlineBtn],
@@ -610,9 +641,60 @@ const editor = AutumnNote.create('#editor', {
       </table></div>
     </section>
 
-    <!-- ── What's New v1.8.0 ── -->
+    <!-- ── What's New v3.0.0 ── -->
     <section class="docs-section" id="whats-new" aria-label="Có gì mới">
-      <h2 class="section-h">Có gì mới <span class="badge">v1.8.0</span></h2>
+      <h2 class="section-h">Có gì mới <span class="badge">v3.0.0</span></h2>
+      <p class="docs-p">Phiên bản 3.0 tập trung vào khả năng tùy biến: giao diện, phím tắt, icon, nút và danh sách dropdown đều thay đổi được cho từng editor mà không cần fork hay build lại SCSS.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Theming bằng CSS custom properties</h3>
+      <p class="docs-p">Mọi màu, bo góc và font đều là thuộc tính <code>--an-*</code>. Đổi theme cho mọi editor bằng CSS, theo chế độ qua <code>.an-theme-dark</code>, hoặc cho một editor qua <code>themeVars</code> — không cần build Sass. Theme đổi được khi đang chạy và không bao giờ chạm vào <code>&lt;body&gt;</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">// Every editor, from CSS
+      .an-container, .an-portal { --an-primary: #f97316; --an-radius: 10px; }
+
+      // One editor
+      const editor = AutumnNote.create('#editor', {
+        theme: 'auto',
+        themeVars: { primary: '#f97316', radius: '10px' },
+      });
+      editor.updateOptions({ theme: 'dark' });   // switch at runtime</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Portal riêng cho từng editor</h3>
+      <p class="docs-p">Mỗi editor gắn dialog, tooltip và menu vào <code>.an-portal</code> riêng, mang theo theme của editor. <code>popupContainer</code> chuyển nó vào modal hoặc shadow root; <code>zIndexOffset</code> nâng mọi lớp nổi.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Icon, nút, dropdown và phím tắt</h3>
+      <p class="docs-p">Toolbar nhận tên nút có sẵn, <code>buttons</code> định nghĩa nút cho một editor, <code>icons</code> / <code>registerIcon()</code> đổi icon. <code>keyMap</code> tắt hoặc gán lại phím tắt — hộp thoại phím tắt cập nhật theo.</p>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
+        <pre><code class="language-js">AutumnNote.create('#editor', {
+        toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['link', 'save']],
+        buttons: {
+          save: { icon: '&lt;svg viewBox="0 0 24 24"&gt;…&lt;/svg&gt;', tooltip: 'Save', action: (ctx) => save(ctx.getHTML()) },
+        },
+        icons: { bold: 'bi bi-type-bold' },
+        fontSizes: ['12px', '14px', '18px', '24px'],
+        keyMap: {
+          'Mod+F': false,                 // give Ctrl+F back to the browser
+          'Mod+S': 'save',                // bind to a toolbar button
+          'Mod+Shift+D': (ctx) => ctx.insertText(new Date().toLocaleDateString()),
+        },
+        onBeforeCommand: ({ name }) => name !== 'codeview' || user.isAdmin,
+      });</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Hook tích hợp</h3>
+      <p class="docs-p"><code>beforeCommand</code> hủy được mọi lệnh; handler <code>paste</code> hủy hoặc viết lại nội dung paste; <code>linkDefaults</code>, <code>videoProviders</code> và <code>iframeHosts</code> tinh chỉnh link và nhúng. <code>statusbar: false</code> ẩn statusbar (#119).</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Nâng cấp từ 2.x</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li>Cần <strong>Node 22 LTS (22.22.2+) hoặc Node 24.15+</strong> để cài package; Node 20 không còn được hỗ trợ.</li>
+        <li>Floating UI giờ nằm trong <code>.an-portal</code> — selector như <code>body &gt; .an-dialog-overlay</code> cần cập nhật.</li>
+        <li><code>&lt;body&gt;</code> không còn nhận <code>an-theme-dark</code> / <code>an-theme-auto</code>; hãy viết CSS theo container của editor.</li>
+        <li><code>maxPasteSize</code> tính bằng byte như tài liệu — dùng <code>5 * 1024 * 1024</code>, không phải <code>5</code>.</li>
+        <li>Phím tắt khớp chính xác Shift và Alt (<code>Ctrl+Shift+B</code> không còn in đậm). Thêm tổ hợp khác qua <code>keyMap</code>.</li>
+        <li>Giá trị trả về của <code>onPaste</code> được dùng: <code>false</code> hủy paste, chuỗi sẽ thay thế nội dung.</li>
+      </ul>
+      <p class="docs-p">Danh sách đầy đủ trong <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
+    </section>
+
+    <!-- ── What's New v1.8.0 ── -->
+    <section class="docs-section" id="whats-new-1-8" aria-label="Điểm nổi bật v1.8.0">
+      <h2 class="section-h">Điểm nổi bật v1.8.0</h2>
       <p class="docs-p">Phiên bản 1.8.0 mở rộng API công khai với các phương thức Context mới, thêm định nghĩa nút UMD, tìm kiếm nguyên từ, giới hạn kích thước paste, kích thước tối thiểu khi thay đổi ảnh có thể cấu hình, cải tiến i18n, và nhiều hơn nữa.</p>
 
       <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Sắp xếp bảng, xuất CSV &amp; đệm ô</h3>
@@ -911,7 +993,7 @@ console.log(api?.version); // '1.0.0'</code></pre>
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span>Built with ❤️ by KonexForge · Autumn Note v2.7.1</span>
+    <span>Built with ❤️ by KonexForge · Autumn Note v3.0.0</span>
     <nav class="footer-links" aria-label="Liên kết chân trang">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>

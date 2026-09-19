@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-19
+
+A major version because of the changes listed under **Changed** below: Node 20
+is no longer supported, and a few DOM and option semantics moved.
+Most integrations upgrade without code changes.
+
 A customisation release, prompted by #119 (hide the statusbar). Reviewing it
 showed that much of the editor's look and behaviour could only be changed by
 forking: colours lived in SCSS that the package does not ship, shortcuts were an
@@ -46,7 +52,7 @@ if-chain, and dropdown lists and palettes were constants.
 
 These can affect existing integrations:
 
-- **Node 24 LTS (24.11+) or newer is required** for development and package usage (`engines`); Node 20 and 22 are no longer supported. CI builds on Node 24 and also tests on the latest LTS and latest release.
+- **Node 20 is no longer supported.** `engines` is now `^22.22.2 || >=24.15.0` — the range jsdom 30, used by the test suite, requires — for development and package usage. CI builds on Node 22 and also runs the tests on Node 24 and the latest release.
 - **Floating UI is no longer a direct child of `<body>`**; it sits inside `.an-portal`. Selectors such as `body > .an-dialog-overlay` need updating.
 - **`<body>` no longer gets `an-theme-dark` / `an-theme-auto`.** Page CSS keyed on those classes should use the editor's container instead.
 - **`maxPasteSize` is bytes, as documented.** A value set in megabytes (e.g. `5`) now means 5 bytes; use `5 * 1024 * 1024`.

@@ -63,7 +63,7 @@
     "operatingSystem": "Web Browser",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "2.7.1",
+    "softwareVersion": "3.0.0",
     "isAccessibleForFree": true,
     "author": { "@type": "Person", "name": "Minh Pham" },
     "codeRepository": "https://github.com/cmm-cmm/Autumn-Note",
@@ -128,9 +128,9 @@
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
 
-  <script type="module" crossorigin src="/assets/main-B0VwiJNs.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/all-DBlIgttk.js">
-  <link rel="stylesheet" crossorigin href="/assets/all-BmtDg85F.css">
+  <script type="module" crossorigin src="/assets/main-BN6OoHNu.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/all-BLs9rGDw.js">
+  <link rel="stylesheet" crossorigin href="/assets/all-Dl1xo6Y8.css">
   <link rel="stylesheet" crossorigin href="/assets/assets-Q28XmhDz.css">
 </head>
 <body>
@@ -142,7 +142,7 @@
       <a class="brand" href="https://autumn.konexforge.com/" aria-label="Autumn Note home">
         <img src="/image/banner.png" width="30" height="30" alt="Autumn Note logo" />
         <span class="brand-name">Autumn Note</span>
-        <span class="brand-version">v2.7.1</span>
+        <span class="brand-version">v3.0.0</span>
       </a>
       <nav class="header-nav" aria-label="Site links">
         <a class="nav-link" href="docs.html">Docs</a>
@@ -160,7 +160,7 @@
   <main>
   <!-- ===================== HERO ===================== -->
   <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v2.7.1</span>
+    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v3.0.0</span>
     <h1 class="hero-title">Fast, Lightweight WYSIWYG Editor<br>for Vanilla JavaScript</h1>
     <p class="hero-sub">
       A modern WYSIWYG editor built with vanilla JavaScript (ES2022+) —
@@ -186,7 +186,10 @@
       <!-- Set 1 — accessible -->
       <li class="feat">✦ Zero dependencies</li>
       <li class="feat">✦ ES2022 + TypeScript</li>
-      <li class="feat">✦ Dark / Light theme</li>
+      <li class="feat">✦ Dark / Light / Auto theme</li>
+      <li class="feat">✦ CSS-variable theming</li>
+      <li class="feat">✦ Custom keyboard shortcuts</li>
+      <li class="feat">✦ Per-editor icons &amp; buttons</li>
       <li class="feat">✦ 8 languages (i18n)</li>
       <li class="feat">✦ Bubble toolbar</li>
       <li class="feat">✦ Markdown shortcuts</li>
@@ -208,7 +211,10 @@
       <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
       <li class="feat" aria-hidden="true">✦ Zero dependencies</li>
       <li class="feat" aria-hidden="true">✦ ES2022 + TypeScript</li>
-      <li class="feat" aria-hidden="true">✦ Dark / Light theme</li>
+      <li class="feat" aria-hidden="true">✦ Dark / Light / Auto theme</li>
+      <li class="feat" aria-hidden="true">✦ CSS-variable theming</li>
+      <li class="feat" aria-hidden="true">✦ Custom keyboard shortcuts</li>
+      <li class="feat" aria-hidden="true">✦ Per-editor icons &amp; buttons</li>
       <li class="feat" aria-hidden="true">✦ 8 languages (i18n)</li>
       <li class="feat" aria-hidden="true">✦ Bubble toolbar</li>
       <li class="feat" aria-hidden="true">✦ Markdown shortcuts</li>
@@ -381,7 +387,7 @@ const editor = AutumnNote.create('#my-editor', {
         </details>
         <details class="faq-item">
           <summary>How do I install Autumn Note?</summary>
-          <p>Install via npm: <code>npm install autumnnote</code>. Then import the library and CSS: <code>import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';</code>. Create an editor with <code>AutumnNote.create('#my-editor')</code>.</p>
+          <p>Install via npm: <code>npm install autumnnote</code>. Then import the library and CSS: <code>import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';</code>. Create an editor with <code>AutumnNote.create('#my-editor')</code>. Installing from npm requires Node 22 LTS (22.22.2+) or newer; the CDN build needs nothing but a modern browser.</p>
         </details>
       </div>
     </div>
