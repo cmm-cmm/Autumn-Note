@@ -1055,7 +1055,7 @@ autumn-note-ce/
 
 ### Development commands
 
-Development and package usage require Node 20.19+ and pnpm 11.1.3.
+Development and package usage require Node 24 LTS (24.11+) or newer and pnpm 11.1.3.
 
 ```bash
 pnpm install                           # install all workspace packages

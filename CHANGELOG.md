@@ -46,6 +46,7 @@ if-chain, and dropdown lists and palettes were constants.
 
 These can affect existing integrations:
 
+- **Node 24 LTS (24.11+) or newer is required** for development and package usage (`engines`); Node 20 and 22 are no longer supported. CI builds on Node 24 and also tests on the latest LTS and latest release.
 - **Floating UI is no longer a direct child of `<body>`**; it sits inside `.an-portal`. Selectors such as `body > .an-dialog-overlay` need updating.
 - **`<body>` no longer gets `an-theme-dark` / `an-theme-auto`.** Page CSS keyed on those classes should use the editor's container instead.
 - **`maxPasteSize` is bytes, as documented.** A value set in megabytes (e.g. `5`) now means 5 bytes; use `5 * 1024 * 1024`.

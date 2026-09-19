@@ -96,7 +96,7 @@ describe('env browser detection', () => {
 describe('env without a global navigator (SSR)', () => {
   it('imports without throwing on a runtime that has no navigator', async () => {
     // Reading navigator at module scope made `import 'autumnnote'` throw
-    // ReferenceError under SSR on Node 20 — before any editor was created,
+    // ReferenceError under SSR without a global navigator — before any editor was created,
     // and for a module nothing inside the library even uses.
     vi.stubGlobal('navigator', undefined);
     vi.resetModules();

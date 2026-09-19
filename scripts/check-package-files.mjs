@@ -20,7 +20,7 @@ import { pathToFileURL } from 'node:url';
 
 /**
  * `npm pack --json` has two shapes in the wild, and this repo hits both: CI runs
- * the npm bundled with Node 22 (v10, a top-level array), while the publish job
+ * the npm bundled with Node 24 (v11, a top-level array), while the publish job
  * upgrades to npm@latest for trusted publishing (v12, an object keyed by package
  * name). Accept either, and fail with something readable if a future npm invents
  * a third — indexing `[0]` blindly died with "Cannot read properties of

@@ -6,7 +6,7 @@
  * This module is re-exported from the package entry point, so reading
  * `navigator` eagerly meant that merely `import`ing autumnnote threw
  * `ReferenceError: navigator is not defined` under SSR on any runtime without
- * a global `navigator` — including Node 20, which package.json still supports.
+ * a global `navigator` — Node before 21, Deno/Bun in some modes, edge workers.
  * Nothing inside the library reads these fields, so the crash happened before
  * an editor was ever created.
  */
