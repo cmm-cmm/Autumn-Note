@@ -170,6 +170,16 @@ export interface AsnOptions {
   onInit?: (context: Context) => void;
   /** Callback fired just before the editor instance is destroyed. */
   onDestroy?: (context: Context) => void;
+  /**
+   * Fired before a command runs from the toolbar, a keyboard shortcut, the
+   * context menu or the bubble toolbar. Return `false` to cancel it.
+   */
+  onBeforeCommand?: (data: {
+    name: string;
+    value?: unknown;
+    source: 'toolbar' | 'shortcut' | 'contextMenu' | 'bubbleToolbar';
+    event?: KeyboardEvent;
+  }) => void | false;
   /** Callback fired whenever the selection changes inside the editor. */
   onSelectionChange?: (context: Context) => void;
   /** Callback fired when the character limit is reached. */
@@ -283,6 +293,31 @@ export interface AsnOptions {
    * built-in command or toolbar button name, a handler, or `{ run, description }`.
    */
   keyMap?: Record<string, AsnKeyBinding> | null;
+  /** Link dialog defaults. */
+  linkDefaults?: {
+    /** Pre-tick "open in new tab" for new links. Default false. */
+    openInNewTab?: boolean;
+    /** `rel` for new-tab links; `noopener` is always added. Default 'noopener noreferrer'. */
+    rel?: string;
+    /** Prefix for bare domains ('example.com'); '' disables. Relative links are never prefixed. Default 'https://'. */
+    defaultProtocol?: string;
+  } | null;
+  /**
+   * Extra video providers for the video dialog, tried before the built-in
+   * YouTube/Vimeo rules. The embed URL's host must be built in or listed in
+   * `iframeHosts`, otherwise the provider is ignored.
+   */
+  videoProviders?: Array<{
+    name: string;
+    match: RegExp;
+    embed: (match: RegExpExecArray, url: string) => string;
+  }> | null;
+  /**
+   * Extra hostnames whose iframes survive sanitisation (exact hostnames,
+   * HTTPS only), e.g. `['player.twitch.tv']`. Every listed host can render
+   * arbitrary content inside the document — list only hosts you trust.
+   */
+  iframeHosts?: string[] | null;
   /** Start the editor in read-only (non-editable) mode. */
   readOnly?: boolean;
   /** Enable browser spellcheck in the editable area (default: true). */
@@ -545,6 +580,13 @@ export interface AsnLocale {
     wordsLimit: (n: number, max: number) => string;
     chars: (n: number) => string;
     charsLimit: (n: number, max: number) => string;
+  };
+  /** Accessible names for landmarks that have no visible label. */
+  a11y: {
+    editor: string;
+    toolbar: string;
+    statistics: string;
+    tableSize: string;
   };
   tooltips: {
     link: Record<string, string>;

@@ -39,6 +39,9 @@ import { defaultToolbar, DEFAULT_FONT_SIZES, DEFAULT_LINE_HEIGHTS, DEFAULT_PARAG
  * @property {Object<string, string>|null} [icons] - Per-editor icon overrides keyed by button or icon name: SVG markup or a CSS class list
  * @property {Object<string, object>|object[]|null} [buttons] - Per-editor button definitions, referenced by name in `toolbar`
  * @property {Object<string, *>|null} [keyMap]  - Keyboard shortcut overrides, e.g. { 'Mod+F': false, 'Mod+Shift+X': 'strikethrough' }
+ * @property {{openInNewTab?: boolean, rel?: string, defaultProtocol?: string}|null} [linkDefaults] - Link dialog defaults
+ * @property {Array<{name: string, match: RegExp, embed: Function}>|null} [videoProviders] - Extra video URL → embed URL rules
+ * @property {string[]|null} [iframeHosts]     - Extra hostnames trusted for iframe embeds (exact match, HTTPS only)
  * @property {Function} [onChange]             - Callback on content change
  * @property {Function} [onFocus]              - Callback on focus
  * @property {Function} [onBlur]               - Callback on blur
@@ -77,6 +80,7 @@ import { defaultToolbar, DEFAULT_FONT_SIZES, DEFAULT_LINE_HEIGHTS, DEFAULT_PARAG
  * @property {Function} [onSelectionChange]    - Callback fired on cursor/selection change: (context) => void
  * @property {string[]} [colorSwatches]        - Custom brand colour swatches prepended to the colour-picker palette
  * @property {Function} [onDestroy]            - Callback fired when the editor is destroyed: (context) => void
+ * @property {Function} [onBeforeCommand]      - Fired before a toolbar/shortcut/menu command: ({ name, value?, source }) => void | false
  * @property {Function} [onCharLimitReached]   - Callback fired when the character limit is hit: (context) => void
  * @property {Function} [onWordLimitReached]   - Callback fired when the word limit is hit: (context) => void
  * @property {string}   [focusColor]           - Custom focus ring colour, e.g. '#f97316'. Overrides the default blue.
@@ -166,6 +170,16 @@ export const defaultOptions = {
   buttons: null,
   // Keyboard shortcut overrides merged over the defaults; false disables one.
   keyMap: null,
+  // Link dialog defaults. openInNewTab pre-ticks "open in new tab"; rel is used
+  // for new-tab links (noopener is always added); defaultProtocol prefixes bare
+  // domains ('' to disable). Relative links (/path, #id) are never prefixed.
+  linkDefaults: { openInNewTab: false, rel: 'noopener noreferrer', defaultProtocol: 'https://' },
+  // Extra video providers for the video dialog: [{ name, match: RegExp, embed: (match, url) => embedUrl }].
+  // The embed URL's host must be built in (YouTube, Vimeo) or listed in iframeHosts.
+  videoProviders: null,
+  // Extra hostnames whose iframes survive sanitisation, e.g. ['player.twitch.tv'].
+  // Security-sensitive: every listed host can render arbitrary content in the document.
+  iframeHosts: null,
   // Font families shown in the toolbar font-family dropdown
   fontFamilies: [
     'Arial',
@@ -209,6 +223,9 @@ export const defaultOptions = {
   onPasteError: null,
   // Callback fired just before the editor instance is destroyed
   onDestroy: null,
+  // Fired before a toolbar, shortcut, context-menu or bubble command runs:
+  // ({ name, value?, source }). Return false to cancel it.
+  onBeforeCommand: null,
   // Callback fired when the character limit is reached: function(context)
   onCharLimitReached: null,
   // Callback fired when the word limit is reached: function(context)

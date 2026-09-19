@@ -585,6 +585,7 @@ Every event reaches both `editor.on(name, fn)` listeners and the matching `on<Na
 | `autoSaveError` | `{ key, error }` | Fired when an auto-save write fails. |
 | `autoSaveRestore` | `html, context` | Fired after the user restores a draft from the restore banner. |
 | `optionsChange` | `overrides` | Fired after `updateOptions()`. |
+| `beforeCommand` | `{ name, value?, source, event? }` | Fired before a command runs from the toolbar, a shortcut, the context menu or the bubble toolbar (`source`). Return `false` to cancel it — e.g. to gate features by plan or log usage. |
 
 Image uploads are not an event: they go to the `onImageUpload` handler, whose return value the editor uses.
 
@@ -648,6 +649,10 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `externalAssetReferrerPolicy` | `string` | `'no-referrer'` | Referrer policy for optional external assets; set `''` to omit it. |
 | `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour palette (toolbar, bubble toolbar, context menu). |
 | `colorPalette` | `string[]` | `null` | Replaces the built-in 24-colour palette in the toolbar, bubble toolbar and context menu. |
+| `linkDefaults` | `object` | `{ openInNewTab: false, rel: 'noopener noreferrer', defaultProtocol: 'https://' }` | Link dialog defaults. `openInNewTab` pre-ticks the checkbox; `rel` is used for new-tab links (`noopener` is always added); `defaultProtocol` prefixes bare domains (`''` disables). Relative links (`/path`, `#id`, `?q`) are never prefixed. |
+| `videoProviders` | `array` | `null` | Extra video sources for the video dialog: `[{ name, match: RegExp, embed: (match, url) => embedUrl }]`, tried before YouTube/Vimeo. The embed host must be built in or in `iframeHosts`. |
+| `iframeHosts` | `string[]` | `null` | Extra hostnames whose iframes survive sanitisation (exact hostnames, HTTPS only), e.g. `['player.twitch.tv']`. Every listed host can render arbitrary content in the document — list only hosts you trust. |
+| `onBeforeCommand` | `function` | `null` | See the `beforeCommand` event. |
 | `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
 | `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |
 | `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |

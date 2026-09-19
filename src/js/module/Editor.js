@@ -267,6 +267,11 @@ export class Editor {
     for (const binding of this.getKeyBindings()) {
       if (!matchesCombo(event, binding.parsed)) continue;
       const { command } = binding;
+      const name = typeof command === 'string' ? command : binding.combo;
+      if (this.context.triggerEvent('beforeCommand', { name, source: 'shortcut', event }) === false) {
+        event.preventDefault();
+        return true;
+      }
       if (typeof command === 'function') {
         if (command(this.context, event) !== false) event.preventDefault();
         return true;
@@ -449,7 +454,7 @@ export class Editor {
     // Adopt the sanitiser's nodes rather than its string: serialising them and
     // letting innerHTML parse them again was ~14 ms of a ~45 ms setHTML on a
     // 217 KiB document, and the re-parse is the step mXSS exploits.
-    const body = sanitiseToBody(html, { allowIframes: true });
+    const body = sanitiseToBody(html, { allowIframes: true, iframeHosts: this.options.iframeHosts });
     this.context.layoutInfo.editable.replaceChildren(...body.childNodes);
     if (this._history) this._history.reset();
     this.afterCommand();
@@ -690,6 +695,7 @@ export class Editor {
     const safeUrl = sanitiseUrl(url);
     if (!safeUrl) return;
 
+    const rel = this._newTabRel();
     const hasText = sel.toString().trim().length > 0;
     if (hasText) {
       Style.execCommand('createLink', safeUrl);
@@ -697,14 +703,29 @@ export class Editor {
         const link = this._getClosestAnchor();
         if (link) {
           /** @type {Element} */ (link).setAttribute('target', '_blank');
-          /** @type {Element} */ (link).setAttribute('rel', 'noopener noreferrer');
+          /** @type {Element} */ (link).setAttribute('rel', rel);
         }
       }
     } else {
       const displayText = this._escapeAttr(text || safeUrl);
-      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${openInNewTab ? ' target="_blank" rel="noopener noreferrer"' : ''}>${displayText}</a>`);
+      const newTabAttrs = openInNewTab ? ` target="_blank" rel="${this._escapeAttr(rel)}"` : '';
+      Style.execCommand('insertHTML', `<a href="${this._escapeAttr(safeUrl)}"${newTabAttrs}>${displayText}</a>`);
     }
     this.afterCommand();
+  }
+
+  /**
+   * `rel` for links opened in a new tab: linkDefaults.rel, always including
+   * `noopener` so the new page cannot reach back through window.opener.
+   * @returns {string}
+   */
+  _newTabRel() {
+    const configured = this.options.linkDefaults?.rel;
+    const tokens = new Set(
+      (typeof configured === 'string' ? configured : 'noopener noreferrer').split(/\s+/).filter(Boolean),
+    );
+    tokens.add('noopener');
+    return [...tokens].join(' ');
   }
 
   /**
@@ -741,7 +762,10 @@ export class Editor {
    */
   insertVideo(html) {
     if (!html) return;
-    Style.execCommand('insertHTML', html);
+    // Sanitised like any other content (iframes limited to the video hosts):
+    // this is a public entry point, and the same markup is sanitised anyway
+    // the next time the document is loaded through setHTML().
+    Style.execCommand('insertHTML', sanitiseHTML(html, { allowIframes: true, iframeHosts: this.options.iframeHosts }));
     this.afterCommand();
   }
 

@@ -145,7 +145,8 @@ export class BubbleToolbar {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.dataset.name = name;
-      btn.setAttribute('aria-label', name);
+      const label = this.context.locale?.toolbar?.[name];
+      btn.setAttribute('aria-label', typeof label === 'string' ? label : name);
 
       if (_COLOR_TYPES[name]) {
         // Color button: SVG icon stacked above a colored strip, matching ContextMenu style
@@ -177,6 +178,7 @@ export class BubbleToolbar {
           return;
         }
 
+        if (this.context.triggerEvent?.('beforeCommand', { name, source: 'bubbleToolbar' }) === false) return;
         this.context.invoke('editor.focus');
         if (_ACTIONS[name]) _ACTIONS[name](this.context);
         this._syncActive();

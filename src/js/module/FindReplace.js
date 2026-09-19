@@ -168,8 +168,8 @@ export class FindReplace extends BaseDialog {
     const caseBtn = createElement('button', {
       type: 'button',
       class: 'an-fr-icon-btn',
-      title: 'Case sensitive',
-      'aria-label': 'Case sensitive',
+      title: L.caseSensitive.trim(),
+      'aria-label': L.caseSensitive.trim(),
     });
     caseBtn.textContent = 'Aa';
 
@@ -192,16 +192,16 @@ export class FindReplace extends BaseDialog {
     const prevBtn = createElement('button', {
       type: 'button',
       class: 'an-fr-icon-btn',
-      title: 'Previous (Shift+Enter)',
-      'aria-label': 'Previous',
+      title: L.prevMatch,
+      'aria-label': L.prevMatch,
     });
     prevBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
 
     const nextBtn = createElement('button', {
       type: 'button',
       class: 'an-fr-icon-btn',
-      title: 'Next (Enter)',
-      'aria-label': 'Next',
+      title: L.nextMatch,
+      'aria-label': L.nextMatch,
     });
     nextBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
 

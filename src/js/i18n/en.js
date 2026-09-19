@@ -162,6 +162,8 @@ export const en = {
     replaceAllBtn:      'Replace All',
     noResults:          'No results',
     useRegex:           'Use Regular Expression',
+    prevMatch:          'Previous (Shift+Enter)',
+    nextMatch:          'Next (Enter)',
     close:              '\u00d7',
   },
 
@@ -256,6 +258,13 @@ export const en = {
     chars:      (n) => `Chars: ${n}`,
     /** @param {number} n @param {number} max */
     charsLimit: (n, max) => `Chars: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     'Rich text editor',
+    toolbar:    'Editor toolbar',
+    statistics: 'Editor statistics',
+    tableSize:  'Select table size',
   },
 
   tooltips: {

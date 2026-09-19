@@ -359,6 +359,7 @@ export class ContextMenu {
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
         this.hide();
+        if (this.context.triggerEvent?.('beforeCommand', { name: it.name, source: 'contextMenu' }) === false) return;
         try { it.action(this.context); } catch (err) { console.error(err); }
       });
       this._menuDisposers.push(off);

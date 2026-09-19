@@ -93,6 +93,7 @@ const URL_BASE = 'https://autumnnote.invalid/';
  * @param {string} html - HTML fragment to sanitize.
  * @param {Object} [options]
  * @param {boolean} [options.allowIframes=false] - If true, `iframe` elements are not removed but their `src` is restricted to trusted hosts and `srcdoc` is removed.
+ * @param {Iterable<string>|null} [options.iframeHosts] - Extra hostnames trusted for iframe `src` (exact match, HTTPS only).
  * @returns {string} The sanitized HTML fragment.
  */
 export function sanitiseHTML(html, options) {
@@ -115,10 +116,12 @@ export function sanitiseHTML(html, options) {
  * @param {string} html - HTML fragment to sanitize.
  * @param {Object} [options]
  * @param {boolean} [options.allowIframes=false] - If true, `iframe` elements are not removed but their `src` is restricted to trusted hosts and `srcdoc` is removed.
+ * @param {Iterable<string>|null} [options.iframeHosts] - Extra hostnames trusted for iframe `src` (exact match, HTTPS only).
  * @returns {HTMLElement} The sanitized `<body>` of a detached document.
  */
-export function sanitiseToBody(html, { allowIframes = false } = {}) {
+export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null } = {}) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
+  const extraHosts = normaliseIframeHosts(iframeHosts);
 
   // Single querySelectorAll pass — collect all elements once to avoid
   // repeated full-tree traversals for each category of check.
@@ -147,7 +150,7 @@ export function sanitiseToBody(html, { allowIframes = false } = {}) {
     // Invalid embeds are removed rather than retained as empty iframes.
     if (tag === 'iframe') {
       const src = el.getAttribute('src');
-      if (!src || !isTrustedIframeSrc(src)) {
+      if (!src || !isTrustedIframeSrc(src, extraHosts)) {
         el.remove();
         continue;
       }
@@ -196,7 +199,7 @@ export function sanitiseToBody(html, { allowIframes = false } = {}) {
           el.removeAttribute(attr.name);
           continue;
         }
-        if (attr.name === 'src' && !isTrustedIframeSrc(attr.value)) {
+        if (attr.name === 'src' && !isTrustedIframeSrc(attr.value, extraHosts)) {
           el.removeAttribute(attr.name);
         }
       }
@@ -274,22 +277,54 @@ function isSafeSrcset(value, { allowData = false } = {}) {
 }
 
 /**
- * Returns true if iframe src points to an approved video host.
- * Relative, protocol-relative and invalid URLs are rejected.
+ * Validates the `iframeHosts` option: exact lower-case hostnames only. No
+ * wildcards, schemes, ports or paths — each entry must name one host, so a
+ * typo cannot widen the allowlist.
+ * @param {Iterable<string>|null|undefined} hosts
+ * @returns {Set<string>}
+ */
+function normaliseIframeHosts(hosts) {
+  const out = new Set();
+  if (!hosts || typeof hosts[Symbol.iterator] !== 'function' || typeof hosts === 'string') return out;
+  for (const host of hosts) {
+    const h = typeof host === 'string' ? host.trim().toLowerCase() : '';
+    if (/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(h)) out.add(h);
+    else console.warn(`[AutumnNote] iframeHosts: ignoring "${host}" — use a bare hostname such as "player.example.com".`);
+  }
+  return out;
+}
+
+/**
+ * Returns true if iframe src points to an approved video host: the built-in
+ * list (YouTube, Vimeo) or one of `extraHosts`. HTTPS only; relative,
+ * protocol-relative and invalid URLs are rejected.
  * @param {string} src
+ * @param {Set<string>} [extraHosts]
  * @returns {boolean}
  */
-function isTrustedIframeSrc(src) {
+function isTrustedIframeSrc(src, extraHosts) {
   const trimmed = (src || '').trim();
   if (!trimmed) return false;
   if (trimmed.startsWith('//') || trimmed.startsWith('/')) return false;
   try {
     const url = new URL(trimmed);
     if (url.protocol !== 'https:') return false;
-    return TRUSTED_IFRAME_HOSTS.has(url.hostname.toLowerCase());
+    const host = url.hostname.toLowerCase();
+    return TRUSTED_IFRAME_HOSTS.has(host) || Boolean(extraHosts?.has(host));
   } catch {
     return false;
   }
+}
+
+/**
+ * Whether an iframe with this src would survive sanitisation, given the
+ * editor's `iframeHosts` option. Used to vet embed URLs before inserting them.
+ * @param {string} src
+ * @param {Iterable<string>|null} [iframeHosts]
+ * @returns {boolean}
+ */
+export function isAllowedIframeSrc(src, iframeHosts) {
+  return isTrustedIframeSrc(src, normaliseIframeHosts(iframeHosts));
 }
 
 /**

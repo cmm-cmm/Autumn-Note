@@ -138,6 +138,8 @@ export class Context {
 
     // Floating UI (dialogs, tooltips, menus) mounts here rather than straight
     // into document.body, so it picks up this editor's theme and colours.
+    editable.setAttribute('aria-label', this.locale.a11y?.editor || 'Rich text editor');
+
     const portal = createPortal(this.options);
     this.layoutInfo.portal = portal;
     applyAppearance(container, portal, this.options);

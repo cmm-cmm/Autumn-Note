@@ -159,6 +159,8 @@ export const de = {
     replaceBtn:         'Ersetzen',
     noResults:          'Keine Ergebnisse',
     useRegex:           'Regulären Ausdruck verwenden',
+    prevMatch:          'Zurück (Umschalt+Eingabe)',
+    nextMatch:          'Weiter (Eingabe)',
     replaceAllBtn:      'Alle ersetzen',
     close:              '×',
   },
@@ -243,6 +245,13 @@ export const de = {
     wordsLimit:   (n, max) => `Wörter: ${n}/${max}`,
     chars:        (n) => `Zeichen: ${n}`,
     charsLimit:   (n, max) => `Zeichen: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     'Rich-Text-Editor',
+    toolbar:    'Editor-Werkzeugleiste',
+    statistics: 'Editor-Statistik',
+    tableSize:  'Tabellengröße wählen',
   },
 
   tooltips: {

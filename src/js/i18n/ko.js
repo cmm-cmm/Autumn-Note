@@ -159,6 +159,8 @@ export const ko = {
     replaceBtn:         '바꾸기',
     noResults:          '결과 없음',
     useRegex:           '정규식 사용',
+    prevMatch:          '이전 (Shift+Enter)',
+    nextMatch:          '다음 (Enter)',
     replaceAllBtn:      '모두 바꾸기',
     close:              '×',
   },
@@ -243,6 +245,13 @@ export const ko = {
     wordsLimit:   (n, max) => `단어: ${n}/${max}`,
     chars:        (n) => `글자: ${n}`,
     charsLimit:   (n, max) => `글자: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     '서식 있는 텍스트 편집기',
+    toolbar:    '편집기 도구 모음',
+    statistics: '편집기 통계',
+    tableSize:  '표 크기 선택',
   },
 
   tooltips: {

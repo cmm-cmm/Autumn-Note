@@ -60,7 +60,7 @@ export class Statusbar {
     // Counters
     this._wordCountEl = createElement('span', { class: 'an-word-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
     this._charCountEl = createElement('span', { class: 'an-char-count', 'aria-live': 'polite', 'aria-atomic': 'true' });
-    const info = createElement('div', { class: 'an-status-info', 'aria-label': 'Editor statistics' });
+    const info = createElement('div', { class: 'an-status-info', 'aria-label': this.context.locale.a11y?.statistics || 'Editor statistics' });
     info.appendChild(this._wordCountEl);
     info.appendChild(this._charCountEl);
     this.el.appendChild(info);

@@ -160,6 +160,8 @@ export const ja = {
     replaceBtn:         '置換',
     noResults:          '結果なし',
     useRegex:           '正規表現を使用',
+    prevMatch:          '前へ (Shift+Enter)',
+    nextMatch:          '次へ (Enter)',
     replaceAllBtn:      'すべて置換',
     close:              '\u00d7',
   },
@@ -244,6 +246,13 @@ export const ja = {
     wordsLimit: (n, max) => `単語数: ${n}/${max}`,
     chars:      (n) => `文字数: ${n}`,
     charsLimit: (n, max) => `文字数: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     'リッチテキストエディター',
+    toolbar:    'エディターツールバー',
+    statistics: 'エディターの統計',
+    tableSize:  '表のサイズを選択',
   },
 
   tooltips: {

@@ -160,6 +160,8 @@ export const zh = {
     replaceBtn:         '替换',
     noResults:          '没有结果',
     useRegex:           '使用正则表达式',
+    prevMatch:          '上一个 (Shift+Enter)',
+    nextMatch:          '下一个 (Enter)',
     replaceAllBtn:      '全部替换',
     close:              '\u00d7',
   },
@@ -244,6 +246,13 @@ export const zh = {
     wordsLimit: (n, max) => `字数: ${n}/${max}`,
     chars:      (n) => `字符数: ${n}`,
     charsLimit: (n, max) => `字符数: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     '富文本编辑器',
+    toolbar:    '编辑器工具栏',
+    statistics: '编辑器统计',
+    tableSize:  '选择表格大小',
   },
 
   tooltips: {

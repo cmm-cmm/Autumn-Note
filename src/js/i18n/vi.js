@@ -161,6 +161,8 @@ export const vi = {
     replaceAllBtn:      'Thay thế tất cả',
     noResults:          'Không có kết quả',
     useRegex:           'Dùng biểu thức chính quy',
+    prevMatch:          'Trước (Shift+Enter)',
+    nextMatch:          'Tiếp (Enter)',
     close:              '\u00d7',
   },
 
@@ -244,6 +246,13 @@ export const vi = {
     wordsLimit: (n, max) => `Từ: ${n}/${max}`,
     chars:      (n) => `Ký tự: ${n}`,
     charsLimit: (n, max) => `Ký tự: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     'Trình soạn thảo văn bản',
+    toolbar:    'Thanh công cụ soạn thảo',
+    statistics: 'Thống kê văn bản',
+    tableSize:  'Chọn kích thước bảng',
   },
 
   tooltips: {

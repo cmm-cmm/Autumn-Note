@@ -160,6 +160,8 @@ export const fr = {
     replaceBtn:         'Remplacer',
     noResults:          'Aucun résultat',
     useRegex:           'Utiliser une expression régulière',
+    prevMatch:          'Précédent (Maj+Entrée)',
+    nextMatch:          'Suivant (Entrée)',
     replaceAllBtn:      'Tout remplacer',
     close:              '\u00d7',
   },
@@ -244,6 +246,13 @@ export const fr = {
     wordsLimit: (n, max) => `Mots\u00a0: ${n}/${max}`,
     chars:      (n) => `Caractères\u00a0: ${n}`,
     charsLimit: (n, max) => `Caractères\u00a0: ${n}/${max}`,
+  },
+
+  a11y: {
+    editor:     'Éditeur de texte enrichi',
+    toolbar:    'Barre d\'outils de l\'éditeur',
+    statistics: 'Statistiques de l\'éditeur',
+    tableSize:  'Choisir la taille du tableau',
   },
 
   tooltips: {

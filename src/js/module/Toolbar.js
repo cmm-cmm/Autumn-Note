@@ -138,8 +138,7 @@ export class Toolbar {
       class: 'an-toolbar',
       role: 'toolbar',
       'aria-orientation': 'horizontal',
-      // Matches the hardcoded English label renderer.js gives the editable.
-      'aria-label': 'Editor toolbar',
+      'aria-label': this.context.locale.a11y?.toolbar || 'Editor toolbar',
     });
     // Detect FontAwesome once at toolbar build time to avoid re-querying the DOM
     // for every button rendered.
@@ -176,6 +175,16 @@ export class Toolbar {
    */
   _resolveBtn(item) {
     return (typeof item === 'string') ? resolveButton(item, this.options) : item;
+  }
+
+  /**
+   * Fires `beforeCommand`; a handler returning false cancels the command.
+   * @param {string} name
+   * @param {*} [value]
+   * @returns {boolean} whether the command may run
+   */
+  _allow(name, value) {
+    return this.context.triggerEvent?.('beforeCommand', { name, value, source: 'toolbar' }) !== false;
   }
 
   _buildButtons() {
@@ -244,7 +253,7 @@ export class Toolbar {
     const popup = createElement('div', {
       class: 'an-table-picker-popup',
       role: 'dialog',
-      'aria-label': 'Select table size',
+      'aria-label': this.context.locale.a11y?.tableSize || 'Select table size',
     });
     const grid = createElement('div', { class: 'an-table-grid' });
     const label = createElement('div', { class: 'an-table-label' });
@@ -325,6 +334,7 @@ export class Toolbar {
       const rows = +cell.dataset.row;
       const cols = +cell.dataset.col;
       closePopup();
+      if (!this._allow(def.name, { rows, cols })) return;
       this.context.invoke('editor.focus');
       def.action(this.context, rows, cols);
     });
@@ -458,6 +468,7 @@ export class Toolbar {
       currentColor = color;
       strip.style.background = color;
       colorInput.value = color;
+      if (!this._allow(def.name, color)) { closePopup(); return; }
       restoreSelection();
       def.action(this.context, color);
       this.context.invoke('editor.afterCommand');
@@ -466,6 +477,7 @@ export class Toolbar {
 
     const d1 = on(applyBtn, 'click', (e) => {
       e.preventDefault();
+      if (!this._allow(def.name, currentColor)) return;
       restoreSelection();
       def.action(this.context, currentColor);
       this.context.invoke('editor.afterCommand');
@@ -599,6 +611,7 @@ export class Toolbar {
           if (sel) { sel.removeAllRanges(); sel.addRange(_savedRange); }
         } catch (_) { void _; /* range may be stale if DOM changed */ }
       }
+      if (!this._allow(def.name, value)) return;
       def.action(this.context, value);
       this.context.invoke('editor.afterCommand');
     });
@@ -656,6 +669,7 @@ export class Toolbar {
 
     const disposer = on(btn, 'click', (event) => {
       event.preventDefault();
+      if (!this._allow(btnDef.name)) return;
       // Restore focus to the editor before executing the action
       this.context.invoke('editor.focus');
       btnDef.action(this.context);

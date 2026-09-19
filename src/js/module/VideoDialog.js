@@ -8,7 +8,7 @@
  */
 
 import { createElement, on } from '../core/dom.js';
-import { sanitiseUrl } from '../core/sanitise.js';
+import { sanitiseUrl, isAllowedIframeSrc } from '../core/sanitise.js';
 import { BaseDialog } from './BaseDialog.js';
 
 const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
@@ -112,27 +112,43 @@ export class VideoDialog extends BaseDialog {
   /**
    * Parses a video URL and returns { type, embedUrl } or null.
    * @param {string} url
-   * @returns {{ type: string, embedUrl: string }|null}
+   * @returns {{ type: string, embedUrl: string, iframe?: boolean }|null}
    */
   _parseVideoUrl(url) {
     if (!url) return null;
     if (!sanitiseUrl(url, { media: true })) return null;
 
+    // Providers from the videoProviders option are tried first. Their embed
+    // URL still has to pass the sanitiser's iframe allowlist (built-in hosts
+    // plus iframeHosts), or the iframe would be stripped on the next load.
+    const providers = this.context.options.videoProviders;
+    if (Array.isArray(providers)) {
+      for (const provider of providers) {
+        const match = provider?.match instanceof RegExp ? provider.match.exec(url) : null;
+        if (!match || typeof provider.embed !== 'function') continue;
+        const embedUrl = provider.embed(match, url);
+        if (typeof embedUrl === 'string' && isAllowedIframeSrc(embedUrl, this.context.options.iframeHosts)) {
+          return { type: String(provider.name || 'Video'), embedUrl, iframe: true };
+        }
+        console.warn(`[AutumnNote] videoProviders: "${provider.name}" returned an embed URL whose host is not in iframeHosts; ignoring it.`);
+      }
+    }
+
     // YouTube watch: https://www.youtube.com/watch?v=ID
     const ytWatch = /(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/.exec(url);
-    if (ytWatch) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytWatch[1]}` };
+    if (ytWatch) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytWatch[1]}`, iframe: true };
 
     // YouTube short: https://youtu.be/ID
     const ytShort = /youtu\.be\/([a-zA-Z0-9_-]{11})/.exec(url);
-    if (ytShort) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytShort[1]}` };
+    if (ytShort) return { type: 'YouTube', embedUrl: `https://www.youtube.com/embed/${ytShort[1]}`, iframe: true };
 
     // YouTube Shorts: https://www.youtube.com/shorts/ID
     const ytShorts = /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/.exec(url);
-    if (ytShorts) return { type: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${ytShorts[1]}` };
+    if (ytShorts) return { type: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${ytShorts[1]}`, iframe: true };
 
     // Vimeo: https://vimeo.com/ID
     const vimeo = /vimeo\.com\/(\d+)/.exec(url);
-    if (vimeo) return { type: 'Vimeo', embedUrl: `https://player.vimeo.com/video/${vimeo[1]}` };
+    if (vimeo) return { type: 'Vimeo', embedUrl: `https://player.vimeo.com/video/${vimeo[1]}`, iframe: true };
 
     // Direct video file
     if (/\.(mp4|webm|ogg|ogv|mov)(#.*|\?.*)?$/i.test(url)) {
@@ -152,11 +168,12 @@ export class VideoDialog extends BaseDialog {
     const info = this._parseVideoUrl(url);
     const height = Math.round(width * 9 / 16); // 16:9
 
-    if (info && (info.type === 'YouTube' || info.type === 'YouTube Shorts' || info.type === 'Vimeo')) {
-      const iframeTitle = `${info.type} video player`;
+    if (info?.iframe) {
+      const attr = (v) => String(v).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
+      const iframeTitle = attr(`${info.type} video player`);
       return (
         `<div class="an-video-wrapper" style="position:relative;display:block;width:${width}px;max-width:100%">` +
-        `<iframe src="${info.embedUrl}" width="${width}" height="${height}" ` +
+        `<iframe src="${attr(info.embedUrl)}" width="${width}" height="${height}" ` +
         `title="${iframeTitle}" ` +
         `frameborder="0" allowfullscreen ` +
         `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ` +
