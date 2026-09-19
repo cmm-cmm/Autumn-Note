@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-09-19
+
+A maintenance release from a repository review. The editor's runtime code is
+unchanged; the published wrappers get a corrected dependency range.
+
+### Fixed
+
+- **`autumnnote-react` and `autumnnote-vue` declared `autumnnote >=1.4.0` as a peer**, but both call `updateOptions()`, which arrived in 1.16.0 — so npm accepted combinations that failed on first render. The range is now `>=1.16.0 <4.0.0`, which also stops a future major with breaking changes from satisfying it.
+- `SECURITY.md` still named 2.1.x as the supported line. It now lists 3.0.x.
+
+### Security
+
+- Dev tooling: Vitest 4.1.11 fixes GHSA-82fw-gwwq-j7x9 (path traversal in `@vitest/mocker`), a moderate advisory in the test runner. The published packages have no runtime dependencies and were not affected.
+- Every GitHub Action is pinned to a commit SHA (with its version in a comment for Dependabot), including the publish workflow that holds the npm OIDC permission.
+
+### Changed
+
+- `pnpm lint` also covers the React/Vue wrappers, their tests, the build scripts and the config files.
+- The JavaScript typecheck runs with `strict` (except `strictNullChecks` and `noImplicitAny`, to be tightened per module) and checks the published `types/index.d.ts` (`skipLibCheck: false`).
+- Contributor docs and the PR template use pnpm, the workspace's package manager; the documented coverage thresholds match `vitest.config.js`.
+
 ## [3.0.0] - 2026-09-19
 
 A major version because of the changes listed under **Changed** below: Node 20
