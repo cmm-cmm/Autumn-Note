@@ -171,7 +171,7 @@ export class Toolbar {
    * Resolves a toolbar item: a string is looked up in this editor's `buttons`
    * option, then the global registry; an object passes through.
    * @param {string|object} item
-   * @returns {object|undefined}
+   * @returns {any} a button definition (shape depends on `type`), or undefined
    */
   _resolveBtn(item) {
     return (typeof item === 'string') ? resolveButton(item, this.options) : item;

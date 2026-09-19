@@ -83,9 +83,10 @@ export function registerButton(btnDef) {
 /**
  * Looks up a button definition by name: buttons registered via
  * registerButton() first, then the pre-built ones. Returns undefined when
- * not found.
+ * not found. The definition's shape depends on its `type`, which callers
+ * dispatch on — hence `any`.
  * @param {string} name
- * @returns {object|undefined}
+ * @returns {any}
  */
 export function getButton(name) {
   return _buttonRegistry.get(name) ?? _builtinButtons().get(name);
@@ -116,8 +117,8 @@ function _builtinButtons() {
  * registry. Lets two editors on a page define different buttons of the same
  * name without touching the global registry.
  * @param {string} name
- * @param {{ buttons?: Record<string, object>|object[]|null }} [options]
- * @returns {object|undefined}
+ * @param {{ buttons?: Record<string, object>|any[]|null }} [options]
+ * @returns {any} a button definition, or undefined
  */
 export function resolveButton(name, options) {
   const own = options?.buttons;
