@@ -451,8 +451,13 @@ const editor = AutumnNote.create('#my-editor', {
       callback(users.filter(u => u.label.toLowerCase().includes(query.toLowerCase())));
     },
     onInsert(item) {
-      // optional: return custom HTML for the mention chip
-      return `<span class="mention" data-id="${item.id}">@${item.label}</span>`;
+      // optional: return custom HTML for the mention chip. Labels are often
+      // other users' display names, so build it with DOM APIs (or escape them).
+      const chip = document.createElement('span');
+      chip.className = 'mention';
+      chip.dataset.id = item.id;
+      chip.textContent = `@${item.label}`;
+      return chip.outerHTML;
     },
   },
 });

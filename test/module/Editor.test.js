@@ -889,3 +889,25 @@ describe('Editor limit enforcement', () => {
     editor.destroy();
   });
 });
+
+describe('Editor.getHTML — cleanup does not change markup structure', () => {
+  // Content put straight into the editable (as a native edit could), so this
+  // checks getHTML() itself rather than the sanitiser in front of it.
+  it.each([
+    ['a comment closed by a stripped U+200B', '<p>a<!-- -\u200B-><img src=x onerror="window.__x=1"> --></p>'],
+    ['an empty inline tag inside comment data', '<p>a<!-- -<b></b>-><img src=x onerror="window.__x=1"> --></p>'],
+  ])('keeps %s inert', (_, html) => {
+    const editable = document.createElement('div');
+    editable.innerHTML = html;
+    expect(editable.querySelector('[onerror]')).toBeNull();
+    const editor = new Editor(makeContext(html));
+    const reparsed = document.createElement('div');
+    reparsed.innerHTML = editor.getHTML();
+    expect(reparsed.querySelector('[onerror]')).toBeNull();
+  });
+
+  it('still drops nested empty formatting and style-only spans', () => {
+    const editor = new Editor(makeContext('<p>a<b><i>\u200B</i></b><span style="color: red"></span><span class="icon"></span>b</p>'));
+    expect(editor.getHTML()).toBe('<p>a<span class="icon"></span>b</p>');
+  });
+});

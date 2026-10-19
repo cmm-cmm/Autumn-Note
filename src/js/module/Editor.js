@@ -16,22 +16,49 @@ import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
 import { detectLang } from '../core/detectLang.js';
 
-/**
- * Empty formatting elements, as serialised by innerHTML: attribute-less ones,
- * and spans with only a style (a colour or size chosen and never typed in).
- * An empty element with a class is left alone — that is how an icon looks.
- */
-const EMPTY_INLINE_RE = /<(b|i|u|s|sup|sub|strong|em|strike)><\/\1>|<span(?: style="[^"]*")?><\/span>/g;
+/** Formatting elements that are dropped from output when empty and attribute-less. */
+const EMPTY_INLINE_TAGS = new Set(['B', 'I', 'U', 'S', 'SUP', 'SUB', 'STRONG', 'EM', 'STRIKE']);
 
 /**
- * Removes empty formatting elements, repeatedly, so nested ones go too.
- * @param {string} html
- * @returns {string}
+ * Removes the zero-width spaces inserted for caret placement, then the empty
+ * formatting elements they leave: attribute-less ones, and spans with only a
+ * style (a colour or size chosen and never typed in). An empty element with a
+ * class is left alone — that is how an icon looks.
+ *
+ * Works on nodes, never on the serialised string: deleting characters from
+ * markup can complete a terminator that was not there before and turn inert
+ * content into live elements.
+ * @param {HTMLElement} root - A detached clone; it is modified in place.
  */
-function stripEmptyInline(html) {
-  let prev;
-  do { prev = html; html = html.replace(EMPTY_INLINE_RE, ''); } while (html !== prev);
-  return html;
+function stripCaretFillers(root) {
+  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = /** @type {Text} */ (node);
+    if (text.data.includes('\u200B')) text.data = text.data.replaceAll('\u200B', '');
+  }
+  // Reverse document order visits children before their parents, so a
+  // nested empty pair (<b><i></i></b>) goes in one pass.
+  const elements = Array.from(root.querySelectorAll('b, i, u, s, sup, sub, strong, em, strike, span')).reverse();
+  for (const el of elements) {
+    if (!isEmptyInline(el)) continue;
+    el.remove();
+  }
+}
+
+/**
+ * @param {Element} el
+ * @returns {boolean}
+ */
+function isEmptyInline(el) {
+  const attrs = el.getAttributeNames();
+  const bare = EMPTY_INLINE_TAGS.has(el.tagName)
+    ? attrs.length === 0
+    : el.tagName === 'SPAN' && attrs.every((name) => name === 'style');
+  if (!bare) return false;
+  for (const child of el.childNodes) {
+    if (child.nodeType !== Node.TEXT_NODE || /** @type {Text} */ (child).data !== '') return false;
+  }
+  return true;
 }
 
 /**
@@ -476,7 +503,9 @@ export class Editor {
     // Strip zero-width spaces inserted after icons to allow caret placement,
     // and the formatting elements a caret placeholder leaves empty when bold
     // or a colour was chosen with nothing selected and never typed into.
-    const raw = stripEmptyInline(this.context.layoutInfo.editable.innerHTML.replaceAll('\u200B', ''));
+    const clone = /** @type {HTMLElement} */ (this.context.layoutInfo.editable.cloneNode(true));
+    stripCaretFillers(clone);
+    const raw = clone.innerHTML;
     // Replace any blob: URLs (lightweight DOM references to pasted/dropped images)
     // with their original data URLs so the returned HTML is fully self-contained.
     return this.context.invoke('clipboard.resolveImages', raw) ?? raw;

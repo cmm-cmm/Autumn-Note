@@ -502,12 +502,12 @@ export class Context {
   /**
    * Returns the current HTML content of the editor.
    * Zero-width spaces (U+200B) inserted by inline editing helpers are stripped
-   * from the output so they don't leak into the consumer's HTML.
+   * from the output (from text nodes, by Editor.getHTML) so they don't leak
+   * into the consumer's HTML.
    * @returns {string}
    */
   getHTML() {
-    const html = this.invoke('editor.getHTML');
-    return typeof html === 'string' ? html.replace(/​/g, '') : html;
+    return this.invoke('editor.getHTML');
   }
 
   /**

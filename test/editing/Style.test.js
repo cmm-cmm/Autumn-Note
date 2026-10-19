@@ -1033,3 +1033,33 @@ describe('outdent — nested list items', () => {
     expect(editable.innerHTML).toBe('<ul><li>a</li><li>b</li><li>c</li></ul>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Checklist → paragraph: zero-width spaces are removed from text nodes only
+// ---------------------------------------------------------------------------
+
+describe('checklist to paragraph keeps inert content inert', () => {
+  const ITEM = '<ul class="an-checklist"><li><input type="checkbox" contenteditable="false">item\u200B'
+    + '<!-- -\u200B-><img src=x onerror="window.__x=1"> --></li></ul>';
+
+  const caretInItem = () => {
+    const text = document.body.querySelector('li').childNodes[1];
+    setCollapsedCursor(text, 2);
+  };
+
+  it('toggleChecklist off', () => {
+    document.body.innerHTML = ITEM;
+    caretInItem();
+    toggleChecklist();
+    expect(document.body.querySelector('[onerror]')).toBeNull();
+    expect(document.body.querySelector('p').textContent).toBe('item');
+  });
+
+  it('outdent of a top-level checklist item', () => {
+    document.body.innerHTML = ITEM;
+    caretInItem();
+    outdent();
+    expect(document.body.querySelector('[onerror]')).toBeNull();
+    expect(document.body.querySelector('p').textContent).toBe('item');
+  });
+});

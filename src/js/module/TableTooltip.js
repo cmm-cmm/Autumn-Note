@@ -820,11 +820,16 @@ export class TableTooltip {
     first.style.height = '';
     first.style.minHeight = '';
 
-    // Merge content: collect non-empty inner HTML, join with <br> separator
-    const parts = rectCells
-      .map((c) => c.innerHTML.replace(/^(<br\s*\/?>|\s)+$/i, '').trim())
-      .filter((h) => h !== '');
-    first.innerHTML = parts.length ? parts.join('<br>') : '<br>';
+    // Merge content: move the nodes of every non-empty cell, separated by <br>.
+    // Nodes are moved, not re-parsed from innerHTML, so merging cannot turn
+    // inert content into markup.
+    const filled = rectCells.filter((c) => c.innerHTML.replace(/^(<br\s*\/?>|\s)+$/i, '').trim() !== '');
+    const merged = [];
+    filled.forEach((c, i) => {
+      if (i > 0) merged.push(document.createElement('br'));
+      merged.push(...c.childNodes);
+    });
+    first.replaceChildren(...(merged.length ? merged : [document.createElement('br')]));
 
     rectCells.slice(1).forEach((c) => {
       const row = c.parentElement;
@@ -1294,7 +1299,7 @@ export class TableTooltip {
       }
       Array.from(firstRow.cells).forEach((cell) => {
         const td = document.createElement('td');
-        td.innerHTML = cell.innerHTML;
+        td.append(...cell.childNodes);
         td.style.cssText = cell.style.cssText;
         firstRow.replaceChild(td, cell);
       });
@@ -1310,7 +1315,7 @@ export class TableTooltip {
       }
       Array.from(firstRow.cells).forEach((cell) => {
         const th = document.createElement('th');
-        th.innerHTML = cell.innerHTML;
+        th.append(...cell.childNodes);
         th.style.cssText = cell.style.cssText;
         firstRow.replaceChild(th, cell);
       });

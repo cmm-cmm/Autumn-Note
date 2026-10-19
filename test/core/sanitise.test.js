@@ -572,3 +572,33 @@ describe('style values the formatting engine writes', () => {
     expect(sanitiseHTML('<span style="font-family: u\\72l(//evil.test)">x</span>')).toBe('<span>x</span>');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Content that re-parses into different markup than it was sanitised as
+// ---------------------------------------------------------------------------
+
+describe('sanitiseHTML — re-parse and clobbering hazards', () => {
+  it.each(['xmp', 'noembed', 'noframes', 'plaintext'])('removes the raw-text element <%s>', (tag) => {
+    const out = sanitiseHTML(`<p>a</p><${tag}>&lt;/${tag}&gt;&lt;img src=x onerror=alert(1)&gt;</${tag}>`);
+    expect(out).not.toContain(`<${tag}`);
+    expect(out).toContain('<p>a</p>');
+  });
+
+  it('removes comments, so stripping a filler later cannot close one early', () => {
+    const out = sanitiseHTML('<p>a<!-- -\u200B-><img src=x onerror=alert(1)> --></p>');
+    expect(out).toBe('<p>a</p>');
+  });
+
+  it('drops name attributes', () => {
+    expect(sanitiseHTML('<img src="a.png" name="x" id="y">')).toBe('<img src="a.png" id="y">');
+    expect(sanitiseHTML('<a href="#t" name="t">t</a>')).toBe('<a href="#t">t</a>');
+  });
+
+  it('is not misled by <img name="body"> shadowing document.body', () => {
+    expect(sanitiseHTML('<p>keep</p><img name="body">')).toBe('<p>keep</p><img>');
+  });
+
+  it('is not broken by <img name="querySelectorAll"> or <img name="createTreeWalker">', () => {
+    expect(sanitiseHTML('<p>a</p><img name="querySelectorAll"><img name="createTreeWalker">')).toBe('<p>a</p><img><img>');
+  });
+});

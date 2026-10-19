@@ -1571,3 +1571,55 @@ describe('round trip of what Markdown cannot express natively', () => {
       .not.toMatch(/<script|<span onclick/);
   });
 });
+
+describe('markdown — bounded work on hostile input', () => {
+  it('caps blockquote nesting instead of overflowing the stack', () => {
+    const html = markdownToHTML(`${'>'.repeat(50000)} x`);
+    expect((html.match(/<blockquote>/g) || []).length).toBeLessThanOrEqual(100);
+  });
+
+  it('keeps ordinary nested quotes', () => {
+    expect(markdownToHTML('>> x')).toBe('<blockquote><blockquote><p>x</p></blockquote></blockquote>');
+  });
+
+  // Each of these took seconds (quadratic) before the scans were bounded.
+  it.each([
+    ['unclosed <u>', `a ${'<u>'.repeat(40000)}`],
+    ['unclosed [', `a ${'['.repeat(40000)}`],
+    ['unclosed [x](', `a ${'[x]('.repeat(40000)}`],
+    ['unclosed [x](<', `a ${'[x](<'.repeat(30000)}`],
+  ])('converts %s in linear time', (_, md) => {
+    const t = performance.now();
+    markdownToHTML(md);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
+  it('runs isMarkdown on many unclosed brackets in linear time', () => {
+    const t = performance.now();
+    isMarkdown(`!${'['.repeat(100000)}`);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+});
+
+describe('htmlToMarkdown — inert text stays inert', () => {
+  it('escapes a < that would open a tag', () => {
+    const md = htmlToMarkdown('<p>&lt;img src=x onerror=alert(1)&gt; and a &lt; b</p>');
+    expect(md).toContain(String.raw`\<img`);
+    expect(md).toContain('a < b');
+    expect(markdownToHTML(md)).toContain('&lt;img');
+  });
+
+  it('fences a code block longer than any backtick run inside it', () => {
+    const md = htmlToMarkdown('<pre><code>a\n```\n&lt;img&gt;</code></pre>');
+    expect(md).toMatch(/^````\n/);
+    expect(markdownToHTML(md)).toContain('<pre><code>a\n```\n&lt;img&gt;</code></pre>');
+  });
+});
+
+describe('htmlToMarkdown — many backtick runs', () => {
+  it('exports a code block with hundreds of thousands of backtick runs', () => {
+    const code = '`a'.repeat(300000);
+    expect(() => htmlToMarkdown(`<pre><code>${code}</code></pre>`)).not.toThrow();
+    expect(() => htmlToMarkdown(`<p><code>${code}</code></p>`)).not.toThrow();
+  });
+});

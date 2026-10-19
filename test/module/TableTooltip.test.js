@@ -1111,3 +1111,37 @@ describe('TableTooltip select-cells toggle exposes aria-pressed', () => {
     expect(tt._selectBtn.getAttribute('aria-pressed')).toBe('false');
   });
 });
+
+// ── Cell content moves as nodes, never through innerHTML ─────────────────────
+
+describe('TableTooltip — cell content is moved, not re-parsed', () => {
+  // A text node holding its own element's end tag, as a paste into a raw-text
+  // element used to leave behind. Re-parsing the cell would make it markup.
+  const plantRawText = (cell) => {
+    const xmp = document.createElement('xmp');
+    xmp.textContent = '</xmp><img src=x onerror="window.__x=1">';
+    cell.replaceChildren(xmp);
+  };
+
+  it('_toggleHeaderRow keeps the moved nodes inert', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    plantRawText(table.rows[0].cells[0]);
+    tt._toggleHeaderRow();
+    expect(ctx.layoutInfo.editable.querySelector('[onerror]')).toBeNull();
+    tt._toggleHeaderRow();
+    expect(ctx.layoutInfo.editable.querySelector('[onerror]')).toBeNull();
+  });
+
+  it('_mergeCells joins cell nodes with <br>', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    plantRawText(table.rows[0].cells[1]);
+    tt._setSelection([table.rows[0].cells[0], table.rows[0].cells[1]]);
+    tt._mergeCells();
+    const first = table.rows[0].cells[0];
+    expect(ctx.layoutInfo.editable.querySelector('[onerror]')).toBeNull();
+    expect(first.firstChild.textContent).toBe('A1');
+    expect(first.childNodes[1].nodeName).toBe('BR');
+  });
+});

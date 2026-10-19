@@ -94,6 +94,9 @@ function _escapeInlineMd(text) {
     // An `&` that would read as a character reference has to become one itself,
     // otherwise the literal text "&copy;" comes back as ©.
     .replace(/&(?=#\d+;|#[xX][0-9a-fA-F]+;|[a-zA-Z][a-zA-Z0-9]*;)/g, '&amp;')
+    // A `<` that could open a tag, comment or autolink: text the editor shows
+    // as "<img onerror=…>" would otherwise be raw HTML to the next renderer.
+    .replace(/<(?=[a-zA-Z/!?])/g, String.raw`\<`)
     .replace(/!(?=\[)/g, String.raw`\!`)
     .replace(/([`*[\]])/g, String.raw`\$1`)
     .replace(/(?<!\w)_|_(?!\w)/g, String.raw`\_`)
@@ -153,6 +156,19 @@ function _itemBody(li, depth) {
       return line.startsWith(childIndent) ? line : childIndent + line;
     })
     .join('\n');
+}
+
+/**
+ * Length of the longest run of backticks in `text`. A loop rather than
+ * Math.max(...runs): spreading one argument per run threw RangeError on a
+ * code block with a few hundred thousand of them.
+ * @param {string} text
+ * @returns {number}
+ */
+function _longestBacktickRun(text) {
+  let longest = 0;
+  for (const m of text.matchAll(/`+/g)) longest = Math.max(longest, m[0].length);
+  return longest;
 }
 
 function _destination(el, attr) {
@@ -220,8 +236,7 @@ function _domToMd(node, depth = 0) {
       // A code span has to be fenced by more backticks than the longest run it
       // contains, and padded with spaces when it starts or ends with one —
       // otherwise `a ` b` closes at the wrong backtick and mangles the text.
-      const longestRun = Math.max(0, ...Array.from(content.matchAll(/`+/g), (m) => m[0].length));
-      const fence = '`'.repeat(longestRun + 1);
+      const fence = '`'.repeat(_longestBacktickRun(content) + 1);
       const pad = /^`|`$/.test(content) ? ' ' : '';
       return `${fence}${pad}${content}${pad}${fence}`;
     }
@@ -230,9 +245,12 @@ function _domToMd(node, depth = 0) {
       const langMatch = /language-(\S+)/.exec(codeEl?.className || '');
       const lang = langMatch ? langMatch[1] : '';
       const content = _codeText(codeEl || el);
+      // The fence has to outrun every backtick run in the code, or a line of
+      // ``` inside it closes the block early and the rest reads as Markdown.
+      const fence = '`'.repeat(Math.max(3, _longestBacktickRun(content) + 1));
       // A block whose text already ends in a newline would otherwise gain a
       // blank line from the one added before the closing fence.
-      return `\n\n\`\`\`${lang}\n${content.replace(/\n$/, '')}\n\`\`\`\n\n`;
+      return `\n\n${fence}${lang}\n${content.replace(/\n$/, '')}\n${fence}\n\n`;
     }
     case 'blockquote': {
       const rawLines = inner().trim().split('\n');
@@ -349,7 +367,7 @@ export function isMarkdown(rawText) {
     // A link or image plus at least one other inline marker — either alone is
     // too weak a signal (bare URLs and "(see note)" are ordinary prose), but
     // together they reliably indicate Markdown rather than a plain-text body.
-    || (/!?\[[^\]\n]*\]\([^)\n]*\)/.test(text) && /`[^`\n]+`|\*\*[^*\n]+\*\*|^#{1,6} |^[-*+] /m.test(text));
+    || (/!?\[[^[\]\n]*\]\([^()\n]*\)/.test(text) && /`[^`\n]+`|\*\*[^*\n]+\*\*|^#{1,6} |^[-*+] /m.test(text));
 }
 
 // Blockquote line: optional up-to-3 leading spaces, '>', optional single space, rest of line.
@@ -436,6 +454,28 @@ export function markdownToHTML(text) {
  * @returns {string}
  */
 function _parseBlocks(lines) {
+  _blockDepth++;
+  try {
+    return _parseBlocksAt(lines);
+  } finally {
+    _blockDepth--;
+  }
+}
+
+/**
+ * Nesting at which `>` stops opening another blockquote and reads as text.
+ * Each level is a recursive call, so without a cap one 32 KB line of `>`
+ * exhausted the stack and setMarkdown() threw RangeError.
+ */
+const MAX_BLOCK_DEPTH = 100;
+let _blockDepth = 0;
+
+/**
+ * The body of {@link _parseBlocks}, which tracks the nesting depth around it.
+ * @param {string[]} lines
+ * @returns {string}
+ */
+function _parseBlocksAt(lines) {
   const out = [];
   let i = 0;
 
@@ -521,7 +561,7 @@ function _parseBlocks(lines) {
     }
 
     // ---- Blockquote  > text --------------------------------------------------
-    if (BQ_RE.test(line)) {
+    if (_blockDepth < MAX_BLOCK_DEPTH && BQ_RE.test(line)) {
       const bqLines = [];
       while (i < lines.length && BQ_RE.test(lines[i])) {
         bqLines.push(BQ_RE.exec(lines[i])[2]);
@@ -972,9 +1012,14 @@ function _restoreBackslashEscapes(text, literals) {
 // URL containing `)` — `[x](<http://e.com/a(b)>)` — is taken whole instead of
 // being cut at the inner parenthesis. Matched against _esc()'d text, so the
 // brackets appear as entities.
-const DEST = String.raw`(&lt;.*?&gt;(?:\s+(?:"[^"]*"|'[^']*'))?|[^)]*)`;
-const IMAGE_RE = new RegExp(String.raw`!\[([^\]]*)\]\(${DEST}\)`, 'g');
-const LINK_RE = new RegExp(String.raw`\[([^\]]+)\]\(${DEST}\)`, 'g');
+//
+// No part may run past the next opener: the label excludes `[`, the bracketed
+// URL stops at the next `&lt;`, and the bare one at the next `(`. An unclosed
+// `[x](` repeated n times otherwise rescans to the end of the paragraph from
+// every opener — quadratic, and a 50 KB paste froze the tab for seconds.
+const DEST = String.raw`(&lt;(?:(?!&lt;|&gt;).)*&gt;(?:\s+(?:"[^"]*"|'[^']*'))?|[^()]*)`;
+const IMAGE_RE = new RegExp(String.raw`!\[([^[\]]*)\]\(${DEST}\)`, 'g');
+const LINK_RE = new RegExp(String.raw`\[([^[\]]+)\]\(${DEST}\)`, 'g');
 
 /**
  * Splits an inline link destination into its URL and optional title:
@@ -1020,19 +1065,19 @@ function _resolveLinksAndFootnotes(text) {
     const titleAttr = title ? ` title="${_escAttrQuotes(title)}"` : '';
     return `<a href="${_escAttrQuotes(href)}"${titleAttr}>${label}</a>`;
   });
-  text = text.replace(/\[([^\]]+)\]\[([^\]]*)\]/g, (m, label, ref) => {
+  text = text.replace(/\[([^[\]]+)\]\[([^[\]]*)\]/g, (m, label, ref) => {
     const def = _linkDefs.get(_unescAmpLtGt(ref || label).trim().toLowerCase());
     if (!def) return m;
     const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
     return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
   });
-  text = text.replace(/\[([^\]]+)\]/g, (m, label) => {
+  text = text.replace(/\[([^[\]]+)\]/g, (m, label) => {
     const def = _linkDefs.get(_unescAmpLtGt(label).trim().toLowerCase());
     if (!def) return m;
     const titleAttr = def.title ? ` title="${_escAttr(def.title)}"` : '';
     return `<a href="${_escAttr(def.href)}"${titleAttr}>${label}</a>`;
   });
-  text = text.replace(/\[\^([^\]]+)\]/g, (m, id) => (_footnoteIds.has(_unescAmpLtGt(id)) ? `<sup>[${id}]</sup>` : m));
+  text = text.replace(/\[\^([^[\]]+)\]/g, (m, id) => (_footnoteIds.has(_unescAmpLtGt(id)) ? `<sup>[${id}]</sup>` : m));
   return text;
 }
 
@@ -1083,8 +1128,10 @@ function _applyEmphasisAndCode(text) {
   // underline, and colour/size/font spans — arrives escaped by _esc(); turn
   // exactly those forms back into markup. The result is sanitised by every
   // caller, which is what decides which styles survive.
-  text = text.replace(/&lt;u&gt;(.+?)&lt;\/u&gt;/g, (_, c) => `<u>${c}</u>`);
-  text = text.replace(/&lt;span style=(?:&quot;|")([^"<>&]*(?:&amp;[^"<>&]*)*)(?:&quot;|")&gt;(.*?)&lt;\/span&gt;/g,
+  // The content may not cross another opener, so an unclosed `<u>` repeated
+  // n times scans to the next one rather than to the end of the line.
+  text = text.replace(/&lt;u&gt;((?:(?!&lt;u&gt;).)+?)&lt;\/u&gt;/g, (_, c) => `<u>${c}</u>`);
+  text = text.replace(/&lt;span style=(?:&quot;|")([^"<>&]*(?:&amp;[^"<>&]*)*)(?:&quot;|")&gt;((?:(?!&lt;span ).)*?)&lt;\/span&gt;/g,
     (_, style, c) => `<span style="${style}">${c}</span>`);
   return text;
 }

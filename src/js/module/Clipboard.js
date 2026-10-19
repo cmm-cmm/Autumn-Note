@@ -9,6 +9,14 @@ import { execCommand } from '../editing/Style.js';
 import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { isMarkdown, markdownToHTML } from '../core/markdown.js';
 
+/**
+ * True while content dragged out of any Autumn Note editable on the page is in
+ * flight. A drop of it into another instance is left to the browser, which
+ * moves it (the content is already editor content); cleaning it into a copy
+ * would leave the original behind.
+ */
+let editorDragInFlight = false;
+
 export class Clipboard {
   /**
    * @param {import('../Context.js').Context} context
@@ -40,10 +48,11 @@ export class Clipboard {
       // the editor cancels (iframes, read-only) never fires dragend.
       on(editable, 'dragstart', (e) => globalThis.queueMicrotask(() => {
         this._internalDrag = !e.defaultPrevented;
+        editorDragInFlight = this._internalDrag;
         const img = this._internalDrag ? /** @type {Element} */ (e.target)?.closest?.('img') : null;
         this._dragged = img ? /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img) : null;
       })),
-      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; }),
+      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; editorDragInFlight = false; }),
       on(editable, 'dragover',  (e) => this._onDragover(e)),
       on(editable, 'drop',      (e) => this._onDrop(e)),
     );
@@ -116,13 +125,16 @@ export class Clipboard {
   _cleanWordHtml(html) {
     return html
       // Conditional comments <!--[if ...]>...<![endif]-->
-      .replace(/<!--\[if[\s\S]*?\[endif\]-->/gi, '')
+      // Each body stops at the next opener of its kind: an unclosed opener
+      // repeated n times must not rescan to the end of the input from every
+      // one of them (quadratic — a 100 KB paste froze the tab).
+      .replace(/<!--\[if(?:(?!<!--\[if)[\s\S])*?\[endif\]-->/gi, '')
       // XML data blobs <xml>...</xml>
-      .replace(/<xml[\s\S]*?<\/xml>/gi, '')
+      .replace(/<xml(?:(?!<xml)[\s\S])*?<\/xml>/gi, '')
       // XML processing instructions <?xml ... ?>
-      .replace(/<\?xml[\s\S]*?\?>/gi, '')
+      .replace(/<\?xml(?:(?!<\?xml)[\s\S])*?\?>/gi, '')
       // Office namespace elements: <o:p>, <w:sDt>, <m:oMath>, <v:shape> …
-      .replace(/<\/?(o|w|m|v|st1):[a-z][^>]*>/gi, '')
+      .replace(/<\/?(o|w|m|v|st1):[a-z][^<>]*>/gi, '')
       // MsoNormal, MsoBodyText, etc. class attributes
       .replace(/\s+class="Mso[^"]*"/gi, '')
       // mso-* properties inside inline style attributes
@@ -134,7 +146,7 @@ export class Clipboard {
         return cleaned ? ` style="${cleaned}"` : '';
       })
       // Empty paragraphs Word sprinkles everywhere
-      .replace(/<p[^>]*>\s*(&nbsp;)?\s*<\/p>/gi, '');
+      .replace(/<p(?:\s[^<>]*)?>\s*(&nbsp;)?\s*<\/p>/gi, '');
   }
 
   /**
@@ -336,21 +348,30 @@ export class Clipboard {
     // 4. Sanitise HTML on paste when pasteCleanHTML is true (default)
     if (this.options.pasteCleanHTML !== false && clipboardData.types.includes('text/html')) {
       event.preventDefault();
-      const raw = clipboardData.getData('text/html');
-      // Detect source type and apply appropriate pre-cleaner
-      const isWordContent = /<[a-z]+:[a-z]/i.test(raw) || /class="Mso/i.test(raw) || /\bmso-/i.test(raw);
-      const isSocialContent = /class="[^"]*\b(?:x[a-z0-9]{6,}|r-[a-z0-9]{3,})\b/.test(raw);
-      let html = raw;
-      if (isWordContent) html = this._cleanWordHtml(html);
-      else if (isSocialContent) html = this._cleanSocialHtml(html);
-      html = this._normalizeExternalTaskLists(html);
-      html = sanitiseHTML(html);
-      if (this.options.pasteStripAttributes) html = this._stripAttributes(html);
-      execCommand('insertHTML', html);
+      execCommand('insertHTML', this._cleanExternalHtml(clipboardData.getData('text/html')));
       this.context.invoke('editor.afterCommand');
     }
 
     // Otherwise let the browser handle paste natively
+  }
+
+  /**
+   * Runs HTML from outside the editor (paste or drop) through the source
+   * pre-cleaners and the sanitiser.
+   * @param {string} raw
+   * @returns {string} Sanitised HTML, ready for insertHTML.
+   */
+  _cleanExternalHtml(raw) {
+    // Detect source type and apply appropriate pre-cleaner
+    const isWordContent = /<[a-z]+:[a-z]/i.test(raw) || /class="Mso/i.test(raw) || /\bmso-/i.test(raw);
+    const isSocialContent = /class="[^"]*\b(?:x[a-z0-9]{6,}|r-[a-z0-9]{3,})\b/.test(raw);
+    let html = raw;
+    if (isWordContent) html = this._cleanWordHtml(html);
+    else if (isSocialContent) html = this._cleanSocialHtml(html);
+    html = this._normalizeExternalTaskLists(html);
+    html = sanitiseHTML(html);
+    if (this.options.pasteStripAttributes) html = this._stripAttributes(html);
+    return html;
   }
 
   // ---------------------------------------------------------------------------
@@ -390,7 +411,10 @@ export class Clipboard {
       }
       return;
     }
-    if (!dt?.files?.length) return;
+    if (!dt?.files?.length) {
+      this._dropExternalHtml(event, dt);
+      return;
+    }
 
     const imageFiles = Array.from(dt.files).filter((f) => f.type.startsWith('image/'));
     if (imageFiles.length > 0) {
@@ -409,8 +433,40 @@ export class Clipboard {
         event.stopPropagation();
         this._placeCaretAtPoint(event.clientX, event.clientY);
         this._insertMarkdownFile(mdFile);
+        return;
       }
     }
+
+    // Files the editor does not take (a PDF, a zip) can travel with text/html.
+    this._dropExternalHtml(event, dt);
+  }
+
+  /**
+   * Inserts HTML dragged in from outside the editor (another page, another
+   * app) through the same cleaning as a paste. Left to the browser, the drop
+   * would put the dragged markup into the editable without the sanitiser.
+   * Plain-text-only drops stay native: the browser inserts them as text.
+   * @param {DragEvent} event
+   * @param {DataTransfer|null} dt
+   */
+  _dropExternalHtml(event, dt) {
+    if (!dt || !Array.from(dt.types || []).includes('text/html')) return;
+    if (this.options.pasteCleanHTML === false || editorDragInFlight) return;
+    // Read-only: Editor's own drop listener already cancels the drop.
+    if (this.context.layoutInfo.container?.classList.contains('an-disabled')) return;
+    const raw = dt.getData('text/html') || '';
+    event.preventDefault();
+    event.stopPropagation();
+    const maxBytes = this._maxPasteBytes();
+    if (maxBytes > 0 && raw.length > maxBytes) {
+      const message = `Dropped content (${raw.length} bytes) exceeds the ${maxBytes}-byte paste size limit.`;
+      this.context.triggerEvent('pasteError', { size: raw.length, maxBytes, message });
+      console.warn(`[AutumnNote] ${message}`);
+      return;
+    }
+    this._placeCaretAtPoint(event.clientX, event.clientY);
+    execCommand('insertHTML', this._cleanExternalHtml(raw));
+    this.context.invoke('editor.afterCommand');
   }
 
   /**
@@ -687,7 +743,13 @@ export class Clipboard {
    */
   resolveImages(html) {
     if (!this._blobRegistry?.size) return html;
-    return html.replace(/blob:[^"'> \t\n\r]*/g, (url) => this._blobRegistry.get(url) || url);
+    // The data URL may come from File.type (FileReader fallback) or a host
+    // imageProcessor, so it is escaped: a quote in it must not end the
+    // attribute it is spliced into.
+    return html.replace(/blob:[^"'> \t\n\r]*/g, (url) => {
+      const dataUrl = this._blobRegistry.get(url);
+      return dataUrl ? this._escapeAttr(dataUrl) : url;
+    });
   }
 
   /**

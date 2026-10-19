@@ -147,7 +147,7 @@ describe('History', () => {
 
     const snapshot = history.stack[history.stackOffset];
     expect(snapshot.html).not.toContain('data:image/png');
-    expect(snapshot.html).toContain('__asn_img_0__');
+    expect(snapshot.html).toMatch(/__asn_img_[0-9a-f]{16}_0__/);
   });
 
   it('detokenises base64 images on restore', () => {
@@ -512,5 +512,54 @@ describe('History — caret placement', () => {
 
     expect(el.textContent).toBe('onetwoZZ');
     expect(caretOffset(el)).not.toBe(0);
+  });
+});
+
+describe('History — image tokens cannot be forged', () => {
+  it('undo restores exactly the recorded markup when the content holds a guessed token', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    el.innerHTML = '<p>data:" onerror="window.__x=1" a=";base64,</p>'
+      + '<p><img src="https://example.invalid/a.png" alt="__asn_img_0__"></p>';
+    const loaded = el.innerHTML;
+    const h = new History(el);
+
+    el.insertAdjacentHTML('beforeend', '<p>edit</p>');
+    h.recordUndo();
+    h.undo();
+
+    expect(el.innerHTML).toBe(loaded);
+    expect(el.querySelector('[onerror]')).toBeNull();
+    el.remove();
+  });
+
+  it('uses a different token prefix per instance', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<img src="data:image/png;base64,AAAA">';
+    const a = new History(el).stack[0].html;
+    const b = new History(el).stack[0].html;
+    expect(a).not.toBe(b);
+  });
+
+  it('leaves data URL text outside a base64 payload untouched', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<p>data:x;base64,</p><img src="data:image/png;base64,AAAA">';
+    const h = new History(el);
+    expect(h.stack[0].html).toContain('<p>data:x;base64,</p>');
+    expect(h.stack[0].html).not.toContain('AAAA');
+  });
+});
+
+describe('History — without crypto.getRandomValues', () => {
+  it('still builds a token prefix', () => {
+    vi.stubGlobal('crypto', undefined);
+    try {
+      const el = document.createElement('div');
+      el.innerHTML = '<img src="data:image/png;base64,AAAA">';
+      const h = new History(el);
+      expect(h.stack[0].html).toMatch(/__asn_img_[0-9a-f]{16}_0__/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

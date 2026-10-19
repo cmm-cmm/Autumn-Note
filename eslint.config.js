@@ -25,6 +25,7 @@ export default [
         FileReader: 'readonly',
         DOMParser: 'readonly',
         MutationObserver: 'readonly',
+        Document: 'readonly',
         Element: 'readonly',
         Node: 'readonly',
         NodeList: 'readonly',

@@ -1086,3 +1086,122 @@ describe('Clipboard — drags that start inside the editable', () => {
     expect(onImageUpload).toHaveBeenCalled();
   });
 });
+
+// ── External HTML drop ───────────────────────────────────────────────────────
+
+describe('Clipboard._onDrop — HTML dragged in from outside', () => {
+  const htmlDrop = (html, types = ['text/html', 'text/plain']) => ({
+    dataTransfer: { files: [], types, getData: (t) => (t === 'text/html' ? html : 'plain'), dropEffect: '' },
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    clientX: 0,
+    clientY: 0,
+  });
+
+  it('inserts the dragged HTML sanitised instead of letting the browser drop it raw', () => {
+    const { cb } = makeClipboard();
+    const event = htmlDrop('<p>hi<img src="x" onerror="window.__x=1"><a href="javascript:alert(1)">l</a></p>');
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(inserted()).toContain('hi');
+    expect(inserted()).not.toMatch(/onerror|javascript:/);
+  });
+
+  it('leaves a plain-text-only drop to the browser', () => {
+    const { cb } = makeClipboard();
+    const event = htmlDrop('', ['text/plain']);
+    cb._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('leaves the drop native when the host turned pasteCleanHTML off', () => {
+    const { cb } = makeClipboard({ pasteCleanHTML: false });
+    const event = htmlDrop('<b>x</b>');
+    cb._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('rejects a drop over maxPasteSize', () => {
+    const { cb, ctx } = makeClipboard({ maxPasteSize: 10 });
+    const event = htmlDrop('<p>0123456789abcdef</p>');
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(inserted()).toBe('');
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('pasteError', expect.objectContaining({ maxBytes: 10 }));
+  });
+});
+
+describe('Clipboard.resolveImages — escaping', () => {
+  it('escapes a registered data URL so a quote cannot end the src attribute', () => {
+    const { cb } = makeClipboard();
+    cb._blobRegistry.set('blob:t/1', 'data:image/x;p=" onerror=window.__x=1 x=";base64,AQID');
+    const box = document.createElement('div');
+    box.innerHTML = cb.resolveImages('<img src="blob:t/1" alt="a">');
+    const img = box.querySelector('img');
+    expect(img.getAttributeNames()).toEqual(['src', 'alt']);
+    expect(img.getAttribute('src')).toBe('data:image/x;p=" onerror=window.__x=1 x=";base64,AQID');
+  });
+});
+
+describe('Clipboard._cleanWordHtml — linear time on unclosed openers', () => {
+  it.each([
+    ['<!--[if', '<!--[if'.repeat(40000)],
+    ['<xml', '<xml'.repeat(40000)],
+    ['<o:p', '<o:p'.repeat(40000)],
+    ['<p', '<p'.repeat(60000)],
+  ])('%s', (_, html) => {
+    const { cb } = makeClipboard();
+    const t = performance.now();
+    cb._cleanWordHtml(html);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
+  it('still removes conditional comments and empty Word paragraphs', () => {
+    const { cb } = makeClipboard();
+    expect(cb._cleanWordHtml('<!--[if gte mso 9]><xml>x</xml><![endif]--><p class="MsoNormal">&nbsp;</p><p>keep</p>'))
+      .toBe('<p>keep</p>');
+  });
+});
+
+describe('Clipboard._onDrop — HTML drop edge cases', () => {
+  const drop = (html, files = []) => ({
+    dataTransfer: { files, types: files.length ? ['Files', 'text/html'] : ['text/html'], getData: (t) => (t === 'text/html' ? html : ''), dropEffect: '' },
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    clientX: 0,
+    clientY: 0,
+  });
+
+  it('sanitises the HTML of a drop that also carries a file the editor does not take', () => {
+    const { cb } = makeClipboard();
+    const event = drop('<p>x<img src="y" onerror="window.__x=1"></p>', [new File(['%PDF'], 'a.pdf', { type: 'application/pdf' })]);
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(inserted()).not.toContain('onerror');
+  });
+
+  it('does nothing in read-only mode', () => {
+    const { cb, ctx } = makeClipboard();
+    ctx.layoutInfo.container = document.createElement('div');
+    ctx.layoutInfo.container.classList.add('an-disabled');
+    const event = drop('<p>x</p>');
+    cb._onDrop(event);
+    expect(inserted()).toBe('');
+    expect(ctx.invoke).not.toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('leaves a drag out of another editor instance to the browser, which moves it', async () => {
+    const { cb: source, ctx: sourceCtx } = makeClipboard();
+    const p = document.createElement('p');
+    p.textContent = 'moved';
+    sourceCtx.layoutInfo.editable.appendChild(p);
+    p.dispatchEvent(new Event('dragstart', { bubbles: true, cancelable: true }));
+    await Promise.resolve();
+    const { cb: target } = makeClipboard();
+    const event = drop('<p>moved</p>');
+    target._onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    sourceCtx.layoutInfo.editable.dispatchEvent(new Event('dragend'));
+    source.destroy();
+  });
+});

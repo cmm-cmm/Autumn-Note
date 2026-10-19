@@ -21,10 +21,16 @@
  *   mid-tree, which is what lets a crafted fragment re-parse into different
  *   markup than it serialised from (mXSS). The rest of MathML is left alone so
  *   pasted formulae survive.
+ *
+ * - `xmp` / `noembed` / `noframes` / `plaintext` are raw-text elements: their
+ *   text serialises unescaped. Once a text node inside one holds its end tag
+ *   (pasted text, or a U+200B stripped from `</xmp` + U+200B + `>`), the next
+ *   serialise-and-parse turns that text into live markup.
  */
 const PROHIBITED_TAGS = [
   'script', 'style', 'iframe', 'object', 'embed', 'form', 'base', 'template',
   'link', 'meta', 'noscript', 'portal', 'frame', 'frameset', 'applet',
+  'xmp', 'noembed', 'noframes', 'plaintext',
   'animate', 'set', 'animatetransform', 'animatemotion',
   'mglyph', 'malignmark', 'annotation-xml',
 ];
@@ -48,6 +54,15 @@ const MEDIA_URL_ATTRS = new Set(['poster', 'background', 'srcset']);
  * POST beacon to arbitrary hosts when a link is clicked.
  */
 const BEACON_ATTRS = new Set(['ping']);
+
+/**
+ * `name` on an `img` (or an `img` with both `id` and `name`) becomes a named
+ * property of its document that overrides built-ins, so `<img name="body">`
+ * shadows `document.body` and `<img name="createElement">` breaks
+ * `document.createElement` for the whole host page. The editor never writes
+ * `name` into content, so it is dropped everywhere.
+ */
+const CLOBBER_ATTRS = new Set(['name']);
 
 /** Inline style properties the editor's own toolbar/table features persist on saved content. */
 const ALLOWED_STYLE_PROPS = new Set([
@@ -135,10 +150,30 @@ export function sanitiseHTML(html, options) {
 export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null } = {}) {
   const doc = new DOMParser().parseFromString(`<body>${html || ''}</body>`, 'text/html');
   const extraHosts = normaliseIframeHosts(iframeHosts);
+  // Read the parse document through Document.prototype: until the name
+  // attributes are stripped, `<img name="body">` or `<img name="createTreeWalker">`
+  // in the input shadows doc.body / doc.createTreeWalker themselves.
+  const body = documentBody(doc);
 
-  // Single querySelectorAll pass — collect all elements once to avoid
-  // repeated full-tree traversals for each category of check.
-  const allElements = Array.from(doc.querySelectorAll('*'));
+  // One walk collects every element (in document order, as querySelectorAll
+  // would) and every comment.
+  const allElements = [];
+  const comments = [];
+  const walker = Document.prototype.createTreeWalker.call(doc, body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    (node.nodeType === Node.COMMENT_NODE ? comments : allElements).push(node);
+  }
+
+  // Comments serialise their data unescaped, so a comment that holds a
+  // terminator once a filler character is stripped (`-` U+200B `->`) re-parses
+  // into live markup. Nothing the editor writes is a comment.
+  for (const node of comments) node.remove();
+
+  // Named properties go before anything else touches the document: the DOM
+  // implementation itself may call document methods they shadow.
+  for (const el of allElements) {
+    for (const name of CLOBBER_ATTRS) el.removeAttribute(name);
+  }
 
   // Build the prohibited tag set for fast O(1) lookup
   const prohibited = new Set(
@@ -238,7 +273,17 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
     }
   }
 
-  return doc.body;
+  return body;
+}
+
+/**
+ * `doc.body` via the Document.prototype getter, which a named property on
+ * the document instance cannot shadow.
+ * @param {Document} doc
+ * @returns {HTMLElement}
+ */
+function documentBody(doc) {
+  return Object.getOwnPropertyDescriptor(Document.prototype, 'body').get.call(doc);
 }
 
 /**

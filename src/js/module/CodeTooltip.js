@@ -370,8 +370,7 @@ export class CodeTooltip {
     let codeEl = pre.querySelector('code');
     if (!codeEl) {
       codeEl = document.createElement('code');
-      codeEl.innerHTML = pre.innerHTML;
-      pre.innerHTML = '';
+      codeEl.append(...pre.childNodes);
       pre.appendChild(codeEl);
     }
 

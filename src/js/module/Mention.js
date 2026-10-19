@@ -353,8 +353,14 @@ export class Mention {
       html = this._cfg.onInsert(item);
     }
     if (!html) {
-      const cls = this._cfg.mentionClass;
-      html = `<span class="${cls}" data-mention-id="${item.id}" contenteditable="false">@${item.label}</span>`;
+      // Built with DOM APIs: id and label often relay another user's display
+      // name, so they must stay text and attribute values, never markup.
+      const chip = document.createElement('span');
+      chip.className = this._cfg.mentionClass;
+      chip.dataset.mentionId = String(item.id ?? '');
+      chip.contentEditable = 'false';
+      chip.textContent = `@${item.label ?? ''}`;
+      html = chip.outerHTML;
     }
 
     // Insert a trailing space so the cursor lands outside the chip

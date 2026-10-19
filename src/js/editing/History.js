@@ -16,6 +16,26 @@ function _commonPrefixLength(a, b) {
   return i;
 }
 
+/**
+ * Data URLs worth tokenising: a media type and base64 payload only, so a match
+ * cannot run across quotes or markup.
+ */
+const DATA_URL_RE = /data:[\w.+\/-]+;base64,[A-Za-z0-9+/=]+/g;
+
+/**
+ * A random token prefix per History instance. Content cannot forge a token it
+ * cannot predict, so tokenising and detokenising a snapshot is an exact
+ * round trip. With a fixed `__asn_img_N__` an author could put a token in an
+ * attribute and have undo replace it with quote-bearing text from elsewhere.
+ * @returns {string}
+ */
+function _tokenPrefix() {
+  const bytes = new Uint8Array(8);
+  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  return `__asn_img_${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}_`;
+}
+
 export class History {
   /**
    * @param {HTMLElement} editable - the contenteditable element
@@ -28,6 +48,8 @@ export class History {
    */
   constructor(editable, limit = 100, maxBytes = 10 * 1024 * 1024) {
     this.editable = editable;
+    this._prefix = _tokenPrefix();
+    this._tokenRe = new RegExp(`${this._prefix}\\d+__`, 'g');
     this._limit = limit;
     this._maxBytes = maxBytes;
     this._bytes = 0;
@@ -212,18 +234,22 @@ export class History {
 
   /**
    * Replaces every `data:…;base64,…` occurrence in `html` with a compact
-   * token `__asn_img_0__`, `__asn_img_1__`, … and returns the tokenized
-   * string together with a map from token → original data URL.
+   * token (this instance's random prefix plus `0__`, `1__`, …) and returns the
+   * tokenized string together with a map from token → original data URL.
    * @param {string} html
    * @returns {{ html: string, images: Object<string,string> }}
    */
   _tokenizeImages(html) {
     // Fast-path: skip regex entirely when there are no data URIs (common case)
-    if (!html.includes('data:')) return { html, images: /** @type {Record<string,string>} */ ({}) };
+    // The prefix showing up in content means it was guessed or copied from a
+    // snapshot; store that state as-is so restoring it stays an exact copy.
+    if (!html.includes('data:') || html.includes(this._prefix)) {
+      return { html, images: /** @type {Record<string,string>} */ ({}) };
+    }
     const images = /** @type {Record<string,string>} */ ({});
     let index = 0;
-    const tokenized = html.replace(/data:[^;]+;base64,[^"' >]*/g, (match) => {
-      const token = `__asn_img_${index}__`;
+    const tokenized = html.replace(DATA_URL_RE, (match) => {
+      const token = `${this._prefix}${index}__`;
       images[token] = match;
       index++;
       return token;
@@ -238,7 +264,7 @@ export class History {
    */
   _detokenizeImages(point) {
     if (!point.images || Object.keys(point.images).length === 0) return point.html;
-    return point.html.replace(/__asn_img_\d+__/g, (token) => point.images[token] || token);
+    return point.html.replace(this._tokenRe, (token) => point.images[token] ?? token);
   }
 
   // ---------------------------------------------------------------------------

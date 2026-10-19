@@ -611,3 +611,22 @@ describe('Mention._onInput debounce path', () => {
     m.destroy();
   });
 });
+
+describe('Mention._select — default chip treats id and label as text', () => {
+  it('does not turn a crafted label or id into markup', () => {
+    const evil = [{ id: 'u1" data-x="y', label: 'Bob</span><a href="https://attacker.invalid">x</a>' }];
+    const m = new Mention(makeContext({ onSearch: vi.fn((q, cb) => cb(evil)) }));
+    m.initialize();
+    m._renderItems(evil);
+    m._triggerNode = null;
+    m._select(0);
+    const html = m.context.invoke.mock.calls.find(([path]) => path === 'editor.insertHTML')[1];
+    const box = document.createElement('div');
+    box.innerHTML = html;
+    const chip = box.firstElementChild;
+    expect(box.querySelector('a')).toBeNull();
+    expect(chip.textContent).toBe('@Bob</span><a href="https://attacker.invalid">x</a>');
+    expect(chip.dataset.mentionId).toBe('u1" data-x="y');
+    expect(chip.hasAttribute('data-x')).toBe(false);
+  });
+});

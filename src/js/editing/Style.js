@@ -195,6 +195,24 @@ export function outdent() {
 }
 
 /**
+ * Removes the zero-width-space caret anchors from every text node under
+ * `root`, then merges and drops the text nodes that leaves.
+ *
+ * Done on nodes rather than with `innerHTML = innerHTML.replaceAll(…)`:
+ * re-parsing a string with characters deleted from it can complete a comment
+ * or raw-text terminator and turn inert content into live elements.
+ * @param {Node} root
+ */
+function _stripZwsNodes(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = /** @type {Text} */ (node);
+    if (text.data.includes('\u200B')) text.data = text.data.replaceAll('\u200B', '');
+  }
+  root.normalize();
+}
+
+/**
  * Convert a checklist <li> into a paragraph and move any following items into a new checklist.
  *
  * Preserves inline markup from the converted item, strips zero-width space anchors,
@@ -220,7 +238,7 @@ function _checklistItemToP(checkLi) {
     p.appendChild(child.cloneNode(true));
   }
   // Strip ZWS anchors left over from checklist markup
-  p.innerHTML = p.innerHTML.replaceAll('\u200B', '');
+  _stripZwsNodes(p);
   if (!p.hasChildNodes() || !p.textContent.trim()) {
     p.innerHTML = '';
     p.appendChild(document.createTextNode('\u00a0'));
@@ -582,7 +600,7 @@ export function toggleChecklist() {
             if (child.nodeType === 1 && /** @type {Element} */ (child).tagName === 'INPUT') continue;
             p.appendChild(child.cloneNode(true));
           }
-          p.innerHTML = p.innerHTML.replaceAll('\u200b', '').replaceAll('\u200B', '');
+          _stripZwsNodes(p);
           if (!p.hasChildNodes() || !p.textContent.trim()) {
             p.innerHTML = '';
             p.appendChild(document.createTextNode('\u00a0'));
