@@ -356,7 +356,7 @@ export interface AsnOptions {
    * Display language for the editor UI.
    *
    * `'en'` is built in. Other codes must be registered first — the ESM bundle
-   * ships English only, so import the locale from `autumnnote/i18n/<code>` and
+   * ships English only, so import the locale from `autumnnote-plus/i18n/<code>` and
    * pass it to {@link registerLocale}. In the UMD/CDN build, load
    * `dist/i18n/<code>.umd.js` after the main script. Shipped codes:
    * 'en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko', 'id'.
@@ -635,8 +635,8 @@ export declare const locales: Record<string, AsnLocale>;
  * Registers a locale so `lang: '<code>'` can select it.
  *
  * ```ts
- * import AutumnNote from 'autumnnote';
- * import { vi } from 'autumnnote/i18n/vi';
+ * import AutumnNote from 'autumnnote-plus';
+ * import { vi } from 'autumnnote-plus/i18n/vi';
  * AutumnNote.registerLocale('vi', vi);
  * ```
  */
@@ -965,7 +965,7 @@ export interface AutumnNoteStatic {
 
   /**
    * Registers a locale so `lang: '<code>'` can select it. Only English ships
-   * in the ESM bundle; import others from `autumnnote/i18n/<code>`.
+   * in the ESM bundle; import others from `autumnnote-plus/i18n/<code>`.
    */
   registerLocale(code: string, locale: Partial<AsnLocale>): this;
 

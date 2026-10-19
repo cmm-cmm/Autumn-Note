@@ -31,7 +31,7 @@ for (const code of bundledLocaleCodes()) {
     'if (host && typeof host.registerLocale === \'function\') {',
     `  host.registerLocale(${JSON.stringify(code)}, locale);`,
     '} else if (typeof module === \'undefined\' && typeof define === \'undefined\') {',
-    `  console.warn('[AutumnNote] Load autumnnote before i18n/${code}.umd.js so the locale can register.');`,
+    `  console.warn('[AutumnNote] Load autumnnote-plus before i18n/${code}.umd.js so the locale can register.');`,
     '}',
     'export default locale;',
     '',

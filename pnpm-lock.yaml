@@ -60,7 +60,7 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.5
         version: 6.0.5(vite@8.2.1(sass@1.102.0))
-      autumnnote:
+      autumnnote-plus:
         specifier: workspace:*
         version: link:../..
       react:
@@ -78,7 +78,7 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.8
         version: 6.0.8(vite@8.2.1(sass@1.102.0))(vue@3.5.41(typescript@7.0.2))
-      autumnnote:
+      autumnnote-plus:
         specifier: workspace:*
         version: link:../..
       vite:

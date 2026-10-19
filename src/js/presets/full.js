@@ -1,10 +1,10 @@
 /**
  * presets/full.js — every module the editor ships with.
  *
- * This is what the default `autumnnote` entry point installs, so its behaviour
+ * This is what the default `autumnnote-plus` entry point installs, so its behaviour
  * is unchanged. Because this file is the only place the module classes are
  * imported, a build that never reaches it — see `presets/core.js` — drops them
- * all, which is what makes `autumnnote/core` smaller rather than merely
+ * all, which is what makes `autumnnote-plus/core` smaller rather than merely
  * differently configured.
  *
  * Order matters: modules are registered in array order and `toolbar` /

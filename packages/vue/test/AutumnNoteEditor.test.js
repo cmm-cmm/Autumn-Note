@@ -1,8 +1,8 @@
 import { createApp, h, nextTick, ref } from 'vue';
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 import AutumnNoteEditor from '../src/AutumnNote.vue';
 
-vi.mock('autumnnote', () => ({
+vi.mock('autumnnote-plus', () => ({
   default: { create: vi.fn() },
 }));
 

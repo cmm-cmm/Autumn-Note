@@ -5,8 +5,8 @@
  * consumer ~15 KB gzip even when they only ever rendered English, so the other
  * locales are opt-in via subpath imports:
  *
- *   import AutumnNote from 'autumnnote';
- *   import { vi } from 'autumnnote/i18n/vi';
+ *   import AutumnNote from 'autumnnote-plus';
+ *   import { vi } from 'autumnnote-plus/i18n/vi';
  *
  *   AutumnNote.registerLocale('vi', vi);
  *   AutumnNote.create('#editor', { lang: 'vi' });
@@ -64,7 +64,7 @@ export function resolveLocale(lang) {
       // after asking for another language is confusing to debug.
       console.warn(
         `[AutumnNote] Locale "${lang}" is not registered, falling back to English. ` +
-        `Import it first: import { ${lang} } from 'autumnnote/i18n/${lang}'; ` +
+        `Import it first: import { ${lang} } from 'autumnnote-plus/i18n/${lang}'; ` +
         `AutumnNote.registerLocale('${lang}', ${lang}); ` +
         `or, with a <script> tag, load dist/i18n/${lang}.umd.js after autumnnote.`,
       );

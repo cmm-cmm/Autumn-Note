@@ -1,6 +1,6 @@
 /**
  * test/core/presets.test.js
- * The module tables behind the `autumnnote` and `autumnnote/core` entries.
+ * The module tables behind the `autumnnote-plus` and `autumnnote-plus/core` entries.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CORE_MODULES } from '../../src/js/presets/core.js';
@@ -25,7 +25,7 @@ describe('module presets', () => {
   });
 
   it('leaves every heavy module out of the core preset', () => {
-    // These are what make `autumnnote/core` worth importing.
+    // These are what make `autumnnote-plus/core` worth importing.
     const omitted = ['tableTooltip', 'emojiDialog', 'iconDialog', 'imageCropOverlay',
       'findReplace', 'codeTooltip', 'contextMenu', 'videoDialog'];
     for (const name of omitted) {

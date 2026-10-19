@@ -10,6 +10,8 @@ export default defineConfig({
       name: 'AutumnNote',
       formats: ['umd'],
       fileName: () => 'autumnnote.umd.js',
+      // Vite names library CSS after the package; the published file stays autumnnote.css.
+      cssFileName: 'autumnnote',
     },
     rollupOptions: {
       output: {

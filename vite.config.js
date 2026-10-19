@@ -23,6 +23,8 @@ export default defineConfig(async () => {
         entry: resolve(import.meta.dirname, 'src/js/index.js'),
         formats: ['es'],
         fileName: () => 'autumnnote.es.js',
+        // Vite names library CSS after the package; the published file stays autumnnote.css.
+        cssFileName: 'autumnnote',
       },
       rollupOptions: {
         output: {

@@ -51,7 +51,7 @@ describe('resolveLocale', () => {
   it('warns with import instructions when a locale is not registered', () => {
     const warn = viMock.spyOn(console, 'warn').mockImplementation(() => {});
     expect(resolveLocale('vi')).toBe(en);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("autumnnote/i18n/vi"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("autumnnote-plus/i18n/vi"));
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('dist/i18n/vi.umd.js'));
   });
 

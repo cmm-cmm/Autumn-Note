@@ -73,7 +73,7 @@
       <a class="nav-link active" href="docs.html" aria-current="page">Docs</a>
       <a class="nav-link" href="playground.html">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+      <a class="nav-link" href="https://www.npmjs.com/package/autumnnote-plus" target="_blank" rel="noopener noreferrer">npm</a>
       <span class="lang-switch" role="group" aria-label="Language">
         <a href="./docs.html" class="active" lang="en" hreflang="en" aria-current="page">EN</a>
         <a href="/vi/docs.html" lang="vi" hreflang="vi">VI</a>
@@ -147,13 +147,13 @@
       <p class="docs-p">Install via npm (or pnpm / yarn):</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote</code></pre>
+        <pre><code class="language-bash">npm install autumnnote-plus</code></pre>
       </div>
       <p class="docs-p">Or use the CDN, no build step needed:</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;</code></pre>
+        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"&gt;&lt;/script&gt;</code></pre>
       </div>
       <div class="callout"><strong>Requirements:</strong> installing from npm needs <strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong>. The editor itself runs in any modern browser. The CDN build has no requirements.</div>
     </section>
@@ -167,17 +167,17 @@
         exposes the <code>Context</code> object to the parent component via <code>ref</code>.
       </p>
 
-      <h3 id="wrapper-react" class="method-h">React: <code>autumnnote-react</code></h3>
+      <h3 id="wrapper-react" class="method-h">React: <code>autumnnote-plus-react</code></h3>
       <p class="docs-p">Install the wrapper alongside the core:</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote autumnnote-react</code></pre>
+        <pre><code class="language-bash">npm install autumnnote-plus autumnnote-plus-react</code></pre>
       </div>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-jsx">import { useRef } from 'react';
-import AutumnNoteEditor from 'autumnnote-react';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-react';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 function MyEditor() {
   const editorRef = useRef(null);
@@ -220,18 +220,18 @@ function MyEditor() {
         </tbody>
       </table>
 
-      <h3 id="wrapper-vue" class="method-h">Vue 3: <code>autumnnote-vue</code></h3>
+      <h3 id="wrapper-vue" class="method-h">Vue 3: <code>autumnnote-plus-vue</code></h3>
       <p class="docs-p">Install the wrapper alongside the core:</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote autumnnote-vue</code></pre>
+        <pre><code class="language-bash">npm install autumnnote-plus autumnnote-plus-vue</code></pre>
       </div>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-vue">&lt;script setup&gt;
 import { ref } from 'vue';
-import AutumnNoteEditor from 'autumnnote-vue';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 const editorRef = ref(null);
 
@@ -270,8 +270,8 @@ function handleSave() {
       <p class="docs-p">Wrap any <code>&lt;textarea&gt;</code> or <code>&lt;div&gt;</code> in your HTML:</p>
       <div class="code-wrap">
         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-js">import AutumnNote from 'autumnnote';
-import 'autumnnote/dist/autumnnote.css';
+        <pre><code class="language-js">import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 const editor = AutumnNote.create('#editor', {
   placeholder: 'Start typing…',
@@ -579,7 +579,7 @@ editor.on('paste', ({ text }) => text.length > 10000 ? false : undefined);</code
   ulBtn, olBtn, linkBtn, imageBtn,
   undoBtn, redoBtn,
   defaultToolbar, // full default toolbar
-} from 'autumnnote';
+} from 'autumnnote-plus';
 
 // By name: works from JSON, framework props or the UMD build
 AutumnNote.create('#editor', {
@@ -951,10 +951,10 @@ AutumnNote.registerButton({
     <!-- ── i18n ── -->
     <section class="docs-section" id="i18n" aria-label="Internationalization">
       <h2 class="section-h">Internationalisation</h2>
-      <p class="docs-p">Nine locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Every build includes only <code>en</code>. With a bundler, import and register the ones you need. With a <code>&lt;script&gt;</code> tag, load <code>dist/i18n/&lt;code&gt;.umd.js</code> after the main script and it registers itself, for example <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
+      <p class="docs-p">Nine locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Every build includes only <code>en</code>. With a bundler, import and register the ones you need. With a <code>&lt;script&gt;</code> tag, load <code>dist/i18n/&lt;code&gt;.umd.js</code> after the main script and it registers itself, for example <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-js">import AutumnNote from 'autumnnote';
-import { vi } from 'autumnnote/i18n/vi';
+        <pre><code class="language-js">import AutumnNote from 'autumnnote-plus';
+import { vi } from 'autumnnote-plus/i18n/vi';
 
 AutumnNote.registerLocale('vi', vi);
 const editor = AutumnNote.create('#editor', { lang: 'vi' });
@@ -987,7 +987,7 @@ editor3.setHTML(html);</code></pre>
   ButtonDef,
   ToolbarItemDef,
   AsnLocale,
-} from 'autumnnote';
+} from 'autumnnote-plus';
 
 // Typed options
 const options: AsnOptions = {
@@ -1021,7 +1021,7 @@ console.log(api?.version); // '1.0.0'</code></pre>
     <span>Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge · Autumn Note v__ASN_VERSION__</span>
     <nav class="footer-links" aria-label="Footer links">
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
+      <a href="https://www.npmjs.com/package/autumnnote-plus" target="_blank" rel="noopener noreferrer">npm</a>
       <a href="playground.html">Playground</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
     </nav>

@@ -11,7 +11,7 @@ export default defineConfig({
       fileName: (fmt) => fmt === 'es' ? 'index.js' : 'index.cjs',
     },
     rollupOptions: {
-      external: ['vue', 'autumnnote'],
+      external: ['vue', 'autumnnote-plus'],
       output: {
         exports: 'named',
         globals: { vue: 'Vue', autumnnote: 'AutumnNote' },

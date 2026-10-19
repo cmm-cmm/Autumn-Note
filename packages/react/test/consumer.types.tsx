@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import type { AsnOptions, Context, PasteErrorData } from 'autumnnote';
+import type { AsnOptions, Context, PasteErrorData } from 'autumnnote-plus';
 import AutumnNoteEditor from '../index.js';
 
 const editorRef = createRef<Context>();

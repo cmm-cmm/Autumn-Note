@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-19
+
+First release of **`autumnnote-plus`**, an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) by Minh Pham. It starts from Autumn Note 3.1.0; versions up to 3.1.0 below are the original project's history, released as `autumnnote`.
+
+### Renamed
+
+- The packages are `autumnnote-plus`, `autumnnote-plus-react` and `autumnnote-plus-vue`. Imports, subpaths and CDN URLs change with the name (`'autumnnote-plus'`, `'autumnnote-plus/core'`, `'autumnnote-plus/i18n/id'`, `cdn.jsdelivr.net/npm/autumnnote-plus`). File names inside the package (`dist/autumnnote.css`, `dist/autumnnote.umd.js`, …), the `AutumnNote` global and every option, event and CSS class are unchanged. To keep `'autumnnote'` imports, install with an alias: `npm install autumnnote@npm:autumnnote-plus@^4.0.0`.
+
 ### Breaking
 
 - **The UMD/CDN build ships English only.** It used to pre-register every locale, so each `<script>` page paid for all of them (about 3 KB gzip per language) whatever it displayed. `autumnnote.umd.js`, `autumnnote.min.js` and `autumnnote.cjs` drop from 109.2 KB to 92.4 KB gzip. Each locale is now its own script, `dist/i18n/<code>.umd.js`, that registers itself when loaded after the main script. ESM/bundler users are not affected: they already imported locales one by one.
@@ -18,12 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 If a page loads Autumn Note with a `<script>` tag and sets `lang` to anything other than `'en'`, add that locale's script after the main one:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
-<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/vi.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/vi.umd.js"></script>
 <script>AutumnNote.create('#editor', { lang: 'vi' });</script>
 ```
 
-Without it the editor falls back to English and the console warning names the missing script. With `require('autumnnote')` (CommonJS), require the locale and register it: `AutumnNote.registerLocale('vi', require('autumnnote/dist/i18n/vi.umd.js'))`.
+Without it the editor falls back to English and the console warning names the missing script. With `require('autumnnote-plus')` (CommonJS), require the locale and register it: `AutumnNote.registerLocale('vi', require('autumnnote-plus/dist/i18n/vi.umd.js'))`.
 
 ### Security
 
@@ -41,7 +49,7 @@ These come from a source-and-sandbox security audit of the editor. Each has a re
 
 ### Added
 
-- **Indonesian locale (`id`).** Import it from `autumnnote/i18n/id` or load `dist/i18n/id.umd.js`. The demo site's language pickers include it.
+- **Indonesian locale (`id`).** Import it from `autumnnote-plus/i18n/id` or load `dist/i18n/id.umd.js`. The demo site's language pickers include it.
 - `pnpm build` also produces `dist/i18n/<code>.umd.js` for every locale file in `src/js/i18n/`, and `check:bundle` gives each one a size budget.
 
 ### Changed

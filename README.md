@@ -1,23 +1,23 @@
-# Autumn Note — WYSIWYG Rich Text Editor
+# autumnnote-plus — Autumn Note with security fixes
 
 <p align="center"><img src="public/image/banner.png" width="120" alt="Autumn Note Banner"/></p>
 
-[![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
-[![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/autumnnote?label=minzipped&color=success)](https://bundlephobia.com/package/autumnnote)
-[![GitHub Stars](https://img.shields.io/github/stars/cmm-cmm/Autumn-Note?style=flat&logo=github&color=yellow)](https://github.com/cmm-cmm/Autumn-Note)
-[![CI](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/ci.yml/badge.svg)](https://github.com/cmm-cmm/Autumn-Note/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/autumnnote-plus?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote-plus)
+[![npm downloads](https://img.shields.io/npm/dw/autumnnote-plus?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote-plus)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/autumnnote-plus?label=minzipped&color=success)](https://bundlephobia.com/package/autumnnote-plus)
+[![CI](https://github.com/habibiahmada/Autumn-Note/actions/workflows/ci.yml/badge.svg)](https://github.com/habibiahmada/Autumn-Note/actions/workflows/ci.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-brightgreen)](https://opensource.org/licenses/MIT)
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
-[![Provenance](https://img.shields.io/badge/npm-provenance%20attested-cb3837?logo=npm)](https://www.npmjs.com/package/autumnnote#provenance)
 
-A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES2022+) — no jQuery, no runtime dependencies. Lightweight alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate — with official React and Vue 3 wrappers.
+> **Unofficial fork.** `autumnnote-plus` is a community fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) by Minh Pham, maintained by [Habibi Ahmad Aziz](https://github.com/habibiahmada). It is not published or endorsed by the Autumn Note author. It tracks Autumn Note 3.1.0 and adds the security fixes from a source-and-sandbox audit (re-parse XSS paths, HTML drag-and-drop, Markdown export, quadratic regexes), an Indonesian locale, accessibility fixes and per-locale CDN scripts. See [What's different](#whats-different-from-autumn-note) and the [CHANGELOG](CHANGELOG.md). The fixes have been reported to the original project.
+
+A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES2022+) — no jQuery, no runtime dependencies. Lightweight alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate — with React and Vue 3 wrappers ([`autumnnote-plus-react`](packages/react), [`autumnnote-plus-vue`](packages/vue)).
 
 > **Fast. Lightweight. Reliable. Efficient.**
 
-[Live Demo](https://autumn.konexforge.com/) · [Docs](https://autumn.konexforge.com/docs.html) · [Playground](https://autumn.konexforge.com/playground.html)
+Original Autumn Note site (runs the upstream release, not this fork): [Live Demo](https://autumn.konexforge.com/) · [Docs](https://autumn.konexforge.com/docs.html) · [Playground](https://autumn.konexforge.com/playground.html)
 
 <p align="center"><img src="examples/Screenshot.png" alt="Autumn Note Screenshot"/></p>
 
@@ -26,20 +26,21 @@ A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES
 ## Table of Contents
 
 1. [Features](#features)
-2. [Installation](#installation)
-3. [Minimal build](#minimal-build)
-4. [Framework Wrappers](#framework-wrappers)
-5. [Quick Start](#quick-start)
-6. [Plugin API](#plugin-api)
-7. [API](#api)
-8. [Options](#options)
-9. [Theming](#theming)
-10. [Toolbar Customisation](#toolbar-customisation)
-11. [Keyboard Shortcuts](#keyboard-shortcuts)
-12. [Mentions](#mentions)
-13. [Project Structure](#project-structure)
-14. [Comparison](#comparison)
-15. [License](#license)
+2. [What's different from Autumn Note](#whats-different-from-autumn-note)
+3. [Installation](#installation)
+4. [Minimal build](#minimal-build)
+5. [Framework Wrappers](#framework-wrappers)
+6. [Quick Start](#quick-start)
+7. [Plugin API](#plugin-api)
+8. [API](#api)
+9. [Options](#options)
+10. [Theming](#theming)
+11. [Toolbar Customisation](#toolbar-customisation)
+12. [Keyboard Shortcuts](#keyboard-shortcuts)
+13. [Mentions](#mentions)
+14. [Project Structure](#project-structure)
+15. [Comparison](#comparison)
+16. [License](#license)
 
 ---
 
@@ -188,17 +189,39 @@ Self-hosting also removes the third-party request entirely, which is usually wha
 
 ---
 
+## What's different from Autumn Note
+
+`autumnnote-plus` 4.0.0 is Autumn Note 3.1.0 plus:
+
+- **Security fixes** — content that the sanitiser had made inert could become a live event handler after undo/redo, `getHTML()`/`print()`, a checklist toggle or a table header toggle; HTML dragged in from another page skipped the sanitiser; the default mention chip inserted names as HTML; Markdown export could emit inert text as raw HTML; several regexes took quadratic time on pasted content. Details are in the [CHANGELOG](CHANGELOG.md#security).
+- **Breaking: the UMD/CDN build ships English only.** Other languages are separate scripts (`dist/i18n/<code>.umd.js`), which is why this is 4.0.0. ESM users are not affected.
+- An Indonesian locale (`id`), keyboard and screen-reader fixes, a redesigned Insert Image dialog, and image moves by drag no longer duplicating the image.
+
+The API is otherwise the same: options, events, the `AutumnNote` global and the `an-*` CSS classes are unchanged.
+
+### Switching from `autumnnote`
+
+Install it under the old name with an npm alias, and existing `import ... from 'autumnnote'` lines keep working:
+
+```bash
+npm install autumnnote@npm:autumnnote-plus@^4.0.0
+```
+
+Or install it as `autumnnote-plus` and change the imports (`'autumnnote'` → `'autumnnote-plus'`, `'autumnnote/i18n/id'` → `'autumnnote-plus/i18n/id'`). With React or Vue, switch the wrapper too: `autumnnote-react` → `autumnnote-plus-react`, `autumnnote-vue` → `autumnnote-plus-vue` (the original wrappers only accept `autumnnote` below 4.0.0). CDN pages change the package in the URL and add a locale script if `lang` is not `'en'`.
+
+---
+
 ## Installation
 
 ### npm / pnpm / yarn
 
 ```bash
-npm install autumnnote
+npm install autumnnote-plus
 ```
 
 ```js
-import AutumnNote from 'autumnnote';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
 ```
 
 ### CDN
@@ -206,19 +229,19 @@ import 'autumnnote/dist/autumnnote.css';
 **jsDelivr** (Recommended):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
 ```
 
 **unpkg:**
 
 ```html
-<script src="https://unpkg.com/autumnnote"></script>
+<script src="https://unpkg.com/autumnnote-plus"></script>
 ```
 
 The script-tag build ships English. For another language, add its locale script after the main one (see [Languages](#languages)):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"></script>
 ```
 
 
@@ -239,13 +262,13 @@ The script-tag build ships English. For another language, add its locale script 
 ## Minimal build
 
 The default entry installs every module. When you only need basic formatting,
-import `autumnnote/core` instead — it leaves the dialogs, floating tooltips,
+import `autumnnote-plus/core` instead — it leaves the dialogs, floating tooltips,
 emoji and icon pickers and the crop overlay out of the bundle entirely rather
 than shipping them switched off:
 
 ```js
-import AutumnNote from 'autumnnote/core';
-import 'autumnnote/dist/autumnnote.css';   // same stylesheet as the full build
+import AutumnNote from 'autumnnote-plus/core';
+import 'autumnnote-plus/dist/autumnnote.css';   // same stylesheet as the full build
 
 AutumnNote.create('#editor', {
   toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['undo', 'redo']],
@@ -254,8 +277,8 @@ AutumnNote.create('#editor', {
 
 | Entry | Modules | ES bundle (gzip) |
 |---|---|---|
-| `autumnnote` | all | 84.1 KiB |
-| `autumnnote/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
+| `autumnnote-plus` | all | 84.1 KiB |
+| `autumnnote-plus/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
 
 Same API, same types, same stylesheet — the difference is only which modules are
 installed. A toolbar button whose module is absent still renders, but invoking it
@@ -266,21 +289,21 @@ buttons the core modules serve.
 
 ## Framework Wrappers
 
-Official React and Vue 3 wrappers are available as separate packages in this monorepo (managed with pnpm workspaces).
+React and Vue 3 wrappers (`autumnnote-plus-react`, `autumnnote-plus-vue`) are available as separate packages in this monorepo (managed with pnpm workspaces).
 
 ### React
 
 ```bash
-npm install autumnnote autumnnote-react
+npm install autumnnote-plus autumnnote-plus-react
 ```
 
 ```js
-import 'autumnnote/dist/autumnnote.css';
+import 'autumnnote-plus/dist/autumnnote.css';
 ```
 
 ```jsx
 import { useRef } from 'react';
-import AutumnNoteEditor from 'autumnnote-react';
+import AutumnNoteEditor from 'autumnnote-plus-react';
 
 function MyEditor() {
   const editorRef = useRef(null);
@@ -303,17 +326,17 @@ The `ref` is forwarded to the underlying `Context` instance via `useImperativeHa
 ### Vue 3
 
 ```bash
-npm install autumnnote autumnnote-vue
+npm install autumnnote-plus autumnnote-plus-vue
 ```
 
 ```js
-import 'autumnnote/dist/autumnnote.css';
+import 'autumnnote-plus/dist/autumnnote.css';
 ```
 
 ```vue
 <script setup>
 import { ref } from 'vue';
-import AutumnNoteEditor from 'autumnnote-vue';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
 
 const editorRef = ref(null);
 </script>
@@ -335,7 +358,7 @@ Access the editor instance via `editorRef.value.editor`; Vue unwraps the compone
 ### ES Module
 
 ```js
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 
 const editor = AutumnNote.create('#my-editor', {
   placeholder: 'Start typing…',
@@ -473,7 +496,7 @@ const editor = AutumnNote.create('#my-editor', {
 Plugins package editor extensions — custom modules, toolbar buttons, and event handlers — into a reusable, distributable object.
 
 ```js
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 
 const WordCountPlugin = {
   name: 'word-count',
@@ -818,7 +841,7 @@ import AutumnNote, {
   foreColorBtn, backColorBtn,
   findBtn, findReplaceBtn,
   codeviewBtn, fullscreenBtn, shortcutsBtn,
-} from 'autumnnote';
+} from 'autumnnote-plus';
 ```
 
 ### Default toolbar layout
@@ -1042,7 +1065,7 @@ src/
 │   ├── i18n/
 │   │   ├── index.js          Locale registry (resolveLocale, registerLocale)
 │   │   ├── all.js            Registers every locale at once (used by the demo site)
-│   │   └── en.js, vi.js, …   One file per locale, importable as `autumnnote/i18n/<code>`
+│   │   └── en.js, vi.js, …   One file per locale, importable as `autumnnote-plus/i18n/<code>`
 │   ├── Context.js            Editor instance hub: module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
 │   ├── renderer.js           DOM layout builder
@@ -1054,16 +1077,16 @@ src/
 
 ### Monorepo structure
 
-This project uses **pnpm workspaces** to manage the core library alongside official framework wrappers:
+This project uses **pnpm workspaces** to manage the core library alongside its framework wrappers:
 
 ```
 autumn-note-ce/
 ├── pnpm-workspace.yaml       # workspace root
 ├── src/                      # core library source
 ├── packages/
-│   ├── react/                # autumnnote-react
+│   ├── react/                # autumnnote-plus-react
 │   │   └── src/index.jsx
-│   └── vue/                  # autumnnote-vue
+│   └── vue/                  # autumnnote-plus-vue
 │       └── src/AutumnNote.vue
 └── test/                     # Vitest test suite
 ```
@@ -1076,8 +1099,8 @@ Development and package usage require Node 22 LTS (22.22.2+) or Node 24.15+ (new
 pnpm install                           # install all workspace packages
 pnpm dev                               # start Vite dev server with HMR
 pnpm build                             # build core ES + UMD + CSS to dist/
-pnpm --filter autumnnote-react build   # build React wrapper
-pnpm --filter autumnnote-vue build     # build Vue wrapper
+pnpm --filter autumnnote-plus-react build   # build React wrapper
+pnpm --filter autumnnote-plus-vue build     # build Vue wrapper
 pnpm test                              # run Vitest test suite once
 pnpm test:watch                        # run tests in watch mode
 pnpm lint                              # ESLint
@@ -1090,7 +1113,7 @@ Build output in `dist/`:
 |---|---|---|
 | `autumnnote.es.js` | ES Module | `import` in bundlers (tree-shakeable) |
 | `autumnnote.umd.js` | UMD | Browser `<script>` tag |
-| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
+| `autumnnote.cjs` | CommonJS | `require('autumnnote-plus')` in Node.js |
 | `i18n/<code>.umd.js` | UMD | One locale for the `<script>` build; registers itself when loaded after `autumnnote.umd.js` |
 | `autumnnote.css` | CSS | Styles for both builds |
 
@@ -1123,8 +1146,8 @@ Nine locales ship with the package: `en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `k
 **ESM / bundler**: import the locale and register it.
 
 ```js
-import AutumnNote from 'autumnnote';
-import { id } from 'autumnnote/i18n/id';
+import AutumnNote from 'autumnnote-plus';
+import { id } from 'autumnnote-plus/i18n/id';
 
 AutumnNote.registerLocale('id', id);
 AutumnNote.create('#editor', { lang: 'id' });
@@ -1133,8 +1156,8 @@ AutumnNote.create('#editor', { lang: 'id' });
 **UMD / CDN (`<script>` tag)**: load the locale script after the main script. It registers itself, so `lang` works straight away:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
-<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"></script>
 <script>
   AutumnNote.create('#editor', { lang: 'id' });
 </script>
@@ -1219,4 +1242,4 @@ pnpm check    # lint, typecheck, coverage, 4 builds, wrapper tests, bundle budge
 
 ## License
 
-[MIT](LICENSE) © Minh Pham
+[MIT](LICENSE). Autumn Note © Minh Pham; changes in this fork © Habibi Ahmad Aziz. The original copyright and license notice must stay with every copy, as the MIT license requires.

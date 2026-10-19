@@ -49,7 +49,7 @@ export const _customModules = new Map();
  * Module table for every Context created from here on.
  *
  * Context deliberately imports no module of its own: whichever entry point the
- * consumer loaded installs the table. That is what lets `autumnnote/core` leave
+ * consumer loaded installs the table. That is what lets `autumnnote-plus/core` leave
  * the dialogs, tooltips and pickers out of the bundle entirely rather than
  * merely not registering them.
  * @type {ModuleDef[]}

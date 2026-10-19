@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 /**
- * Builds `autumnnote/core` — the minimal preset.
+ * Builds `autumnnote-plus/core` — the minimal preset.
  *
  * A separate config rather than a second `lib.entry` on the main one: sharing a
  * build would let Rollup hoist the two entries' common code into shared chunks,
@@ -11,7 +11,7 @@ import { defineConfig } from 'vite';
  * the file self-contained.
  *
  * `core.js` does not import the stylesheet, so none is emitted here; consumers
- * load `autumnnote/dist/autumnnote.css`, exactly as they do with the full
+ * load `autumnnote-plus/dist/autumnnote.css`, exactly as they do with the full
  * build, which emits it.
  */
 export default defineConfig({
@@ -25,6 +25,8 @@ export default defineConfig({
       entry: resolve(import.meta.dirname, 'src/js/core.js'),
       formats: ['es'],
       fileName: () => 'autumnnote.core.es.js',
+      // Vite names library CSS after the package; the published file stays autumnnote.css.
+      cssFileName: 'autumnnote',
     },
     rollupOptions: {
       output: {

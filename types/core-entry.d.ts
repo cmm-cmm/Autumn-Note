@@ -1,5 +1,5 @@
 /**
- * Type surface for `autumnnote/core`.
+ * Type surface for `autumnnote-plus/core`.
  *
  * Identical to the default entry: the difference is which modules are
  * installed, not which API exists. Toolbar buttons whose module is absent still

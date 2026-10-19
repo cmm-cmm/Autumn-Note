@@ -3,10 +3,10 @@
  *
  * Installs every module, so this is the full editor with no configuration
  * needed. For a smaller bundle that leaves the dialogs, tooltips and pickers
- * out entirely, import `autumnnote/core` instead.
+ * out entirely, import `autumnnote-plus/core` instead.
  *
  * Usage (module):
- *   import AutumnNote from 'autumnnote';
+ *   import AutumnNote from 'autumnnote-plus';
  *   const editor = AutumnNote.create('#my-editor', { placeholder: 'Start typing…' });
  *
  * Usage (UMD / script tag):

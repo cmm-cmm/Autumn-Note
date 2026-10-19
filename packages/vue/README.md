@@ -1,21 +1,21 @@
-# autumnnote-vue
+# autumnnote-plus-vue
 
-[![npm version](https://img.shields.io/npm/v/autumnnote-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-vue)
-[![npm downloads](https://img.shields.io/npm/dm/autumnnote-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-vue)
+[![npm version](https://img.shields.io/npm/v/autumnnote-plus-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-plus-vue)
+[![npm downloads](https://img.shields.io/npm/dm/autumnnote-plus-vue?color=e8751a)](https://www.npmjs.com/package/autumnnote-plus-vue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official **Vue 3 wrapper** for [Autumn Note](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
+**Vue 3 wrapper** for [`autumnnote-plus`](https://github.com/habibiahmada/Autumn-Note), an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) (the zero-dependency WYSIWYG rich-text editor) with security fixes. Not published or endorsed by the Autumn Note author. Use it with `autumnnote-plus` 4.x; the original `autumnnote-vue` works with `autumnnote` 3.x.
 
 ## Installation
 
 ```bash
-npm install autumnnote autumnnote-vue
+npm install autumnnote-plus autumnnote-plus-vue
 ```
 
 Import the stylesheet once in your app:
 
 ```js
-import 'autumnnote/dist/autumnnote.css';
+import 'autumnnote-plus/dist/autumnnote.css';
 ```
 
 ## Quick Start
@@ -23,8 +23,8 @@ import 'autumnnote/dist/autumnnote.css';
 ```vue
 <script setup>
 import { ref } from 'vue';
-import AutumnNoteEditor from 'autumnnote-vue';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 const editorRef = ref(null);
 
@@ -100,7 +100,7 @@ async function switchToDark() {
 ## Using plugins
 
 ```js
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 
 // Register globally before any component mounts
 AutumnNote.use(MyPlugin, { limit: 500 });
@@ -117,8 +117,8 @@ The package ships hand-crafted TypeScript declarations (`index.d.ts`). No `@type
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Context, AsnOptions } from 'autumnnote';
-import AutumnNoteEditor from 'autumnnote-vue';
+import type { Context, AsnOptions } from 'autumnnote-plus';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
 
 const editorRef = ref<{ editor: { value: Context | null } } | null>(null);
 const options: AsnOptions = { height: 300, bubbleToolbar: true };
@@ -134,8 +134,8 @@ const options: AsnOptions = { height: 300, bubbleToolbar: true };
 - [Documentation](https://autumn.konexforge.com/docs.html)
 - [Playground](https://autumn.konexforge.com/playground.html)
 - [GitHub](https://github.com/cmm-cmm/Autumn-Note)
-- [npm — autumnnote](https://www.npmjs.com/package/autumnnote)
-- [npm — autumnnote-react](https://www.npmjs.com/package/autumnnote-react)
+- [npm — autumnnote](https://www.npmjs.com/package/autumnnote-plus)
+- [npm — autumnnote-plus-react](https://www.npmjs.com/package/autumnnote-plus-react)
 
 ## License
 

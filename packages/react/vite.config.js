@@ -11,7 +11,7 @@ export default defineConfig({
       fileName: (fmt) => fmt === 'es' ? 'index.js' : 'index.cjs',
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'autumnnote'],
+      external: ['react', 'react/jsx-runtime', 'autumnnote-plus'],
       output: {
         exports: 'named',
         globals: { react: 'React', autumnnote: 'AutumnNote' },

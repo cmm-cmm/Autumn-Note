@@ -1,7 +1,7 @@
 {
-  "name": "autumnnote",
-  "version": "3.1.0",
-  "description": "WYSIWYG rich-text editor built with vanilla JavaScript — zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers included.",
+  "name": "autumnnote-plus",
+  "version": "4.0.0",
+  "description": "Unofficial fork of Autumn Note with security fixes. WYSIWYG rich-text editor built with vanilla JavaScript: zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers: autumnnote-plus-react, autumnnote-plus-vue.",
   "type": "module",
   "main": "dist/autumnnote.cjs",
   "module": "dist/autumnnote.es.js",
@@ -52,13 +52,13 @@
     "test:browser": "vitest run --config vitest.browser.config.js",
     "test:watch": "vitest",
     "lint": "eslint src test scripts packages/react/src packages/react/test packages/vue/src packages/vue/test \"*.config.js\" \"packages/*/*.config.js\"",
-    "typecheck": "tsc --noEmit && pnpm --filter autumnnote-react typecheck && pnpm --filter autumnnote-vue typecheck",
+    "typecheck": "tsc --noEmit && pnpm --filter autumnnote-plus-react typecheck && pnpm --filter autumnnote-plus-vue typecheck",
     "build:cdn": "vite build --config vite.cdn.config.js",
     "analyze": "cross-env ANALYZE=1 vite build",
     "bench": "vitest bench",
     "test:coverage": "vitest run --coverage",
-    "test:wrappers": "pnpm --filter autumnnote-react test && pnpm --filter autumnnote-vue test",
-    "build:wrappers": "pnpm --filter autumnnote-react build && pnpm --filter autumnnote-vue build",
+    "test:wrappers": "pnpm --filter autumnnote-plus-react test && pnpm --filter autumnnote-plus-vue test",
+    "build:wrappers": "pnpm --filter autumnnote-plus-react build && pnpm --filter autumnnote-plus-vue build",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:package": "node scripts/check-package-files.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && pnpm build:demo && pnpm build:wrappers",
@@ -110,15 +110,18 @@
     "rtl",
     "autosave"
   ],
-  "homepage": "https://autumn.konexforge.com/",
+  "homepage": "https://github.com/habibiahmada/Autumn-Note#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cmm-cmm/Autumn-Note.git"
+    "url": "git+https://github.com/habibiahmada/Autumn-Note.git"
   },
   "bugs": {
-    "url": "https://github.com/cmm-cmm/Autumn-Note/issues"
+    "url": "https://github.com/habibiahmada/Autumn-Note/issues"
   },
   "author": "Minh Pham",
+  "contributors": [
+    "Habibi Ahmad Aziz (https://github.com/habibiahmada)"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@vitest/browser": "^4.1.11",

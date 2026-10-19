@@ -3,7 +3,7 @@ import type { AsnLocale } from '../index.js';
 /**
  * Registers every bundled locale as a side effect of importing this module.
  * Pulls all locales into the bundle — prefer importing individual locales
- * from `autumnnote/i18n/<code>`.
+ * from `autumnnote-plus/i18n/<code>`.
  */
 export declare const vi: Partial<AsnLocale>;
 export declare const ja: Partial<AsnLocale>;

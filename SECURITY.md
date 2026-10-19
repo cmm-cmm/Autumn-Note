@@ -1,15 +1,15 @@
 # Security Policy
 
+This policy covers **`autumnnote-plus`**, `autumnnote-plus-react` and `autumnnote-plus-vue`, an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note). For the original `autumnnote` packages, follow [Autumn Note's own policy](https://github.com/cmm-cmm/Autumn-Note/blob/main/SECURITY.md).
+
 ## Supported versions
 
-Security fixes land on the latest minor release of the current major. Older lines are not backported — upgrading within a major is intended to be a drop-in.
+Security fixes land on the latest minor release of the current major.
 
 | Version | Supported |
 |---|---|
-| 3.1.x | ✅ |
-| 3.0.x | ⚠️ Upgrade to 3.1.x |
-| 2.x | ❌ Upgrade to 3.1.x — see the upgrade notes in the [CHANGELOG](CHANGELOG.md) |
-| < 2.0 | ❌ |
+| `autumnnote-plus` 4.x | ✅ |
+| `autumnnote` ≤ 3.1.x (original project) | ❌ Affected by the issues fixed in `autumnnote-plus` 4.0.0 — see the [CHANGELOG](CHANGELOG.md#security). Switch to `autumnnote-plus`, or follow the original project for its own fix. |
 
 ---
 
@@ -17,10 +17,12 @@ Security fixes land on the latest minor release of the current major. Older line
 
 **Please do not report security vulnerabilities via public GitHub issues.**
 
-If you discover a security vulnerability, report it privately by:
+If you discover a security vulnerability in this fork, report it privately:
 
-1. Going to **[Security → Report a vulnerability](https://github.com/cmm-cmm/Autumn-Note/security/advisories/new)** on this repository, or
-2. Contacting the maintainer directly via GitHub: [@cmm-cmm](https://github.com/cmm-cmm)
+1. **[Security → Report a vulnerability](https://github.com/habibiahmada/Autumn-Note/security/advisories/new)** on this repository, or
+2. Contact the maintainer, [@habibiahmada](https://github.com/habibiahmada), through GitHub.
+
+If the issue is also present in the original Autumn Note, it will be passed on to its maintainer privately.
 
 Please include:
 - A description of the vulnerability
@@ -28,7 +30,7 @@ Please include:
 - Potential impact
 - Any suggested fix (optional)
 
-You will receive a response within **72 hours**. We ask that you give us reasonable time to address the issue before any public disclosure.
+You will get a reply as soon as possible. Please allow reasonable time for a fix before any public disclosure.
 
 ---
 
@@ -55,10 +57,12 @@ Despite these measures, **Autumn Note is a client-side editor** — always sanit
 
 ## Supply chain
 
-Releases are published to npm through [trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers), so no long-lived npm token exists to leak or rotate. Every published version carries a SLSA provenance attestation linking the tarball to the exact commit and workflow run that built it:
+Releases are meant to be published from CI (`.github/workflows/publish.yml`) through [trusted publishing (OIDC)](https://docs.npmjs.com/trusted-publishers), so no long-lived npm token exists to leak or rotate, and each such version carries a provenance attestation linking the tarball to the commit and workflow run that built it. Check a version with:
 
 ```bash
-npm view autumnnote dist.attestations
+npm view autumnnote-plus dist.attestations
 ```
+
+A version without an attestation was published by hand (the first release of a new package name has to be, before a trusted publisher can be attached); see [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 CI additionally fails the build on any high-severity advisory in the dependency tree. The published package itself has **zero runtime dependencies**.

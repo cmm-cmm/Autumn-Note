@@ -3,7 +3,7 @@
  *
  * Used by the demo site, which offers every language in its picker. Library
  * consumers should import only the locales they need from
- * `autumnnote/i18n/<code>` (ESM) or load `dist/i18n/<code>.umd.js` (CDN).
+ * `autumnnote-plus/i18n/<code>` (ESM) or load `dist/i18n/<code>.umd.js` (CDN).
  */
 
 import { registerLocale } from './index.js';

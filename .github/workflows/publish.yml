@@ -101,13 +101,13 @@ jobs:
           npm pack ./packages/vue --dry-run --ignore-scripts
 
       # ──────────────────────────────────────────────────────────────
-      # autumnnote (core)
+      # autumnnote-plus (core)
       # ──────────────────────────────────────────────────────────────
-      - name: Check autumnnote version
+      - name: Check autumnnote-plus version
         id: core_check
         run: |
           LOCAL=$(node -p "require('./package.json').version")
-          NPM=$(npm view autumnnote version 2>/dev/null || echo "0.0.0")
+          NPM=$(npm view autumnnote-plus version 2>/dev/null || echo "0.0.0")
           echo "local=$LOCAL" >> $GITHUB_OUTPUT
           echo "npm=$NPM" >> $GITHUB_OUTPUT
           if [ "$LOCAL" != "$NPM" ]; then
@@ -116,62 +116,62 @@ jobs:
             echo "should_publish=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish autumnnote
+      - name: Publish autumnnote-plus
         if: steps.core_check.outputs.should_publish == 'true'
         run: npm publish --access public
 
-      - name: Skip autumnnote
+      - name: Skip autumnnote-plus
         if: steps.core_check.outputs.should_publish == 'false'
-        run: echo "autumnnote ${{ steps.core_check.outputs.local }} already published on npm. Skipping."
+        run: echo "autumnnote-plus ${{ steps.core_check.outputs.local }} already published on npm. Skipping."
 
       # ──────────────────────────────────────────────────────────────
-      # autumnnote-react
+      # autumnnote-plus-react
       # ──────────────────────────────────────────────────────────────
-      - name: Check autumnnote-react version
+      - name: Check autumnnote-plus-react version
         id: react_check
         run: |
           LOCAL=$(node -p "require('./packages/react/package.json').version")
-          NPM=$(npm view autumnnote-react version 2>/dev/null || echo "0.0.0")
+          NPM=$(npm view autumnnote-plus-react version 2>/dev/null || echo "0.0.0")
           if [ "$LOCAL" != "$NPM" ]; then
             echo "should_publish=true" >> $GITHUB_OUTPUT
           else
             echo "should_publish=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build autumnnote-react
+      - name: Build autumnnote-plus-react
         if: steps.react_check.outputs.should_publish == 'true'
-        run: pnpm --filter autumnnote-react build
+        run: pnpm --filter autumnnote-plus-react build
 
-      - name: Publish autumnnote-react
+      - name: Publish autumnnote-plus-react
         if: steps.react_check.outputs.should_publish == 'true'
-        run: pnpm --filter autumnnote-react publish --access public --no-git-checks
+        run: pnpm --filter autumnnote-plus-react publish --access public --no-git-checks
 
-      - name: Skip autumnnote-react
+      - name: Skip autumnnote-plus-react
         if: steps.react_check.outputs.should_publish == 'false'
-        run: echo "autumnnote-react already at current version on npm. Skipping."
+        run: echo "autumnnote-plus-react already at current version on npm. Skipping."
 
       # ──────────────────────────────────────────────────────────────
-      # autumnnote-vue
+      # autumnnote-plus-vue
       # ──────────────────────────────────────────────────────────────
-      - name: Check autumnnote-vue version
+      - name: Check autumnnote-plus-vue version
         id: vue_check
         run: |
           LOCAL=$(node -p "require('./packages/vue/package.json').version")
-          NPM=$(npm view autumnnote-vue version 2>/dev/null || echo "0.0.0")
+          NPM=$(npm view autumnnote-plus-vue version 2>/dev/null || echo "0.0.0")
           if [ "$LOCAL" != "$NPM" ]; then
             echo "should_publish=true" >> $GITHUB_OUTPUT
           else
             echo "should_publish=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build autumnnote-vue
+      - name: Build autumnnote-plus-vue
         if: steps.vue_check.outputs.should_publish == 'true'
-        run: pnpm --filter autumnnote-vue build
+        run: pnpm --filter autumnnote-plus-vue build
 
-      - name: Publish autumnnote-vue
+      - name: Publish autumnnote-plus-vue
         if: steps.vue_check.outputs.should_publish == 'true'
-        run: pnpm --filter autumnnote-vue publish --access public --no-git-checks
+        run: pnpm --filter autumnnote-plus-vue publish --access public --no-git-checks
 
-      - name: Skip autumnnote-vue
+      - name: Skip autumnnote-plus-vue
         if: steps.vue_check.outputs.should_publish == 'false'
-        run: echo "autumnnote-vue already at current version on npm. Skipping."
+        run: echo "autumnnote-plus-vue already at current version on npm. Skipping."

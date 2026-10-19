@@ -1,4 +1,4 @@
-import type { Context, AsnOptions } from 'autumnnote';
+import type { Context, AsnOptions } from 'autumnnote-plus';
 import type { CSSProperties, ForwardRefExoticComponent, RefAttributes } from 'react';
 
 export interface AutumnNoteEditorProps {

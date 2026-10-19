@@ -1,29 +1,29 @@
-# autumnnote-react
+# autumnnote-plus-react
 
-[![npm version](https://img.shields.io/npm/v/autumnnote-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-react)
-[![npm downloads](https://img.shields.io/npm/dm/autumnnote-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-react)
+[![npm version](https://img.shields.io/npm/v/autumnnote-plus-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-plus-react)
+[![npm downloads](https://img.shields.io/npm/dm/autumnnote-plus-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-plus-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official **React wrapper** for [Autumn Note](https://autumn.konexforge.com/) — the zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.
+**React wrapper** for [`autumnnote-plus`](https://github.com/habibiahmada/Autumn-Note), an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) (the zero-dependency WYSIWYG rich-text editor) with security fixes. Not published or endorsed by the Autumn Note author. Use it with `autumnnote-plus` 4.x; the original `autumnnote-react` works with `autumnnote` 3.x.
 
 ## Installation
 
 ```bash
-npm install autumnnote autumnnote-react
+npm install autumnnote-plus autumnnote-plus-react
 ```
 
 Import the stylesheet once in your app:
 
 ```js
-import 'autumnnote/dist/autumnnote.css';
+import 'autumnnote-plus/dist/autumnnote.css';
 ```
 
 ## Quick Start
 
 ```jsx
 import { useRef } from 'react';
-import AutumnNoteEditor from 'autumnnote-react';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-react';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 function MyEditor() {
   const editorRef = useRef(null);
@@ -65,7 +65,7 @@ The component uses `forwardRef` + `useImperativeHandle` to expose the underlying
 
 ```tsx
 import { useRef } from 'react';
-import type { Context } from 'autumnnote';
+import type { Context } from 'autumnnote-plus';
 
 const editorRef = useRef<Context>(null);
 
@@ -104,7 +104,7 @@ function switchToDark() {
 ## Using plugins
 
 ```jsx
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 
 // Register globally before any create()
 AutumnNote.use(MyPlugin, { limit: 500 });
@@ -117,8 +117,8 @@ AutumnNote.use(MyPlugin, { limit: 500 });
 The package ships hand-crafted TypeScript declarations (`index.d.ts`). No `@types` package needed:
 
 ```tsx
-import type { Context, AsnOptions } from 'autumnnote';
-import AutumnNoteEditor from 'autumnnote-react';
+import type { Context, AsnOptions } from 'autumnnote-plus';
+import AutumnNoteEditor from 'autumnnote-plus-react';
 
 const options: AsnOptions = { height: 300, bubbleToolbar: true };
 const editorRef = useRef<Context>(null);
@@ -131,8 +131,8 @@ const editorRef = useRef<Context>(null);
 - [Documentation](https://autumn.konexforge.com/docs.html)
 - [Playground](https://autumn.konexforge.com/playground.html)
 - [GitHub](https://github.com/cmm-cmm/Autumn-Note)
-- [npm — autumnnote](https://www.npmjs.com/package/autumnnote)
-- [npm — autumnnote-vue](https://www.npmjs.com/package/autumnnote-vue)
+- [npm — autumnnote](https://www.npmjs.com/package/autumnnote-plus)
+- [npm — autumnnote-plus-vue](https://www.npmjs.com/package/autumnnote-plus-vue)
 
 ## License
 

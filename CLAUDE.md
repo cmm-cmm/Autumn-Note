@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Autumn Note** is a zero-dependency WYSIWYG rich-text editor written in vanilla JavaScript (ES2022+). It builds to ES Module and UMD formats and is published to npm as `autumnnote`.
+**Autumn Note** is a zero-dependency WYSIWYG rich-text editor written in vanilla JavaScript (ES2022+). It builds to ES Module and UMD formats. This repository is an unofficial fork published to npm as `autumnnote-plus` (wrappers `autumnnote-plus-react`, `autumnnote-plus-vue`); the original project is `autumnnote` (cmm-cmm/Autumn-Note). Package names change in imports and URLs only — `dist/autumnnote.*` file names, the `AutumnNote` global and `an-*` classes stay.
 
 ## Commands
 

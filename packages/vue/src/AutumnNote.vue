@@ -1,6 +1,6 @@
 <script setup>
 import { ref, shallowRef, onMounted, onUnmounted, watch } from 'vue';
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 
 const props = defineProps({
   options: { type: Object, default: () => ({}) },

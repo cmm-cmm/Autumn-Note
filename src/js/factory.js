@@ -162,7 +162,7 @@ const AutumnNote = {
   /**
    * Registers a locale so `lang: '<code>'` can select it.
    * Only English ships in the ESM bundle — import others from
-   * `autumnnote/i18n/<code>` and register them here.
+   * `autumnnote-plus/i18n/<code>` and register them here.
    * @param {string} code
    * @param {object} locale
    */

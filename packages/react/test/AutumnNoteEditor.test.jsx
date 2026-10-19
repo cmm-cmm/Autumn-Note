@@ -1,10 +1,10 @@
 import React, { createRef } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import AutumnNote from 'autumnnote';
+import AutumnNote from 'autumnnote-plus';
 import AutumnNoteEditor from '../src/index.jsx';
 
-vi.mock('autumnnote', () => ({
+vi.mock('autumnnote-plus', () => ({
   default: { create: vi.fn() },
 }));
 

@@ -1,5 +1,5 @@
 /**
- * core.js - Minimal entry point for AutumnNote (`autumnnote/core`).
+ * core.js - Minimal entry point for AutumnNote (`autumnnote-plus/core`).
  *
  * Same API as the default entry, but only the modules a usable editor needs:
  * typing, toolbar, status bar, paste handling and the placeholder. The dialogs,
@@ -7,8 +7,8 @@
  * imported at all, so a bundler leaves them out of the output rather than
  * shipping them switched off.
  *
- *   import AutumnNote from 'autumnnote/core';
- *   import 'autumnnote/dist/autumnnote.css';   // same stylesheet as the full build
+ *   import AutumnNote from 'autumnnote-plus/core';
+ *   import 'autumnnote-plus/dist/autumnnote.css';   // same stylesheet as the full build
  *
  *   AutumnNote.create('#editor', {
  *     toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol']],
