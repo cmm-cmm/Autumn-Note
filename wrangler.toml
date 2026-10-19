@@ -2,12 +2,12 @@ name = "autumnnote-plus"
 compatibility_date = "2026-06-30"
 workers_dev = false
 
-[[custom_domains]]
-pattern = "autumnnote.habibiahmada.dev"
+routes = [
+  { pattern = "autumnnote.habibiahmada.dev", custom_domain = true },
+]
 
 [assets]
 directory = "./_site"
 not_found_handling = "404-page"
-# Serve /docs.html and /playground.html as they are linked, canonicalised and
-# listed in the sitemap, instead of the default 307 to /docs and /playground.
-html_handling = "none"
+# Default html_handling: pages are served at /docs and /playground (the site
+# links them that way); /docs.html redirects there.
