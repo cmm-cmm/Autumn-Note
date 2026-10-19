@@ -8,3 +8,6 @@ pattern = "autumnnote.habibiahmada.dev"
 [assets]
 directory = "./_site"
 not_found_handling = "404-page"
+# Serve /docs.html and /playground.html as they are linked, canonicalised and
+# listed in the sitemap, instead of the default 307 to /docs and /playground.
+html_handling = "none"
