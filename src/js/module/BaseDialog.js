@@ -182,8 +182,10 @@ export class BaseDialog {
     insertBtn.textContent = insertLabel;
     const cancelBtn = createElement('button', { type: 'button', class: 'an-btn' });
     cancelBtn.textContent = cancelLabel;
-    btnRow.appendChild(insertBtn);
+    // Cancel first, primary last: the commit action sits at the end of the
+    // reading and tab order, where the eye and the Tab key finish.
     btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(insertBtn);
 
     const d1 = on(insertBtn, 'click', onInsert);
     const d2 = on(cancelBtn, 'click', () => this._close());

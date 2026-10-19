@@ -9,15 +9,13 @@ import {
   getCellAfterVisualCol,
   buildGridMap,
 } from './table-grid.js';
+import { DEFAULT_COLOR_PALETTE } from '../core/palette.js';
 
 const SHOW_DELAY = 120;
 const HIDE_DELAY = 200;
 
-const SHADE_PRESETS = [
-  '#000000', '#434343', '#666666', '#999999', '#b7b7b7', '#cccccc', '#efefef', '#ffffff',
-  '#ff0000', '#ff9900', '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#9900ff', '#ff00ff',
-  '#f4cccc', '#fce5cd', '#fff2cc', '#d9ead3', '#d0e0e3', '#c9daf8', '#d9d2e9', '#ead1dc',
-];
+// Cell shading always offers the stock swatches (not the host's colorPalette).
+const SHADE_PRESETS = DEFAULT_COLOR_PALETTE;
 
 export class TableTooltip {
   /** @param {import('../Context.js').Context} context */

@@ -3,8 +3,9 @@
  * Opened via the toolbar '?' button or Shift+? inside the editor.
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, svgIcon } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
+import { en } from '../i18n/en.js';
 import { DEFAULT_KEYMAP, parseCombo, comboId, formatCombo, resolveKeyMap } from '../core/keymap.js';
 
 /**
@@ -17,53 +18,8 @@ function _displayId(parsed) {
   return comboId({ ...parsed, mod: parsed.mod || parsed.ctrl, ctrl: false });
 }
 
-const SHORTCUTS = [
-  {
-    category: 'Text Formatting',
-    items: [
-      { keys: 'Ctrl + B',         action: 'Bold' },
-      { keys: 'Ctrl + I',         action: 'Italic' },
-      { keys: 'Ctrl + U',         action: 'Underline' },
-      { keys: 'Ctrl + K',         action: 'Insert / edit link' },
-    ],
-  },
-  {
-    category: 'History',
-    items: [
-      { keys: 'Ctrl + Z',                   action: 'Undo' },
-      { keys: 'Ctrl + Y  /  Ctrl + Shift + Z', action: 'Redo' },
-    ],
-  },
-  {
-    category: 'Selection & Navigation',
-    items: [
-      { keys: 'Ctrl + A',    action: 'Select all content' },
-      { keys: 'Tab',         action: 'Indent list item / insert spaces' },
-      { keys: 'Shift + Tab', action: 'Outdent list item' },
-    ],
-  },
-  {
-    category: 'Clipboard',
-    items: [
-      { keys: 'Ctrl + Shift + V', action: 'Paste as plain text' },
-    ],
-  },
-  {
-    category: 'Find & Replace',
-    items: [
-      { keys: 'Ctrl + F', action: 'Find in document' },
-      { keys: 'Ctrl + H', action: 'Find & Replace' },
-    ],
-  },
-  {
-    category: 'Editor',
-    items: [
-      { keys: 'Ctrl + Shift + /', action: 'Show this keyboard shortcuts dialog' },
-    ],
-  },
-];
 
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M18 15h.01M10 15h4"/><path d="M7 3l5 4 5-4"/></svg>`;
+const ICON_SVG = svgIcon(`<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M18 15h.01M10 15h4"/><path d="M7 3l5 4 5-4"/>`, 18);
 
 export class ShortcutsDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
@@ -127,7 +83,7 @@ export class ShortcutsDialog extends BaseDialog {
       if (active.get(id) !== command) suppressed.add(id);
     }
 
-    const sections = (L.shortcuts || SHORTCUTS).map(({ category, items }) => ({
+    const sections = (L.shortcuts || en.shortcutsDialog.shortcuts).map(({ category, items }) => ({
       category,
       items: items.flatMap(({ keys, action }) => {
         // Alternatives are separated by a spaced slash ("Ctrl + Y  /  Ctrl + Shift + Z");

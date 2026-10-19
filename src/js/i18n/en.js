@@ -85,6 +85,10 @@ export const en = {
     alignCenter:    'Center',
     alignRight:     'Right',
     uploadLabel:    'Or upload a file',
+    dropTitle:      'Choose an image',
+    dropHint:       'or drag it here',
+    removeImage:    'Remove',
+    previewError:   'Preview unavailable',
     insertBtn:      'Insert',
     cancelBtn:      'Cancel',
   },
@@ -100,8 +104,8 @@ export const en = {
     cancelBtn:      'Cancel',
     /** @param {string} type */
     detected:       (type) => `Detected: ${type}`,
-    unknownFormat:  'Unknown format \u2014 will try direct video embed',
-    invalidUrl:     'Invalid URL \u2014 please enter a valid video link.',
+    unknownFormat:  'Unknown format, will try direct video embed',
+    invalidUrl:     'Invalid URL, please enter a valid video link.',
   },
 
   emojiDialog: {

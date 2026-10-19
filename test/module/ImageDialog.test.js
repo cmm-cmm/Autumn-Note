@@ -136,7 +136,8 @@ describe('ImageDialog — unsupported format rejection in file input', () => {
     await Promise.resolve();
 
     expect(dialog._fileHint.textContent).toBe('');
-    expect(dialog._urlInput.value).toBe('blob:mock-url');
+    expect(dialog._fileSrc).toBe('blob:mock-url');
+    expect(dialog._urlInput.value).toBe('');
     const errorCalls = context.triggerEvent.mock.calls.filter(([ev]) => ev === 'imageError');
     expect(errorCalls).toHaveLength(0);
 
@@ -169,7 +170,7 @@ describe('ImageDialog — unsupported format rejection in file input', () => {
     await Promise.resolve();
 
     expect(warn).toHaveBeenCalled();
-    expect(dialog._urlInput.value).toBe('data:image/png;base64,fallback');
+    expect(dialog._fileSrc).toBe('data:image/png;base64,fallback');
 
     dialog.destroy();
     vi.unstubAllGlobals();
@@ -294,6 +295,169 @@ describe('ImageDialog — file size validation', () => {
       expect.objectContaining({ file: bigFile }),
     );
 
+    dialog.destroy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Layout: labelled fields, upload drop zone, preview, alignment segments
+// ---------------------------------------------------------------------------
+
+describe('ImageDialog — layout and upload flow', () => {
+  const flush = async () => { for (let i = 0; i < 4; i++) await Promise.resolve(); };
+  const pickFile = async (dialog, file) => {
+    Object.defineProperty(dialog._fileInput, 'files', { value: [file], configurable: true });
+    dialog._onFileChange();
+    await flush();
+  };
+
+  it('ties every label to its control', () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+
+    const box = dialog._dialog;
+    for (const label of box.querySelectorAll('label[for]')) {
+      expect(box.querySelector(`#${label.getAttribute('for')}`)).not.toBeNull();
+    }
+    expect(dialog._urlInput.labels).toHaveLength(1);
+    expect(dialog._altInput.labels).toHaveLength(1);
+    expect(dialog._fileInput.closest('label.an-image-drop')).not.toBeNull();
+    expect(box.querySelector('fieldset.an-segmented legend')).not.toBeNull();
+
+    dialog.destroy();
+  });
+
+  it('gives each dialog its own ids and radio group', () => {
+    const a = new ImageDialog(makeContext());
+    const b = new ImageDialog(makeContext());
+    a.initialize();
+    b.initialize();
+
+    const names = (d) => new Set([...d._alignRow.querySelectorAll('input')].map((r) => r.name));
+    expect([...names(a)]).toHaveLength(1);
+    expect([...names(a)][0]).not.toBe([...names(b)][0]);
+    expect(a._urlInput.id).not.toBe(b._urlInput.id);
+
+    b._alignRow.querySelector('input[value="right"]').checked = true;
+    expect(a._alignRow.querySelector('input:checked').value).toBe('');
+
+    a.destroy();
+    b.destroy();
+  });
+
+  it('puts Cancel before the primary Insert button', () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+    const buttons = [...dialog._dialog.querySelectorAll('.an-dialog-actions button')];
+    expect(buttons.map((b) => b.classList.contains('an-btn-primary'))).toEqual([false, true]);
+    dialog.destroy();
+  });
+
+  it('a chosen file replaces the drop zone with a preview and is what gets inserted', async () => {
+    const context = makeContext();
+    const dialog = new ImageDialog(context);
+    dialog.initialize();
+    dialog._urlInput.value = 'https://example.com/typed.png';
+
+    await pickFile(dialog, new File(['x'], 'cat.png', { type: 'image/png' }));
+
+    expect(dialog._drop.hidden).toBe(true);
+    expect(dialog._preview.hidden).toBe(false);
+    expect(dialog._previewName.textContent).toBe('cat.png');
+    expect(dialog._previewImg.getAttribute('src')).toBe('blob:mock-url');
+    expect(dialog._urlInput.value).toBe('');
+
+    dialog._onInsert();
+    expect(context.invoke).toHaveBeenCalledWith('editor.insertImage', 'blob:mock-url', '', '');
+    dialog.destroy();
+  });
+
+  it('Remove clears the file and brings the drop zone back', async () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+    await pickFile(dialog, new File(['x'], 'cat.png', { type: 'image/png' }));
+
+    dialog._preview.querySelector('.an-image-preview-remove').click();
+
+    expect(dialog._fileSrc).toBeNull();
+    expect(dialog._drop.hidden).toBe(false);
+    expect(dialog._preview.hidden).toBe(true);
+    dialog.destroy();
+  });
+
+  it('typing a URL drops a chosen file', async () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+    await pickFile(dialog, new File(['x'], 'cat.png', { type: 'image/png' }));
+
+    dialog._urlInput.value = 'https://example.com/b.png';
+    dialog._urlInput.dispatchEvent(new Event('input'));
+
+    expect(dialog._fileSrc).toBeNull();
+    expect(dialog._drop.hidden).toBe(false);
+    dialog.destroy();
+  });
+
+  it('previews a committed URL with loading then error state', () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+
+    dialog._urlInput.value = 'https://example.com/missing.png';
+    dialog._urlInput.dispatchEvent(new Event('change'));
+    expect(dialog._preview.hidden).toBe(false);
+    expect(dialog._preview.dataset.state).toBe('loading');
+    expect(dialog._preview.getAttribute('aria-busy')).toBe('true');
+    expect(dialog._previewStatus.textContent).toBe('');
+
+    expect(dialog._drop.hidden).toBe(true);
+
+    dialog._previewImg.onerror();
+    expect(dialog._preview.dataset.state).toBe('error');
+    expect(dialog._preview.hasAttribute('aria-busy')).toBe(false);
+    expect(dialog._previewStatus.textContent).toBe(en.imageDialog.previewError);
+
+    dialog._urlInput.value = '';
+    dialog._urlInput.dispatchEvent(new Event('change'));
+    expect(dialog._preview.hidden).toBe(true);
+    expect(dialog._drop.hidden).toBe(false);
+    dialog.destroy();
+  });
+
+  it('does not preview a non-image scheme', () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+    dialog._urlInput.value = 'javascript:alert(1)';
+    dialog._urlInput.dispatchEvent(new Event('change'));
+    expect(dialog._preview.hidden).toBe(true);
+    dialog.destroy();
+  });
+
+  it('accepts a file dropped on the drop zone', async () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(drop, 'dataTransfer', { value: { files: [new File(['x'], 'd.webp', { type: 'image/webp' })] } });
+    dialog._drop.dispatchEvent(drop);
+    await flush();
+
+    expect(drop.defaultPrevented).toBe(true);
+    expect(dialog._fileSrc).toBe('blob:mock-url');
+    dialog.destroy();
+  });
+
+  it('show() resets file, preview and alignment', async () => {
+    const dialog = new ImageDialog(makeContext());
+    dialog.initialize();
+    await pickFile(dialog, new File(['x'], 'cat.png', { type: 'image/png' }));
+    dialog._alignRow.querySelector('input[value="left"]').checked = true;
+
+    dialog.show();
+
+    expect(dialog._fileSrc).toBeNull();
+    expect(dialog._preview.hidden).toBe(true);
+    expect(dialog._drop.hidden).toBe(false);
+    expect(dialog._alignRow.querySelector('input:checked').value).toBe('');
     dialog.destroy();
   });
 });

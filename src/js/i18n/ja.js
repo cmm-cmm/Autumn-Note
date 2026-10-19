@@ -63,8 +63,6 @@ export const ja = {
   linkDialog: {
     ariaLabel:       'リンクを挿入',
     title:           'リンクを挿入',
-    url:             'URL',
-    urlPlaceholder:  'https://',
     displayText:     '表示テキスト',
     textPlaceholder: 'リンクテキスト',
     openInNewTab:    '新しいタブで開く',
@@ -76,7 +74,6 @@ export const ja = {
     ariaLabel:      '画像を挿入',
     title:          '画像を挿入',
     imageUrl:       '画像URL',
-    urlPlaceholder: 'https://example.com/image.png',
     altText:        '代替テキスト',
     altPlaceholder: '画像の説明',
     alignment:      '配置',
@@ -85,6 +82,10 @@ export const ja = {
     alignCenter:    '中央',
     alignRight:     '右',
     uploadLabel:    'ファイルをアップロード',
+    dropTitle:      '画像を選択',
+    dropHint:       'またはここにドラッグ',
+    removeImage:    '削除',
+    previewError:   'プレビューできません',
     insertBtn:      '挿入',
     cancelBtn:      'キャンセル',
   },
@@ -95,12 +96,11 @@ export const ja = {
     videoUrl:        '動画URL',
     urlPlaceholder:  'YouTube、Vimeo、または直接動画URL',
     widthLabel:      '幅 (px)',
-    widthPlaceholder: '560',
     insertBtn:       '挿入',
     cancelBtn:       'キャンセル',
     detected:        (type) => `検出: ${type}`,
-    unknownFormat:   '不明な形式 \u2014 直接動画埋め込みを試みます',
-    invalidUrl:      'URLが無効です \u2014 有効な動画URLを入力してください。',
+    unknownFormat:   '不明な形式, 直接動画埋め込みを試みます',
+    invalidUrl:      'URLが無効です, 有効な動画URLを入力してください。',
   },
 
   emojiDialog: {
@@ -163,7 +163,6 @@ export const ja = {
     prevMatch:          '前へ (Shift+Enter)',
     nextMatch:          '次へ (Enter)',
     replaceAllBtn:      'すべて置換',
-    close:              '\u00d7',
   },
 
   shortcutsDialog: {

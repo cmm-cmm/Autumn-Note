@@ -64,7 +64,6 @@ export const vi = {
     ariaLabel:    'Chèn liên kết',
     title:        'Chèn liên kết',
     url:          'Địa chỉ URL',
-    urlPlaceholder:  'https://',
     displayText:  'Văn bản hiển thị',
     textPlaceholder: 'Nội dung liên kết',
     openInNewTab: 'Mở trong tab mới',
@@ -85,6 +84,10 @@ export const vi = {
     alignCenter:    'Giữa',
     alignRight:     'Phải',
     uploadLabel:    'Hoặc tải lên tệp',
+    dropTitle:      'Chọn một hình ảnh',
+    dropHint:       'hoặc kéo thả vào đây',
+    removeImage:    'Gỡ bỏ',
+    previewError:   'Không thể xem trước',
     insertBtn:      'Chèn',
     cancelBtn:      'Hủy',
   },
@@ -95,12 +98,11 @@ export const vi = {
     videoUrl:       'URL video',
     urlPlaceholder: 'YouTube, Vimeo, hoặc URL .mp4 trực tiếp',
     widthLabel:     'Chiều rộng (px)',
-    widthPlaceholder: '560',
     insertBtn:      'Chèn',
     cancelBtn:      'Hủy',
     detected:       (type) => `Đã phát hiện: ${type}`,
-    unknownFormat:  'Định dạng không xác định \u2014 sẽ thử nhúng video trực tiếp',
-    invalidUrl:     'URL không hợp lệ \u2014 vui lòng nhập đường dẫn video hợp lệ.',
+    unknownFormat:  'Định dạng không xác định, sẽ thử nhúng video trực tiếp',
+    invalidUrl:     'URL không hợp lệ, vui lòng nhập đường dẫn video hợp lệ.',
   },
 
   emojiDialog: {
@@ -163,7 +165,6 @@ export const vi = {
     useRegex:           'Dùng biểu thức chính quy',
     prevMatch:          'Trước (Shift+Enter)',
     nextMatch:          'Tiếp (Enter)',
-    close:              '\u00d7',
   },
 
   shortcutsDialog: {
@@ -329,7 +330,6 @@ export const vi = {
     },
     video: {
       ariaLabel:    'Hành động video',
-      label:        'Video',
       floatLeft:    'Nổi trái',
       noFloat:      'Không nổi',
       alignCenter:  'Căn giữa',

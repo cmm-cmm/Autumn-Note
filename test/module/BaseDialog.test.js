@@ -103,13 +103,14 @@ describe('BaseDialog', () => {
     expect(dialog._dialog.style.display).toBe('none');
   });
 
-  it('_buildButtonRow() creates insert and cancel buttons', () => {
+  it('_buildButtonRow() puts Cancel first and the primary Insert last', () => {
     const btnRow = dialog._dialog.querySelector('.an-dialog-actions');
     expect(btnRow).toBeTruthy();
     const buttons = btnRow.querySelectorAll('button');
     expect(buttons).toHaveLength(2);
-    expect(buttons[0].textContent).toBe('Insert');
-    expect(buttons[1].textContent).toBe('Cancel');
+    expect(buttons[0].textContent).toBe('Cancel');
+    expect(buttons[1].textContent).toBe('Insert');
+    expect(buttons[1].classList.contains('an-btn-primary')).toBe(true);
   });
 
   it('cancel button closes dialog', () => {

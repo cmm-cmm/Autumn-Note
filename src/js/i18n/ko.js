@@ -62,8 +62,6 @@ export const ko = {
   linkDialog: {
     ariaLabel:       '링크 삽입',
     title:           '링크 삽입',
-    url:             'URL',
-    urlPlaceholder:  'https://',
     displayText:     '표시 텍스트',
     textPlaceholder: '링크 텍스트',
     openInNewTab:    '새 탭에서 열기',
@@ -75,7 +73,6 @@ export const ko = {
     ariaLabel:      '이미지 삽입',
     title:          '이미지 삽입',
     imageUrl:       '이미지 URL',
-    urlPlaceholder: 'https://example.com/image.png',
     altText:        '대체 텍스트',
     altPlaceholder: '이미지 설명',
     alignment:      '정렬',
@@ -84,6 +81,10 @@ export const ko = {
     alignCenter:    '가운데',
     alignRight:     '오른쪽',
     uploadLabel:    '또는 파일 업로드',
+    dropTitle:      '이미지 선택',
+    dropHint:       '또는 여기로 끌어다 놓기',
+    removeImage:    '제거',
+    previewError:   '미리 보기 불가',
     insertBtn:      '삽입',
     cancelBtn:      '취소',
   },
@@ -94,7 +95,6 @@ export const ko = {
     videoUrl:         '동영상 URL',
     urlPlaceholder:   'YouTube, Vimeo 또는 직접 .mp4 URL',
     widthLabel:       '너비 (px)',
-    widthPlaceholder: '560',
     insertBtn:        '삽입',
     cancelBtn:        '취소',
     detected:         (type) => `감지됨: ${type}`,
@@ -162,7 +162,6 @@ export const ko = {
     prevMatch:          '이전 (Shift+Enter)',
     nextMatch:          '다음 (Enter)',
     replaceAllBtn:      '모두 바꾸기',
-    close:              '×',
   },
 
   shortcutsDialog: {

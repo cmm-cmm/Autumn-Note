@@ -53,17 +53,13 @@ export const de = {
     customColor: 'Benutzerdefinierte Farbe',
     insertTableLabel: 'Tabelle einfügen',
     paragraphItems: {
-      p:          'Normal',
       blockquote: 'Zitat',
-      pre:        'Code',
     },
   },
 
   linkDialog: {
     ariaLabel:       'Link einfügen',
     title:           'Link einfügen',
-    url:             'URL',
-    urlPlaceholder:  'https://',
     displayText:     'Anzeigetext',
     textPlaceholder: 'Linktext',
     openInNewTab:    'In neuem Tab öffnen',
@@ -75,7 +71,6 @@ export const de = {
     ariaLabel:      'Bild einfügen',
     title:          'Bild einfügen',
     imageUrl:       'Bild-URL',
-    urlPlaceholder: 'https://example.com/image.png',
     altText:        'Alt-Text',
     altPlaceholder: 'Bild beschreiben',
     alignment:      'Ausrichtung',
@@ -84,6 +79,10 @@ export const de = {
     alignCenter:    'Mitte',
     alignRight:     'Rechts',
     uploadLabel:    'Oder Datei hochladen',
+    dropTitle:      'Bild auswählen',
+    dropHint:       'oder hierher ziehen',
+    removeImage:    'Entfernen',
+    previewError:   'Keine Vorschau',
     insertBtn:      'Einfügen',
     cancelBtn:      'Abbrechen',
   },
@@ -94,7 +93,6 @@ export const de = {
     videoUrl:         'Video-URL',
     urlPlaceholder:   'YouTube, Vimeo oder direkte .mp4-URL',
     widthLabel:       'Breite (px)',
-    widthPlaceholder: '560',
     insertBtn:        'Einfügen',
     cancelBtn:        'Abbrechen',
     detected:         (type) => `Erkannt: ${type}`,
@@ -110,7 +108,6 @@ export const de = {
     cancelBtn:         'Abbrechen',
     close:             'Schließen',
     categories: {
-      smileys: 'Smileys',
       people:  'Menschen',
       animals: 'Tiere',
       food:    'Essen',
@@ -136,7 +133,6 @@ export const de = {
     categories: {
       popular:       'Beliebt',
       interface:     'Benutzeroberfläche',
-      navigation:    'Navigation',
       media:         'Medien',
       communication: 'Kommunikation',
       files:         'Dateien',
@@ -162,7 +158,6 @@ export const de = {
     prevMatch:          'Zurück (Umschalt+Eingabe)',
     nextMatch:          'Weiter (Eingabe)',
     replaceAllBtn:      'Alle ersetzen',
-    close:              '×',
   },
 
   shortcutsDialog: {
@@ -279,7 +274,6 @@ export const de = {
     },
     code: {
       ariaLabel:          'Codeblock-Aktionen',
-      label:              'Code',
       syntaxLanguage:     'Syntaxsprache',
       syntaxAriaLabel:    'Syntaxsprache',
       copyCode:           'Code kopieren',
@@ -328,7 +322,6 @@ export const de = {
     },
     video: {
       ariaLabel:    'Video-Aktionen',
-      label:        'Video',
       floatLeft:    'Links umfließen',
       noFloat:      'Kein Umfluss',
       alignCenter:  'Zentriert',

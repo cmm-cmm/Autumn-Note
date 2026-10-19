@@ -37,7 +37,6 @@ export const fr = {
     direction: 'Basculer la direction du texte (LTR / RTL)',
     fontFamily: 'Police',
     paragraphStyle: 'Style de paragraphe',
-    paragraphStylePlaceholder: 'Style',
     lineHeight: 'Interligne',
     lineHeightPlaceholder: '\u2195 Ligne',
     codeview: 'Afficher le code HTML',
@@ -54,17 +53,13 @@ export const fr = {
     customColor: 'Couleur personnalisée',
     insertTableLabel: 'Insérer un tableau',
     paragraphItems: {
-      p:          'Normal',
       blockquote: 'Citation',
-      pre:        'Code',
     },
   },
 
   linkDialog: {
     ariaLabel:       'Insérer un lien',
     title:           'Insérer un lien',
-    url:             'URL',
-    urlPlaceholder:  'https://',
     displayText:     'Texte affiché',
     textPlaceholder: 'Texte du lien',
     openInNewTab:    'Ouvrir dans un nouvel onglet',
@@ -76,7 +71,6 @@ export const fr = {
     ariaLabel:      'Insérer une image',
     title:          'Insérer une image',
     imageUrl:       'URL de l\'image',
-    urlPlaceholder: 'https://example.com/image.png',
     altText:        'Texte alternatif',
     altPlaceholder: 'Description de l\'image',
     alignment:      'Alignement',
@@ -85,6 +79,10 @@ export const fr = {
     alignCenter:    'Centre',
     alignRight:     'Droite',
     uploadLabel:    'Ou téléverser un fichier',
+    dropTitle:      'Choisir une image',
+    dropHint:       'ou la glisser ici',
+    removeImage:    'Retirer',
+    previewError:   'Aperçu indisponible',
     insertBtn:      'Insérer',
     cancelBtn:      'Annuler',
   },
@@ -95,12 +93,11 @@ export const fr = {
     videoUrl:        'URL de la vidéo',
     urlPlaceholder:  'YouTube, Vimeo ou URL .mp4 directe',
     widthLabel:      'Largeur (px)',
-    widthPlaceholder: '560',
     insertBtn:       'Insérer',
     cancelBtn:       'Annuler',
     detected:        (type) => `Détecté\u00a0: ${type}`,
-    unknownFormat:   'Format inconnu \u2014 tentative d\'intégration directe',
-    invalidUrl:      'URL invalide \u2014 veuillez saisir un lien vidéo valide.',
+    unknownFormat:   'Format inconnu, tentative d\'intégration directe',
+    invalidUrl:      'URL invalide, veuillez saisir un lien vidéo valide.',
   },
 
   emojiDialog: {
@@ -111,7 +108,6 @@ export const fr = {
     cancelBtn:         'Annuler',
     close:             'Fermer',
     categories: {
-      smileys: 'Smileys',
       people:  'Personnes',
       animals: 'Animaux',
       food:    'Nourriture',
@@ -126,7 +122,6 @@ export const fr = {
     title:             'Insérer une icône FA',
     searchPlaceholder: 'Rechercher des icônes\u2026',
     all:               'Tout',
-    style:             'Style',
     size:              'Taille',
     color:             'Couleur',
     useColor:          ' Utiliser la couleur',
@@ -136,10 +131,7 @@ export const fr = {
     close:             'Fermer',
     categories: {
       popular:       'Populaire',
-      interface:     'Interface',
-      navigation:    'Navigation',
       media:         'Média',
-      communication: 'Communication',
       files:         'Fichiers',
       people:        'Personnes',
       objects:       'Objets',
@@ -163,7 +155,6 @@ export const fr = {
     prevMatch:          'Précédent (Maj+Entrée)',
     nextMatch:          'Suivant (Entrée)',
     replaceAllBtn:      'Tout remplacer',
-    close:              '\u00d7',
   },
 
   shortcutsDialog: {
@@ -266,7 +257,6 @@ export const fr = {
     },
     image: {
       ariaLabel:    'Actions de l\'image',
-      label:        'Image',
       floatLeft:    'Flottant à gauche',
       noFloat:      'Sans flottant',
       alignCenter:  'Centré',
@@ -280,7 +270,6 @@ export const fr = {
     },
     code: {
       ariaLabel:          'Actions du bloc de code',
-      label:              'Code',
       syntaxLanguage:     'Langage de syntaxe',
       syntaxAriaLabel:    'Langage de syntaxe',
       copyCode:           'Copier le code',

@@ -162,6 +162,17 @@ export function setIcon(el, html) {
 }
 
 /**
+ * The stroked 24×24 <svg> wrapper every built-in icon shares; `body` is the
+ * inner path markup. One definition keeps ~90 icons from repeating it.
+ * @param {string} body
+ * @param {number} [size]
+ * @param {number} [strokeWidth]
+ * @returns {string}
+ */
+export const svgIcon = (body, size = 13, strokeWidth = 2) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+
+/**
  * Removes a node from its parent.
  * @param {Node} node
  */

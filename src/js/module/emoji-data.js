@@ -9,488 +9,489 @@
  */
 
 export const EMOJI_CATS = [
-  { id: 'smileys', label: 'Smileys'  },
-  { id: 'people',  label: 'People'   },
-  { id: 'animals', label: 'Animals'  },
-  { id: 'food',    label: 'Food'     },
-  { id: 'travel',  label: 'Travel'   },
-  { id: 'objects', label: 'Objects'  },
-  { id: 'symbols', label: 'Symbols'  },
+  { id: 'smileys', label: 'Smileys' },
+  { id: 'people', label: 'People' },
+  { id: 'animals', label: 'Animals' },
+  { id: 'food', label: 'Food' },
+  { id: 'travel', label: 'Travel' },
+  { id: 'objects', label: 'Objects' },
+  { id: 'symbols', label: 'Symbols' },
 ];
 
-// [emoji_char, search_keywords, category]
-export const EMOJI_LIST = [
-  // Smileys & Emotions
-  ['😀', 'grin smile happy face',          'smileys'],
-  ['😃', 'happy smile big eyes',            'smileys'],
-  ['😄', 'grinning smile laugh',            'smileys'],
-  ['😁', 'beaming smile grin',              'smileys'],
-  ['😆', 'laughing lol',                   'smileys'],
-  ['😅', 'sweat grin awkward',              'smileys'],
-  ['🤣', 'rolling laugh rofl',              'smileys'],
-  ['😂', 'tears laugh cry joy',             'smileys'],
-  ['🙂', 'slight smile',                   'smileys'],
-  ['🙃', 'upside down smile',               'smileys'],
-  ['😉', 'wink',                           'smileys'],
-  ['😊', 'blush smile happy',              'smileys'],
-  ['😇', 'innocent halo angel',            'smileys'],
-  ['🥰', 'hearts love adore',              'smileys'],
-  ['😍', 'heart eyes love',                'smileys'],
-  ['🤩', 'star eyes excited wow',          'smileys'],
-  ['😘', 'kiss blow love',                 'smileys'],
-  ['😋', 'yum delicious tongue',           'smileys'],
-  ['😛', 'tongue stuck out',               'smileys'],
-  ['😜', 'wink tongue crazy',              'smileys'],
-  ['🤪', 'zany crazy wild',                'smileys'],
-  ['😝', 'squint tongue',                  'smileys'],
-  ['🤑', 'money mouth',                    'smileys'],
-  ['🤗', 'hugging hug',                    'smileys'],
-  ['🤔', 'thinking hmm',                   'smileys'],
-  ['🤨', 'raised eyebrow',                 'smileys'],
-  ['😐', 'neutral face',                   'smileys'],
-  ['😶', 'no mouth',                       'smileys'],
-  ['😏', 'smirk',                          'smileys'],
-  ['😒', 'unamused',                       'smileys'],
-  ['🙄', 'roll eyes',                      'smileys'],
-  ['😬', 'grimace',                        'smileys'],
-  ['😔', 'pensive sad',                    'smileys'],
-  ['😪', 'sleepy tired',                   'smileys'],
-  ['😴', 'sleeping zzz',                   'smileys'],
-  ['🤤', 'drool',                          'smileys'],
-  ['😷', 'mask sick',                      'smileys'],
-  ['🤒', 'sick thermometer',               'smileys'],
-  ['🤕', 'hurt bandage',                   'smileys'],
-  ['🤢', 'nausea sick',                    'smileys'],
-  ['🤮', 'vomit sick',                     'smileys'],
-  ['🤧', 'sneeze cold',                    'smileys'],
-  ['🥵', 'hot sweat',                      'smileys'],
-  ['🥶', 'cold freeze',                    'smileys'],
-  ['😵', 'dizzy dead',                     'smileys'],
-  ['🤯', 'mind blown',                     'smileys'],
-  ['🤠', 'cowboy hat',                     'smileys'],
-  ['🥳', 'party celebrate',                'smileys'],
-  ['😎', 'cool sunglasses',                'smileys'],
-  ['🤓', 'nerd glasses',                   'smileys'],
-  ['🧐', 'monocle curious',                'smileys'],
-  ['😕', 'confused',                       'smileys'],
-  ['😟', 'worried',                        'smileys'],
-  ['🙁', 'frown sad',                      'smileys'],
-  ['☹️', 'sad frown',                      'smileys'],
-  ['😮', 'surprised open mouth',           'smileys'],
-  ['😲', 'astonished',                     'smileys'],
-  ['🥺', 'pleading begging puppy eyes',    'smileys'],
-  ['😢', 'cry sad tear',                   'smileys'],
-  ['😭', 'sob cry loudly',                 'smileys'],
-  ['😱', 'scream horror fear',             'smileys'],
-  ['😡', 'angry red pouting',              'smileys'],
-  ['😠', 'angry mad',                      'smileys'],
-  ['🤬', 'cursing swear',                  'smileys'],
-  ['😈', 'devil evil smile',               'smileys'],
-  ['👿', 'devil angry evil',               'smileys'],
-  ['💀', 'skull death',                    'smileys'],
-  ['☠️', 'skull crossbones',               'smileys'],
-  ['💩', 'poop',                           'smileys'],
-  ['🤡', 'clown',                          'smileys'],
-  ['👻', 'ghost boo',                      'smileys'],
-  ['👽', 'alien ufo',                      'smileys'],
-  ['🤖', 'robot',                          'smileys'],
+// One emoji per line, "<emoji> <search keywords>", grouped by category.
+// Stored as text rather than [emoji, keywords, category] triples: the per-entry
+// brackets, quotes and repeated category name cost ~0.5 KB gzip in the CDN build.
+const RAW = {
+  smileys: `
+😀 grin smile happy face
+😃 happy smile big eyes
+😄 grinning smile laugh
+😁 beaming smile grin
+😆 laughing lol
+😅 sweat grin awkward
+🤣 rolling laugh rofl
+😂 tears laugh cry joy
+🙂 slight smile
+🙃 upside down smile
+😉 wink
+😊 blush smile happy
+😇 innocent halo angel
+🥰 hearts love adore
+😍 heart eyes love
+🤩 star eyes excited wow
+😘 kiss blow love
+😋 yum delicious tongue
+😛 tongue stuck out
+😜 wink tongue crazy
+🤪 zany crazy wild
+😝 squint tongue
+🤑 money mouth
+🤗 hugging hug
+🤔 thinking hmm
+🤨 raised eyebrow
+😐 neutral face
+😶 no mouth
+😏 smirk
+😒 unamused
+🙄 roll eyes
+😬 grimace
+😔 pensive sad
+😪 sleepy tired
+😴 sleeping zzz
+🤤 drool
+😷 mask sick
+🤒 sick thermometer
+🤕 hurt bandage
+🤢 nausea sick
+🤮 vomit sick
+🤧 sneeze cold
+🥵 hot sweat
+🥶 cold freeze
+😵 dizzy dead
+🤯 mind blown
+🤠 cowboy hat
+🥳 party celebrate
+😎 cool sunglasses
+🤓 nerd glasses
+🧐 monocle curious
+😕 confused
+😟 worried
+🙁 frown sad
+☹️ sad frown
+😮 surprised open mouth
+😲 astonished
+🥺 pleading begging puppy eyes
+😢 cry sad tear
+😭 sob cry loudly
+😱 scream horror fear
+😡 angry red pouting
+😠 angry mad
+🤬 cursing swear
+😈 devil evil smile
+👿 devil angry evil
+💀 skull death
+☠️ skull crossbones
+💩 poop
+🤡 clown
+👻 ghost boo
+👽 alien ufo
+🤖 robot`,
+  people: `
+👋 wave hello hi hand
+🤚 raised back hand
+✋ raised hand stop
+🖖 vulcan salute spock
+👌 ok perfect fine
+✌️ peace victory fingers
+🤞 fingers crossed luck
+🤟 love you gesture
+🤘 sign of horns rock
+🤙 call me hand
+👈 point left
+👉 point right
+👆 point up
+👇 point down
+☝️ index pointing up
+👍 thumbs up like good
+👎 thumbs down dislike bad
+✊ raised fist punch
+👊 oncoming fist punch
+👏 clap applause
+🙌 celebrate raise hands
+🤝 handshake deal
+🙏 pray hope please thanks
+💅 nail polish
+💪 flexed bicep strong muscle
+👀 eyes look see
+👁️ eye
+👅 tongue
+👶 baby
+🧒 child
+👦 boy
+👧 girl
+🧑 person adult
+👨 man
+👩 woman
+🧔 beard man
+🧓 older person
+👴 old man
+👵 old woman
+❤️ heart love red
+🧡 orange heart love
+💛 yellow heart love
+💚 green heart love
+💙 blue heart love
+💜 purple heart love
+🖤 black heart
+🤍 white heart
+🤎 brown heart
+💔 broken heart
+❣️ exclamation heart
+💕 two hearts love
+💞 revolving hearts
+💓 beating heart
+💗 growing heart
+💖 sparkling heart
+💘 heart arrow
+💝 heart ribbon
+💬 speech bubble comment chat
+💭 thought bubble
+💯 100 hundred percent perfect
+💢 anger symbol mad
+💤 zzz sleep`,
+  animals: `
+🐶 dog puppy
+🐱 cat kitten
+🐭 mouse
+🐹 hamster
+🐰 rabbit bunny
+🦊 fox
+🐻 bear
+🐼 panda
+🐨 koala
+🐯 tiger
+🦁 lion
+🐮 cow
+🐷 pig
+🐸 frog
+🐵 monkey
+🙈 see no evil monkey
+🙉 hear no evil monkey
+🙊 speak no evil monkey
+🐔 chicken hen
+🐧 penguin
+🐦 bird
+🦆 duck
+🦅 eagle
+🦉 owl
+🦇 bat
+🐺 wolf
+🐴 horse
+🦄 unicorn
+🐝 bee
+🦋 butterfly
+🐌 snail
+🐞 ladybug
+🐢 turtle
+🐍 snake
+🦎 lizard
+🐊 crocodile
+🐟 fish
+🐠 tropical fish
+🦈 shark
+🐬 dolphin
+🐳 whale
+🐙 octopus
+🦑 squid
+🦀 crab
+🌸 cherry blossom flower
+🌺 hibiscus flower
+🌻 sunflower
+🌹 rose flower
+🌷 tulip flower
+🍀 four leaf clover luck
+🌿 herb leaf green
+🌱 seedling sprout
+🌲 evergreen tree pine
+🌳 deciduous tree
+🌴 palm tree
+🍄 mushroom
+🌾 sheaf wheat
+🐾 paw prints animal`,
+  food: `
+🍎 apple red
+🍊 orange tangerine
+🍋 lemon yellow
+🍇 grapes
+🍓 strawberry
+🫐 blueberry
+🍒 cherry
+🍑 peach
+🥭 mango
+🍍 pineapple
+🥥 coconut
+🥝 kiwi
+🍅 tomato
+🥑 avocado
+🍆 eggplant aubergine
+🥕 carrot
+🌽 corn
+🥦 broccoli
+🥬 leafy green
+🧄 garlic
+🥜 peanut nut
+🍞 bread loaf
+🥐 croissant
+🧀 cheese
+🍳 egg fry cooking
+🥚 egg
+🥞 pancake
+🧇 waffle
+🥓 bacon
+🥩 meat steak
+🍗 chicken leg
+🌭 hotdog
+🍔 burger hamburger
+🍟 fries french
+🍕 pizza
+🌮 taco
+🌯 burrito wrap
+🍜 noodles ramen
+🍝 spaghetti pasta
+🍣 sushi
+🍱 bento box
+🍦 ice cream soft serve
+🍩 donut
+🍪 cookie
+🎂 birthday cake
+🍰 cake slice
+🧁 cupcake
+🍫 chocolate
+🍬 candy
+🍭 lollipop
+☕ coffee hot
+🍵 tea hot
+🧋 bubble tea boba
+🥤 cup straw drink
+🍷 wine red
+🍸 cocktail martini
+🍺 beer mug
+🍻 clinking beer mugs
+🥂 champagne toast celebrate
+🧃 juice box
+🧊 ice cube`,
+  travel: `
+🚀 rocket space
+🛸 ufo flying saucer
+✈️ airplane plane fly
+🚁 helicopter
+🚂 train locomotive
+🚄 bullet train fast
+🚇 subway metro
+🚌 bus
+🚑 ambulance
+🚒 fire truck
+🚓 police car
+🚕 taxi cab
+🚗 car automobile red
+🚙 suv car
+🚚 truck delivery
+🚜 tractor farm
+🏎️ racing car fast
+🏍️ motorcycle
+🚲 bicycle bike
+🛴 scooter kick
+⛵ sailboat boat
+🚢 ship cruise
+🏠 house home
+🏢 office building
+🏥 hospital
+🏦 bank
+🏪 store shop convenience
+🏫 school
+🏰 castle european
+🏯 japanese castle
+🗼 tokyo tower
+🗽 statue liberty new york
+⛪ church
+🕌 mosque
+⛩️ shinto shrine
+⛲ fountain
+⛺ tent camping
+🌁 fog foggy bridge
+🌃 night city stars
+🏙️ cityscape city buildings
+🌅 sunrise morning
+🌈 rainbow colorful
+⛰️ mountain
+🏔️ snow mountain
+🗻 mount fuji
+🏕️ camping tent
+🗺️ world map
+🧭 compass navigation
+🌍 earth europe africa globe
+🌎 earth americas globe
+🌏 earth asia globe
+🌐 globe internet web`,
+  objects: `
+💎 diamond gem jewel
+💍 ring engagement
+👑 crown royal king queen
+🎩 top hat magic
+💼 briefcase work business
+👜 handbag purse
+🎒 backpack bag school
+👓 glasses eyewear
+🕶️ sunglasses cool
+💡 light bulb idea
+🔦 flashlight torch
+🕯️ candle light
+🔋 battery charge
+💻 laptop computer
+🖥️ desktop monitor computer
+📱 phone mobile cell
+⌨️ keyboard type
+🖱️ mouse computer click
+📺 television tv
+📷 camera photo
+📹 video camera
+🎥 movie camera film
+☎️ telephone phone
+⏰ alarm clock wake
+⌚ watch time
+🔑 key
+🗝️ old key
+🔒 lock closed
+🔓 unlock open
+🔨 hammer tool
+🔧 wrench tool
+🔩 bolt nut
+⚙️ gear setting
+🧲 magnet attract
+📚 books stack library
+📖 book open read
+📝 memo write note
+✏️ pencil write edit
+📌 pushpin tack
+📎 paperclip attach
+📊 bar chart graph
+📈 chart up growth trend
+📉 chart down loss decline
+📅 calendar date
+📦 package box
+📫 mailbox closed
+📧 email envelope
+🎁 gift present
+🎀 ribbon bow
+🎉 party celebrate confetti
+🎊 confetti celebrate
+🔮 crystal ball magic fortune
+🪄 magic wand
+🎯 target bullseye dart
+🎲 dice game board
+🎮 video game controller
+🎭 theater masks drama
+🎨 art palette paint
+🎬 clapper film movie
+🎤 microphone sing karaoke
+🎧 headphones music listen
+🎵 music note
+🎶 music notes
+🎸 guitar electric
+🎹 piano keyboard music
+🥁 drum percussion
+🎷 saxophone jazz
+🎺 trumpet
+🎻 violin
+⚽ soccer ball football
+🏀 basketball
+🏈 american football
+⚾ baseball
+🎾 tennis
+🏐 volleyball
+🏆 trophy winner award
+🥇 gold medal first
+🏅 sports medal`,
+  symbols: `
+✅ check green done success
+❌ cross x no cancel
+⭕ circle red
+⛔ no entry stop
+🚫 prohibited no banned
+⚠️ warning caution danger
+❗ exclamation red important
+❓ question mark
+‼️ double exclamation
+💯 100 hundred percent perfect
+🔴 red circle dot
+🟠 orange circle
+🟡 yellow circle
+🟢 green circle
+🔵 blue circle
+🟣 purple circle
+⚫ black circle
+⚪ white circle
+🟤 brown circle
+🔺 red triangle up
+🔻 red triangle down
+🔷 blue diamond large
+🔶 orange diamond large
+🔹 blue diamond small
+🔸 orange diamond small
+⭐ star yellow
+🌟 glowing star shine
+✨ sparkles shine
+💫 dizzy star spin
+⚡ lightning bolt energy power
+🔥 fire hot flame
+💥 explosion boom
+❄️ snowflake cold ice winter
+🌊 wave water ocean sea
+💨 wind blow dash
+🌀 cyclone tornado spiral
+♻️ recycle loop green
+✔️ check tick done
+➕ plus add
+➖ minus subtract
+➗ divide division
+✖️ multiply times cross
+▶️ play button right
+⏸️ pause
+⏹️ stop square
+⏩ fast forward
+⏪ rewind fast backward
+🔔 bell notification
+🔕 bell slash mute
+🔊 speaker volume high
+🔇 mute silent no sound
+📢 loudspeaker announcement
+📣 megaphone cheer
+🏳️ white flag
+🏴 black flag
+🚩 red flag
+🏁 checkered flag finish race
+🆕 new badge
+🆓 free badge
+🆒 cool badge
+🔝 top arrow
+🔙 back arrow
+ℹ️ information info
+📍 pin location map
+🔗 link chain
+©️ copyright
+®️ registered trademark
+™️ trademark
+#️⃣ hash number
+0️⃣ zero number
+1️⃣ one number
+2️⃣ two number
+3️⃣ three number
+4️⃣ four number
+5️⃣ five number`,
+};
 
-  // People & Body
-  ['👋', 'wave hello hi hand',             'people'],
-  ['🤚', 'raised back hand',               'people'],
-  ['✋', 'raised hand stop',               'people'],
-  ['🖖', 'vulcan salute spock',            'people'],
-  ['👌', 'ok perfect fine',               'people'],
-  ['✌️', 'peace victory fingers',          'people'],
-  ['🤞', 'fingers crossed luck',           'people'],
-  ['🤟', 'love you gesture',               'people'],
-  ['🤘', 'sign of horns rock',             'people'],
-  ['🤙', 'call me hand',                   'people'],
-  ['👈', 'point left',                     'people'],
-  ['👉', 'point right',                    'people'],
-  ['👆', 'point up',                       'people'],
-  ['👇', 'point down',                     'people'],
-  ['☝️', 'index pointing up',              'people'],
-  ['👍', 'thumbs up like good',            'people'],
-  ['👎', 'thumbs down dislike bad',        'people'],
-  ['✊', 'raised fist punch',              'people'],
-  ['👊', 'oncoming fist punch',            'people'],
-  ['👏', 'clap applause',                  'people'],
-  ['🙌', 'celebrate raise hands',          'people'],
-  ['🤝', 'handshake deal',                 'people'],
-  ['🙏', 'pray hope please thanks',        'people'],
-  ['💅', 'nail polish',                    'people'],
-  ['💪', 'flexed bicep strong muscle',     'people'],
-  ['👀', 'eyes look see',                  'people'],
-  ['👁️', 'eye',                           'people'],
-  ['👅', 'tongue',                         'people'],
-  ['👶', 'baby',                           'people'],
-  ['🧒', 'child',                          'people'],
-  ['👦', 'boy',                            'people'],
-  ['👧', 'girl',                           'people'],
-  ['🧑', 'person adult',                   'people'],
-  ['👨', 'man',                            'people'],
-  ['👩', 'woman',                          'people'],
-  ['🧔', 'beard man',                      'people'],
-  ['🧓', 'older person',                   'people'],
-  ['👴', 'old man',                        'people'],
-  ['👵', 'old woman',                      'people'],
-  ['❤️', 'heart love red',                'people'],
-  ['🧡', 'orange heart love',              'people'],
-  ['💛', 'yellow heart love',              'people'],
-  ['💚', 'green heart love',               'people'],
-  ['💙', 'blue heart love',                'people'],
-  ['💜', 'purple heart love',              'people'],
-  ['🖤', 'black heart',                    'people'],
-  ['🤍', 'white heart',                    'people'],
-  ['🤎', 'brown heart',                    'people'],
-  ['💔', 'broken heart',                   'people'],
-  ['❣️', 'exclamation heart',              'people'],
-  ['💕', 'two hearts love',                'people'],
-  ['💞', 'revolving hearts',               'people'],
-  ['💓', 'beating heart',                  'people'],
-  ['💗', 'growing heart',                  'people'],
-  ['💖', 'sparkling heart',                'people'],
-  ['💘', 'heart arrow',                    'people'],
-  ['💝', 'heart ribbon',                   'people'],
-  ['💬', 'speech bubble comment chat',     'people'],
-  ['💭', 'thought bubble',                 'people'],
-  ['💯', '100 hundred percent perfect',    'people'],
-  ['💢', 'anger symbol mad',               'people'],
-  ['💤', 'zzz sleep',                      'people'],
-
-  // Animals & Nature
-  ['🐶', 'dog puppy',                      'animals'],
-  ['🐱', 'cat kitten',                     'animals'],
-  ['🐭', 'mouse',                          'animals'],
-  ['🐹', 'hamster',                        'animals'],
-  ['🐰', 'rabbit bunny',                   'animals'],
-  ['🦊', 'fox',                            'animals'],
-  ['🐻', 'bear',                           'animals'],
-  ['🐼', 'panda',                          'animals'],
-  ['🐨', 'koala',                          'animals'],
-  ['🐯', 'tiger',                          'animals'],
-  ['🦁', 'lion',                           'animals'],
-  ['🐮', 'cow',                            'animals'],
-  ['🐷', 'pig',                            'animals'],
-  ['🐸', 'frog',                           'animals'],
-  ['🐵', 'monkey',                         'animals'],
-  ['🙈', 'see no evil monkey',             'animals'],
-  ['🙉', 'hear no evil monkey',            'animals'],
-  ['🙊', 'speak no evil monkey',           'animals'],
-  ['🐔', 'chicken hen',                    'animals'],
-  ['🐧', 'penguin',                        'animals'],
-  ['🐦', 'bird',                           'animals'],
-  ['🦆', 'duck',                           'animals'],
-  ['🦅', 'eagle',                          'animals'],
-  ['🦉', 'owl',                            'animals'],
-  ['🦇', 'bat',                            'animals'],
-  ['🐺', 'wolf',                           'animals'],
-  ['🐴', 'horse',                          'animals'],
-  ['🦄', 'unicorn',                        'animals'],
-  ['🐝', 'bee',                            'animals'],
-  ['🦋', 'butterfly',                      'animals'],
-  ['🐌', 'snail',                          'animals'],
-  ['🐞', 'ladybug',                        'animals'],
-  ['🐢', 'turtle',                         'animals'],
-  ['🐍', 'snake',                          'animals'],
-  ['🦎', 'lizard',                         'animals'],
-  ['🐊', 'crocodile',                      'animals'],
-  ['🐟', 'fish',                           'animals'],
-  ['🐠', 'tropical fish',                  'animals'],
-  ['🦈', 'shark',                          'animals'],
-  ['🐬', 'dolphin',                        'animals'],
-  ['🐳', 'whale',                          'animals'],
-  ['🐙', 'octopus',                        'animals'],
-  ['🦑', 'squid',                          'animals'],
-  ['🦀', 'crab',                           'animals'],
-  ['🌸', 'cherry blossom flower',          'animals'],
-  ['🌺', 'hibiscus flower',                'animals'],
-  ['🌻', 'sunflower',                      'animals'],
-  ['🌹', 'rose flower',                    'animals'],
-  ['🌷', 'tulip flower',                   'animals'],
-  ['🍀', 'four leaf clover luck',          'animals'],
-  ['🌿', 'herb leaf green',                'animals'],
-  ['🌱', 'seedling sprout',                'animals'],
-  ['🌲', 'evergreen tree pine',            'animals'],
-  ['🌳', 'deciduous tree',                 'animals'],
-  ['🌴', 'palm tree',                      'animals'],
-  ['🍄', 'mushroom',                       'animals'],
-  ['🌾', 'sheaf wheat',                    'animals'],
-  ['🐾', 'paw prints animal',              'animals'],
-
-  // Food & Drink
-  ['🍎', 'apple red',                      'food'],
-  ['🍊', 'orange tangerine',               'food'],
-  ['🍋', 'lemon yellow',                   'food'],
-  ['🍇', 'grapes',                         'food'],
-  ['🍓', 'strawberry',                     'food'],
-  ['🫐', 'blueberry',                      'food'],
-  ['🍒', 'cherry',                         'food'],
-  ['🍑', 'peach',                          'food'],
-  ['🥭', 'mango',                          'food'],
-  ['🍍', 'pineapple',                      'food'],
-  ['🥥', 'coconut',                        'food'],
-  ['🥝', 'kiwi',                           'food'],
-  ['🍅', 'tomato',                         'food'],
-  ['🥑', 'avocado',                        'food'],
-  ['🍆', 'eggplant aubergine',             'food'],
-  ['🥕', 'carrot',                         'food'],
-  ['🌽', 'corn',                           'food'],
-  ['🥦', 'broccoli',                       'food'],
-  ['🥬', 'leafy green',                    'food'],
-  ['🧄', 'garlic',                         'food'],
-  ['🥜', 'peanut nut',                     'food'],
-  ['🍞', 'bread loaf',                     'food'],
-  ['🥐', 'croissant',                      'food'],
-  ['🧀', 'cheese',                         'food'],
-  ['🍳', 'egg fry cooking',                'food'],
-  ['🥚', 'egg',                            'food'],
-  ['🥞', 'pancake',                        'food'],
-  ['🧇', 'waffle',                         'food'],
-  ['🥓', 'bacon',                          'food'],
-  ['🥩', 'meat steak',                     'food'],
-  ['🍗', 'chicken leg',                    'food'],
-  ['🌭', 'hotdog',                         'food'],
-  ['🍔', 'burger hamburger',               'food'],
-  ['🍟', 'fries french',                   'food'],
-  ['🍕', 'pizza',                          'food'],
-  ['🌮', 'taco',                           'food'],
-  ['🌯', 'burrito wrap',                   'food'],
-  ['🍜', 'noodles ramen',                  'food'],
-  ['🍝', 'spaghetti pasta',                'food'],
-  ['🍣', 'sushi',                          'food'],
-  ['🍱', 'bento box',                      'food'],
-  ['🍦', 'ice cream soft serve',           'food'],
-  ['🍩', 'donut',                          'food'],
-  ['🍪', 'cookie',                         'food'],
-  ['🎂', 'birthday cake',                  'food'],
-  ['🍰', 'cake slice',                     'food'],
-  ['🧁', 'cupcake',                        'food'],
-  ['🍫', 'chocolate',                      'food'],
-  ['🍬', 'candy',                          'food'],
-  ['🍭', 'lollipop',                       'food'],
-  ['☕', 'coffee hot',                     'food'],
-  ['🍵', 'tea hot',                        'food'],
-  ['🧋', 'bubble tea boba',                'food'],
-  ['🥤', 'cup straw drink',                'food'],
-  ['🍷', 'wine red',                       'food'],
-  ['🍸', 'cocktail martini',               'food'],
-  ['🍺', 'beer mug',                       'food'],
-  ['🍻', 'clinking beer mugs',             'food'],
-  ['🥂', 'champagne toast celebrate',      'food'],
-  ['🧃', 'juice box',                      'food'],
-  ['🧊', 'ice cube',                       'food'],
-
-  // Travel & Places
-  ['🚀', 'rocket space',                   'travel'],
-  ['🛸', 'ufo flying saucer',              'travel'],
-  ['✈️', 'airplane plane fly',             'travel'],
-  ['🚁', 'helicopter',                     'travel'],
-  ['🚂', 'train locomotive',               'travel'],
-  ['🚄', 'bullet train fast',              'travel'],
-  ['🚇', 'subway metro',                   'travel'],
-  ['🚌', 'bus',                            'travel'],
-  ['🚑', 'ambulance',                      'travel'],
-  ['🚒', 'fire truck',                     'travel'],
-  ['🚓', 'police car',                     'travel'],
-  ['🚕', 'taxi cab',                       'travel'],
-  ['🚗', 'car automobile red',             'travel'],
-  ['🚙', 'suv car',                        'travel'],
-  ['🚚', 'truck delivery',                 'travel'],
-  ['🚜', 'tractor farm',                   'travel'],
-  ['🏎️', 'racing car fast',                'travel'],
-  ['🏍️', 'motorcycle',                     'travel'],
-  ['🚲', 'bicycle bike',                   'travel'],
-  ['🛴', 'scooter kick',                   'travel'],
-  ['⛵', 'sailboat boat',                  'travel'],
-  ['🚢', 'ship cruise',                    'travel'],
-  ['🏠', 'house home',                     'travel'],
-  ['🏢', 'office building',                'travel'],
-  ['🏥', 'hospital',                       'travel'],
-  ['🏦', 'bank',                           'travel'],
-  ['🏪', 'store shop convenience',         'travel'],
-  ['🏫', 'school',                         'travel'],
-  ['🏰', 'castle european',                'travel'],
-  ['🏯', 'japanese castle',                'travel'],
-  ['🗼', 'tokyo tower',                    'travel'],
-  ['🗽', 'statue liberty new york',        'travel'],
-  ['⛪', 'church',                         'travel'],
-  ['🕌', 'mosque',                         'travel'],
-  ['⛩️', 'shinto shrine',                  'travel'],
-  ['⛲', 'fountain',                       'travel'],
-  ['⛺', 'tent camping',                   'travel'],
-  ['🌁', 'fog foggy bridge',               'travel'],
-  ['🌃', 'night city stars',               'travel'],
-  ['🏙️', 'cityscape city buildings',       'travel'],
-  ['🌅', 'sunrise morning',                'travel'],
-  ['🌈', 'rainbow colorful',               'travel'],
-  ['⛰️', 'mountain',                       'travel'],
-  ['🏔️', 'snow mountain',                  'travel'],
-  ['🗻', 'mount fuji',                     'travel'],
-  ['🏕️', 'camping tent',                   'travel'],
-  ['🗺️', 'world map',                      'travel'],
-  ['🧭', 'compass navigation',             'travel'],
-  ['🌍', 'earth europe africa globe',      'travel'],
-  ['🌎', 'earth americas globe',           'travel'],
-  ['🌏', 'earth asia globe',               'travel'],
-  ['🌐', 'globe internet web',             'travel'],
-
-  // Objects
-  ['💎', 'diamond gem jewel',              'objects'],
-  ['💍', 'ring engagement',                'objects'],
-  ['👑', 'crown royal king queen',         'objects'],
-  ['🎩', 'top hat magic',                  'objects'],
-  ['💼', 'briefcase work business',        'objects'],
-  ['👜', 'handbag purse',                  'objects'],
-  ['🎒', 'backpack bag school',            'objects'],
-  ['👓', 'glasses eyewear',                'objects'],
-  ['🕶️', 'sunglasses cool',                'objects'],
-  ['💡', 'light bulb idea',                'objects'],
-  ['🔦', 'flashlight torch',               'objects'],
-  ['🕯️', 'candle light',                   'objects'],
-  ['🔋', 'battery charge',                 'objects'],
-  ['💻', 'laptop computer',                'objects'],
-  ['🖥️', 'desktop monitor computer',       'objects'],
-  ['📱', 'phone mobile cell',              'objects'],
-  ['⌨️', 'keyboard type',                  'objects'],
-  ['🖱️', 'mouse computer click',           'objects'],
-  ['📺', 'television tv',                  'objects'],
-  ['📷', 'camera photo',                   'objects'],
-  ['📹', 'video camera',                   'objects'],
-  ['🎥', 'movie camera film',              'objects'],
-  ['☎️', 'telephone phone',                'objects'],
-  ['⏰', 'alarm clock wake',               'objects'],
-  ['⌚', 'watch time',                     'objects'],
-  ['🔑', 'key',                            'objects'],
-  ['🗝️', 'old key',                        'objects'],
-  ['🔒', 'lock closed',                    'objects'],
-  ['🔓', 'unlock open',                    'objects'],
-  ['🔨', 'hammer tool',                    'objects'],
-  ['🔧', 'wrench tool',                    'objects'],
-  ['🔩', 'bolt nut',                       'objects'],
-  ['⚙️', 'gear setting',                   'objects'],
-  ['🧲', 'magnet attract',                 'objects'],
-  ['📚', 'books stack library',            'objects'],
-  ['📖', 'book open read',                 'objects'],
-  ['📝', 'memo write note',                'objects'],
-  ['✏️', 'pencil write edit',              'objects'],
-  ['📌', 'pushpin tack',                   'objects'],
-  ['📎', 'paperclip attach',               'objects'],
-  ['📊', 'bar chart graph',                'objects'],
-  ['📈', 'chart up growth trend',          'objects'],
-  ['📉', 'chart down loss decline',        'objects'],
-  ['📅', 'calendar date',                  'objects'],
-  ['📦', 'package box',                    'objects'],
-  ['📫', 'mailbox closed',                 'objects'],
-  ['📧', 'email envelope',                 'objects'],
-  ['🎁', 'gift present',                   'objects'],
-  ['🎀', 'ribbon bow',                     'objects'],
-  ['🎉', 'party celebrate confetti',       'objects'],
-  ['🎊', 'confetti celebrate',             'objects'],
-  ['🔮', 'crystal ball magic fortune',     'objects'],
-  ['🪄', 'magic wand',                     'objects'],
-  ['🎯', 'target bullseye dart',           'objects'],
-  ['🎲', 'dice game board',                'objects'],
-  ['🎮', 'video game controller',          'objects'],
-  ['🎭', 'theater masks drama',            'objects'],
-  ['🎨', 'art palette paint',              'objects'],
-  ['🎬', 'clapper film movie',             'objects'],
-  ['🎤', 'microphone sing karaoke',        'objects'],
-  ['🎧', 'headphones music listen',        'objects'],
-  ['🎵', 'music note',                     'objects'],
-  ['🎶', 'music notes',                    'objects'],
-  ['🎸', 'guitar electric',                'objects'],
-  ['🎹', 'piano keyboard music',           'objects'],
-  ['🥁', 'drum percussion',                'objects'],
-  ['🎷', 'saxophone jazz',                 'objects'],
-  ['🎺', 'trumpet',                        'objects'],
-  ['🎻', 'violin',                         'objects'],
-  ['⚽', 'soccer ball football',           'objects'],
-  ['🏀', 'basketball',                     'objects'],
-  ['🏈', 'american football',              'objects'],
-  ['⚾', 'baseball',                       'objects'],
-  ['🎾', 'tennis',                         'objects'],
-  ['🏐', 'volleyball',                     'objects'],
-  ['🏆', 'trophy winner award',            'objects'],
-  ['🥇', 'gold medal first',               'objects'],
-  ['🏅', 'sports medal',                   'objects'],
-
-  // Symbols
-  ['✅', 'check green done success',       'symbols'],
-  ['❌', 'cross x no cancel',             'symbols'],
-  ['⭕', 'circle red',                    'symbols'],
-  ['⛔', 'no entry stop',                 'symbols'],
-  ['🚫', 'prohibited no banned',          'symbols'],
-  ['⚠️', 'warning caution danger',        'symbols'],
-  ['❗', 'exclamation red important',      'symbols'],
-  ['❓', 'question mark',                 'symbols'],
-  ['‼️', 'double exclamation',             'symbols'],
-  ['💯', '100 hundred percent perfect',   'symbols'],
-  ['🔴', 'red circle dot',                'symbols'],
-  ['🟠', 'orange circle',                 'symbols'],
-  ['🟡', 'yellow circle',                 'symbols'],
-  ['🟢', 'green circle',                  'symbols'],
-  ['🔵', 'blue circle',                   'symbols'],
-  ['🟣', 'purple circle',                 'symbols'],
-  ['⚫', 'black circle',                  'symbols'],
-  ['⚪', 'white circle',                  'symbols'],
-  ['🟤', 'brown circle',                  'symbols'],
-  ['🔺', 'red triangle up',               'symbols'],
-  ['🔻', 'red triangle down',             'symbols'],
-  ['🔷', 'blue diamond large',            'symbols'],
-  ['🔶', 'orange diamond large',          'symbols'],
-  ['🔹', 'blue diamond small',            'symbols'],
-  ['🔸', 'orange diamond small',          'symbols'],
-  ['⭐', 'star yellow',                   'symbols'],
-  ['🌟', 'glowing star shine',            'symbols'],
-  ['✨', 'sparkles shine',                'symbols'],
-  ['💫', 'dizzy star spin',               'symbols'],
-  ['⚡', 'lightning bolt energy power',   'symbols'],
-  ['🔥', 'fire hot flame',                'symbols'],
-  ['💥', 'explosion boom',                'symbols'],
-  ['❄️', 'snowflake cold ice winter',     'symbols'],
-  ['🌊', 'wave water ocean sea',          'symbols'],
-  ['💨', 'wind blow dash',                'symbols'],
-  ['🌀', 'cyclone tornado spiral',        'symbols'],
-  ['♻️', 'recycle loop green',            'symbols'],
-  ['✔️', 'check tick done',               'symbols'],
-  ['➕', 'plus add',                      'symbols'],
-  ['➖', 'minus subtract',                'symbols'],
-  ['➗', 'divide division',               'symbols'],
-  ['✖️', 'multiply times cross',          'symbols'],
-  ['▶️', 'play button right',             'symbols'],
-  ['⏸️', 'pause',                         'symbols'],
-  ['⏹️', 'stop square',                   'symbols'],
-  ['⏩', 'fast forward',                  'symbols'],
-  ['⏪', 'rewind fast backward',          'symbols'],
-  ['🔔', 'bell notification',             'symbols'],
-  ['🔕', 'bell slash mute',               'symbols'],
-  ['🔊', 'speaker volume high',           'symbols'],
-  ['🔇', 'mute silent no sound',          'symbols'],
-  ['📢', 'loudspeaker announcement',      'symbols'],
-  ['📣', 'megaphone cheer',               'symbols'],
-  ['🏳️', 'white flag',                    'symbols'],
-  ['🏴', 'black flag',                    'symbols'],
-  ['🚩', 'red flag',                      'symbols'],
-  ['🏁', 'checkered flag finish race',    'symbols'],
-  ['🆕', 'new badge',                     'symbols'],
-  ['🆓', 'free badge',                    'symbols'],
-  ['🆒', 'cool badge',                    'symbols'],
-  ['🔝', 'top arrow',                     'symbols'],
-  ['🔙', 'back arrow',                    'symbols'],
-  ['ℹ️', 'information info',              'symbols'],
-  ['📍', 'pin location map',              'symbols'],
-  ['🔗', 'link chain',                    'symbols'],
-  ['©️',  'copyright',                    'symbols'],
-  ['®️',  'registered trademark',         'symbols'],
-  ['™️',  'trademark',                    'symbols'],
-  ['#️⃣', 'hash number',                  'symbols'],
-  ['0️⃣', 'zero number',                  'symbols'],
-  ['1️⃣', 'one number',                   'symbols'],
-  ['2️⃣', 'two number',                   'symbols'],
-  ['3️⃣', 'three number',                 'symbols'],
-  ['4️⃣', 'four number',                  'symbols'],
-  ['5️⃣', 'five number',                  'symbols'],
-];
-
+/** @type {Array<[string, string, string]>} [emoji_char, search_keywords, category] */
+export const EMOJI_LIST = Object.entries(RAW).flatMap(([cat, text]) => text.trim().split('\n').map((line) => {
+  const at = line.indexOf(' ');
+  return [line.slice(0, at), line.slice(at + 1), cat];
+}));

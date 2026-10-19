@@ -7,11 +7,11 @@
  *   • Direct video URLs   → <video> element (.mp4 / .webm / .ogg)
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, svgIcon } from '../core/dom.js';
 import { sanitiseUrl, isAllowedIframeSrc } from '../core/sanitise.js';
 import { BaseDialog } from './BaseDialog.js';
 
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`;
+const ICON_SVG = svgIcon(`<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>`, 20);
 
 export class VideoDialog extends BaseDialog {
   // ---------------------------------------------------------------------------
