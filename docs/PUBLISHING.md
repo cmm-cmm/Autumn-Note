@@ -61,7 +61,7 @@ Publish the core package first, because the wrappers depend on it.
 For each of the three packages on npmjs.com: **Settings → Trusted publishing → GitHub Actions**, with:
 
 - Organization or user: `habibiahmada`
-- Repository: `Autumn-Note`
+- Repository: `autumnnote-plus`
 - Workflow filename: `publish.yml`
 - Environment: leave empty
 

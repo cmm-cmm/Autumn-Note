@@ -19,7 +19,7 @@ Security fixes land on the latest minor release of the current major.
 
 If you discover a security vulnerability in this fork, report it privately:
 
-1. **[Security → Report a vulnerability](https://github.com/habibiahmada/Autumn-Note/security/advisories/new)** on this repository, or
+1. **[Security → Report a vulnerability](https://github.com/habibiahmada/autumnnote-plus/security/advisories/new)** on this repository, or
 2. Contact the maintainer, [@habibiahmada](https://github.com/habibiahmada), through GitHub.
 
 If the issue is also present in the original Autumn Note, it will be passed on to its maintainer privately.

@@ -13,8 +13,8 @@ Node 22 LTS (22.22.2+) or Node 24.15+, and pnpm 11.1.3 — the version pinned in
 and the pnpm overrides, and writes a `package-lock.json` the repo does not use.
 
 ```bash
-git clone https://github.com/cmm-cmm/Autumn-Note.git
-cd Autumn-Note
+git clone https://github.com/habibiahmada/autumnnote-plus.git
+cd autumnnote-plus
 pnpm install
 pnpm dev           # start dev server
 pnpm test          # run tests
@@ -77,14 +77,14 @@ pnpm build         # build library
 
 ## Reporting bugs
 
-Use the [Bug Report template](https://github.com/cmm-cmm/Autumn-Note/issues/new?template=bug_report.md) and include:
+Use the [Bug Report template](https://github.com/habibiahmada/autumnnote-plus/issues/new?template=bug_report.md) and include:
 - Autumn Note version
 - Browser & OS
 - Minimal reproduction steps
 
 ## Requesting features
 
-Use the [Feature Request template](https://github.com/cmm-cmm/Autumn-Note/issues/new?template=feature_request.md).
+Use the [Feature Request template](https://github.com/habibiahmada/autumnnote-plus/issues/new?template=feature_request.md).
 
 ---
 

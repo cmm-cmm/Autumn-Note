@@ -110,13 +110,13 @@
     "rtl",
     "autosave"
   ],
-  "homepage": "https://github.com/habibiahmada/Autumn-Note#readme",
+  "homepage": "https://github.com/habibiahmada/autumnnote-plus#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/habibiahmada/Autumn-Note.git"
+    "url": "git+https://github.com/habibiahmada/autumnnote-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/habibiahmada/Autumn-Note/issues"
+    "url": "https://github.com/habibiahmada/autumnnote-plus/issues"
   },
   "author": "Minh Pham",
   "contributors": [

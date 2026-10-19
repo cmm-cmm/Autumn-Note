@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/autumnnote-plus-react?color=e8751a)](https://www.npmjs.com/package/autumnnote-plus-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**React wrapper** for [`autumnnote-plus`](https://github.com/habibiahmada/Autumn-Note), an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) (the zero-dependency WYSIWYG rich-text editor) with security fixes. Not published or endorsed by the Autumn Note author. Use it with `autumnnote-plus` 4.x; the original `autumnnote-react` works with `autumnnote` 3.x.
+**React wrapper** for [`autumnnote-plus`](https://github.com/habibiahmada/autumnnote-plus), an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) (the zero-dependency WYSIWYG rich-text editor) with security fixes. Not published or endorsed by the Autumn Note author. Use it with `autumnnote-plus` 4.x; the original `autumnnote-react` works with `autumnnote` 3.x.
 
 ## Installation
 

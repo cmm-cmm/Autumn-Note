@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/autumnnote-plus?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote-plus)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote-plus?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote-plus)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/autumnnote-plus?label=minzipped&color=success)](https://bundlephobia.com/package/autumnnote-plus)
-[![CI](https://github.com/habibiahmada/Autumn-Note/actions/workflows/ci.yml/badge.svg)](https://github.com/habibiahmada/Autumn-Note/actions/workflows/ci.yml)
+[![CI](https://github.com/habibiahmada/autumnnote-plus/actions/workflows/ci.yml/badge.svg)](https://github.com/habibiahmada/autumnnote-plus/actions/workflows/ci.yml)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-brightgreen)](https://opensource.org/licenses/MIT)
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
