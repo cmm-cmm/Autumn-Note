@@ -40,11 +40,14 @@ Autumn Note includes a built-in DOM-based HTML sanitiser applied to all user inp
 - Removes all `on*` event handler attributes (e.g. `onclick`, `onerror`)
 - Removes SVG animation elements (`<animate>`, `<set>`, `<animateTransform>`, `<animateMotion>`), which can rewrite an attribute *after* sanitisation finishes and so defeat an attribute-level filter
 - Removes the MathML HTML-integration points (`<mglyph>`, `<malignmark>`, `<annotation-xml>`) that let a fragment re-parse into different markup than it serialised from (mXSS); sanitising is a fixed point
+- Removes comments and the raw-text elements `<xmp>`, `<noembed>`, `<noframes>` and `<plaintext>`, and empties kept iframes: that content serialises unescaped and could become live markup when the HTML is parsed again
+- Removes `name` attributes, which would let content shadow members of `document` (DOM clobbering)
 - Allows only HTTP(S), `mailto:`, `tel:`, safe relative links, and approved raster image data
 - Filters every URL-bearing attribute, not just `href`/`src` — `poster`, `background` and `srcset` are validated, and `ping` is removed
 - Allowlists inline style properties and rejects any value that fetches an external resource (`url()`, `image-set()`, `src()`, `expression()`, `@import`)
 - Preserves HTTPS YouTube/Vimeo iframes only when iframe support is explicitly enabled
-- Sanitisation runs on: paste, `setHTML()`, `insertHTML()`, code-view output, and the initial content the editor is mounted over
+- Sanitisation runs on: paste, HTML dropped in from outside the editor, `setHTML()`, `insertHTML()`, code-view output, and the initial content the editor is mounted over
+- Editing operations never delete characters from serialised HTML and parse it again: they move or clone nodes. Undo/redo snapshots use a random per-editor token for embedded images, so content cannot forge one
 
 Despite these measures, **Autumn Note is a client-side editor** — always sanitise content server-side before storing or rendering it to other users.
 

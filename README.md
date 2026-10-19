@@ -149,11 +149,14 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - All HTML (pasted content, `setHTML()`, or code-view output) passes through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes
 - **SVG animation elements are removed** (`<animate>`, `<set>`, `<animateTransform>`, `<animateMotion>`) — they can rewrite an attribute *after* sanitisation finishes, which otherwise lets `<svg><a><animate attributeName="href" values="javascript:…">` survive an attribute-level filter and still navigate on click
 - **MathML HTML-integration points are removed** (`<mglyph>`, `<malignmark>`, `<annotation-xml>`) — they make the parser switch namespaces mid-tree, so a crafted fragment could re-parse into different markup than it serialised from (mXSS). Sanitising is a fixed point; ordinary formula markup is untouched
+- **Comments and raw-text elements are removed** (`<xmp>`, `<noembed>`, `<noframes>`, `<plaintext>`), and kept iframes lose their fallback content — that content serialises unescaped, so it could turn into live markup the next time the HTML is parsed
+- **`name` attributes are removed** — `<img name="body">` would otherwise shadow `document.body` (DOM clobbering) for the editor and the host page
+- Editing operations (checklist toggles, table header and merge, code-block language, `getHTML()` cleanup) move or clone DOM nodes instead of editing HTML strings and parsing them again, and undo/redo snapshots use unguessable image tokens
 - `<iframe>` elements are permitted in `setHTML()` with src restricted to trusted CDN hosts; `srcdoc` is stripped
 - Links use an HTTP(S)/`mailto:`/`tel:` allowlist; images additionally allow approved raster data URIs, while SVG data URIs are rejected
 - **Every URL-bearing attribute is filtered**, not just `href`/`src`: `poster`, `background` and `srcset` are validated against the media allowlist (`srcset` candidate by candidate), and `ping` is stripped outright since its only effect is an outbound beacon
 - **Inline styles are allowlisted by property**, and any value calling `url()`, `image-set()`, `src()`, `expression()` or `@import` is dropped so pasted content cannot phone home
-- Clipboard paste sanitises rich content to remove XSS vectors before inserting
+- Clipboard paste, and HTML dragged in from another page or app, are sanitised before inserting
 - `pasteStripAttributes` option strips `class`, `style`, and `data-*` from pasted HTML
 
 Found a vulnerability? Please follow [SECURITY.md](SECURITY.md) rather than opening a public issue.
@@ -622,7 +625,7 @@ Image uploads are not an event: they go to the `onImageUpload` handler, whose re
 | `fontAwesomeAutoInject` | `boolean` | `true` | Let the icon dialog pull Font Awesome CSS from a CDN when the page has none. Set `false` under a strict CSP or offline. |
 | `fontAwesomeCDN` | `string` | cdnjs FA 6.5.2 | Stylesheet URL for that injection — point it at a self-hosted copy to keep the request first-party. |
 | `pasteAsPlainText` | `boolean` | `false` | Strip all formatting when pasting. |
-| `pasteCleanHTML` | `boolean` | `true` | Sanitise HTML on paste. |
+| `pasteCleanHTML` | `boolean` | `true` | Sanitise HTML on paste and on drag-and-drop from outside the editor. `false` leaves both to the browser. |
 | `pasteStripAttributes` | `boolean` | `false` | Strip `class`, `style`, and `data-*` attributes from pasted HTML. |
 | `markdownPaste` | `boolean` | `true` | Convert pasted Markdown shortcuts to HTML as you type. |
 | `allowImageUpload` | `boolean` | `true` | Allow drag/paste/file upload in the image dialog. |

@@ -25,6 +25,20 @@ If a page loads Autumn Note with a `<script>` tag and sets `lang` to anything ot
 
 Without it the editor falls back to English and the console warning names the missing script. With `require('autumnnote')` (CommonJS), require the locale and register it: `AutumnNote.registerLocale('vi', require('autumnnote/dist/i18n/vi.umd.js'))`.
 
+### Security
+
+These come from a source-and-sandbox security audit of the editor. Each has a regression test.
+
+- **Undo/redo could turn sanitised content into a live event handler.** Snapshots replaced embedded image data with a predictable token, and undo replaced every occurrence of that token, including one an author typed into an attribute. Tokens are now random per editor and only the editor's own are restored.
+- **`getHTML()` and `print()` could turn inert content into live markup.** Removing zero-width spaces and empty formatting tags from the serialised string could complete a `-->` or `</xmp>` terminator. Cleanup now works on a cloned DOM, and the sanitiser removes comments and the raw-text elements `<xmp>`, `<noembed>`, `<noframes>` and `<plaintext>`. A kept YouTube/Vimeo `<iframe>` loses its fallback content (never displayed, and raw text the same way), and character cleanups never edit raw text.
+- **Checklist toggle-off/outdent, table header toggle and cell merge, and the code-block language switch** re-parsed cell or item HTML; they now move nodes.
+- **HTML dragged in from another page or app** was inserted by the browser without the sanitiser. It now goes through the same cleaning as a paste (`pasteCleanHTML: false` still leaves it native). Drags inside an editor, or between two editors on the page, are recognised by a private type and a per-drag random nonce the editor adds to its own drags, and stay native moves; a page that copies the type, or replays a nonce more than 30 seconds old, is still sanitised.
+- **The default mention chip** inserted `item.id` and `item.label` as HTML; they are now text. The README `onInsert` example is fixed the same way — if you copied it, escape both values or build the chip with DOM APIs.
+- **`name` attributes are removed** from content, so `<img name="body">` or `name="createElement"` can no longer shadow `document` members and break the editor or the host page. In-page `<a name>` anchors in pasted content are dropped; use `id`. A `<form>` whose controls shadow the form's own members (`<input id="tagName">`) no longer makes the sanitiser throw.
+- Exported images: data URLs spliced into `getHTML()` output are attribute-escaped.
+- **Markdown export** keeps inert text inert for the next Markdown renderer: a `<` that could open a tag is escaped, code fences outrun any backtick run inside them, link destinations are percent-encoded (`a(b)` exports as `a%28b%29` rather than `<a(b)>`), titles escape `\`, `"` and `<` and lose their line breaks, link text and image alt stay on one line, code spans stay on one line, and the fence language keeps only language-name characters.
+- **Availability:** nested blockquotes and lists are capped at 100 levels (a long line of `>` made `setMarkdown()` throw), Markdown export flattens markup nested deeper than 500 elements, and the Markdown link, reference, underline, autolink, hard-break and code-span parsing, `isMarkdown`, the Word paste cleaner and `srcset` checking run in linear time (crafted input took seconds to minutes well under `maxPasteSize`).
+
 ### Added
 
 - **Indonesian locale (`id`).** Import it from `autumnnote/i18n/id` or load `dist/i18n/id.umd.js`. The demo site's language pickers include it.

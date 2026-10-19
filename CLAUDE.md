@@ -115,6 +115,7 @@ Environment is jsdom (simulated browser). Use `globals: true` — no explicit im
 
 - **Zero runtime dependencies** — do not introduce any.
 - The sanitiser in `core/sanitise.js` is security-critical; changes there need careful review.
+- Never edit serialised HTML as a string and parse it back (`el.innerHTML = el.innerHTML.replace(…)`, regex cleanup of `getHTML()` output): deleting characters can complete a comment or raw-text terminator and turn inert content into markup. Move or clone nodes, and edit `Text.data` only.
 - Never call `document.execCommand` or `document.queryCommand*` — every command is a DOM transform in `editing/format.js` / `editing/insert.js` (see `docs/EXEC_COMMAND_MIGRATION.md`), and copy/cut go through `core/clipboard.js`. A formatting change needs a jsdom test in `test/editing/format.test.js`, which `test/browser/format.browser.test.js` also runs on Chromium, Firefox and WebKit.
 - Toolbar config is a 2D array of button names or definition objects. A name resolves through `resolveButton()`: the editor's `buttons` option, then `registerButton()`, then the built-in buttons by `name`.
 - Floating UI (dialogs, tooltips, popovers, menus) mounts into the editor's portal via `portalOf(this.context)` from `core/dom.js` — never `document.body` directly. The portal carries the theme class and `themeVars`; `renderer.applyAppearance()` keeps container and portal in sync and is re-run by `updateOptions()`.
