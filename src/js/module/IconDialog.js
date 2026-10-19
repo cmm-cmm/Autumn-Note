@@ -134,7 +134,7 @@ export class IconDialog extends BaseDialog {
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
     const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
-    setIcon(iconEl, svgIcon(`<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>`, 18));
+    setIcon(iconEl, svgIcon(`<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>`, 18));
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
     titleGroup.append(iconEl, title);

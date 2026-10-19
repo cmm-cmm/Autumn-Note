@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://autumn.konexforge.com/sitemap.xml
+Sitemap: https://autumnnote.habibiahmada.dev/sitemap.xml

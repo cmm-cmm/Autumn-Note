@@ -3,7 +3,7 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on, portalOf, setIcon } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon, ICON_STROKE } from '../core/dom.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
 import { resolvePalette } from '../core/palette.js';
 import { PATHS } from '../core/icon-paths.js';
@@ -19,9 +19,8 @@ let _faPageLevelReady = null;
 // Previously these were re-created inside _createButton() on every button
 // render, producing O(buttons × map-size) allocations per toolbar init.
 // ---------------------------------------------------------------------------
-const _S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 const _svgWrap = (paths) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${_S} style="display:block">${paths}</svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${ICON_STROKE} style="display:block">${paths}</svg>`;
 
 const _SVG_MAP = new Map([
   // Format
@@ -29,44 +28,44 @@ const _SVG_MAP = new Map([
   ['italic',        _svgWrap(PATHS.italic)],
   ['underline',     _svgWrap(PATHS.underline)],
   ['strikethrough', _svgWrap(PATHS.strike)],
-  ['superscript',   _svgWrap('<path d="m4 19 8-8"/><path d="m12 19-8-8"/><path d="M20 12h-4c0-1.5.44-2 1.5-2.5S20 8.33 20 7.25C20 6 19 5 17.5 5S15 6 15 7"/>')],
-  ['subscript',     _svgWrap('<path d="m4 5 8 8"/><path d="m12 5-8 8"/><path d="M20 21h-4c0-1.5.44-2 1.5-2.5S20 17.33 20 16.25C20 15 19 14 17.5 14S15 15 15 16"/>')],
+  ['superscript',   _svgWrap('<path d="M4 9l8 8M12 9l-8 8M15 5l1-1h3l1 1v1.5L15 10h5"/>')],
+  ['subscript',     _svgWrap('<path d="M4 6l8 8M12 6l-8 8M15 15l1-1h3l1 1v1.5L15 20h5"/>')],
   // Alignment
   ['align-left',    _svgWrap(PATHS.alignLeft)],
-  ['align-center',  _svgWrap('<line x1="21" y1="6" x2="3" y2="6"/><line x1="18" y1="12" x2="6" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>')],
+  ['align-center',  _svgWrap(PATHS.alignCenter)],
   ['align-right',   _svgWrap(PATHS.alignRight)],
   ['align-justify', _svgWrap(PATHS.alignJustify)],
-  // Lists
-  ['list-ul',       _svgWrap('<line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/>')],
-  ['list-ol',       _svgWrap('<line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1V3"/><path d="M4 10h2l-2 2h2"/><path d="M4 16.5A1.5 1.5 0 0 1 5.5 15a1.5 1.5 0 0 1 0 3H4"/>')],
-  ['indent',        _svgWrap('<polyline points="3 8 7 12 3 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
-  ['outdent',       _svgWrap('<polyline points="7 8 3 12 7 16"/><line x1="21" y1="12" x2="11" y2="12"/><line x1="21" y1="6" x2="11" y2="6"/><line x1="21" y1="18" x2="11" y2="18"/>')],
+  // Lists: square bullets, chamfered numerals
+  ['list-ul',       _svgWrap('<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 5h2v2H4zM4 11h2v2H4zM4 17h2v2H4z" fill="currentColor" stroke="none"/>')],
+  ['list-ol',       _svgWrap('<path d="M11 6h9M11 12h9M11 18h9M4.5 4.5 6 3.5V9M4 14.5l1-1h1.5l1 1v1L4 19.5h3.5"/>')],
+  ['indent',        _svgWrap('<path d="M4 8l4 4-4 4M12 6h8M12 12h8M12 18h8"/>')],
+  ['outdent',       _svgWrap('<path d="M8 8l-4 4 4 4M12 6h8M12 12h8M12 18h8"/>')],
   // History
   ['undo',          _svgWrap(PATHS.undo)],
   ['redo',          _svgWrap(PATHS.redo)],
   // Insert
-  ['minus',         _svgWrap('<line x1="5" y1="12" x2="19" y2="12"/>')],
+  ['minus',         _svgWrap('<path d="M4 12h16"/>')],
   ['link',          _svgWrap(PATHS.link)],
   ['image',         _svgWrap(PATHS.image)],
   ['video',         _svgWrap(PATHS.video)],
   ['table',         _svgWrap(PATHS.table)],
-  ['emoji',         _svgWrap('<circle cx="12" cy="12" r="10"/><path d="M8.5 14.5s1.5 2.5 3.5 2.5 3.5-2.5 3.5-2.5"/><circle cx="9" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.5" fill="currentColor" stroke="none"/>')],
-  ['icon',          _svgWrap('<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><rect x="5" y="13" width="6" height="6" rx="1"/><rect x="13" y="13" width="6" height="6" rx="1"/>')],
+  ['emoji',         _svgWrap('<path d="M8 3h8l5 5v8l-5 5H8l-5-5V8zM8.5 14.5 10 16h4l1.5-1.5"/><path d="M8 8.5h2v2H8zM14 8.5h2v2h-2z" fill="currentColor" stroke="none"/>')],
+  ['icon',          _svgWrap('<circle cx="7.5" cy="7.5" r="3.5"/><path d="M13.5 4h7v7h-7zM7.5 13.5l4 7h-8zM17 13l3.5 3.5L17 20l-3.5-3.5z"/>')],
   // View
-  ['code',          _svgWrap('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>')],
+  ['code',          _svgWrap('<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 5l-3 14"/>')],
   ['expand',        _svgWrap(PATHS.expand)],
   // Color pickers
   ['foreColor',     _svgWrap(PATHS.foreColor)],
-  ['backColor',     _svgWrap('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/>')],
-  ['keyboard',      _svgWrap('<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-width="2.5"/><line x1="14" y1="10" x2="14" y2="10" stroke-width="2.5"/><line x1="18" y1="10" x2="18" y2="10" stroke-width="2.5"/><line x1="8" y1="14" x2="16" y2="14" stroke-width="2"/>')],
+  ['backColor',     _svgWrap(PATHS.backColor)],
+  ['keyboard',      _svgWrap('<path d="M2.5 6h19v12h-19zM7 14h10"/><path d="M5.5 9h2v2h-2zM9.5 9h2v2h-2zM13.5 9h2v2h-2zM17.5 9h1v2h-1z" fill="currentColor" stroke="none"/>')],
   ['caption',       _svgWrap(PATHS.caption)],
   ['remove-format', _svgWrap(PATHS.removeFormat)],
-  ['direction',     _svgWrap('<path d="M12 20V4"/><path d="m9 7-3 3 3 3"/><path d="M4 10h8"/><path d="m15 7 3 3-3 3"/><path d="M20 10h-8"/>')],
-  ['search',        _svgWrap('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')],
-  ['find-replace',  _svgWrap('<circle cx="10" cy="10" r="6"/><line x1="18" y1="18" x2="14.35" y2="14.35"/><path d="M16 19h6"/><path d="M19 16v6"/>')],
+  ['direction',     _svgWrap('<path d="M12 3v18M10 8H4M6.5 5.5 4 8l2.5 2.5M14 16h6M17.5 13.5 20 16l-2.5 2.5"/>')],
+  ['search',        _svgWrap('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20.5 20.5"/>')],
+  ['find-replace',  _svgWrap('<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5l1.5 1.5M15 19.5h6M18 16.5v6"/>')],
   ['inline-code',   _svgWrap(PATHS.code)],
-  ['checklist',     _svgWrap('<rect x="3" y="4" width="5" height="5" rx="1"/><path d="m4 6.5 1 1 2-2"/><rect x="3" y="13" width="5" height="5" rx="1"/><line x1="10" y1="6.5" x2="21" y2="6.5"/><line x1="10" y1="15.5" x2="21" y2="15.5"/>')],
-  ['print',         _svgWrap('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>')],
+  ['checklist',     _svgWrap('<path d="M3 4h6v6H3zM3 14h6v6H3zM4.75 7.25 5.75 8.25 7.5 6.25M12 7h9M12 17h9"/>')],
+  ['print',         _svgWrap('<path d="M7 9V3h10v6M7 18H3V9h18v9h-4M7 14h10v7H7z"/>')],
 ]);
 
 const _FA_MAP = new Map([
@@ -246,8 +245,7 @@ export class Toolbar {
       const faPrefix = this.options.fontAwesomeClass || 'fas';
       setIcon(btn, `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`);
     } else {
-      const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-      setIcon(btn, `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block">${PATHS.table}</svg>`);
+      setIcon(btn, _SVG_MAP.get('table'));
     }
 
     // Popup
@@ -418,10 +416,7 @@ export class Toolbar {
       'aria-label': this.context.locale.toolbar[def.name] || def.tooltip || def.name,
     });
 
-    const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-    const iconSvg = def.name === 'foreColor'
-      ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block">${PATHS.foreColor}</svg>`
-      : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
+    const iconSvg = _SVG_MAP.get(def.name === 'foreColor' ? 'foreColor' : 'backColor');
 
     setIcon(applyBtn, resolveIcon(this.options, [def.name, def.icon]) ?? iconSvg);
     const strip = createElement('span', { class: 'an-color-strip' });

@@ -1,9 +1,9 @@
-name = "autumn-note"
+name = "autumnnote-plus"
 compatibility_date = "2026-06-30"
 workers_dev = false
 
 [[custom_domains]]
-pattern = "autumn.konexforge.com"
+pattern = "autumnnote.habibiahmada.dev"
 
 [assets]
 directory = "./_site"

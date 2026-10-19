@@ -19,7 +19,7 @@ import { PATHS } from '../core/icon-paths.js';
 
 
 // Minimal SVG icon set — only what the bubble toolbar needs.
-const _S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const _S = 'stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"';
 const _svg = (p) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" ${_S} style="display:block">${p}</svg>`;
 
@@ -228,7 +228,7 @@ export class BubbleToolbar {
     noColorBtn.className = 'an-context-color-swatch an-context-color-none';
     noColorBtn.title = noHighlight;
     noColorBtn.setAttribute('aria-label', noHighlight);
-    setIcon(noColorBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`);
+    setIcon(noColorBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`);
     noColorBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._applyColor('hiliteColor', 'transparent');

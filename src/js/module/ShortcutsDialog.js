@@ -19,7 +19,7 @@ function _displayId(parsed) {
 }
 
 
-const ICON_SVG = svgIcon(`<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M18 15h.01M10 15h4"/><path d="M7 3l5 4 5-4"/>`, 18);
+const ICON_SVG = svgIcon(`<rect x="2" y="7" width="20" height="14"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M18 15h.01M10 15h4"/><path d="M7 3l5 4 5-4"/>`, 18);
 
 export class ShortcutsDialog extends BaseDialog {
   // ---------------------------------------------------------------------------

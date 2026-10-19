@@ -312,7 +312,7 @@ export class CodeTooltip {
   _flashCopied() {
     if (!this._copyBtn) return;
     const original = this._copyBtn.innerHTML;
-    setIcon(this._copyBtn, svgIcon(`<polyline points="20 6 9 17 4 12"/>`, 13, 2.5));
+    setIcon(this._copyBtn, svgIcon(`<polyline points="20 6 9 17 4 12"/>`, 13, 2));
     this._copyBtn.classList.add('an-link-tooltip-btn--copied');
     setTimeout(() => {
       if (this._copyBtn) {

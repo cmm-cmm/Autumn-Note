@@ -1,87 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- SEO -->
-  <title>Autumn Note: WYSIWYG Editor | Vanilla JS, Zero Dependencies</title>
-  <meta name="description" content="Zero-dependency WYSIWYG editor in vanilla JS. Bubble toolbar, @mention, markdown shortcuts, dark mode, 9 languages, TypeScript. No jQuery." />
-  <meta name="keywords" content="wysiwyg editor, rich text editor, vanilla javascript editor, no jquery editor, summernote alternative, quill alternative, tinymce alternative, lightweight wysiwyg, contenteditable editor, markdown editor, mention editor" />
+  <title>autumnnote-plus: a zero-dependency WYSIWYG editor</title>
+  <meta name="description" content="A WYSIWYG rich-text editor in vanilla JavaScript. No jQuery, no runtime dependencies, no execCommand. TypeScript types, React and Vue wrappers, nine editor languages." />
   <meta name="robots" content="index, follow" />
-  <meta name="author" content="Minh Pham" />
-  <link rel="canonical" href="https://autumn.konexforge.com/" />
+  <link rel="canonical" href="https://autumnnote.habibiahmada.dev/" />
   <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
-  <link rel="alternate" hreflang="en" href="https://autumn.konexforge.com/" />
-  <link rel="alternate" hreflang="vi" href="https://autumn.konexforge.com/vi/" />
-  <link rel="alternate" hreflang="x-default" href="https://autumn.konexforge.com/" />
 
-  <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://autumn.konexforge.com/" />
-  <meta property="og:title" content="Autumn Note: Lightweight WYSIWYG Editor for the Web" />
-  <meta property="og:description" content="A modern WYSIWYG editor built with vanilla JavaScript. Zero dependencies, no jQuery. Dark mode, 9 languages, @mention, markdown shortcuts, TypeScript." />
-  <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
+  <meta property="og:url" content="https://autumnnote.habibiahmada.dev/" />
+  <meta property="og:title" content="autumnnote-plus: a zero-dependency WYSIWYG editor" />
+  <meta property="og:description" content="Rich text in vanilla JavaScript. No jQuery, no runtime dependencies, typed, with React and Vue wrappers." />
+  <meta property="og:image" content="https://autumnnote.habibiahmada.dev/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Autumn Note: WYSIWYG editor banner" />
-  <meta property="og:site_name" content="Autumn Note" />
+  <meta property="og:site_name" content="autumnnote-plus" />
   <meta property="og:locale" content="en_US" />
-
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://autumn.konexforge.com/" />
-  <meta name="twitter:title" content="Autumn Note: Lightweight WYSIWYG Editor" />
-  <meta name="twitter:description" content="Zero-dependency WYSIWYG editor in vanilla JS. TypeScript, dark mode, @mention, markdown shortcuts, bubble toolbar." />
-  <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
-  <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": "https://autumn.konexforge.com/#website",
-    "name": "Autumn Note",
-    "url": "https://autumn.konexforge.com/",
-    "description": "Zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript.",
-    "inLanguage": "en",
-    "publisher": { "@type": "Person", "name": "Minh Pham" }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "@id": "https://autumn.konexforge.com/#software",
-    "isPartOf": { "@id": "https://autumn.konexforge.com/#website" },
-    "name": "Autumn Note",
-    "applicationCategory": "DeveloperApplication",
-    "applicationSubCategory": "Text Editor",
-    "description": "Fast. Lightweight. Reliable. Efficient. A modern WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+), no jQuery, zero runtime dependencies.",
-    "url": "https://autumn.konexforge.com/",
-    "downloadUrl": "https://www.npmjs.com/package/autumnnote",
-    "operatingSystem": "Web Browser",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "@type": "SoftwareSourceCode",
+    "name": "autumnnote-plus",
+    "description": "A zero-dependency WYSIWYG rich-text editor in vanilla JavaScript.",
+    "codeRepository": "https://github.com/habibiahmada/autumnnote-plus",
+    "programmingLanguage": "JavaScript",
     "license": "https://opensource.org/licenses/MIT",
-    "softwareVersion": "3.1.0",
-    "isAccessibleForFree": true,
-    "author": { "@type": "Person", "name": "Minh Pham" },
-    "codeRepository": "https://github.com/cmm-cmm/Autumn-Note",
-    "screenshot": "https://autumn.konexforge.com/image/banner.png",
-    "softwareHelp": { "@type": "CreativeWork", "url": "https://autumn.konexforge.com/docs.html" },
-    "featureList": [
-      "Bubble toolbar on text selection",
-      "@mention autocomplete",
-      "Markdown shortcuts",
-      "Dark mode and auto theme",
-      "Find and Replace with regex and whole-word mode",
-      "Image and video resize",
-      "Table with sort and CSV export",
-      "9 languages (en, vi, ja, zh, fr, de, es, ko, id)",
-      "Undo and redo history",
-      "Plugin API",
-      "React and Vue 3 wrappers"
-    ]
+    "version": "4.0.0",
+    "isBasedOn": "https://github.com/cmm-cmm/Autumn-Note"
   }
   </script>
   <script type="application/ld+json">
@@ -89,349 +38,411 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is Autumn Note?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Autumn Note is a zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). It has no jQuery or runtime dependencies and offers features such as bubble toolbar, @mention, markdown shortcuts, dark mode, table editing, image and video resize, and a Plugin API. It ships as ES Module and UMD builds and includes official React and Vue 3 wrappers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is Autumn Note free to use?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Autumn Note is open-source and published under the MIT License. It is free for personal and commercial use."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What alternatives to Summernote, Quill, and TinyMCE does Autumn Note replace?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Autumn Note is a modern alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate. Unlike most of these, it has zero runtime dependencies and no jQuery requirement."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How do I install Autumn Note?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Install via npm: npm install autumnnote. Then import the library and CSS: import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';. Create an editor with AutumnNote.create('#my-editor')."
-        }
-      }
+      { "@type": "Question", "name": "How is autumnnote-plus different from autumnnote?", "acceptedAnswer": { "@type": "Answer", "text": "autumnnote-plus is an unofficial fork of Autumn Note 3.1.0. It keeps the same API, options, events and CSS classes, and adds security fixes, an Indonesian locale, accessibility fixes and a smaller CDN build that loads locales on demand." } },
+      { "@type": "Question", "name": "Can I switch without changing my imports?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Install it under the old name with an npm alias: npm install autumnnote@npm:autumnnote-plus@^4.0.0." } },
+      { "@type": "Question", "name": "Is it free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is published under the MIT License, the same licence as the original project, for personal and commercial use." } },
+      { "@type": "Question", "name": "Which Node.js version do I need?", "acceptedAnswer": { "@type": "Answer", "text": "Installing from npm needs Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs nothing but a modern browser." } },
+      { "@type": "Question", "name": "Does it use document.execCommand?", "acceptedAnswer": { "@type": "Answer", "text": "No. Every formatting command is the editor's own DOM transform, and copy and cut use the async Clipboard API." } }
     ]
   }
   </script>
 
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/image/banner.png" />
+  <script>
+    // Set the theme before first paint so the page never flashes the wrong one.
+    (function () {
+      var d = document.documentElement, t = null;
+      try { t = localStorage.getItem('anp-theme'); } catch (e) {}
+      d.dataset.theme = t || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      d.classList.add('js');
+    })();
+  </script>
 
-  <script type="module" crossorigin src="/assets/main-YIsKfXS9.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/all-C68nzCpA.js">
+  <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" />
+  <script type="module" crossorigin src="/assets/main-ZF7e0Xvd.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/site-B3_eO6wG.js">
+  <link rel="modulepreload" crossorigin href="/assets/all-whZZ_dgX.js">
+  <link rel="stylesheet" crossorigin href="/assets/site-DeKbC5nO.css">
   <link rel="stylesheet" crossorigin href="/assets/all-Bji-1Axl.css">
-  <link rel="stylesheet" crossorigin href="/assets/assets-CHKViSgs.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-B7g9y221.css">
 </head>
 <body>
-  <a class="skip-link" href="#demo">Skip to demo</a>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <!-- ===================== HEADER ===================== -->
   <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="https://autumn.konexforge.com/" aria-label="Autumn Note home">
-        <img src="/image/banner.png" width="30" height="30" alt="Autumn Note logo" />
-        <span class="brand-name">Autumn Note</span>
-        <span class="brand-version">v3.1.0</span>
-      </a>
-      <nav class="header-nav" aria-label="Site links">
-        <a class="nav-link" href="docs.html">Docs</a>
-        <a class="nav-link" href="playground.html">Playground</a>
-        <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-        <span class="lang-switch" role="group" aria-label="Language">
-          <a href="./" class="active" lang="en" hreflang="en" aria-current="page">EN</a>
-          <a href="/vi/" lang="vi" hreflang="vi">VI</a>
-        </span>
+    <div class="wrap site-header__inner">
+      <a class="wordmark" href="./" aria-label="autumnnote-plus home">autumnnote<span class="wordmark__plus" aria-hidden="true">+</span><span class="wordmark__version">v4.0.0</span></a>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <a class="site-nav__link" href="./" aria-current="page">Home</a>
+        <a class="site-nav__link" href="docs.html">Docs</a>
+        <a class="site-nav__link" href="playground.html">Playground</a>
+        <a class="site-nav__link" href="https://github.com/habibiahmada/autumnnote-plus" rel="noopener noreferrer">GitHub</a>
+        <a class="site-nav__link" href="https://www.npmjs.com/package/autumnnote-plus" rel="noopener noreferrer">npm</a>
       </nav>
+      <div class="site-actions">
+        <button class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+          <svg class="i i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg>
+          <svg class="i i-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-btn__label">Menu</span></button>
+      </div>
     </div>
   </header>
 
-  <main>
-  <!-- ===================== HERO ===================== -->
-  <section class="hero">
-    <span class="hero-eyebrow">Open Source &middot; MIT License &middot; v3.1.0</span>
-    <h1 class="hero-title">Fast, Lightweight WYSIWYG Editor<br>for Vanilla JavaScript</h1>
-    <p class="hero-sub">
-      A modern WYSIWYG editor built with vanilla JavaScript (ES2022+),
-      no jQuery, zero runtime dependencies, full TypeScript support out of the box.
-    </p>
-    <div class="install-row">
-      <code class="install-code">npm install autumnnote</code>
-      <button class="install-copy" onclick="copyInstall(this)">Copy</button>
-    </div>
-    <div class="hero-links">
-      <a href="https://github.com/cmm-cmm/Autumn-Note" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-        View on GitHub ↗
-      </a>
-      <a href="https://www.npmjs.com/package/autumnnote" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-        npm package ↗
-      </a>
-    </div>
-  </section>
+  <main id="main">
 
-  <!-- ===================== FEATURE STRIP ===================== -->
-  <div class="features-strip">
-    <ul class="features-inner" aria-label="Key features">
-      <!-- Set 1 — accessible -->
-      <li class="feat"><span aria-hidden="true">✦</span> Zero dependencies</li>
-      <li class="feat"><span aria-hidden="true">✦</span> ES2022 + TypeScript</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Dark / Light / Auto theme</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Same formatting on every browser</li>
-      <li class="feat"><span aria-hidden="true">✦</span> CSS-variable theming</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Custom keyboard shortcuts</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Per-editor icons &amp; buttons</li>
-      <li class="feat"><span aria-hidden="true">✦</span> 9 languages (i18n)</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Bubble toolbar</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Markdown shortcuts</li>
-      <li class="feat"><span aria-hidden="true">✦</span> @mention autocomplete</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Auto-save restore</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Find &amp; Replace (floating)</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Image crop overlay</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Table merge / unmerge</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Cell background shading</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Auto language detection</li>
-      <li class="feat"><span aria-hidden="true">✦</span> SCSS syntax highlight</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Draggable dialogs</li>
-      <li class="feat"><span aria-hidden="true">✦</span> ~380 emoji picker</li>
-      <li class="feat"><span aria-hidden="true">✦</span> FontAwesome icon picker</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Video embeds</li>
-      <li class="feat"><span aria-hidden="true">✦</span> React wrapper</li>
-      <li class="feat"><span aria-hidden="true">✦</span> Vue 3 wrapper</li>
-      <li class="feat"><span aria-hidden="true">✦</span> pnpm monorepo</li>
-      <!-- Set 2 — duplicate for seamless loop, hidden from screen readers -->
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Zero dependencies</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> ES2022 + TypeScript</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Dark / Light / Auto theme</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Same formatting on every browser</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> CSS-variable theming</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Custom keyboard shortcuts</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Per-editor icons &amp; buttons</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> 9 languages (i18n)</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Bubble toolbar</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Markdown shortcuts</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> @mention autocomplete</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Auto-save restore</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Find &amp; Replace (floating)</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Image crop overlay</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Table merge / unmerge</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Cell background shading</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Auto language detection</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> SCSS syntax highlight</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Draggable dialogs</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> ~380 emoji picker</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> FontAwesome icon picker</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Video embeds</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> React wrapper</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> Vue 3 wrapper</li>
-      <li class="feat" aria-hidden="true"><span aria-hidden="true">✦</span> pnpm monorepo</li>
-    </ul>
-  </div>
+    <!-- Hero: the claim on the left, the real editor on the right. -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <h1 class="display-xl hero__title" id="hero-title">Rich text with <span class="accent">zero</span> dependencies.</h1>
+          <p class="lede hero__lede">A WYSIWYG editor in plain JavaScript. No jQuery, no runtime packages, no <code>execCommand</code>: every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup.</p>
 
-  <!-- ===================== LIVE DEMO ===================== -->
-  <div id="demo-outer">
-  <div id="demo" class="demo-section">
-    <div class="section-header">
-      <h2 class="section-title">Live Demo</h2>
-      <p class="section-sub">
-        Select text to see the <strong>bubble toolbar</strong> &middot;
-        Type <code>@</code> to mention someone &middot;
-        Start a line with <code>## </code> for a heading &middot;
-        Try <code>**bold**</code> inline
-      </p>
-    </div>
+          <div class="cmd hero__cmd">
+            <span class="cmd__prompt" aria-hidden="true">$</span>
+            <code class="cmd__text">npm install autumnnote-plus</code>
+            <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus" aria-label="Copy install command">
+              <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg>
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
 
-    <div id="lang-bar">
-      <label for="lang-select"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Language:</label>
-      <select id="lang-select">
-        <option value="en">English</option>
-        <option value="vi">Tiếng Việt</option>
-        <option value="ja">日本語</option>
-        <option value="zh">简体中文</option>
-        <option value="fr">Français</option>
-        <option value="de">Deutsch</option>
-        <option value="es">Español</option>
-        <option value="ko">한국어</option>
-        <option value="id">Bahasa Indonesia</option>
-      </select>
-      <span class="bar-spacer"></span>
-      <button id="theme-btn" aria-pressed="false">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             aria-hidden="true">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/>
-          <line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/>
-          <line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <span id="theme-label">Dark mode</span>
-      </button>
-    </div>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="playground.html">Open the playground</a>
+            <a class="btn btn--ghost" href="docs.html">Read the docs</a>
+          </div>
 
-    <div id="editor-wrapper">
-      <textarea id="editor"><p>Hello, <strong>Autumn Note</strong>!</p><p>Select any text to see the <em>bubble toolbar</em>. Type <code>@</code> to mention someone, or start a line with <code>## </code> for a heading.</p></textarea>
-    </div>
-
-    <div class="output-row">
-      <div id="output-wrapper">
-        <p class="out-label">HTML Output</p>
-        <div id="output" aria-label="HTML output"></div>
-      </div>
-      <div id="readonly-wrapper">
-        <div id="readonly-bar">
-          <p class="out-label">Read-only Preview</p>
-          <span id="readonly-badge"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Read Only</span>
+          <dl class="hero__facts">
+            <div><dt class="label">Version</dt><dd>4.0.0</dd></div>
+            <div><dt class="label">CDN build</dt><dd>93 KB gzip</dd></div>
+            <div><dt class="label">Licence</dt><dd>MIT</dd></div>
+          </dl>
         </div>
-        <div id="readonly-editor-wrapper">
-          <textarea id="editor-readonly"></textarea>
+
+        <div class="hero__editor" id="demo">
+          <div class="editor-frame">
+            <div class="editor-frame__bar">
+              <span class="label">Live editor</span>
+              <label class="lang-picker">
+                <span class="sr-only">Editor language</span>
+                <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3"/></svg>
+                <select id="lang-select">
+                  <option value="en">English</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="ja">日本語</option>
+                  <option value="zh">简体中文</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="es">Español</option>
+                  <option value="ko">한국어</option>
+                  <option value="id">Bahasa Indonesia</option>
+                </select>
+              </label>
+            </div>
+            <textarea id="editor"><h2>Try it here</h2><p>Select any text to open the <strong>bubble toolbar</strong>. Type <code>@</code> to mention someone, or <code>/</code> on an empty line for the command menu.</p><ul><li>Start a line with <code>## </code> for a heading</li><li>Wrap a word in <code>**</code> to make it bold</li></ul></textarea>
+          </div>
+          <p class="hero__hint"><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>/</kbd> lists every shortcut.</p>
         </div>
       </div>
-    </div>
-  </div>
-  </div><!-- /#demo-outer -->
+    </section>
 
-  <!-- ===================== QUICK START ===================== -->
-  <section class="install-section" aria-labelledby="qs-heading">
-    <div class="install-inner">
-      <div class="section-header">
-        <h2 class="section-title" id="qs-heading">Get started in seconds</h2>
-        <p class="section-sub">Works with any bundler or directly via CDN, no build step required.</p>
-      </div>
-      <div class="code-blocks">
-        <div class="code-block">
-          <div class="code-label">Install via npm / pnpm / yarn</div>
-          <pre><code>npm install autumnnote</code></pre>
+    <!-- What the editor covers, grouped by job rather than as a card wall. -->
+    <section class="section features" aria-labelledby="features-title">
+      <div class="wrap features__grid">
+        <div class="features__intro" data-reveal>
+          <p class="label">What's in it</p>
+          <h2 class="display-l" id="features-title">Everything a writer reaches for, in one script.</h2>
+          <p class="lede">Each feature is its own module, started only when its option is on. Turn off what you do not use, or load the core build and add your own.</p>
         </div>
-        <div class="code-block">
-          <div class="code-label">ES Module</div>
-          <pre><code>import AutumnNote from 'autumnnote';
-import 'autumnnote/dist/autumnnote.css';
 
-const editor = AutumnNote.create('#my-editor', {
-  placeholder: 'Start typing…',
-  height: 300,
-  bubbleToolbar: true,
-  onChange(html) { console.log(html); },
+        <ol class="feature-list">
+          <li class="feature" data-reveal>
+            <span class="feature__index">+01</span>
+            <div>
+              <h3 class="feature__title">Writing</h3>
+              <p>A bubble toolbar on selection, Markdown shortcuts as you type, a slash command menu, <code>@</code>mentions, checklists and floating find &amp; replace.</p>
+            </div>
+          </li>
+          <li class="feature" data-reveal>
+            <span class="feature__index">+02</span>
+            <div>
+              <h3 class="feature__title">Images and video</h3>
+              <p>Drag-and-drop upload, resize handles and a crop overlay for images; YouTube and Vimeo embeds that resize the same way. An emoji picker with about 380 emoji.</p>
+            </div>
+          </li>
+          <li class="feature" data-reveal>
+            <span class="feature__index">+03</span>
+            <div>
+              <h3 class="feature__title">Tables</h3>
+              <p>Insert from a size grid, merge and split cells, shade them, add a header row, and edit rows and columns from a tooltip that sits on the table.</p>
+            </div>
+          </li>
+          <li class="feature" data-reveal>
+            <span class="feature__index">+04</span>
+            <div>
+              <h3 class="feature__title">Code</h3>
+              <p>Code blocks with Prism highlighting and language detection, inline code, and a source view for editing the HTML directly.</p>
+            </div>
+          </li>
+          <li class="feature" data-reveal>
+            <span class="feature__index">+05</span>
+            <div>
+              <h3 class="feature__title">Clean output</h3>
+              <p>HTML or Markdown in and out with <code>getHTML()</code> and <code>getMarkdown()</code>. Paste and drop go through a DOM sanitiser. Character and word limits, and autosave with restore.</p>
+            </div>
+          </li>
+          <li class="feature" data-reveal>
+            <span class="feature__index">+06</span>
+            <div>
+              <h3 class="feature__title">Fits your app</h3>
+              <p>Light, dark or automatic theme, design tokens through <code>themeVars</code>, your own keyboard map and buttons, a plugin API, right-to-left text and nine interface languages.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- The markup the editor writes, live. -->
+    <section class="section output" aria-labelledby="output-title">
+      <div class="wrap">
+        <div class="output__head" data-reveal>
+          <div>
+            <p class="label">Under the hood</p>
+            <h2 class="display-m" id="output-title">See the markup as you type.</h2>
+          </div>
+          <p class="lede">Edit the text in the hero editor and this HTML follows it. The preview is a second editor in read-only mode, fed the same HTML.</p>
+        </div>
+
+        <div class="output__grid" data-reveal>
+          <div class="panel">
+            <div class="panel__bar">
+              <span class="label">HTML output</span>
+              <button class="panel__action" type="button" data-copy-target="output" aria-label="Copy HTML output">
+                <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg>
+                <span data-copy-label>Copy</span>
+              </button>
+            </div>
+            <pre class="panel__code on-surface" id="output" tabindex="0" aria-label="HTML output" data-lenis-prevent></pre>
+          </div>
+          <div class="panel">
+            <div class="panel__bar">
+              <span class="label">Read-only preview</span>
+              <span class="panel__note">
+                <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v10H5z"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Not editable
+              </span>
+            </div>
+            <div class="panel__body">
+              <textarea id="editor-readonly"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why the fork exists: the security work, stated plainly. -->
+    <section class="section fork" aria-labelledby="fork-title">
+      <div class="wrap fork__grid">
+        <div class="fork__intro" data-reveal>
+          <p class="label">Why this fork</p>
+          <h2 class="display-l" id="fork-title">The same editor, with the <span class="accent">holes</span> closed.</h2>
+          <p class="lede">autumnnote-plus starts from Autumn Note 3.1.0 by Minh Pham. A security audit of that release found ways for sanitised content to turn back into live markup. Each one is fixed here with a regression test, and each was reported to the original maintainer.</p>
+          <div class="fork__links">
+            <a class="btn btn--ghost" href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md#400---2026-10-19" rel="noopener noreferrer">Read the 4.0.0 changelog</a>
+            <a class="btn btn--text" href="https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md" rel="noopener noreferrer">Security policy</a>
+          </div>
+        </div>
+
+        <ul class="fix-list">
+          <li class="fix" data-reveal>
+            <h3 class="fix__title">Undo and redo</h3>
+            <p>History snapshots used a predictable token for image data, so an author could type it into an attribute and get an event handler back on undo. Tokens are now random per editor.</p>
+          </li>
+          <li class="fix" data-reveal>
+            <h3 class="fix__title"><code>getHTML()</code> and print</h3>
+            <p>String cleanup after serialising could complete a <code>--&gt;</code> or <code>&lt;/xmp&gt;</code> terminator. Cleanup now runs on a cloned DOM, and raw-text elements are removed.</p>
+          </li>
+          <li class="fix" data-reveal>
+            <h3 class="fix__title">Drag and drop</h3>
+            <p>HTML dragged in from another page skipped the sanitiser. It is now cleaned like a paste; drags inside the editor stay native moves.</p>
+          </li>
+          <li class="fix" data-reveal>
+            <h3 class="fix__title">Mentions and names</h3>
+            <p>The default mention chip inserted its label as HTML, and <code>name</code> attributes could shadow <code>document</code> members. Labels are text now and <code>name</code> is removed.</p>
+          </li>
+          <li class="fix" data-reveal>
+            <h3 class="fix__title">Markdown and slow input</h3>
+            <p>Markdown export keeps inert text inert for the next renderer, and the parsers that took seconds on crafted input run in linear time.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Install, one tab per setup. -->
+    <section class="section install" aria-labelledby="install-title">
+      <div class="wrap">
+        <div class="install__head" data-reveal>
+          <p class="label">Install</p>
+          <h2 class="display-m" id="install-title">Pick your setup.</h2>
+        </div>
+
+        <div class="install__box" data-reveal>
+          <div class="tabs" role="tablist" aria-label="Install options">
+            <button class="tab" type="button" role="tab" id="tab-esm" aria-controls="panel-esm" aria-selected="true">npm + ESM</button>
+            <button class="tab" type="button" role="tab" id="tab-react" aria-controls="panel-react" aria-selected="false" tabindex="-1">React</button>
+            <button class="tab" type="button" role="tab" id="tab-vue" aria-controls="panel-vue" aria-selected="false" tabindex="-1">Vue 3</button>
+            <button class="tab" type="button" role="tab" id="tab-cdn" aria-controls="panel-cdn" aria-selected="false" tabindex="-1">CDN</button>
+          </div>
+
+          <div class="tabpanel" role="tabpanel" id="panel-esm" aria-labelledby="tab-esm">
+            <div class="cmd">
+              <span class="cmd__prompt" aria-hidden="true">$</span>
+              <code class="cmd__text">npm install autumnnote-plus</code>
+              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus" aria-label="Copy npm command"><span data-copy-label>Copy</span></button>
+            </div>
+            <div class="code">
+              <button class="code__copy" type="button" data-copy-target="code-esm" aria-label="Copy ESM example"><span data-copy-label>Copy</span></button>
+              <pre class="on-surface" data-lenis-prevent><code id="code-esm"><span class="t-k">import</span> AutumnNote <span class="t-k">from</span> <span class="t-s">'autumnnote-plus'</span>;
+<span class="t-k">import</span> <span class="t-s">'autumnnote-plus/dist/autumnnote.css'</span>;
+
+<span class="t-k">const</span> editor = AutumnNote.create(<span class="t-s">'#editor'</span>, {
+  placeholder: <span class="t-s">'Start typing…'</span>,
+  bubbleToolbar: <span class="t-k">true</span>,
+  onChange(html) { save(html); },
 });</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-label">React: autumnnote-react</div>
-          <pre><code>npm install autumnnote autumnnote-react
+            </div>
+          </div>
 
-<span class="cm">// App.jsx</span>
-<span class="kw">import</span> { useRef } <span class="kw">from</span> <span class="str">'react'</span>;
-<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-react'</span>;
-<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+          <div class="tabpanel" role="tabpanel" id="panel-react" aria-labelledby="tab-react" hidden>
+            <div class="cmd">
+              <span class="cmd__prompt" aria-hidden="true">$</span>
+              <code class="cmd__text">npm install autumnnote-plus autumnnote-plus-react</code>
+              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus autumnnote-plus-react" aria-label="Copy React install command"><span data-copy-label>Copy</span></button>
+            </div>
+            <div class="code">
+              <button class="code__copy" type="button" data-copy-target="code-react" aria-label="Copy React example"><span data-copy-label>Copy</span></button>
+              <pre class="on-surface" data-lenis-prevent><code id="code-react"><span class="t-k">import</span> { useRef } <span class="t-k">from</span> <span class="t-s">'react'</span>;
+<span class="t-k">import</span> AutumnNoteEditor <span class="t-k">from</span> <span class="t-s">'autumnnote-plus-react'</span>;
+<span class="t-k">import</span> <span class="t-s">'autumnnote-plus/dist/autumnnote.css'</span>;
 
-<span class="kw">function</span> MyEditor() {
-  <span class="kw">const</span> ref = useRef(<span class="kw">null</span>);
-  <span class="kw">return</span> &lt;AutumnNoteEditor ref={ref} options={{ placeholder: <span class="str">'Start typing…'</span> }} /&gt;;
+<span class="t-k">export function</span> Editor() {
+  <span class="t-k">const</span> ref = useRef(<span class="t-k">null</span>);
+  <span class="t-k">return</span> &lt;AutumnNoteEditor ref={ref} options={{ placeholder: <span class="t-s">'Start typing…'</span> }} /&gt;;
 }</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-label">Vue 3: autumnnote-vue</div>
-          <pre><code>npm install autumnnote autumnnote-vue
+            </div>
+          </div>
 
-<span class="cm">&lt;!-- MyEditor.vue --&gt;</span>
-&lt;script setup&gt;
-<span class="kw">import</span> AutumnNoteEditor <span class="kw">from</span> <span class="str">'autumnnote-vue'</span>;
-<span class="kw">import</span> <span class="str">'autumnnote/dist/autumnnote.css'</span>;
+          <div class="tabpanel" role="tabpanel" id="panel-vue" aria-labelledby="tab-vue" hidden>
+            <div class="cmd">
+              <span class="cmd__prompt" aria-hidden="true">$</span>
+              <code class="cmd__text">npm install autumnnote-plus autumnnote-plus-vue</code>
+              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus autumnnote-plus-vue" aria-label="Copy Vue install command"><span data-copy-label>Copy</span></button>
+            </div>
+            <div class="code">
+              <button class="code__copy" type="button" data-copy-target="code-vue" aria-label="Copy Vue example"><span data-copy-label>Copy</span></button>
+              <pre class="on-surface" data-lenis-prevent><code id="code-vue">&lt;script setup&gt;
+<span class="t-k">import</span> AutumnNoteEditor <span class="t-k">from</span> <span class="t-s">'autumnnote-plus-vue'</span>;
+<span class="t-k">import</span> <span class="t-s">'autumnnote-plus/dist/autumnnote.css'</span>;
 &lt;/script&gt;
-&lt;template&gt;
-  &lt;AutumnNoteEditor :options="<span class="str">{ placeholder: 'Start typing…' }</span>" /&gt;
-&lt;/template&gt;</code></pre>
-        </div>
-        <div class="code-block">
-          <div class="code-label">CDN: jsDelivr (no install needed)</div>
-          <pre><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;
-&lt;script&gt;
-  const editor = AutumnNote.create('#my-editor');
-&lt;/script&gt;</code></pre>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ===================== FAQ ===================== -->
-  <section class="faq-section" aria-labelledby="faq-heading">
-    <div class="faq-inner">
-      <div class="section-header">
-        <h2 class="section-title" id="faq-heading">Frequently asked questions</h2>
-        <p class="section-sub">Common questions about the Autumn Note WYSIWYG editor.</p>
+&lt;template&gt;
+  &lt;AutumnNoteEditor :options=<span class="t-s">"{ placeholder: 'Start typing…' }"</span> /&gt;
+&lt;/template&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="tabpanel" role="tabpanel" id="panel-cdn" aria-labelledby="tab-cdn" hidden>
+            <p class="install__note">No build step. The script registers a global <code>AutumnNote</code>; for a language other than English, add its locale script after it.</p>
+            <div class="code">
+              <button class="code__copy" type="button" data-copy-target="code-cdn" aria-label="Copy CDN example"><span data-copy-label>Copy</span></button>
+              <pre class="on-surface" data-lenis-prevent><code id="code-cdn">&lt;link rel=<span class="t-s">"stylesheet"</span> href=<span class="t-s">"https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css"</span>&gt;
+&lt;script src=<span class="t-s">"https://cdn.jsdelivr.net/npm/autumnnote-plus"</span>&gt;&lt;/script&gt;
+<span class="t-c">&lt;!-- optional: one locale --&gt;</span>
+&lt;script src=<span class="t-s">"https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"</span>&gt;&lt;/script&gt;
+&lt;script&gt;
+  AutumnNote.create(<span class="t-s">'#editor'</span>, { lang: <span class="t-s">'id'</span> });
+&lt;/script&gt;</code></pre>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="faq-list">
-        <details class="faq-item">
-          <summary>What is Autumn Note?</summary>
-          <p>Autumn Note is a zero-dependency WYSIWYG rich-text editor built with vanilla JavaScript (ES2022+). It has no jQuery or runtime dependencies and offers features such as bubble toolbar, @mention, markdown shortcuts, dark mode, table editing, image and video resize, and a Plugin API. It ships as ES Module and UMD builds and includes official React and Vue 3 wrappers.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Is Autumn Note free to use?</summary>
-          <p>Yes. Autumn Note is open-source and published under the MIT License. It is free for personal and commercial use.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What alternatives to Summernote, Quill, and TinyMCE does Autumn Note replace?</summary>
-          <p>Autumn Note is a modern alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate. Unlike most of these, it has zero runtime dependencies and no jQuery requirement.</p>
-        </details>
-        <details class="faq-item">
-          <summary>How do I install Autumn Note?</summary>
-          <p>Install via npm: <code>npm install autumnnote</code>. Then import the library and CSS: <code>import AutumnNote from 'autumnnote'; import 'autumnnote/dist/autumnnote.css';</code>. Create an editor with <code>AutumnNote.create('#my-editor')</code>. Installing from npm requires Node 22 LTS (22.22.2+) or newer; the CDN build needs nothing but a modern browser.</p>
-        </details>
+    </section>
+
+    <!-- Questions people ask before switching. -->
+    <section class="section faq" aria-labelledby="faq-title">
+      <div class="wrap faq__grid">
+        <div class="faq__intro" data-reveal>
+          <p class="label">Questions</p>
+          <h2 class="display-m" id="faq-title">Before you switch.</h2>
+        </div>
+        <div class="faq__list">
+          <details class="faq__item" data-reveal>
+            <summary><span>How is autumnnote-plus different from autumnnote?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>It is an unofficial fork of Autumn Note 3.1.0. The API, options, events, CSS classes and the <code>AutumnNote</code> global are unchanged. On top of that come the security fixes above, an Indonesian locale, keyboard and contrast fixes in the editor UI, and a CDN build that no longer carries every language (109 KB down to 93 KB gzip).</p>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary><span>Can I switch without changing my imports?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>Yes. Install it under the old name with an npm alias: <code>npm install autumnnote@npm:autumnnote-plus@^4.0.0</code>. Code that imports <code>'autumnnote'</code> keeps working.</p>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary><span>Is it free to use?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>Yes. It is MIT licensed, like the original project, for personal and commercial use.</p>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary><span>Which Node.js version do I need?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>Installing from npm needs Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs only a modern browser.</p>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary><span>Does it use <code>document.execCommand</code>?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>No. Every formatting command is the editor's own DOM transform, tested in Chromium, Firefox and WebKit. Copy and cut use the async Clipboard API.</p>
+          </details>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- Closing call to action. -->
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="wrap closing__inner" data-reveal>
+        <h2 class="closing__title" id="closing-title">Try every option <span class="accent">before</span> you install.</h2>
+        <div class="closing__actions">
+          <a class="btn btn--primary" href="playground.html">
+            Open the playground
+            <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn--ghost" href="docs.html">Read the docs</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- ===================== FOOTER ===================== -->
   <footer class="site-footer">
-    <div class="footer-inner">
-      <span class="footer-copy">Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge</span>
-      <nav class="footer-links" aria-label="Footer links">
-        <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-        <a href="https://github.com/cmm-cmm/Autumn-Note/issues" target="_blank" rel="noopener noreferrer">Issues</a>
-        <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
-      </nav>
+    <div class="wrap">
+      <div class="site-footer__grid">
+        <div class="site-footer__about">
+          <a class="wordmark" href="./" aria-label="autumnnote-plus home">autumnnote<span class="wordmark__plus" aria-hidden="true">+</span></a>
+          <p>An unofficial fork of <a href="https://github.com/cmm-cmm/Autumn-Note" rel="noopener noreferrer">Autumn Note</a> by Minh Pham, maintained by <a href="https://habibiahmada.dev" rel="noopener noreferrer">Habibi Ahmad Aziz</a>. MIT licensed.</p>
+        </div>
+        <nav class="site-footer__links" aria-label="Footer">
+          <p class="label">Project</p>
+          <a href="docs.html">Docs</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus" rel="noopener noreferrer">GitHub</a>
+          <a href="playground.html">Playground</a>
+          <a href="https://www.npmjs.com/package/autumnnote-plus" rel="noopener noreferrer">npm</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md" rel="noopener noreferrer">Changelog</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus/issues" rel="noopener noreferrer">Issues</a>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>autumnnote-plus v4.0.0</span>
+        <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md" rel="noopener noreferrer">Report a vulnerability</a>
+      </div>
     </div>
   </footer>
 
-  <!-- Copy button logic -->
-  <script>
-    function announce(msg) {
-      const live = document.getElementById('a11y-status');
-      if (!live) return;
-      live.textContent = '';
-      setTimeout(() => { live.textContent = msg; }, 50);
-    }
-    function copyInstall(btn) {
-      navigator.clipboard.writeText('npm install autumnnote').then(() => {
-        btn.textContent = 'Copied!';
-        announce('Copied to clipboard');
-        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-      }).catch(() => {
-        btn.textContent = '✗ Failed';
-        announce('Copy failed. Select the command and copy it manually.');
-        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-      });
-    }
-  </script>
-
-  <!-- Editor initialisation -->
   <span id="a11y-status" class="sr-only" role="status" aria-live="polite"></span>
+
 </body>
 </html>

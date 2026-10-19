@@ -133,7 +133,7 @@ export class FindReplace extends BaseDialog {
     const header = createElement('div', { class: 'an-fr-header' });
     const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
     const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
-    setIcon(iconEl, svgIcon(`<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`, 18, 2.5));
+    setIcon(iconEl, svgIcon(`<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`, 18, 2));
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.findTitle;
     titleGroup.append(iconEl, title);
@@ -143,7 +143,7 @@ export class FindReplace extends BaseDialog {
       title: L.close,
       'aria-label': L.close,
     });
-    setIcon(closeBtn, svgIcon(`<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`, 14, 2.5));
+    setIcon(closeBtn, svgIcon(`<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`, 14, 2));
     this._closeBtn = closeBtn;
     header.append(titleGroup, closeBtn);
     box.appendChild(header);
@@ -190,7 +190,7 @@ export class FindReplace extends BaseDialog {
       'aria-label': L.wholeWord,
       'aria-pressed': 'false',
     });
-    setIcon(wholeWordBtn, svgIcon(`<rect x="3" y="7" width="18" height="10" rx="2"/><line x1="7" y1="21" x2="7" y2="17"/><line x1="17" y1="21" x2="17" y2="17"/>`));
+    setIcon(wholeWordBtn, svgIcon(`<rect x="3" y="7" width="18" height="10"/><line x1="7" y1="21" x2="7" y2="17"/><line x1="17" y1="21" x2="17" y2="17"/>`));
 
     const prevBtn = createElement('button', {
       type: 'button',
@@ -198,7 +198,7 @@ export class FindReplace extends BaseDialog {
       title: L.prevMatch,
       'aria-label': L.prevMatch,
     });
-    setIcon(prevBtn, svgIcon(`<polyline points="18 15 12 9 6 15"/>`, 13, 2.5));
+    setIcon(prevBtn, svgIcon(`<polyline points="18 15 12 9 6 15"/>`, 13, 2));
 
     const nextBtn = createElement('button', {
       type: 'button',
@@ -206,7 +206,7 @@ export class FindReplace extends BaseDialog {
       title: L.nextMatch,
       'aria-label': L.nextMatch,
     });
-    setIcon(nextBtn, svgIcon(`<polyline points="6 9 12 15 18 9"/>`, 13, 2.5));
+    setIcon(nextBtn, svgIcon(`<polyline points="6 9 12 15 18 9"/>`, 13, 2));
 
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;

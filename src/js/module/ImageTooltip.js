@@ -9,7 +9,7 @@ export const ICONS = {
   floatLeft:   svgIcon(PATHS.floatLeft),
   floatRight:  svgIcon(PATHS.floatRight),
   floatNone:   svgIcon(PATHS.floatNone),
-  alignCenter: svgIcon(`<rect x="7" y="4" width="10" height="8" rx="1"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/>`),
+  alignCenter: svgIcon(`<rect x="7" y="4" width="10" height="8"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="6" y1="20" x2="18" y2="20"/>`),
   originalSize:svgIcon(PATHS.expand),
   deleteImg:   svgIcon(PATHS.trash),
   caption:     svgIcon(PATHS.caption),

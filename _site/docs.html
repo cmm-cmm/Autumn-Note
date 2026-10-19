@@ -1,159 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Autumn Note: API Reference | WYSIWYG Editor Docs</title>
-  <meta name="description" content="Full API reference for Autumn Note WYSIWYG editor. Options, methods, events, toolbar configuration, Plugin API, and TypeScript types." />
-  <meta name="keywords" content="wysiwyg api, rich text editor api, autumnnote options, contenteditable api, toolbar configuration, plugin api, typescript types" />
+  <title>Docs: autumnnote-plus API reference</title>
+  <meta name="description" content="API reference for autumnnote-plus: every option, static and instance method, event, toolbar setting, the plugin API, i18n and TypeScript types." />
   <meta name="robots" content="index, follow" />
-  <meta name="author" content="Minh Pham" />
-  <link rel="canonical" href="https://autumn.konexforge.com/docs.html" />
+  <link rel="canonical" href="https://autumnnote.habibiahmada.dev/docs.html" />
   <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
-  <link rel="alternate" hreflang="en" href="https://autumn.konexforge.com/docs.html" />
-  <link rel="alternate" hreflang="vi" href="https://autumn.konexforge.com/vi/docs.html" />
-  <link rel="alternate" hreflang="x-default" href="https://autumn.konexforge.com/docs.html" />
-
-  <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Autumn Note: API Reference" />
-  <meta property="og:description" content="Complete API reference for Autumn Note, the zero-dependency vanilla JS WYSIWYG editor. Options, methods, events, plugins, and toolbar configuration." />
-  <meta property="og:url" content="https://autumn.konexforge.com/docs.html" />
-  <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Autumn Note: WYSIWYG editor banner" />
-  <meta property="og:site_name" content="Autumn Note" />
-  <meta property="og:locale" content="en_US" />
-
-  <!-- Twitter Card -->
+  <meta property="og:url" content="https://autumnnote.habibiahmada.dev/docs.html" />
+  <meta property="og:title" content="autumnnote-plus API reference" />
+  <meta property="og:description" content="Options, methods, events, toolbar configuration, plugins and TypeScript types for the zero-dependency WYSIWYG editor." />
+  <meta property="og:image" content="https://autumnnote.habibiahmada.dev/image/og-banner.png" />
+  <meta property="og:site_name" content="autumnnote-plus" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://autumn.konexforge.com/docs.html" />
-  <meta name="twitter:title" content="Autumn Note: API Reference" />
-  <meta name="twitter:description" content="Complete API reference for Autumn Note, the zero-dependency vanilla JS WYSIWYG editor." />
-  <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
-
-  <!-- JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "name": "Autumn Note API Reference",
-    "description": "Complete API reference for Autumn Note, the zero-dependency vanilla JS WYSIWYG editor. Covers all options, static methods, instance methods, events, toolbar configuration, Plugin API, and TypeScript types.",
-    "url": "https://autumn.konexforge.com/docs.html",
-    "datePublished": "2026-01-01",
-    "dateModified": "2026-09-19",
-    "keywords": "wysiwyg editor api, autumnnote options, plugin api, toolbar configuration, typescript",
+    "name": "autumnnote-plus API reference",
+    "url": "https://autumnnote.habibiahmada.dev/docs.html",
+    "dateModified": "2026-10-19",
     "inLanguage": "en",
-    "author": { "@type": "Person", "name": "Minh Pham" },
-    "isPartOf": { "@id": "https://autumn.konexforge.com/#software" },
     "articleSection": ["Installation", "Options", "Static Methods", "Instance Methods", "Callbacks", "Toolbar Configuration", "Plugin API", "TypeScript"]
   }
   </script>
-
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/image/banner.png" />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" />
-  <link rel="stylesheet" crossorigin href="/assets/docs-Dw_SXgFl.css">
+  <script>
+    // Set the theme before first paint so the page never flashes the wrong one.
+    (function () {
+      var d = document.documentElement, t = null;
+      try { t = localStorage.getItem('anp-theme'); } catch (e) {}
+      d.dataset.theme = t || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" />
+  <script type="module" crossorigin src="/assets/docs-woiUFerC.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/site-B3_eO6wG.js">
+  <link rel="stylesheet" crossorigin href="/assets/site-DeKbC5nO.css">
+  <link rel="stylesheet" crossorigin href="/assets/docs-Zt-5uBId.css">
 </head>
-<body>
-<a class="skip-link" href="#docs-main">Skip to content</a>
+<body class="docs-page">
+  <a class="skip-link" href="#docs-main">Skip to content</a>
 
-<header class="site-header">
-  <div class="header-inner">
-    <a class="brand" href="./" aria-label="Autumn Note home">
-      <img src="/image/banner.png" width="26" height="26" alt="" />
-      <span class="brand-name">Autumn Note</span>
-      <span class="brand-version">v3.1.0</span>
-    </a>
-    <nav class="header-nav" aria-label="Site links">
-      <a class="nav-link" href="./">Home</a>
-      <a class="nav-link active" href="docs.html" aria-current="page">Docs</a>
-      <a class="nav-link" href="playground.html">Playground</a>
-      <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-      <span class="lang-switch" role="group" aria-label="Language">
-        <a href="./docs.html" class="active" lang="en" hreflang="en" aria-current="page">EN</a>
-        <a href="/vi/docs.html" lang="vi" hreflang="vi">VI</a>
-      </span>
-    </nav>
-  </div>
-</header>
-
-<div class="docs-layout">
-  <!-- Sidebar -->
-  <aside class="docs-sidebar">
-    <div class="sidebar-search">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" placeholder="Search…" id="sidebar-search" aria-label="Search docs" oninput="filterSidebar(this.value)" />
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="wordmark" href="./" aria-label="autumnnote-plus home">autumnnote<span class="wordmark__plus" aria-hidden="true">+</span><span class="wordmark__version">v4.0.0</span></a>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <a class="site-nav__link" href="./">Home</a>
+        <a class="site-nav__link" href="docs.html" aria-current="page">Docs</a>
+        <a class="site-nav__link" href="playground.html">Playground</a>
+        <a class="site-nav__link" href="https://github.com/habibiahmada/autumnnote-plus" rel="noopener noreferrer">GitHub</a>
+        <a class="site-nav__link" href="https://www.npmjs.com/package/autumnnote-plus" rel="noopener noreferrer">npm</a>
+      </nav>
+      <div class="site-actions">
+        <button class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+          <svg class="i i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg>
+          <svg class="i i-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-btn__label">Menu</span></button>
+      </div>
     </div>
+  </header>
 
-    <nav id="sidebar-nav" aria-label="Documentation navigation">
+  <div class="wrap docs-layout">
+    <aside class="docs-sidebar" aria-label="Documentation">
+      <details class="docs-toc" id="docs-toc" open>
+        <summary class="docs-toc__toggle"><span class="label">Contents</span><span class="docs-toc__mark" aria-hidden="true"></span></summary>
+        <div class="docs-toc__body" data-lenis-prevent>
+          <div class="sidebar-search">
+            <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5a6.5 6.5 0 1 0 13 0 6.5 6.5 0 1 0-13 0M15.5 15.5 20 20"/></svg>
+            <input type="search" placeholder="Filter sections" id="sidebar-search" aria-label="Filter sections" aria-controls="sidebar-nav" autocomplete="off" />
+          </div>
+          <nav id="sidebar-nav" aria-label="Documentation navigation">
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Getting Started</div>
+        <p class="sidebar-group-title label">Getting Started</p>
         <a class="sidebar-link" href="#installation">Installation</a>
         <a class="sidebar-link" href="#framework-wrappers">Framework Wrappers</a>
-        <a class="sidebar-link sub" href="#wrapper-react"><span aria-hidden="true">↳</span> React</a>
-        <a class="sidebar-link sub" href="#wrapper-vue"><span aria-hidden="true">↳</span> Vue 3</a>
+        <a class="sidebar-link sub" href="#wrapper-react">React</a>
+        <a class="sidebar-link sub" href="#wrapper-vue">Vue 3</a>
         <a class="sidebar-link" href="#quick-start">Quick Start</a>
       </div>
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Configuration</div>
+        <p class="sidebar-group-title label">Configuration</p>
         <a class="sidebar-link" href="#options">All Options</a>
       </div>
       <div class="sidebar-group">
-        <div class="sidebar-group-title">API</div>
+        <p class="sidebar-group-title label">API</p>
         <a class="sidebar-link" href="#static-api">Static Methods</a>
         <a class="sidebar-link" href="#instance-api">Instance Methods</a>
-        <a class="sidebar-link sub" href="#content-api"><span aria-hidden="true">↳</span> Content</a>
-        <a class="sidebar-link sub" href="#state-api"><span aria-hidden="true">↳</span> State &amp; Info</a>
-        <a class="sidebar-link sub" href="#events-api"><span aria-hidden="true">↳</span> Events</a>
-        <a class="sidebar-link sub" href="#plugin-instance"><span aria-hidden="true">↳</span> Plugin</a>
+        <a class="sidebar-link sub" href="#content-api">Content</a>
+        <a class="sidebar-link sub" href="#state-api">State &amp; Info</a>
+        <a class="sidebar-link sub" href="#events-api">Events</a>
+        <a class="sidebar-link sub" href="#plugin-instance">Plugin</a>
       </div>
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Features</div>
-        <a class="sidebar-link" href="#whats-new-3-1">What's New v3.1.0</a>
-        <a class="sidebar-link sub" href="#whats-new">What's New v3.0.0</a>
-        <a class="sidebar-link sub" href="#whats-new-1-8">v1.8.0 highlights</a>
+        <p class="sidebar-group-title label">Features</p>
+        <a class="sidebar-link" href="#whats-new-4-0">What's new in 4.0.0</a>
+        <a class="sidebar-link sub" href="#whats-new-3-1">What's new in 3.1.0</a>
+        <a class="sidebar-link sub" href="#whats-new">What's new in 3.0.0</a>
+        <a class="sidebar-link sub" href="#whats-new-1-8">1.8.0 highlights</a>
         <a class="sidebar-link" href="#events">Callbacks &amp; Events</a>
         <a class="sidebar-link" href="#toolbar">Toolbar</a>
         <a class="sidebar-link" href="#plugin-api">Plugin API</a>
-        <a class="sidebar-link sub" href="#plugin-descriptor"><span aria-hidden="true">↳</span> Descriptor fields</a>
-        <a class="sidebar-link sub" href="#plugin-install-context"><span aria-hidden="true">↳</span> install() context API</a>
-        <a class="sidebar-link sub" href="#plugin-invoke"><span aria-hidden="true">↳</span> invoke() paths</a>
-        <a class="sidebar-link sub" href="#plugin-custom-modules"><span aria-hidden="true">↳</span> Custom modules</a>
+        <a class="sidebar-link sub" href="#plugin-descriptor">Descriptor fields</a>
+        <a class="sidebar-link sub" href="#plugin-install-context">install() context API</a>
+        <a class="sidebar-link sub" href="#plugin-invoke">invoke() paths</a>
+        <a class="sidebar-link sub" href="#plugin-custom-modules">Custom modules</a>
         <a class="sidebar-link" href="#i18n">i18n</a>
         <a class="sidebar-link" href="#typescript">TypeScript</a>
       </div>
       <div class="sidebar-group">
-        <div class="sidebar-group-title">Resources</div>
+        <p class="sidebar-group-title label">Resources</p>
         <a class="sidebar-link" href="playground.html">Playground</a>
-        <a class="sidebar-link" href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
+        <a class="sidebar-link" href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md" rel="noopener noreferrer">Changelog</a>
       </div>
     </nav>
-  </aside>
+          <p class="sidebar-empty" id="sidebar-empty" hidden>No section matches. <button type="button" class="sidebar-clear" id="sidebar-clear">Clear the filter</button></p>
+        </div>
+      </details>
+    </aside>
 
-  <!-- Main -->
-  <main class="docs-main" id="docs-main">
-
-    <h1 class="page-title">API Reference</h1>
-    <p class="page-sub">Autumn Note v3.1.0. Fast. Lightweight. Reliable. Efficient.</p>
+    <main class="docs-main" id="docs-main">
+    <p class="label">Documentation</p>
+    <h1 class="page-title">API reference</h1>
+    <p class="page-sub">Every option, method and event in autumnnote-plus v4.0.0. The API matches Autumn Note 3.1.0, so code written for it runs unchanged.</p>
 
     <!-- ── Installation ── -->
     <section class="docs-section" id="installation" aria-label="Installation">
       <h2 class="section-h">Installation</h2>
       <p class="docs-p">Install via npm (or pnpm / yarn):</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote</code></pre>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-bash">npm install autumnnote-plus</code></pre>
       </div>
       <p class="docs-p">Or use the CDN, no build step needed:</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote/dist/autumnnote.css"&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote"&gt;&lt;/script&gt;</code></pre>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"&gt;&lt;/script&gt;</code></pre>
       </div>
       <div class="callout"><strong>Requirements:</strong> installing from npm needs <strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong>. The editor itself runs in any modern browser. The CDN build has no requirements.</div>
     </section>
@@ -167,17 +157,17 @@
         exposes the <code>Context</code> object to the parent component via <code>ref</code>.
       </p>
 
-      <h3 id="wrapper-react" class="method-h">React: <code>autumnnote-react</code></h3>
+      <h3 id="wrapper-react" class="method-h">React: <code>autumnnote-plus-react</code></h3>
       <p class="docs-p">Install the wrapper alongside the core:</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote autumnnote-react</code></pre>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-bash">npm install autumnnote-plus autumnnote-plus-react</code></pre>
       </div>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-jsx">import { useRef } from 'react';
-import AutumnNoteEditor from 'autumnnote-react';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-react';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 function MyEditor() {
   const editorRef = useRef(null);
@@ -210,7 +200,7 @@ function MyEditor() {
         The editor initialises once on mount; to reinitialise with new options, pass a new <code>key</code> prop.
       </p>
       <p class="docs-p"><strong>Props:</strong></p>
-      <table class="opts-table">
+      <div class="docs-table-wrap"><table class="opts-table">
         <thead><tr><th>Prop</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td class="opt-name">options</td><td class="opt-type">AsnOptions</td><td class="opt-desc">Editor configuration object. All <a href="#options">AsnOptions</a> fields are accepted.</td></tr>
@@ -218,20 +208,20 @@ function MyEditor() {
           <tr><td class="opt-name">style</td><td class="opt-type">CSSProperties</td><td class="opt-desc">Inline styles applied to the container <code>&lt;div&gt;</code>.</td></tr>
           <tr><td class="opt-name">ref</td><td class="opt-type">React.Ref&lt;Context&gt;</td><td class="opt-desc">Forwarded ref, exposes the <code>Context</code> instance.</td></tr>
         </tbody>
-      </table>
+      </table></div>
 
-      <h3 id="wrapper-vue" class="method-h">Vue 3: <code>autumnnote-vue</code></h3>
+      <h3 id="wrapper-vue" class="method-h">Vue 3: <code>autumnnote-plus-vue</code></h3>
       <p class="docs-p">Install the wrapper alongside the core:</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-bash">npm install autumnnote autumnnote-vue</code></pre>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-bash">npm install autumnnote-plus autumnnote-plus-vue</code></pre>
       </div>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-vue">&lt;script setup&gt;
 import { ref } from 'vue';
-import AutumnNoteEditor from 'autumnnote-vue';
-import 'autumnnote/dist/autumnnote.css';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 const editorRef = ref(null);
 
@@ -256,12 +246,12 @@ function handleSave() {
         and destroyed in <code>onUnmounted</code>. Use <code>v-if</code> to force remount on options change.
       </p>
       <p class="docs-p"><strong>Props:</strong></p>
-      <table class="opts-table">
+      <div class="docs-table-wrap"><table class="opts-table">
         <thead><tr><th>Prop</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td class="opt-name">options</td><td class="opt-type">AsnOptions</td><td class="opt-desc">Editor configuration object. All <a href="#options">AsnOptions</a> fields are accepted.</td></tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <!-- ── Quick Start ── -->
@@ -269,9 +259,9 @@ function handleSave() {
       <h2 class="section-h">Quick Start</h2>
       <p class="docs-p">Wrap any <code>&lt;textarea&gt;</code> or <code>&lt;div&gt;</code> in your HTML:</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-js">import AutumnNote from 'autumnnote';
-import 'autumnnote/dist/autumnnote.css';
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-js">import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
 
 const editor = AutumnNote.create('#editor', {
   placeholder: 'Start typing…',
@@ -284,7 +274,7 @@ const editor = AutumnNote.create('#editor', {
       </div>
       <p class="docs-p">Get and set content:</p>
       <div class="code-wrap">
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">editor.setHTML('&lt;p&gt;Hello &lt;strong&gt;world&lt;/strong&gt;&lt;/p&gt;');
 const html = editor.getHTML();
 const markdown = editor.getMarkdown();
@@ -366,7 +356,7 @@ editor.destroy(); // clean up when done</code></pre>
         </table>
       </div>
 
-      <h3 id="callbacks-table" style="font-size:14px;font-weight:700;color:#111827;margin:24px 0 8px">Callback options</h3>
+      <h3 id="callbacks-table" class="sub-h">Callback options</h3>
       <div class="docs-table-wrap">
         <table class="docs-table">
           <thead><tr><th>Option</th><th>Signature</th><th>Description</th></tr></thead>
@@ -396,7 +386,7 @@ editor.destroy(); // clean up when done</code></pre>
 
       <h3 class="method-h"><code>AutumnNote.create(selector, options?)</code></h3>
       <p class="docs-p">Creates one or more editor instances. Returns a single <code>Context</code> when <code>selector</code> matches one element, or an array when it matches several. Caches instances in a <code>WeakMap</code>, so calling <code>create</code> on the same element twice returns the cached instance.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">const editor = AutumnNote.create('#my-editor', {
   height: 350,
   bubbleToolbar: true,
@@ -413,7 +403,7 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
 
       <h3 class="method-h"><code>AutumnNote.setDefaults(options)</code></h3>
       <p class="docs-p">Merges options into the global defaults, applied to every future <code>create()</code> call.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">AutumnNote.setDefaults({
   theme: 'dark',
   bubbleToolbar: true,
@@ -505,7 +495,7 @@ const editors = AutumnNote.create('.editor', { height: 200 });</code></pre>
 
       <h3 class="method-h"><code>editor.invoke(path, ...args)</code></h3>
       <p class="docs-p">Invokes a method on a registered module. Format: <code>'moduleName.methodName'</code>.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">editor.invoke('toolbar.rebuild');       // Rebuild toolbar after button registration
 editor.invoke('editor.bold');           // Apply bold
 editor.invoke('findReplace.show');      // Open Find dialog
@@ -516,7 +506,7 @@ editor.invoke('fullscreen.toggle');     // Toggle fullscreen</code></pre>
 
       <h3 class="method-h"><code>editor.on(eventName, handler)</code></h3>
       <p class="docs-p">Subscribes to an editor event. Returns an unsubscribe function.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">const unsub = editor.on('change', (html) => {
   console.log('changed:', html);
 });
@@ -549,7 +539,7 @@ unsub(); // unsubscribe</code></pre>
       <div class="callout">
         <strong>Tip:</strong> Option callbacks and <code>on()</code> listeners both fire for the same event. Use callbacks for one-time setup; use <code>on()</code> when you need to unsubscribe later.
       </div>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">// Option callback
 const editor = AutumnNote.create('#editor', {
   onChange(html) { /* ... */ },
@@ -573,13 +563,13 @@ editor.on('paste', ({ text }) => text.length > 10000 ? false : undefined);</code
     <section class="docs-section" id="toolbar" aria-label="Toolbar">
       <h2 class="section-h">Toolbar Configuration</h2>
       <p class="docs-p">The <code>toolbar</code> option is a 2D array: each inner array is a button group (separated by a divider). Items can be built-in button names, names from the <code>buttons</code> option or <code>registerButton()</code>, or <code>ButtonDef</code> objects imported from the library.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">import AutumnNote, {
   boldBtn, italicBtn, underlineBtn,
   ulBtn, olBtn, linkBtn, imageBtn,
   undoBtn, redoBtn,
   defaultToolbar, // full default toolbar
-} from 'autumnnote';
+} from 'autumnnote-plus';
 
 // By name: works from JSON, framework props or the UMD build
 AutumnNote.create('#editor', {
@@ -598,7 +588,7 @@ const editor = AutumnNote.create('#editor', {
       </div>
 
       <p class="docs-p">Or mix named button objects with string names (after registering custom buttons):</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">AutumnNote.registerButton({
   name: 'myButton',
   icon: 'star',          // SVG id or FontAwesome class name
@@ -612,7 +602,7 @@ const editor = AutumnNote.create('#editor', {
 });</code></pre>
       </div>
 
-      <h3 style="font-size:14px;font-weight:700;margin:20px 0 8px">All exported buttons</h3>
+      <h3 class="sub-h">All exported buttons</h3>
       <div class="docs-table-wrap"><table class="docs-table">
         <thead><tr><th>Export</th><th>Tooltip</th><th>Type</th></tr></thead>
         <tbody>
@@ -643,36 +633,71 @@ const editor = AutumnNote.create('#editor', {
     </section>
 
     <!-- ── What's New v3.1.0 ── -->
+    <section class="docs-section" id="whats-new-4-0" aria-label="What's new in 4.0.0">
+      <h2 class="section-h">What's new <span class="badge">v4.0.0</span></h2>
+      <p class="docs-p">4.0.0 is the first release of <code>autumnnote-plus</code>, an unofficial fork of Autumn Note 3.1.0. Options, events, CSS classes and the <code>AutumnNote</code> global are unchanged.</p>
+      <h3 class="sub-h">New package names</h3>
+      <p class="docs-p">Install <code>autumnnote-plus</code>, <code>autumnnote-plus-react</code> and <code>autumnnote-plus-vue</code>. File names inside the package (<code>dist/autumnnote.css</code>, <code>dist/autumnnote.umd.js</code>) stay the same. To keep existing <code>'autumnnote'</code> imports, install under an alias:</p>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-bash">npm install autumnnote@npm:autumnnote-plus@^4.0.0</code></pre>
+      </div>
+      <h3 class="sub-h">The CDN build ships English only</h3>
+      <p class="docs-p">The UMD, CJS and minified builds drop from 109.2 KB to 92.4 KB gzip. Each locale is its own script, <code>dist/i18n/&lt;code&gt;.umd.js</code>, that registers itself when loaded after the main one. ESM users are not affected.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/vi.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;AutumnNote.create('#editor', { lang: 'vi' });&lt;/script&gt;</code></pre>
+      </div>
+      <h3 class="sub-h">Security fixes</h3>
+      <ul class="docs-list">
+        <li>Undo and redo can no longer turn sanitised content into a live event handler: image-data tokens are random per editor.</li>
+        <li><code>getHTML()</code> and <code>print()</code> clean up on a cloned DOM, and the sanitiser removes comments and the raw-text elements <code>&lt;xmp&gt;</code>, <code>&lt;noembed&gt;</code>, <code>&lt;noframes&gt;</code> and <code>&lt;plaintext&gt;</code>.</li>
+        <li>HTML dragged in from another page goes through the paste sanitiser.</li>
+        <li>The default mention chip inserts its label and id as text, and <code>name</code> attributes are removed from content.</li>
+        <li>Markdown export keeps inert text inert, and the Markdown parsers run in linear time.</li>
+      </ul>
+      <h3 class="sub-h">Also new</h3>
+      <ul class="docs-list">
+        <li>An Indonesian locale (<code>id</code>).</li>
+        <li>Default colours meet WCAG AA, and swatches and table cells meet the 24px target size.</li>
+        <li>A redesigned Insert Image dialog with a drop zone and preview.</li>
+        <li>Keyboard support for the colour palette, table-size picker and context menu.</li>
+      </ul>
+      <p class="docs-p">Full list in the <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md">CHANGELOG</a>.</p>
+    </section>
+
     <section class="docs-section" id="whats-new-3-1" aria-label="What's New">
       <h2 class="section-h">What's New <span class="badge">v3.1.0</span></h2>
       <p class="docs-p">Version 3.1 replaces the browser's deprecated <code>document.execCommand</code> with the editor's own formatting engine. Bold, colours, fonts, links, headings, lists and indentation now produce the same markup and toolbar state on Chrome, Firefox and Safari.</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Same result on every browser</h3>
+      <h3 class="sub-h">Same result on every browser</h3>
       <p class="docs-p">Every command is a DOM transform the editor performs itself, tested on Chromium, Firefox and WebKit. Toolbar buttons read their state from the document, so they show exactly what the command toggles, including underline inside inline code, where the old API got it wrong.</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Markup changes</h3>
-      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+      <h3 class="sub-h">Markup changes</h3>
+      <ul class="docs-list">
         <li>Strikethrough is written as <code>&lt;s&gt;</code> (not <code>&lt;strike&gt;</code>).</li>
         <li>Colour, highlight, font family and font size are <code>&lt;span style&gt;</code>, never <code>&lt;font&gt;</code>.</li>
         <li>Indenting a paragraph sets <code>margin-left: 40px</code> instead of wrapping it in a borderless <code>&lt;blockquote&gt;</code>.</li>
         <li>Existing content in the old forms is still read and edited correctly.</li>
       </ul>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Copy and cut</h3>
+      <h3 class="sub-h">Copy and cut</h3>
       <p class="docs-p">The context-menu Copy/Cut and the copy buttons use the async Clipboard API, which browsers only provide on HTTPS and localhost. A cut never deletes text that did not reach the clipboard.</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Fixes</h3>
-      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+      <h3 class="sub-h">Fixes</h3>
+      <ul class="docs-list">
         <li>Inserting an emoji or icon could overwrite text selected elsewhere on the page.</li>
         <li><code>setMarkdown(getMarkdown())</code> now keeps underline, colour/font spans, superscript and subscript.</li>
         <li>The character count no longer includes invisible caret anchors.</li>
       </ul>
-      <p class="docs-p">Full list in the <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
+      <p class="docs-p">Full list in the <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md" rel="noopener noreferrer">CHANGELOG</a>.</p>
     </section>
 
     <!-- ── What's New v3.0.0 ── -->
     <section class="docs-section" id="whats-new" aria-label="What's New">
       <h2 class="section-h">What's New <span class="badge">v3.0.0</span></h2>
       <p class="docs-p">Version 3.0 is a customisation release: the look, shortcuts, icons, buttons and dropdown lists can all be changed per editor without forking or rebuilding the SCSS.</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Theming with CSS custom properties</h3>
+      <h3 class="sub-h">Theming with CSS custom properties</h3>
       <p class="docs-p">Every colour, radius and font token is a <code>--an-*</code> property. Theme every editor from CSS, per mode from <code>.an-theme-dark</code>, or one editor through <code>themeVars</code>, no Sass build. Themes can be switched at runtime and never touch <code>&lt;body&gt;</code>.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">// Every editor, from CSS
       .an-container, .an-portal { --an-primary: #f97316; --an-radius: 10px; }
 
@@ -683,11 +708,11 @@ const editor = AutumnNote.create('#editor', {
       });
       editor.updateOptions({ theme: 'dark' });   // switch at runtime</code></pre>
       </div>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Per-editor portal</h3>
+      <h3 class="sub-h">Per-editor portal</h3>
       <p class="docs-p">Each editor mounts its dialogs, tooltips and menus in its own <code>.an-portal</code>, which carries the editor's theme. <code>popupContainer</code> moves it into a modal or shadow root; <code>zIndexOffset</code> lifts every floating layer.</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Icons, buttons, dropdowns and shortcuts</h3>
+      <h3 class="sub-h">Icons, buttons, dropdowns and shortcuts</h3>
       <p class="docs-p">Toolbars accept built-in button names, <code>buttons</code> defines buttons for one editor, and <code>icons</code> / <code>registerIcon()</code> swap icons. <code>keyMap</code> disables or rebinds shortcuts, and the shortcuts dialog follows it.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">AutumnNote.create('#editor', {
         toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['link', 'save']],
         buttons: {
@@ -703,10 +728,10 @@ const editor = AutumnNote.create('#editor', {
         onBeforeCommand: ({ name }) => name !== 'codeview' || user.isAdmin,
       });</code></pre>
       </div>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Integration hooks</h3>
+      <h3 class="sub-h">Integration hooks</h3>
       <p class="docs-p"><code>beforeCommand</code> can cancel any command; <code>paste</code> handlers can cancel or rewrite a paste; <code>linkDefaults</code>, <code>videoProviders</code> and <code>iframeHosts</code> tune links and embeds. <code>statusbar: false</code> hides the statusbar (#119).</p>
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Upgrading from 2.x</h3>
-      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+      <h3 class="sub-h">Upgrading from 2.x</h3>
+      <ul class="docs-list">
         <li><strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong> is required to install the package; Node 20 is no longer supported.</li>
         <li>Floating UI now lives inside <code>.an-portal</code>, so selectors such as <code>body &gt; .an-dialog-overlay</code> need updating.</li>
         <li><code>&lt;body&gt;</code> no longer gets <code>an-theme-dark</code> / <code>an-theme-auto</code>; key page CSS on the editor container instead.</li>
@@ -714,7 +739,7 @@ const editor = AutumnNote.create('#editor', {
         <li>Shortcuts match Shift and Alt exactly (<code>Ctrl+Shift+B</code> no longer bolds). Add extra combos through <code>keyMap</code>.</li>
         <li><code>onPaste</code> return values are used: <code>false</code> cancels the paste, a string replaces it.</li>
       </ul>
-      <p class="docs-p">Full list in the <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
+      <p class="docs-p">Full list in the <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md" rel="noopener noreferrer">CHANGELOG</a>.</p>
     </section>
 
     <!-- ── What's New v1.8.0 ── -->
@@ -722,39 +747,39 @@ const editor = AutumnNote.create('#editor', {
       <h2 class="section-h">v1.8.0 highlights</h2>
       <p class="docs-p">Version 1.8.0 expands the public API with new Context methods, adds UMD button definitions, whole-word search, paste size limit, configurable image resize minimum, i18n improvements, and more.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Table Sort, CSV Export &amp; Cell Padding</h3>
+      <h3 class="sub-h">Table Sort, CSV Export &amp; Cell Padding</h3>
       <p class="docs-p">The Table Tooltip now includes three new data-management actions:</p>
-      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+      <ul class="docs-list">
         <li><strong>Sort Ascending / Descending</strong>: sort all rows by the active column; numeric values are compared as numbers, text uses locale-aware comparison; merged-cell layouts are handled correctly.</li>
         <li><strong>Export as CSV</strong>: downloads the full table as a UTF-8 (BOM) <code>.csv</code> file with proper quote-escaping for cells containing commas or newlines.</li>
         <li><strong>Cell Padding</strong>: open the size popover to apply a uniform padding (in px) to all selected cells.</li>
       </ul>
       <p class="docs-p">A <strong>Toggle Header Row</strong> button also converts the first row between <code>&lt;thead&gt;&lt;th&gt;</code> (header) and <code>&lt;tbody&gt;&lt;td&gt;</code> (data), creating or removing the <code>&lt;thead&gt;</code> wrapper as needed.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Find &amp; Replace: Regex Mode</h3>
+      <h3 class="sub-h">Find &amp; Replace: Regex Mode</h3>
       <p class="docs-p">A new <code>.*</code> toggle button in the Find &amp; Replace panel enables <strong>JavaScript regular expression search</strong>. The compiled regex is cached across keystrokes for performance. Use cases: find all words matching a pattern, locate email addresses, replace formatted numbers, and so on. Works with case-sensitive mode; regex compilation errors are handled gracefully.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Code Block Line Numbers</h3>
+      <h3 class="sub-h">Code Block Line Numbers</h3>
       <p class="docs-p">The Code Tooltip now includes a <strong>Toggle Line Numbers</strong> button. When active, a CSS counter generates a numbered gutter on the left side of the code block, no JavaScript counting, no DOM changes to the content. The state syncs automatically when switching between code blocks.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Dark-Auto Theme</h3>
+      <h3 class="sub-h">Dark-Auto Theme</h3>
       <p class="docs-p">A new <code>theme: 'auto'</code> option makes the editor follow the operating system's dark-mode preference automatically:</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">AutumnNote.create('#editor', { theme: 'auto' });</code></pre>
       </div>
       <p class="docs-p">The CSS <code>@media (prefers-color-scheme: dark)</code> activates the full dark palette when the OS is in dark mode; the editor stays light otherwise. <code>theme: 'dark'</code> and <code>theme: 'light'</code> continue to force a specific theme regardless of OS preference.</p>
 
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Undo / Redo Count API</h3>
+      <h3 class="sub-h">Undo / Redo Count API</h3>
       <p class="docs-p">Two new instance methods let host applications query the undo/redo stack depth:</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">editor.getUndoCount();  // → number of available undo steps
 editor.getRedoCount();  // → number of available redo steps</code></pre>
       </div>
       <p class="docs-p">Useful for disabling Undo/Redo toolbar buttons in custom UIs, or showing a step-counter badge in host applications.</p>
 
-      <h3 id="mention-options" style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Promise-Based @mention Search</h3>
+      <h3 id="mention-options" class="sub-h">Promise-Based @mention Search</h3>
       <p class="docs-p">The <code>mention.onSearch</code> callback now accepts both callback and <strong>Promise / async</strong> styles:</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">// Async / Promise style (new in 1.8.0)
 AutumnNote.create('#editor', {
   mention: {
@@ -774,7 +799,7 @@ AutumnNote.create('#editor', {
       <p class="docs-p">The Plugin API lets you package editor extensions (custom modules, toolbar buttons, and event handlers) into a reusable, installable object. Plugins can be distributed as npm packages and installed in one line.</p>
 
       <!-- Plugin descriptor -->
-      <h3 id="plugin-descriptor" style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Plugin descriptor</h3>
+      <h3 id="plugin-descriptor" class="sub-h">Plugin descriptor</h3>
       <p class="docs-p">A plugin is a plain object with the following fields:</p>
 
       <div class="docs-table-wrap">
@@ -790,7 +815,7 @@ AutumnNote.create('#editor', {
         </table>
       </div>
 
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">const MyPlugin = {
   name: 'my-plugin',   // required
   version: '1.0.0',   // optional
@@ -820,11 +845,11 @@ AutumnNote.create('#editor', {
       </div>
 
       <!-- install() context API -->
-      <h3 id="plugin-install-context" style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Inside <code style="background:#1e293b;color:#7dd3fc;padding:2px 8px;border-radius:4px;font-size:14px">install(context, options)</code></h3>
+      <h3 id="plugin-install-context" class="sub-h">Inside <code>install(context, options)</code></h3>
       <p class="docs-p">The <code>context</code> parameter is the full <a href="#instance-api">Context object</a>. All methods documented in the Instance API section are available. The most useful inside plugins:</p>
 
-      <h3 class="method-h" style="margin-top:16px">Event subscription</h3>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <h3 class="method-h">Event subscription</h3>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">// Subscribe: returns an unsubscribe function
 const unsub = context.on('change', (html) =&gt; {
   console.log('word count:', context.getWordCount());
@@ -868,7 +893,7 @@ uninstall(ctx) { unsub(); }</code></pre>
 
       <h3 id="plugin-custom-modules" class="method-h">Register a custom module</h3>
       <p class="docs-p">A module is a class with <code>initialize()</code> (required) and <code>destroy()</code> (optional). It receives the <code>Context</code> in its constructor and can expose methods callable via <code>context.invoke()</code>.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">class WordBadgeModule {
   constructor(context) {
     this.context = context;
@@ -915,8 +940,8 @@ install(context) {
       </div>
 
       <!-- Installation -->
-      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Installation</h3>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <h3 class="sub-h">Installation</h3>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-js">// ── Global (applies to every future create() call) ─────────────────────────
 AutumnNote.use(MyPlugin, { limit: 500 });
 AutumnNote.hasPlugin('my-plugin'); // → true
@@ -951,10 +976,10 @@ AutumnNote.registerButton({
     <!-- ── i18n ── -->
     <section class="docs-section" id="i18n" aria-label="Internationalization">
       <h2 class="section-h">Internationalisation</h2>
-      <p class="docs-p">Nine locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Every build includes only <code>en</code>. With a bundler, import and register the ones you need. With a <code>&lt;script&gt;</code> tag, load <code>dist/i18n/&lt;code&gt;.umd.js</code> after the main script and it registers itself, for example <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
-        <pre><code class="language-js">import AutumnNote from 'autumnnote';
-import { vi } from 'autumnnote/i18n/vi';
+      <p class="docs-p">Nine locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Every build includes only <code>en</code>. With a bundler, import and register the ones you need. With a <code>&lt;script&gt;</code> tag, load <code>dist/i18n/&lt;code&gt;.umd.js</code> after the main script and it registers itself, for example <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-js">import AutumnNote from 'autumnnote-plus';
+import { vi } from 'autumnnote-plus/i18n/vi';
 
 AutumnNote.registerLocale('vi', vi);
 const editor = AutumnNote.create('#editor', { lang: 'vi' });
@@ -978,8 +1003,8 @@ editor3.setHTML(html);</code></pre>
     <!-- ── TypeScript ── -->
     <section class="docs-section" id="typescript" aria-label="TypeScript">
       <h2 class="section-h">TypeScript</h2>
-      <p class="docs-p">Autumn Note ships bundled TypeScript definitions (<code>types/index.d.ts</code>). No <code>@types</code> package needed.</p>
-      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <p class="docs-p">autumnnote-plus ships bundled TypeScript definitions (<code>types/index.d.ts</code>). No <code>@types</code> package needed.</p>
+      <div class="code-wrap"><button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-ts">import AutumnNote, {
   Context,
   AsnOptions,
@@ -987,7 +1012,7 @@ editor3.setHTML(html);</code></pre>
   ButtonDef,
   ToolbarItemDef,
   AsnLocale,
-} from 'autumnnote';
+} from 'autumnnote-plus';
 
 // Typed options
 const options: AsnOptions = {
@@ -1013,79 +1038,39 @@ console.log(api?.version); // '1.0.0'</code></pre>
       </div>
     </section>
 
-  </main><!-- .docs-main -->
-</div><!-- .docs-layout -->
-
-<footer class="site-footer">
-  <div class="footer-inner">
-    <span>Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge · Autumn Note v3.1.0</span>
-    <nav class="footer-links" aria-label="Footer links">
-      <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-      <a href="playground.html">Playground</a>
-      <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
-    </nav>
+  </main>
   </div>
-</footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" integrity="sha512-jwrwRWZWW9J6bjmBOJxPcbRvEBSQeY4Ad0NEXSfP0vwYi/Yu9x5VhDBl3wz6Pnxs8Rx/t1P8r9/OHCRciHcT7Q==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js" integrity="sha512-uOw7XYETzS/DPmmirpP5UCMihSDNMeyTS965J0/456OSPfxn9xEtHHjj5Q/5WefVdqyMfN/afmQnNpZd/tpkcA==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYhDwtTmlC/NpZlCr6PSsAaLOrfjVg/iXAnC4H/dtiHawpShhT2SlIMbpIhT/IL/NrpdMm+Hq2C13+VKpHTYw==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js" integrity="sha512-Ei5Vokmnc/f7vIt31aodVMuavT/xp2Lt5vGDYLgCzgBX/z5ghbZQfxt/9FkNs+RyG8IfBKAkdRsQQk4PZyHq5g==" crossorigin="anonymous"></script>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="site-footer__grid">
+        <div class="site-footer__about">
+          <a class="wordmark" href="./" aria-label="autumnnote-plus home">autumnnote<span class="wordmark__plus" aria-hidden="true">+</span></a>
+          <p>An unofficial fork of <a href="https://github.com/cmm-cmm/Autumn-Note" rel="noopener noreferrer">Autumn Note</a> by Minh Pham, maintained by <a href="https://habibiahmada.dev" rel="noopener noreferrer">Habibi Ahmad Aziz</a>. MIT licensed.</p>
+        </div>
+        <nav class="site-footer__links" aria-label="Footer">
+          <p class="label">Project</p>
+          <a href="docs.html">Docs</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus" rel="noopener noreferrer">GitHub</a>
+          <a href="playground.html">Playground</a>
+          <a href="https://www.npmjs.com/package/autumnnote-plus" rel="noopener noreferrer">npm</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md" rel="noopener noreferrer">Changelog</a>
+          <a href="https://github.com/habibiahmada/autumnnote-plus/issues" rel="noopener noreferrer">Issues</a>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>autumnnote-plus v4.0.0</span>
+        <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md" rel="noopener noreferrer">Report a vulnerability</a>
+      </div>
+    </div>
+  </footer>
 
-<script>
-// ── Copy code blocks ──────────────────────────────────────
-function announce(msg) {
-  const live = document.getElementById('a11y-status');
-  if (!live) return;
-  live.textContent = '';
-  setTimeout(() => { live.textContent = msg; }, 50);
-}
-function copyCode(btn) {
-  const code = btn.nextElementSibling.textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Copied';
-    announce('Copied to clipboard');
-    setTimeout(() => { btn.textContent = orig; }, 1500);
-  }).catch(() => {
-    const orig = btn.textContent;
-    btn.textContent = '✗ Failed';
-    announce('Copy failed. Select the code and copy it manually.');
-    setTimeout(() => { btn.textContent = orig; }, 1500);
-  });
-}
+  <span id="a11y-status" class="sr-only" role="status" aria-live="polite"></span>
 
-// ── Sidebar search ────────────────────────────────────────
-function filterSidebar(q) {
-  const links = document.querySelectorAll('#sidebar-nav .sidebar-link');
-  const term = q.trim().toLowerCase();
-  links.forEach(link => {
-    link.style.display = (!term || link.textContent.toLowerCase().includes(term)) ? '' : 'none';
-  });
-}
-
-// ── Active sidebar link on scroll ────────────────────────
-const sections = document.querySelectorAll('.docs-section[id]');
-const sideLinks = document.querySelectorAll('#sidebar-nav .sidebar-link[href^="#"]');
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const id = e.target.id;
-      sideLinks.forEach(l => {
-        const on = l.getAttribute('href') === '#' + id;
-        l.classList.toggle('active', on);
-        if (on) l.setAttribute('aria-current', 'location');
-        else l.removeAttribute('aria-current');
-      });
-    }
-  });
-}, { rootMargin: '-52px 0px -60% 0px', threshold: 0 });
-
-sections.forEach(s => observer.observe(s));
-</script>
-<span id="a11y-status" class="sr-only" role="status" aria-live="polite"></span>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" integrity="sha512-jwrwRWZWW9J6bjmBOJxPcbRvEBSQeY4Ad0NEXSfP0vwYi/Yu9x5VhDBl3wz6Pnxs8Rx/t1P8r9/OHCRciHcT7Q==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js" integrity="sha512-uOw7XYETzS/DPmmirpP5UCMihSDNMeyTS965J0/456OSPfxn9xEtHHjj5Q/5WefVdqyMfN/afmQnNpZd/tpkcA==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYhDwtTmlC/NpZlCr6PSsAaLOrfjVg/iXAnC4H/dtiHawpShhT2SlIMbpIhT/IL/NrpdMm+Hq2C13+VKpHTYw==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js" integrity="sha512-Ei5Vokmnc/f7vIt31aodVMuavT/xp2Lt5vGDYLgCzgBX/z5ghbZQfxt/9FkNs+RyG8IfBKAkdRsQQk4PZyHq5g==" crossorigin="anonymous"></script>
 </body>
 </html>

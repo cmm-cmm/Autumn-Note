@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Built-in icons are redrawn.** The toolbar and shared icons (`core/icon-paths.js`) are a new set drawn for square line caps and mitred joins: sharp frames, 45° cuts where a corner needs softening, square list bullets and a 1.75px stroke. The remaining dialog, tooltip and table icons follow the same rules. `svgIcon()` and the new `ICON_STROKE` constant in `core/dom.js` hold the stroke style in one place. Custom icons set through the `icons` option are unaffected. The ES build is 0.6 KiB gzip smaller.
+- The demo site is redesigned and moves to `autumnnote.habibiahmada.dev`. It is English only; the editor keeps its nine languages, and the demos let you switch them.
+
 ## [4.0.0] - 2026-10-19
 
 First release of **`autumnnote-plus`**, an unofficial fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) by Minh Pham. It starts from Autumn Note 3.1.0; versions up to 3.1.0 below are the original project's history, released as `autumnnote`.

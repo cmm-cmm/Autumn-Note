@@ -13,7 +13,7 @@ const ICONS = {
   redo: svgIcon(PATHS.redo, 14),
   cut: svgIcon(`<circle cx="6" cy="20" r="3"/><circle cx="6" cy="4" r="3"/><line x1="19" y1="5" x2="6" y2="19"/><line x1="19" y1="19" x2="13.5" y2="13.5"/>`, 14),
   copy: svgIcon(PATHS.copy, 14),
-  paste: svgIcon(`<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>`, 14),
+  paste: svgIcon(`<path d="M16 4h2l2 2v14l-2 2H6l-2-2V6l2-2h2"/><rect x="8" y="2" width="8" height="4"/>`, 14),
   bold: svgIcon(PATHS.bold, 14),
   italic: svgIcon(PATHS.italic, 14),
   underline: svgIcon(PATHS.underline, 14),
@@ -31,14 +31,14 @@ const ICONS = {
   deleteVideo: svgIcon(PATHS.trash, 14),
   // Format painter operations
   copyFormat:  svgIcon(PATHS.edit, 14),
-  pasteFormat: svgIcon(`<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>`, 14),
+  pasteFormat: svgIcon(`<path d="M16 4h2l2 2v14l-2 2H6l-2-2V6l2-2h2"/><rect x="8" y="2" width="8" height="4"/><path d="m9 14 2 2 4-4"/>`, 14),
   removeFormat:svgIcon(PATHS.removeFormat, 14),
   // Table
   table:       svgIcon(PATHS.table, 14),
   // Color
   textColor:      svgIcon(PATHS.foreColor, 14),
   highlightColor: svgIcon(PATHS.highlight, 14),
-  noColor:        `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`,
+  noColor:        `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`,
   back:           svgIcon(`<polyline points="15 18 9 12 15 6"/>`, 14),
 };
 
@@ -208,7 +208,7 @@ export class ContextMenu {
         }
         btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
-        setIcon(chevron, svgIcon(`<polyline points="9 18 15 12 9 6"/>`, 10, 2.5));
+        setIcon(chevron, svgIcon(`<polyline points="9 18 15 12 9 6"/>`, 10, 2));
         btn.appendChild(chevron);
         const off = on(btn, 'click', (e) => {
           e.stopPropagation();
@@ -282,7 +282,7 @@ export class ContextMenu {
         }
         headerBtn.appendChild(createElement('span', { class: 'an-context-label' }, [this.context.locale.contextMenu.table || it.label || 'Insert Table']));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
-        setIcon(chevron, svgIcon(`<polyline points="9 18 15 12 9 6"/>`, 10, 2.5));
+        setIcon(chevron, svgIcon(`<polyline points="9 18 15 12 9 6"/>`, 10, 2));
         headerBtn.appendChild(chevron);
 
         const panel = createElement('div', { class: 'an-context-table-grid-panel' });
