@@ -1268,3 +1268,29 @@ describe('Clipboard._onDrop — forged editor drag type', () => {
     expect(inserted()).not.toContain('onerror');
   });
 });
+
+describe('Clipboard._onDrop — drag nonces expire', () => {
+  it('treats a replayed nonce as external once it is older than the time limit', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const { cb, ctx } = makeClipboard();
+      const data = {};
+      const dt = { files: [], get types() { return Object.keys(data); }, getData: (t) => data[t] || '', setData: (t, v) => { data[t] = v; }, dropEffect: '' };
+      const p = document.createElement('p');
+      ctx.layoutInfo.editable.appendChild(p);
+      const start = new Event('dragstart', { bubbles: true, cancelable: true });
+      start.dataTransfer = dt;
+      p.dispatchEvent(start);
+      await Promise.resolve();
+      p.remove(); // dragend lost
+      vi.setSystemTime(Date.now() + 31_000);
+      data['text/html'] = '<p>x<img src="y" onerror="window.__x=1"></p>';
+      const event = { dataTransfer: dt, preventDefault: vi.fn(), stopPropagation: vi.fn(), clientX: 0, clientY: 0 };
+      cb._onDrop(event);
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(inserted()).not.toContain('onerror');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

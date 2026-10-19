@@ -195,11 +195,17 @@ function _trimEndChars(text, chars) {
  * @returns {string}
  */
 function _destination(el, attr) {
-  const url = (el.getAttribute(attr) || '')
-    .replace(/[\s()<>]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`);
-  // A title may not hold a blank line either; line breaks become spaces.
+  // Whitespace, parentheses, angle brackets, backslash and control characters
+  // all end or reshape a destination, so they are percent-encoded.
+  const url = (el.getAttribute(attr) || '').replace(/[\s()<>\\\x00-\x1f\x7f]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`) || '<>';
+  // The title is written so that it stays inert even if something else breaks
+  // the link: no line breaks (a blank line ends it), `\` and `"` escaped (a
+  // trailing backslash would escape the closing quote), and `<` escaped, so a
+  // title shown as text can never be read as a tag.
   const title = el.getAttribute('title')?.replace(/\s*[\r\n]\s*/g, ' ');
-  return title ? `${url} "${title.replaceAll('\\', '\\\\').replaceAll('"', String.raw`\"`)}"` : url;
+  if (!title) return url;
+  return `${url} "${title.replaceAll('\\', '\\\\').replaceAll('"', String.raw`\"`).replaceAll('<', String.raw`\<`)}"`;
 }
 
 /**
@@ -313,9 +319,12 @@ function _domToMdAt(node, depth) {
       const lines = rawLines.filter((l, idx) => l.trim() !== '' || (rawLines[idx - 1] ?? '').trim() !== '');
       return `\n\n${lines.map((l) => (l.trim() === '' ? '>' : `> ${l}`)).join('\n')}\n\n`;
     }
-    case 'a':  return `[${inner()}](${_destination(el, 'href')})`;
+    // A link's text and an image's alt stay on one line: a blank line inside
+    // the brackets (two <br>, or block content in an <a>) ends the link and
+    // leaves its destination and title as raw Markdown.
+    case 'a':  return `[${inner().replace(/[ \t]*\n[ \t]*/g, ' ')}](${_destination(el, 'href')})`;
     case 'img': {
-      const alt = _escapeInlineMd(el.getAttribute('alt') || '');
+      const alt = _escapeInlineMd((el.getAttribute('alt') || '').replace(/\s*[\r\n]\s*/g, ' '));
       return `![${alt}](${_destination(el, 'src')})`;
     }
     case 'ul': {
@@ -492,7 +501,10 @@ const HARD_BREAK = String.fromCharCode(1);
  * @returns {string}
  */
 export function markdownToHTML(text) {
-  let lines = _stripBOM(text).replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+  // The parser's own placeholder characters (MARK, HARD_BREAK, CODE_MARK) are
+  // never meaningful input; left in, they could forge a placeholder.
+  const clean = [MARK, HARD_BREAK, CODE_MARK].reduce((t, c) => t.replaceAll(c, ''), _stripBOM(text ?? ''));
+  let lines = clean.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
   lines = _stripFrontmatter(lines);
   const refs = _extractReferenceDefinitions(lines);
   lines = refs.clean;
@@ -1062,7 +1074,9 @@ function _restoreCodeSpans(text, codes, literals) {
     // CommonMark strips one leading and trailing space when both are present,
     // which is what lets a span hold a leading or trailing backtick.
     if (c.length > 2 && c.startsWith(' ') && c.endsWith(' ') && c.trim() !== '') c = c.slice(1, -1);
-    return `<code>${_escCode(c)}</code>`;
+    // Quotes too: a span inside a link destination, title or alt is restored
+    // into that attribute.
+    return `<code>${_escCode(c).replaceAll('"', '&quot;')}</code>`;
   });
 }
 

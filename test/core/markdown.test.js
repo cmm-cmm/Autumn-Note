@@ -1664,7 +1664,7 @@ describe('htmlToMarkdown — every Markdown context stays closed (re-audit)', ()
 
   it('escapes a backslash at the end of a title, so the closing quote stays a quote', () => {
     const md = htmlToMarkdown(`<p><a href="http://a.test/" title="${RAW}\\">t</a></p>`);
-    expect(md).toBe(String.raw`[t](http://a.test/ "<img src=x onerror=__x()>\\")`);
+    expect(md).toBe(String.raw`[t](http://a.test/ "\<img src=x onerror=__x()>\\")`);
   });
 
   it('keeps a code span on one line, so <br><br> cannot end it', () => {
@@ -1687,7 +1687,7 @@ describe('markdown — fix-verification follow-ups', () => {
   it('keeps a link title on one line, so a blank line cannot end the link', () => {
     const md = htmlToMarkdown('<p><a href="http://a.test/" title="a&#10;&#10;&lt;img src=x onerror=alert(1)&gt;&#10;">t</a></p>');
     expect(md).not.toContain('\n');
-    expect(md).toBe('[t](http://a.test/ "a <img src=x onerror=alert(1)> ")');
+    expect(md).toBe(String.raw`[t](http://a.test/ "a \<img src=x onerror=alert(1)> ")`);
   });
 
   it('extracts code spans in linear time', () => {
@@ -1704,5 +1704,39 @@ describe('markdown — fix-verification follow-ups', () => {
     ['x `a` y `b` z', '<p>x <code>a</code> y <code>b</code> z</p>'],
   ])('code span %s', (md, html) => {
     expect(markdownToHTML(md)).toBe(html);
+  });
+});
+
+describe('htmlToMarkdown — link pieces stay inert when the link breaks (fix verification 2)', () => {
+  const T = 'title="a &lt;img src=x onerror=alert(1)&gt;"';
+  it.each([
+    ['two <br> in the link text', `<p><a href="http://a.test/" ${T}>x<br><br>y</a></p>`],
+    ['block content in the link', `<a href="http://a.test/" ${T}><p>x</p><h1>y</h1></a>`],
+    ['a trailing backslash in the href', `<p><a href="http://a.test/\\" ${T}>t</a></p>`],
+    ['a control character in the href', `<p><a href="http://a.test/\u0001" ${T}>t</a></p>`],
+    ['an empty href', `<p><a href="" ${T}>t</a></p>`],
+  ])('%s', (_, html) => {
+    const md = htmlToMarkdown(html);
+    expect(md).not.toMatch(/\n\s*\n/);
+    expect(md).not.toMatch(/(^|[^\\])<img/);
+  });
+
+  it('round-trips an escaped < in a title', () => {
+    const md = htmlToMarkdown('<p><a href="http://a.test/" title="a &lt;b&gt;">t</a></p>');
+    expect(markdownToHTML(md)).toBe('<p><a href="http://a.test/" title="a &lt;b&gt;">t</a></p>');
+  });
+});
+
+describe('markdownToHTML — placeholders and code spans in attributes', () => {
+  it('ignores the parser\'s placeholder characters in the input', () => {
+    expect(() => markdownToHTML('a \u000299\u0002 b')).not.toThrow();
+    expect(markdownToHTML('a \u000299\u0002 b')).toBe('<p>a 99 b</p>');
+  });
+
+  it('escapes quotes from a code span restored into an attribute', () => {
+    const html = markdownToHTML('[t](http://a/`" onmouseover="alert(1)`)');
+    const box = document.createElement('div');
+    box.innerHTML = html;
+    expect(box.querySelector('[onmouseover]')).toBeNull();
   });
 });

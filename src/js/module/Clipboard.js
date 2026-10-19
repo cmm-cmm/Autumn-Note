@@ -22,10 +22,15 @@ import { isMarkdown, markdownToHTML } from '../core/markdown.js';
  */
 const EDITOR_DRAG_TYPE = 'application/x-autumnnote-drag';
 
-/** Nonces of drags started in an editor on this page, newest last. */
-const liveDragNonces = new Set();
+/** Nonces of drags started in an editor on this page → start time, oldest first. */
+const liveDragNonces = new Map();
 /** Lost dragends leave nonces behind; keep only the most recent few. */
 const MAX_LIVE_DRAGS = 16;
+/**
+ * A nonce stops counting after this long, so one left live by a lost dragend
+ * cannot be replayed later by a page that read it off the drag.
+ */
+const DRAG_NONCE_TTL_MS = 30_000;
 
 export class Clipboard {
   /**
@@ -72,8 +77,8 @@ export class Clipboard {
           this._dragTagged = Boolean(drag.dataTransfer);
         } catch (err) { void err; /* a DataTransfer that rejects custom types */ }
         if (this._dragTagged) {
-          liveDragNonces.add(this._dragNonce);
-          if (liveDragNonces.size > MAX_LIVE_DRAGS) liveDragNonces.delete(liveDragNonces.values().next().value);
+          liveDragNonces.set(this._dragNonce, Date.now());
+          if (liveDragNonces.size > MAX_LIVE_DRAGS) liveDragNonces.delete(liveDragNonces.keys().next().value);
         }
         this._watchDragstart(drag);
       }),
@@ -122,7 +127,8 @@ export class Clipboard {
   _dragSource(dt) {
     if (Array.from(dt?.types || []).includes(EDITOR_DRAG_TYPE)) {
       const nonce = dt.getData(EDITOR_DRAG_TYPE);
-      if (!nonce || !liveDragNonces.has(nonce)) return 'external';
+      const started = nonce ? liveDragNonces.get(nonce) : undefined;
+      if (started === undefined || Date.now() - started > DRAG_NONCE_TTL_MS) return 'external';
       return nonce === this._dragNonce ? 'self' : 'editor';
     }
     return this._internalDrag && !this._dragTagged ? 'self' : 'external';
