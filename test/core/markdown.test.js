@@ -1682,3 +1682,27 @@ describe('htmlToMarkdown — every Markdown context stays closed (re-audit)', ()
     expect(htmlToMarkdown('<pre><code class="language-js">x</code></pre>')).toMatch(/^```js\n/);
   });
 });
+
+describe('markdown — fix-verification follow-ups', () => {
+  it('keeps a link title on one line, so a blank line cannot end the link', () => {
+    const md = htmlToMarkdown('<p><a href="http://a.test/" title="a&#10;&#10;&lt;img src=x onerror=alert(1)&gt;&#10;">t</a></p>');
+    expect(md).not.toContain('\n');
+    expect(md).toBe('[t](http://a.test/ "a <img src=x onerror=alert(1)> ")');
+  });
+
+  it('extracts code spans in linear time', () => {
+    const runs = Array.from({ length: 700 }, (_, i) => `${'`'.repeat(700 - i)}a`).join('');
+    const t = performance.now();
+    markdownToHTML(`# t\n\n${runs}`);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
+  it.each([
+    ['`a`', '<p><code>a</code></p>'],
+    ['``a ` b``', '<p><code>a ` b</code></p>'],
+    ['``` a ``', '<p>``` a ``</p>'],
+    ['x `a` y `b` z', '<p>x <code>a</code> y <code>b</code> z</p>'],
+  ])('code span %s', (md, html) => {
+    expect(markdownToHTML(md)).toBe(html);
+  });
+});

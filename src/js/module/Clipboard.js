@@ -5,18 +5,27 @@
  */
 
 import { on } from '../core/dom.js';
+import { randomHex } from '../core/func.js';
 import { execCommand } from '../editing/Style.js';
 import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { isMarkdown, markdownToHTML } from '../core/markdown.js';
 
 /**
  * DataTransfer type every editor instance adds to drags that start in its
- * editable, with the instance's id as the value. A drop decides where it came
- * from by reading its own DataTransfer, not a flag left by an earlier drag: a
- * dragend that never arrives (its source node was removed mid-drag) would
- * otherwise leave every later external drop unsanitised.
+ * editable, with a fresh random nonce as the value. A drop decides where it
+ * came from by reading its own DataTransfer, not a flag left by an earlier
+ * drag: a dragend that never arrives (its source node was removed mid-drag)
+ * would otherwise leave every later external drop unsanitised.
+ *
+ * Any page can put this type on its own drags, so only a nonce recorded in
+ * `liveDragNonces` by an editor's dragstart counts; anything else is external.
  */
 const EDITOR_DRAG_TYPE = 'application/x-autumnnote-drag';
+
+/** Nonces of drags started in an editor on this page, newest last. */
+const liveDragNonces = new Set();
+/** Lost dragends leave nonces behind; keep only the most recent few. */
+const MAX_LIVE_DRAGS = 16;
 
 export class Clipboard {
   /**
@@ -42,8 +51,8 @@ export class Clipboard {
     this._internalDrag = false;
     /** @type {HTMLElement|null} Image (or its figure) being moved by drag. */
     this._dragged = null;
-    /** Value this instance puts under EDITOR_DRAG_TYPE. */
-    this._dragId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    /** Nonce of the drag this instance last started (see EDITOR_DRAG_TYPE). */
+    this._dragNonce = '';
     /**
      * Whether the last dragstart could be tagged. Only a dragstart without a
      * DataTransfer (a synthetic event) falls back to `_internalDrag`.
@@ -56,13 +65,23 @@ export class Clipboard {
       on(editable, 'dragstart', (e) => {
         const drag = /** @type {DragEvent} */ (e);
         this._dragTagged = false;
+        liveDragNonces.delete(this._dragNonce);
+        this._dragNonce = randomHex(16);
         try {
-          drag.dataTransfer?.setData(EDITOR_DRAG_TYPE, this._dragId);
+          drag.dataTransfer?.setData(EDITOR_DRAG_TYPE, this._dragNonce);
           this._dragTagged = Boolean(drag.dataTransfer);
         } catch (err) { void err; /* a DataTransfer that rejects custom types */ }
+        if (this._dragTagged) {
+          liveDragNonces.add(this._dragNonce);
+          if (liveDragNonces.size > MAX_LIVE_DRAGS) liveDragNonces.delete(liveDragNonces.values().next().value);
+        }
         this._watchDragstart(drag);
       }),
-      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; }),
+      on(editable, 'dragend',   () => {
+        this._internalDrag = false;
+        this._dragged = null;
+        liveDragNonces.delete(this._dragNonce);
+      }),
       on(editable, 'dragover',  (e) => this._onDragover(e)),
       on(editable, 'drop',      (e) => this._onDrop(e)),
     );
@@ -102,7 +121,9 @@ export class Clipboard {
    */
   _dragSource(dt) {
     if (Array.from(dt?.types || []).includes(EDITOR_DRAG_TYPE)) {
-      return dt.getData(EDITOR_DRAG_TYPE) === this._dragId ? 'self' : 'editor';
+      const nonce = dt.getData(EDITOR_DRAG_TYPE);
+      if (!nonce || !liveDragNonces.has(nonce)) return 'external';
+      return nonce === this._dragNonce ? 'self' : 'editor';
     }
     return this._internalDrag && !this._dragTagged ? 'self' : 'external';
   }

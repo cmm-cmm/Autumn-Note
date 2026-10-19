@@ -197,7 +197,8 @@ function _trimEndChars(text, chars) {
 function _destination(el, attr) {
   const url = (el.getAttribute(attr) || '')
     .replace(/[\s()<>]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`);
-  const title = el.getAttribute('title');
+  // A title may not hold a blank line either; line breaks become spaces.
+  const title = el.getAttribute('title')?.replace(/\s*[\r\n]\s*/g, ' ');
   return title ? `${url} "${title.replaceAll('\\', '\\\\').replaceAll('"', String.raw`\"`)}"` : url;
 }
 
@@ -999,9 +1000,6 @@ const MARK = String.fromCharCode(0);
 // Placeholder delimiter for extracted code spans. Distinct from MARK and
 // HARD_BREAK; like them it survives _esc() untouched and matches no syntax rule.
 const CODE_MARK = String.fromCharCode(2);
-// A code span: a run of backticks, the shortest content that reaches a matching
-// run, and that run again.
-const CODE_SPAN_RE = /(`+)([^]*?)\1/g;
 
 /**
  * Pulls code spans out before anything else looks at the text.
@@ -1015,13 +1013,36 @@ const CODE_SPAN_RE = /(`+)([^]*?)\1/g;
  */
 function _extractCodeSpans(text) {
   const codes = [];
-  const replaced = text.replace(CODE_SPAN_RE, (whole, ticks, content) => {
-    // An empty span (`` with nothing between) is literal text in CommonMark.
-    if (content === '') return whole;
-    codes.push(content);
-    return `${CODE_MARK}${codes.length - 1}${CODE_MARK}`;
+  // A span opens at a backtick run and closes at the next run of exactly the
+  // same length; a run with no such partner is literal text. Runs are listed
+  // once and each length's list is walked forward only, so this stays linear —
+  // a backreference regex rescanned to the end for every shorter run.
+  const runs = Array.from(text.matchAll(/`+/g), (m) => [m.index, m[0].length]);
+  /** @type {Map<number, number[]>} run length → indexes into `runs` */
+  const byLength = new Map();
+  runs.forEach(([, len], k) => {
+    if (!byLength.has(len)) byLength.set(len, []);
+    byLength.get(len).push(k);
   });
-  return { text: replaced, codes };
+  /** @type {Map<number, number>} run length → next unread position in its list */
+  const cursor = new Map();
+  let out = '';
+  let last = 0;
+  for (let k = 0; k < runs.length;) {
+    const [start, len] = runs[k];
+    const list = byLength.get(len);
+    let p = cursor.get(len) ?? 0;
+    while (p < list.length && list[p] <= k) p++;
+    cursor.set(len, p);
+    if (p === list.length) { k++; continue; }
+    const close = list[p];
+    const end = runs[close][0];
+    codes.push(text.slice(start + len, end));
+    out += `${text.slice(last, start)}${CODE_MARK}${codes.length - 1}${CODE_MARK}`;
+    last = end + len;
+    k = close + 1;
+  }
+  return { text: out + text.slice(last), codes };
 }
 
 /**

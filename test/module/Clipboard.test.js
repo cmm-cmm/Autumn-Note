@@ -1251,3 +1251,20 @@ describe('Clipboard._cleanWordHtml — whitespace runs (re-audit)', () => {
     expect(cb._cleanWordHtml('<p class="MsoNormal" style="mso-x:1; color: red">a</p>')).toBe('<p style="color: red">a</p>');
   });
 });
+
+describe('Clipboard._onDrop — forged editor drag type', () => {
+  it('sanitises a drop whose source added the private type itself', () => {
+    const { cb } = makeClipboard();
+    const data = { 'application/x-autumnnote-drag': 'guessed', 'text/html': '<p>x<img src="y" onerror="window.__x=1"></p>' };
+    const event = {
+      dataTransfer: { files: [], types: Object.keys(data), getData: (t) => data[t] || '', dropEffect: '' },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      clientX: 0,
+      clientY: 0,
+    };
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(inserted()).not.toContain('onerror');
+  });
+});

@@ -4,6 +4,19 @@
  */
 
 /**
+ * Random hex string for values page content must not be able to guess, from
+ * crypto.getRandomValues (Math.random where crypto is unavailable).
+ * @param {number} [bytes=8]
+ * @returns {string}
+ */
+export function randomHex(bytes = 8) {
+  const buf = new Uint8Array(bytes);
+  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(buf);
+  else for (let i = 0; i < buf.length; i++) buf[i] = Math.floor(Math.random() * 256);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Clamp a value between min and max.
  * @param {number} val
  * @param {number} min

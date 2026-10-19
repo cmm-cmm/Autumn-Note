@@ -3,6 +3,8 @@
  * Inspired by Summernote's History module, rewritten without jQuery
  */
 
+import { randomHex } from '../core/func.js';
+
 /**
  * Number of characters two strings share from the start.
  * @param {string} a
@@ -30,10 +32,7 @@ const DATA_URL_RE = /data:[\w.+\/-]+;base64,[A-Za-z0-9+/=]+/g;
  * @returns {string}
  */
 function _tokenPrefix() {
-  const bytes = new Uint8Array(8);
-  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
-  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
-  return `__asn_img_${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}_`;
+  return `__asn_img_${randomHex(8)}_`;
 }
 
 export class History {
