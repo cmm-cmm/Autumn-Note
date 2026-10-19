@@ -394,3 +394,35 @@ describe('FindReplace regex toggle', () => {
     expect(fr._useRegex).toBe(false);
   });
 });
+
+// ── Toggle state ──────────────────────────────────────────────────────────────
+
+describe('FindReplace toggle buttons expose aria-pressed', () => {
+  const byLabel = (fr, label) => fr._dialog.querySelector(`.an-fr-icon-btn[aria-label="${label}"]`);
+
+  it.each([
+    ['case-sensitive', en.findReplace.caseSensitive.trim()],
+    ['regex', en.findReplace.useRegex],
+    ['whole word', en.findReplace.wholeWord],
+  ])('%s toggle starts unpressed and flips on click', (_name, label) => {
+    const { fr } = makeDialog();
+    const btn = byLabel(fr, label);
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    btn.click();
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    btn.click();
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('keeps aria-pressed in step when the hidden case checkbox is toggled programmatically', () => {
+    const { fr } = makeDialog();
+    fr._caseCheckbox.checked = true;
+    fr._caseCheckbox.dispatchEvent(new Event('change'));
+    expect(byLabel(fr, en.findReplace.caseSensitive.trim()).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('hides its SVG icons from assistive tech', () => {
+    const { fr } = makeDialog();
+    fr._dialog.querySelectorAll('svg').forEach((svg) => expect(svg.getAttribute('aria-hidden')).toBe('true'));
+  });
+});

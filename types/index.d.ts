@@ -588,6 +588,7 @@ export interface AsnLocale {
     toolbar: string;
     statistics: string;
     tableSize: string;
+    formatting: string;
   };
   tooltips: {
     link: Record<string, string>;

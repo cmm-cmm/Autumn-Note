@@ -212,3 +212,18 @@ describe('IconDialog lifecycle, filtering, and options', () => {
     dialog.destroy();
   });
 });
+
+describe('IconDialog category tabs expose aria-pressed', () => {
+  it('marks only the active category as pressed', async () => {
+    const { dialog } = makeDialog();
+    await dialog.show();
+    const all = dialog._catBar.querySelector('[data-cat="all"]');
+    const objects = dialog._catBar.querySelector('[data-cat="objects"]');
+    expect(all.getAttribute('aria-pressed')).toBe('true');
+    expect(objects.getAttribute('aria-pressed')).toBe('false');
+    objects.click();
+    expect(all.getAttribute('aria-pressed')).toBe('false');
+    expect(objects.getAttribute('aria-pressed')).toBe('true');
+    dialog.destroy();
+  });
+});

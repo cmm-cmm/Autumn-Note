@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Default colours meet WCAG AA.** `$an-primary` is now `#2563eb` (white text on it is 5.17:1, was 3.68:1) and `$an-primary-hover` `#1d4ed8`; `$an-dark-muted` is `#9399b2` (was `#6c7086`, 3.0 to 3.6:1). Form fields use a new `--an-input-border` token so their edge reaches 3:1. Hosts that set `--an-primary` themselves are unaffected.
+- Colour swatches, table-size cells and context-menu swatches are larger (at least 24px pitch) so they meet the WCAG 2.2 target size.
+
+### Fixed
+
+- Dialogs return focus to the control that opened them on Cancel or Escape, and to the editable (with the caret where the insert left it) after inserting. Dialogs are labelled by their visible title.
+- The toolbar colour palette and table-size picker work from the keyboard: Enter opens them with focus inside, arrow keys move across the table grid, Escape closes and returns focus. Swatches and cells are real buttons with names.
+- The context menu exposes `menuitem` roles, moves focus to its first item, supports Arrow, Home and End keys, and returns focus on close. Disabled items show a not-allowed cursor and ignore clicks.
+- Toggle buttons in Find & Replace, the bubble toolbar, the emoji and icon dialogs and the table tooltip report `aria-pressed`. Every editor icon is hidden from assistive technology.
+- Dark theme: context-menu hover text was unreadable (1.46:1); the dark primary button and autosave restore button have readable fills and hover states.
+- `prefers-reduced-motion` now also stops animation in the portal (bubble toolbar, crop toolbar, menus, tooltips).
+- The bubble toolbar's "Formatting", "No highlight" and custom-colour labels are translated (new `a11y.formatting` locale key).
+- Package exports carry a `default` condition and export `./package.json`, for resolvers that do not match `import`/`require`.
+
 ## [3.1.0] - 2026-09-19
 
 The editor no longer uses `document.execCommand`. Every formatting command is

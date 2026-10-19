@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playground Autumn Note — Thử trình soạn thảo trực tiếp</title>
+  <title>Playground Autumn Note | Thử trình soạn thảo trực tiếp</title>
   <meta name="description" content="Playground tương tác cho trình soạn thảo WYSIWYG Autumn Note. Cấu hình tùy chọn, tải mẫu, và xuất HTML hoặc Markdown theo thời gian thực." />
   <meta name="keywords" content="demo trình soạn thảo wysiwyg, playground rich text editor, dùng thử autumnnote, kiểm thử trình soạn thảo online" />
   <meta name="robots" content="index, follow" />
@@ -16,13 +16,13 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Autumn Note — Playground tương tác" />
-  <meta property="og:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Cấu hình tùy chọn, thử giao diện, khám phá API theo thời gian thực." />
+  <meta property="og:title" content="Autumn Note: Playground tương tác" />
+  <meta property="og:description" content="Dùng thử Autumn Note trực tiếp, trình soạn thảo WYSIWYG vanilla JS không phụ thuộc. Cấu hình tùy chọn, thử giao diện, khám phá API theo thời gian thực." />
   <meta property="og:url" content="https://autumn.konexforge.com/vi/playground.html" />
   <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Autumn Note — banner trình soạn thảo WYSIWYG" />
+  <meta property="og:image:alt" content="Autumn Note: banner trình soạn thảo WYSIWYG" />
   <meta property="og:site_name" content="Autumn Note" />
   <meta property="og:locale" content="vi_VN" />
   <meta property="og:locale:alternate" content="en_US" />
@@ -30,8 +30,8 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://autumn.konexforge.com/vi/playground.html" />
-  <meta name="twitter:title" content="Autumn Note — Playground tương tác" />
-  <meta name="twitter:description" content="Dùng thử Autumn Note trực tiếp — trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
+  <meta name="twitter:title" content="Autumn Note: Playground tương tác" />
+  <meta name="twitter:description" content="Dùng thử Autumn Note trực tiếp, trình soạn thảo WYSIWYG vanilla JS không phụ thuộc." />
   <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
@@ -55,12 +55,13 @@
 
   <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/image/banner.png" />
-  <script type="module" crossorigin src="/assets/viPlayground-B9diayDI.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/all-CDIRgWTQ.js">
-  <link rel="stylesheet" crossorigin href="/assets/all-Dl1xo6Y8.css">
-  <link rel="stylesheet" crossorigin href="/assets/playground-BiMYwqxi.css">
+  <script type="module" crossorigin src="/assets/viPlayground-GUrhOLXn.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/all-B8ceHlN2.js">
+  <link rel="stylesheet" crossorigin href="/assets/all-BWVHlvjg.css">
+  <link rel="stylesheet" crossorigin href="/assets/playground-0QWWYL4Y.css">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Bỏ qua đến nội dung</a>
 <script>
   /* Applies the saved theme before the body is laid out. The module script at
      the end of this file runs after first paint, so a returning dark-mode
@@ -85,23 +86,23 @@
       <a class="nav-link active" href="playground.html" aria-current="page">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-      <span class="lang-switch" aria-label="Ngôn ngữ">
+      <span class="lang-switch" role="group" aria-label="Ngôn ngữ">
         <a href="/playground.html" lang="en" hreflang="en">EN</a>
-        <a href="./playground.html" class="active" lang="vi" hreflang="vi">VI</a>
+        <a href="./playground.html" class="active" lang="vi" hreflang="vi" aria-current="page">VI</a>
       </span>
     </nav>
   </div>
 </header>
 
-<main class="pg-layout">
+<main class="pg-layout" id="main-content">
   <div class="pg-toolbar-bar">
-    <h1>Playground <span>— thử trình soạn thảo trực tiếp</span></h1>
+    <h1>Playground<span>: thử trình soạn thảo trực tiếp</span></h1>
   </div>
 
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>!</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
+      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>!</p><p>Thử tất cả tính năng tại đây: định dạng văn bản, chèn <a href="https://github.com/cmm-cmm/Autumn-Note">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -109,20 +110,20 @@
 
       <!-- Config card -->
       <div class="card">
-        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
+        <button type="button" class="card-header" aria-expanded="true" aria-controls="cfg-body" onclick="toggleCard(this)">
           <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Tùy chọn</span>
-          <span class="card-toggle open">▶</span>
-        </div>
+          <span class="card-toggle open" aria-hidden="true">▶</span>
+        </button>
         <div class="card-body" id="cfg-body">
           <div class="cfg-row">
-            <span class="cfg-label">Giao diện</span>
+            <label class="cfg-label" for="cfg-theme">Giao diện</label>
             <select id="cfg-theme" class="cfg-select">
               <option value="light">Sáng</option>
               <option value="dark">Tối</option>
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Ngôn ngữ</span>
+            <label class="cfg-label" for="cfg-lang">Ngôn ngữ</label>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
               <option value="vi" selected>Tiếng Việt</option>
@@ -135,28 +136,28 @@
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Thanh công cụ nổi</span>
+            <label class="cfg-label" for="cfg-bubble">Thanh công cụ nổi</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-bubble" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Phím tắt Markdown</span>
+            <label class="cfg-label" for="cfg-markdown">Phím tắt Markdown</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-markdown" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Thanh công cụ dính</span>
+            <label class="cfg-label" for="cfg-sticky">Thanh công cụ dính</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-sticky" />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Chỉ đọc</span>
+            <label class="cfg-label" for="cfg-readonly">Chỉ đọc</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-readonly" />
               <span class="cfg-track"></span>
@@ -180,10 +181,10 @@
 
       <!-- Snippet card -->
       <div class="card">
-        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
+        <button type="button" class="card-header" aria-expanded="true" aria-controls="snip-body" onclick="toggleCard(this)">
           <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Tải mẫu</span>
-          <span class="card-toggle open">▶</span>
-        </div>
+          <span class="card-toggle open" aria-hidden="true">▶</span>
+        </button>
         <div class="card-body" id="snip-body">
           <div class="snippet-grid">
             <button class="snippet-btn" onclick="loadSnippet('article')">
@@ -214,9 +215,9 @@
       <!-- Output card -->
       <div class="card output-card">
         <div class="output-tabs">
-          <button class="output-tab active" data-tab="html" onclick="switchTab('html')">HTML</button>
-          <button class="output-tab" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
-          <button class="output-tab" data-tab="stats" onclick="switchTab('stats')">Thống kê</button>
+          <button class="output-tab active" aria-pressed="true" data-tab="html" onclick="switchTab('html')">HTML</button>
+          <button class="output-tab" aria-pressed="false" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
+          <button class="output-tab" aria-pressed="false" data-tab="stats" onclick="switchTab('stats')">Thống kê</button>
         </div>
         <div class="output-body">
           <div class="output-pane active" id="tab-html">
@@ -233,40 +234,39 @@
           </div>
         </div>
         <div class="action-row">
-          <button class="act-btn" onclick="copyOutput()" title="Sao chép kết quả vào clipboard">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Sao chép
+          <button type="button" class="act-btn" id="copy-btn" onclick="copyOutput()" title="Sao chép kết quả vào clipboard">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span class="btn-label">Sao chép</span>
           </button>
-          <button class="act-btn" onclick="downloadOutput()" title="Tải file xuống">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải xuống
+          <button type="button" class="act-btn" id="download-btn" onclick="downloadOutput()" title="Tải file xuống">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span class="btn-label">Tải xuống</span>
           </button>
-          <button class="act-btn primary" onclick="sharePlayground()" title="Chia sẻ cấu hình này">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Chia sẻ
+          <button type="button" class="act-btn primary" id="share-btn" onclick="sharePlayground()" title="Chia sẻ cấu hình này">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> <span class="btn-label">Chia sẻ</span>
           </button>
         </div>
       </div>
 
     </div><!-- .panel-right -->
   </div><!-- .pg-panels -->
+  <!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
+  <section class="pg-about" aria-label="Giới thiệu playground này">
+    <h2>Bạn có thể thử gì trong playground này?</h2>
+    <ul>
+      <li><strong>Cấu hình toolbar</strong>: bật/tắt từng nút hoặc chuyển sang bố cục toolbar tùy chỉnh</li>
+      <li><strong>Giao diện</strong>: chuyển đổi giữa chế độ sáng, tối, và tự động (theo hệ thống)</li>
+      <li><strong>Phím tắt Markdown</strong>: gõ <code>**đậm**</code>, <code># Tiêu đề</code>, <code>- danh sách</code> và xem chuyển đổi ngay lập tức</li>
+      <li><strong>@mention</strong>: gõ <code>@</code> để kích hoạt gợi ý tự động</li>
+      <li><strong>Xuất nội dung</strong>: tải nội dung editor dưới dạng HTML hoặc Markdown</li>
+      <li><strong>Thanh công cụ nổi</strong>: chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
+    </ul>
+    <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
+  </section>
 </main><!-- .pg-layout -->
-
-<!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
-<section class="pg-about" aria-label="Giới thiệu playground này">
-  <h2>Bạn có thể thử gì trong playground này?</h2>
-  <ul>
-    <li><strong>Cấu hình toolbar</strong> — bật/tắt từng nút hoặc chuyển sang bố cục toolbar tùy chỉnh</li>
-    <li><strong>Giao diện</strong> — chuyển đổi giữa chế độ sáng, tối, và tự động (theo hệ thống)</li>
-    <li><strong>Phím tắt Markdown</strong> — gõ <code>**đậm**</code>, <code># Tiêu đề</code>, <code>- danh sách</code> và xem chuyển đổi ngay lập tức</li>
-    <li><strong>@mention</strong> — gõ <code>@</code> để kích hoạt gợi ý tự động</li>
-    <li><strong>Xuất nội dung</strong> — tải nội dung editor dưới dạng HTML hoặc Markdown</li>
-    <li><strong>Thanh công cụ nổi</strong> — chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
-  </ul>
-  <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
-</section>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <span>Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge</span>
-    <nav class="footer-links">
+    <nav class="footer-links" aria-label="Liên kết chân trang">
       <a href="./">Trang chủ</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="docs.html">Tài liệu</a>
@@ -281,9 +281,11 @@
     const icon = header.querySelector('.card-toggle');
     body.classList.toggle('hidden');
     icon.classList.toggle('open');
+    header.setAttribute('aria-expanded', String(!body.classList.contains('hidden')));
   }
 </script>
 
 
+<span id="a11y-status" class="sr-only" role="status" aria-live="polite"></span>
 </body>
 </html>

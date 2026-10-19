@@ -1,7 +1,7 @@
 // CodeTooltip.js - Hover tooltip for <pre> code blocks inside the editor
 // Shows a horizontal action bar above (or below) the hovered code block,
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 import { writeClipboard } from '../core/clipboard.js';
 
@@ -195,7 +195,7 @@ export class CodeTooltip {
       class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
       title,
     });
-    btn.innerHTML = icon;
+    setIcon(btn, icon);
     this._disposers.push(on(btn, 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -311,11 +311,11 @@ export class CodeTooltip {
   _flashCopied() {
     if (!this._copyBtn) return;
     const original = this._copyBtn.innerHTML;
-    this._copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    setIcon(this._copyBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`);
     this._copyBtn.classList.add('an-link-tooltip-btn--copied');
     setTimeout(() => {
       if (this._copyBtn) {
-        this._copyBtn.innerHTML = original;
+        setIcon(this._copyBtn, original);
         this._copyBtn.classList.remove('an-link-tooltip-btn--copied');
       }
     }, 1400);

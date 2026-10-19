@@ -143,6 +143,25 @@ export function createElement(tag, attrs = {}, childNodes = []) {
 }
 
 /**
+ * Sets a UI icon's markup and hides every `<svg>` in it from assistive tech:
+ * the control around the icon carries the accessible name, so the graphic is
+ * decorative (`aria-hidden`), and `focusable="false"` keeps old Edge/IE from
+ * adding the SVG to the tab order. Every icon the editor renders goes through
+ * here rather than assigning `innerHTML` directly.
+ * @param {Element} el
+ * @param {string} html
+ * @returns {Element}
+ */
+export function setIcon(el, html) {
+  el.innerHTML = html;
+  el.querySelectorAll('svg').forEach((svg) => {
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+  });
+  return el;
+}
+
+/**
  * Removes a node from its parent.
  * @param {Node} node
  */

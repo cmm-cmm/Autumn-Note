@@ -238,3 +238,29 @@ describe('LinkDialog._onInsert', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.insertLink', 'mailto:user@example.com', '', false);
   });
 });
+
+describe('LinkDialog focus after insert', () => {
+  it('moves focus to the editable, not back to the toolbar button', () => {
+    const { ld, ctx } = makeDialog();
+    ctx.layoutInfo.editable.tabIndex = 0; // jsdom does not treat contenteditable as focusable
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    ld.show();
+    ld._urlInput.focus();
+    ld._urlInput.value = 'https://example.com';
+    ld._onInsert();
+    expect(document.activeElement).toBe(ctx.layoutInfo.editable);
+  });
+
+  it('Cancel returns focus to the opener', () => {
+    const { ld } = makeDialog();
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    ld.show();
+    ld._urlInput.focus();
+    ld._dialog.querySelector('.an-btn:not(.an-btn-primary)').click();
+    expect(document.activeElement).toBe(opener);
+  });
+});

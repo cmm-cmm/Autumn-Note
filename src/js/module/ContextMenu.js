@@ -1,5 +1,5 @@
 ﻿// ContextMenu.js - Right-click context menu for editor actions
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
 import { resolvePalette } from '../core/palette.js';
 import { copySelection, cutSelection } from '../core/clipboard.js';
@@ -134,6 +134,7 @@ export class ContextMenu {
     this._disposers.push(
       on(document, 'click', (e) => this._maybeHide(e)),
       on(document, 'keydown', (e) => { if (/** @type {KeyboardEvent} */ (e).key === 'Escape') this.hide(); }),
+      on(this.el, 'keydown', (e) => this._onMenuKeydown(/** @type {KeyboardEvent} */ (e))),
       on(globalThis, 'scroll', () => this.hide(), { passive: true }),
     );
 
@@ -165,9 +166,9 @@ export class ContextMenu {
 
       // Back-navigation header
       if (it.back) {
-        const backBtn = createElement('button', { type: 'button', class: 'an-context-back' });
+        const backBtn = createElement('button', { type: 'button', class: 'an-context-back', role: 'menuitem' });
         const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
-        iconSpan.innerHTML = ICONS.back;
+        setIcon(iconSpan, ICONS.back);
         backBtn.appendChild(iconSpan);
         const backLabel = (it.localeKey && this.context.locale.contextMenu[it.localeKey]) || it.label || this.context.locale.contextMenu.back || 'Back';
         backBtn.appendChild(createElement('span', { class: 'an-context-label' }, [backLabel]));
@@ -177,6 +178,7 @@ export class ContextMenu {
           const curTop = Number.parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
           this._reposition(curLeft, curTop);
+          this._focusItem(0);
         });
         this._menuDisposers.push(off);
         this.el.appendChild(backBtn);
@@ -185,13 +187,13 @@ export class ContextMenu {
 
       // Submenu-navigate item (shows ▶ chevron, re-renders without closing)
       if (it.navigate) {
-        const btn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', 'data-name': it.name || '' });
+        const btn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', role: 'menuitem', 'aria-haspopup': 'menu', 'data-name': it.name || '' });
         if (it.icon) {
           if (it.colorStrip) {
             // Toolbar-style icon: SVG stacked above a colored strip
             const iconWrap = createElement('span', { class: 'an-context-icon an-context-icon--color', 'aria-hidden': 'true' });
             const svgSpan = createElement('span', { class: 'an-context-icon-svg' });
-            svgSpan.innerHTML = it.icon;
+            setIcon(svgSpan, it.icon);
             const strip = createElement('span', { class: 'an-context-color-strip' });
             strip.style.background = this._getSelectionColor(it.colorStrip);
             iconWrap.appendChild(svgSpan);
@@ -199,13 +201,13 @@ export class ContextMenu {
             btn.appendChild(iconWrap);
           } else {
             const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
-            iconSpan.innerHTML = it.icon;
+            setIcon(iconSpan, it.icon);
             btn.appendChild(iconSpan);
           }
         }
         btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
-        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        setIcon(chevron, `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`);
         btn.appendChild(chevron);
         const off = on(btn, 'click', (e) => {
           e.stopPropagation();
@@ -213,6 +215,7 @@ export class ContextMenu {
           const curTop = Number.parseFloat(this.el.style.top);
           this._renderItems(it.navigate());
           this._reposition(curLeft, curTop);
+          this._focusItem(0);
         });
         this._menuDisposers.push(off);
         this.el.appendChild(btn);
@@ -223,10 +226,10 @@ export class ContextMenu {
       if (it.colorPalette) {
         const palette = createElement('div', { class: 'an-context-color-palette' });
         resolvePalette(this.options).forEach((color) => {
-          const sw = createElement('div', {
+          const sw = createElement('button', {
+            type: 'button',
             class: 'an-context-color-swatch',
             title: color,
-            role: 'button',
             'aria-label': color,
           });
           sw.style.background = color;
@@ -235,13 +238,13 @@ export class ContextMenu {
           palette.appendChild(sw);
         });
         if (it.colorType === 'hiliteColor') {
-          const noColor = createElement('div', {
+          const noColor = createElement('button', {
+            type: 'button',
             class: 'an-context-color-swatch an-context-color-none',
             title: this.context.locale.contextMenu.noHighlight || 'No highlight',
-            role: 'button',
             'aria-label': this.context.locale.contextMenu.noHighlight || 'No highlight',
           });
-          noColor.innerHTML = ICONS.noColor;
+          setIcon(noColor, ICONS.noColor);
           const offNo = on(noColor, 'click', (e) => { e.stopPropagation(); this._applyColor('hiliteColor', 'transparent'); });
           this._menuDisposers.push(offNo);
           palette.appendChild(noColor);
@@ -270,15 +273,15 @@ export class ContextMenu {
         const GRID_ROWS = 8, GRID_COLS = 8;
         const wrapper = createElement('div', { class: 'an-context-table-wrap' });
 
-        const headerBtn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', 'data-name': it.name || 'table' });
+        const headerBtn = createElement('button', { type: 'button', class: 'an-context-item an-context-submenu', role: 'menuitem', 'aria-expanded': 'false', 'data-name': it.name || 'table' });
         if (it.icon) {
           const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
-          iconSpan.innerHTML = it.icon;
+          setIcon(iconSpan, it.icon);
           headerBtn.appendChild(iconSpan);
         }
         headerBtn.appendChild(createElement('span', { class: 'an-context-label' }, [this.context.locale.contextMenu.table || it.label || 'Insert Table']));
         const chevron = createElement('span', { class: 'an-context-chevron', 'aria-hidden': 'true' });
-        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+        setIcon(chevron, `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`);
         headerBtn.appendChild(chevron);
 
         const panel = createElement('div', { class: 'an-context-table-grid-panel' });
@@ -315,6 +318,7 @@ export class ContextMenu {
           e.stopPropagation();
           expanded = !expanded;
           panel.style.display = expanded ? '' : 'none';
+          headerBtn.setAttribute('aria-expanded', String(expanded));
           chevron.style.transform = expanded ? 'rotate(90deg)' : '';
           this._reposition();
         });
@@ -350,16 +354,18 @@ export class ContextMenu {
       }
 
       // Regular item
-      const btn = createElement('button', { type: 'button', class: 'an-context-item', 'data-name': it.name || '' });
+      const btn = createElement('button', { type: 'button', class: 'an-context-item', role: 'menuitem', 'data-name': it.name || '' });
       if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) /** @type {HTMLButtonElement} */ (btn).disabled = true;
       if (it.icon) {
         const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
-        iconSpan.innerHTML = it.icon;
+        setIcon(iconSpan, it.icon);
         btn.appendChild(iconSpan);
       }
       btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
+        // Disabled items stay hoverable (cursor: not-allowed), so guard here too
+        if (/** @type {HTMLButtonElement} */ (btn).disabled) return;
         this.hide();
         if (this.context.triggerEvent?.('beforeCommand', { name: it.name, source: 'contextMenu' }) === false) return;
         try { it.action(this.context); } catch (err) { console.error(err); }
@@ -411,7 +417,38 @@ export class ContextMenu {
     this.el.style.display = 'block';
     this._reposition(x, y);
     this.el.setAttribute('aria-hidden', 'false');
+    this._focusItem(0);
     this.context.triggerEvent('contextMenu:show');
+  }
+
+  /** Enabled, visible menu items in DOM order — the roving-focus targets. */
+  _menuItems() {
+    if (!this.el) return [];
+    return /** @type {HTMLButtonElement[]} */ (Array.from(this.el.querySelectorAll('[role="menuitem"]')))
+      .filter((el) => !el.disabled);
+  }
+
+  /** @param {number} index  Item index; negative counts from the end. */
+  _focusItem(index) {
+    const items = this._menuItems();
+    items.at(index)?.focus({ preventScroll: true });
+  }
+
+  /** ArrowDown/ArrowUp/Home/End move focus among the enabled items. */
+  _onMenuKeydown(event) {
+    const items = this._menuItems();
+    if (!items.length) return;
+    const current = items.indexOf(/** @type {HTMLButtonElement} */ (document.activeElement));
+    let next;
+    switch (event.key) {
+      case 'ArrowDown': next = current < 0 ? 0 : (current + 1) % items.length; break;
+      case 'ArrowUp':   next = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length; break;
+      case 'Home':      next = 0; break;
+      case 'End':       next = items.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    items[next].focus({ preventScroll: true });
   }
 
   _reposition(x, y) {
@@ -433,8 +470,12 @@ export class ContextMenu {
 
   hide() {
     if (!this.el) return;
+    // Focus left inside the menu would be stranded once it hides: return it to
+    // the editable with the selection the menu was opened on.
+    const hadFocus = this.el.contains(document.activeElement);
     this.el.style.display = 'none';
     this.el.setAttribute('aria-hidden', 'true');
+    if (hadFocus) this._focusEditable();
     this.context.triggerEvent('contextMenu:hide');
   }
 
@@ -458,6 +499,17 @@ export class ContextMenu {
     }
     const bg = cs.backgroundColor;
     return (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') ? 'transparent' : bg;
+  }
+
+  _focusEditable() {
+    const editable = this.context.layoutInfo?.editable;
+    if (!editable) return;
+    editable.focus({ preventScroll: true });
+    if (this._savedRange && editable.contains(this._savedRange.commonAncestorContainer)) {
+      const sel = globalThis.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(this._savedRange.cloneRange());
+    }
   }
 
   /** Restore selection, apply a color command, then hide the menu. */

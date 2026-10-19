@@ -85,8 +85,6 @@ export default [
         process: 'readonly',
         console: 'readonly',
         URL: 'readonly',
-        // Vite bundles its config files and defines __dirname for them.
-        __dirname: 'readonly',
       },
     },
     rules: nodeRules,

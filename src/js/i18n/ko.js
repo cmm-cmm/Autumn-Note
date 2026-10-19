@@ -98,8 +98,8 @@ export const ko = {
     insertBtn:        '삽입',
     cancelBtn:        '취소',
     detected:         (type) => `감지됨: ${type}`,
-    unknownFormat:    '알 수 없는 형식 — 직접 동영상 임베드를 시도합니다',
-    invalidUrl:       '유효하지 않은 URL — 올바른 동영상 링크를 입력하세요.',
+    unknownFormat:    '알 수 없는 형식, 직접 동영상 임베드를 시도합니다',
+    invalidUrl:       '유효하지 않은 URL, 올바른 동영상 링크를 입력하세요.',
   },
 
   emojiDialog: {
@@ -252,6 +252,7 @@ export const ko = {
     toolbar:    '편집기 도구 모음',
     statistics: '편집기 통계',
     tableSize:  '표 크기 선택',
+    formatting: '서식',
   },
 
   tooltips: {

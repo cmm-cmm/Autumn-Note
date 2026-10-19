@@ -253,6 +253,7 @@ export const vi = {
     toolbar:    'Thanh công cụ soạn thảo',
     statistics: 'Thống kê văn bản',
     tableSize:  'Chọn kích thước bảng',
+    formatting: 'Định dạng',
   },
 
   tooltips: {

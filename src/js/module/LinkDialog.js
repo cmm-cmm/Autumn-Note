@@ -139,6 +139,6 @@ export class LinkDialog extends BaseDialog {
     }
 
     this.context.invoke('editor.insertLink', url, text, newTab);
-    this._close();
+    this._close({ toEditor: true });
   }
 }

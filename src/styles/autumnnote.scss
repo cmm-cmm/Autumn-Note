@@ -120,8 +120,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .an-container *,
+  .an-portal *,
   .an-dialog-overlay *,
-  .an-slash-menu * {
+  .an-slash-menu *,
+  .an-bubble-toolbar,
+  .an-crop-toolbar {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -186,7 +189,7 @@
   padding: 0 24px 0 8px;
   background: var(--an-bg, #{$an-bg}) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E") no-repeat right 7px center;
   background-size: 8px 5px;
-  border: 1px solid var(--an-border, #{$an-border});
+  border: 1px solid var(--an-input-border, #{$an-input-border});
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
   font-family: inherit;
   font-size: 12px;
@@ -217,6 +220,11 @@
     border-color: var(--an-primary, #{$an-primary});
     box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--an-primary, #{$an-primary}) 15%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--an-primary, #{$an-primary});
+    outline-offset: 1px;
   }
 
   option {
@@ -258,13 +266,16 @@
 
 .an-table-grid {
   display: grid;
-  grid-template-columns: repeat(10, 18px);
+  grid-template-columns: repeat(10, 22px);
   gap: 2px;
 }
 
 .an-table-cell {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  appearance: none;
+  font: inherit;
   border: 1px solid var(--an-border, #{$an-border});
   border-radius: 2px;
   cursor: pointer;
@@ -322,8 +333,8 @@
 
 // Right part: small chevron arrow to open popup
 .an-color-arrow {
-  padding: 0 3px !important;
-  min-width: unset !important;
+  padding: 0 4px !important;
+  min-width: 24px !important;
   border-left: 1px solid transparent;
 
   &:hover {
@@ -348,21 +359,25 @@
 
 .an-color-swatches {
   display: grid;
-  grid-template-columns: repeat(8, 18px);
-  gap: 3px;
+  grid-template-columns: repeat(8, 22px);
+  gap: 2px;
   margin-bottom: 8px;
 }
 
 .an-color-swatch {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  appearance: none;
+  font: inherit;
   border-radius: 2px;
   cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.12);
   transition: transform 0.1s ease;
   position: relative;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     transform: scale(1.25);
     z-index: 1;
     outline: 2px solid var(--an-primary, #{$an-primary});
@@ -438,6 +453,16 @@
     svg {
       stroke: var(--an-primary, #{$an-primary});
     }
+  }
+
+  &:active:not(:disabled) {
+    background: var(--an-bg-btn-active, #{$an-bg-btn-active});
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 
   &:focus-visible {
@@ -838,7 +863,7 @@
 }
 
 .an-code-tooltip .an-link-tooltip-url {
-  color: #059669; // emerald green for code
+  color: #047857; // emerald-700 for code: 5.48:1 on white
   font-weight: 500;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 11px;
@@ -919,7 +944,7 @@
     width: 80px;
     height: 28px;
     padding: 0 8px;
-    border: 1px solid var(--an-border, #{$an-border});
+    border: 1px solid var(--an-input-border, #{$an-input-border});
     border-radius: var(--an-radius-sm, #{$an-radius-sm});
     font-size: 13px;
     font-family: inherit;
@@ -930,6 +955,11 @@
       border-color: var(--an-primary, #{$an-primary});
       box-shadow: 0 0 0 2px rgba($an-primary, 0.15);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--an-primary, #{$an-primary}) 15%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--an-primary, #{$an-primary});
+      outline-offset: 1px;
     }
   }
 
@@ -1014,6 +1044,13 @@
   line-height: 1.5;
   background: #1e1e2e;
   color: #cdd6f4;
+
+  // The container ring only follows the rich-text area, so the source view
+  // draws its own. Light blue keeps 3:1 on the fixed dark background.
+  &:focus-visible {
+    outline: 2px solid #89b4fa;
+    outline-offset: -2px;
+  }
 }
 
 // =============================================================================
@@ -1283,7 +1320,7 @@
 .an-input {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid var(--an-border, #{$an-border});
+  border: 1px solid var(--an-input-border, #{$an-input-border});
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
   font-family: inherit;
   font-size: var(--an-font-size, #{$an-font-size});
@@ -1296,6 +1333,11 @@
     border-color: var(--an-primary, #{$an-primary});
     box-shadow: 0 0 0 3px rgba($an-primary, 0.15);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--an-primary, #{$an-primary}) 15%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--an-primary, #{$an-primary});
+    outline-offset: 1px;
   }
 }
 
@@ -1332,7 +1374,8 @@
   transition: background 0.12s, color 0.12s;
   line-height: 1.4;
 
-  &:hover {
+  &:hover:not(:disabled),
+  &:focus-visible {
     background: var(--an-primary, #{$an-primary});
     color: #fff;
 
@@ -1347,8 +1390,7 @@
 
   &:disabled {
     opacity: 0.38;
-    cursor: default;
-    pointer-events: none;
+    cursor: not-allowed;
   }
 }
 
@@ -1445,13 +1487,16 @@
 .an-context-color-palette {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
   padding: 6px 12px 2px;
 }
 
 .an-context-color-swatch {
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  appearance: none;
+  font: inherit;
   border-radius: 3px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   cursor: pointer;
@@ -1459,7 +1504,8 @@
   position: relative;
   transition: transform 0.1s;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     transform: scale(1.28);
     z-index: 1;
     border-color: rgba(0, 0, 0, 0.4);
@@ -1488,8 +1534,8 @@
   cursor: pointer;
 
   input[type='color'] {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: 1px solid var(--an-border, #{$an-border});
     border-radius: 3px;
@@ -2071,9 +2117,9 @@ $an-video-accent: #8b5cf6; // violet-500
 // =============================================================================
 
 .an-code-lang-select {
-  height: 22px;
+  height: 24px;
   padding: 0 20px 0 6px;
-  border: 1px solid var(--an-border, #{$an-border});
+  border: 1px solid var(--an-input-border, #{$an-input-border});
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
   font-family: inherit;
   font-size: 11px;
@@ -2085,6 +2131,7 @@ $an-video-accent: #8b5cf6; // violet-500
   cursor: pointer;
 
   &:focus { outline: none; border-color: var(--an-primary, #{$an-primary}); }
+  &:focus-visible { outline: 2px solid var(--an-primary, #{$an-primary}); outline-offset: 1px; }
   &:hover { border-color: var(--an-primary, #{$an-primary}); }
 }
 
@@ -2101,6 +2148,7 @@ $an-video-accent: #8b5cf6; // violet-500
   --an-primary: #{$an-dark-primary};
   --an-primary-hover: #{$an-dark-primary-hover};
   --an-border: #{$an-dark-border};
+  --an-input-border: #{$an-dark-input-border};
   --an-bg: #{$an-dark-bg};
   --an-bg-toolbar: #{$an-dark-bg-toolbar};
   --an-bg-btn-hover: #{$an-dark-bg-btn-hover};
@@ -2146,12 +2194,14 @@ $an-video-accent: #8b5cf6; // violet-500
       background: #3b5bdb;
       border-color: #3b5bdb;
       color: #fff;
+
+      &:hover:not(:disabled) { background: #364fc7; border-color: #364fc7; }
     }
   }
 
   .an-select {
     background-color: var(--an-bg);
-    border-color: var(--an-border);
+    border-color: var(--an-input-border);
     color: var(--an-text);
 
     &:hover, &:focus { border-color: var(--an-primary); }
@@ -2332,6 +2382,15 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-context-table-grid-panel { border-top-color: var(--an-border); }
 
   .an-context-item { color: var(--an-text); }
+  // Pale --an-primary cannot carry light text, so dark hover uses the active fill.
+  .an-context-item:hover:not(:disabled),
+  .an-context-item:focus-visible {
+    background: var(--an-bg-btn-active);
+    color: var(--an-text);
+
+    .an-context-icon svg,
+    .an-context-chevron svg { stroke: var(--an-text); }
+  }
   .an-context-sep { background: var(--an-border); }
 
   .an-context-color-swatch {
@@ -2534,13 +2593,17 @@ $an-video-accent: #8b5cf6; // violet-500
 // =============================================================================
 
 .an-count-warn {
-  color: #f59e0b; // amber-400 — approaching limit
+  color: #b45309; // amber-700, approaching limit: 4.81:1 on the statusbar
   font-weight: 600;
+
+  @include an-dark-scope { color: #fbbf24; }
 }
 
 .an-count-exceeded {
-  color: #ef4444; // red-500 — over limit
+  color: #b91c1c; // red-700, over limit
   font-weight: 700;
+
+  @include an-dark-scope { color: #f87171; }
 }
 
 // =============================================================================
@@ -2663,6 +2726,13 @@ $an-video-accent: #8b5cf6; // violet-500
 
   &:hover {
     background: var(--an-primary-hover, #{$an-primary-hover});
+  }
+
+  // Dark --an-primary is a pale blue that white text cannot sit on.
+  @include an-dark-scope {
+    background: #3b5bdb;
+
+    &:hover { background: #364fc7; }
   }
 }
 

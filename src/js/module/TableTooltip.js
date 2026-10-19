@@ -1,7 +1,7 @@
 // TableTooltip.js - Hover tooltip for tables inside the editor
 // Shows a horizontal action bar above (or below) the hovered table,
 // similar in appearance and interaction to ImageTooltip / VideoTooltip.
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon } from '../core/dom.js';
 import { ICONS } from './table-icons.js';
 import {
   getVisualColIndex,
@@ -331,6 +331,7 @@ export class TableTooltip {
 
     // Select-cells toggle
     this._selectBtn = this._makeBtn(ICONS.selectCells, L.selectCells, () => this._toggleSelectMode());
+    this._selectBtn.setAttribute('aria-pressed', 'false');
     el.appendChild(this._selectBtn);
 
     el.appendChild(this._sep());
@@ -373,7 +374,7 @@ export class TableTooltip {
       title: L.cellBackground,
     });
     const shadeSvgWrap = createElement('span', { class: 'an-bubble-btn-svg' });
-    shadeSvgWrap.innerHTML = ICONS.cellShade;
+    setIcon(shadeSvgWrap, ICONS.cellShade);
     const shadeStrip = createElement('span', { class: 'an-link-tooltip-color-strip' });
     shadeBtn.appendChild(shadeSvgWrap);
     shadeBtn.appendChild(shadeStrip);
@@ -400,7 +401,7 @@ export class TableTooltip {
       title: L.tableBorderColor,
     });
     const borderColorSvgWrap = createElement('span', { class: 'an-bubble-btn-svg' });
-    borderColorSvgWrap.innerHTML = ICONS.borderColor;
+    setIcon(borderColorSvgWrap, ICONS.borderColor);
     const borderColorStrip = createElement('span', { class: 'an-link-tooltip-color-strip' });
     borderColorBtn.appendChild(borderColorSvgWrap);
     borderColorBtn.appendChild(borderColorStrip);
@@ -455,7 +456,7 @@ export class TableTooltip {
         : 'an-link-tooltip-btn',
       title,
     });
-    btn.innerHTML = icon;
+    setIcon(btn, icon);
     this._disposers.push(on(btn, 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -510,7 +511,10 @@ export class TableTooltip {
     // Reset select mode
     if (this._selectMode) {
       this._selectMode = false;
-      if (this._selectBtn) this._selectBtn.classList.remove('an-link-tooltip-btn--active');
+      if (this._selectBtn) {
+        this._selectBtn.classList.remove('an-link-tooltip-btn--active');
+        this._selectBtn.setAttribute('aria-pressed', 'false');
+      }
       if (this._editable) this._editable.classList.remove('an-table-select-mode');
     }
     this._clearSelection();
@@ -572,6 +576,7 @@ export class TableTooltip {
     this._selectMode = !this._selectMode;
     if (this._selectBtn) {
       this._selectBtn.classList.toggle('an-link-tooltip-btn--active', this._selectMode);
+      this._selectBtn.setAttribute('aria-pressed', String(this._selectMode));
     }
     if (this._editable) {
       this._editable.classList.toggle('an-table-select-mode', this._selectMode);

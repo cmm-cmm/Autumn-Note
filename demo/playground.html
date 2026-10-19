@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Autumn Note Playground — Try the Editor Live</title>
+  <title>Autumn Note Playground | Try the Editor Live</title>
   <meta name="description" content="Interactive playground for Autumn Note WYSIWYG editor. Configure options, load snippets, and export HTML or Markdown in real time." />
   <meta name="keywords" content="wysiwyg editor demo, rich text editor playground, autumnnote try, online editor test" />
   <meta name="robots" content="index, follow" />
@@ -16,21 +16,21 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Autumn Note — Interactive Playground" />
-  <meta property="og:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
+  <meta property="og:title" content="Autumn Note: Interactive Playground" />
+  <meta property="og:description" content="Try Autumn Note live: the zero-dependency vanilla JS WYSIWYG editor. Configure options, test themes, and explore the API in real time." />
   <meta property="og:url" content="https://autumn.konexforge.com/playground.html" />
   <meta property="og:image" content="https://autumn.konexforge.com/image/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Autumn Note — WYSIWYG editor banner" />
+  <meta property="og:image:alt" content="Autumn Note: WYSIWYG editor banner" />
   <meta property="og:site_name" content="Autumn Note" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://autumn.konexforge.com/playground.html" />
-  <meta name="twitter:title" content="Autumn Note — Interactive Playground" />
-  <meta name="twitter:description" content="Try Autumn Note live — the zero-dependency vanilla JS WYSIWYG editor." />
+  <meta name="twitter:title" content="Autumn Note: Interactive Playground" />
+  <meta name="twitter:description" content="Try Autumn Note live: the zero-dependency vanilla JS WYSIWYG editor." />
   <meta name="twitter:image" content="https://autumn.konexforge.com/image/og-banner.png" />
 
   <!-- JSON-LD -->
@@ -58,6 +58,7 @@
   <link rel="stylesheet" href="assets/playground.css" />
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 <script>
   /* Applies the saved theme before the body is laid out. The module script at
      the end of this file runs after first paint, so a returning dark-mode
@@ -82,23 +83,23 @@
       <a class="nav-link active" href="playground.html" aria-current="page">Playground</a>
       <a class="nav-link" href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a class="nav-link" href="https://www.npmjs.com/package/autumnnote" target="_blank" rel="noopener noreferrer">npm</a>
-      <span class="lang-switch" aria-label="Language">
-        <a href="./playground.html" class="active" lang="en" hreflang="en">EN</a>
+      <span class="lang-switch" role="group" aria-label="Language">
+        <a href="./playground.html" class="active" lang="en" hreflang="en" aria-current="page">EN</a>
         <a href="/vi/playground.html" lang="vi" hreflang="vi">VI</a>
       </span>
     </nav>
   </div>
 </header>
 
-<main class="pg-layout">
+<main class="pg-layout" id="main-content">
   <div class="pg-toolbar-bar">
-    <h1>Playground <span>— try the editor live</span></h1>
+    <h1>Playground<span>: try the editor live</span></h1>
   </div>
 
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Welcome to the <strong>Autumn Note Playground</strong>!</p><p>Try all the features here — format text, insert a <a href="#">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
+      <textarea id="editor-el"><p>Welcome to the <strong>Autumn Note Playground</strong>!</p><p>Try all the features here: format text, insert a <a href="https://github.com/cmm-cmm/Autumn-Note">link</a>, embed a table, or use the bubble toolbar after selecting text.</p><p>Tip: type <code>**bold**</code>, <code>## heading</code>, or <code>- item</code> at the start of a line to trigger <em>markdown shortcuts</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -106,20 +107,20 @@
 
       <!-- Config card -->
       <div class="card">
-        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
+        <button type="button" class="card-header" aria-expanded="true" aria-controls="cfg-body" onclick="toggleCard(this)">
           <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Options</span>
-          <span class="card-toggle open">▶</span>
-        </div>
+          <span class="card-toggle open" aria-hidden="true">▶</span>
+        </button>
         <div class="card-body" id="cfg-body">
           <div class="cfg-row">
-            <span class="cfg-label">Theme</span>
+            <label class="cfg-label" for="cfg-theme">Theme</label>
             <select id="cfg-theme" class="cfg-select">
               <option value="light">Light</option>
               <option value="dark">Dark</option>
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Language</span>
+            <label class="cfg-label" for="cfg-lang">Language</label>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
               <option value="vi">Tiếng Việt</option>
@@ -132,28 +133,28 @@
             </select>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Bubble toolbar</span>
+            <label class="cfg-label" for="cfg-bubble">Bubble toolbar</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-bubble" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Markdown shortcuts</span>
+            <label class="cfg-label" for="cfg-markdown">Markdown shortcuts</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-markdown" checked />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Sticky toolbar</span>
+            <label class="cfg-label" for="cfg-sticky">Sticky toolbar</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-sticky" />
               <span class="cfg-track"></span>
             </label>
           </div>
           <div class="cfg-row">
-            <span class="cfg-label">Read only</span>
+            <label class="cfg-label" for="cfg-readonly">Read only</label>
             <label class="cfg-toggle">
               <input type="checkbox" id="cfg-readonly" />
               <span class="cfg-track"></span>
@@ -177,10 +178,10 @@
 
       <!-- Snippet card -->
       <div class="card">
-        <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
+        <button type="button" class="card-header" aria-expanded="true" aria-controls="snip-body" onclick="toggleCard(this)">
           <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Load Snippet</span>
-          <span class="card-toggle open">▶</span>
-        </div>
+          <span class="card-toggle open" aria-hidden="true">▶</span>
+        </button>
         <div class="card-body" id="snip-body">
           <div class="snippet-grid">
             <button class="snippet-btn" onclick="loadSnippet('article')">
@@ -211,9 +212,9 @@
       <!-- Output card -->
       <div class="card output-card">
         <div class="output-tabs">
-          <button class="output-tab active" data-tab="html" onclick="switchTab('html')">HTML</button>
-          <button class="output-tab" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
-          <button class="output-tab" data-tab="stats" onclick="switchTab('stats')">Stats</button>
+          <button class="output-tab active" aria-pressed="true" data-tab="html" onclick="switchTab('html')">HTML</button>
+          <button class="output-tab" aria-pressed="false" data-tab="markdown" onclick="switchTab('markdown')">Markdown</button>
+          <button class="output-tab" aria-pressed="false" data-tab="stats" onclick="switchTab('stats')">Stats</button>
         </div>
         <div class="output-body">
           <div class="output-pane active" id="tab-html">
@@ -230,40 +231,39 @@
           </div>
         </div>
         <div class="action-row">
-          <button class="act-btn" onclick="copyOutput()" title="Copy output to clipboard">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy
+          <button type="button" class="act-btn" id="copy-btn" onclick="copyOutput()" title="Copy output to clipboard">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> <span class="btn-label">Copy</span>
           </button>
-          <button class="act-btn" onclick="downloadOutput()" title="Download file">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download
+          <button type="button" class="act-btn" id="download-btn" onclick="downloadOutput()" title="Download file">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span class="btn-label">Download</span>
           </button>
-          <button class="act-btn primary" onclick="sharePlayground()" title="Share this configuration">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share
+          <button type="button" class="act-btn primary" id="share-btn" onclick="sharePlayground()" title="Share this configuration">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> <span class="btn-label">Share</span>
           </button>
         </div>
       </div>
 
     </div><!-- .panel-right -->
   </div><!-- .pg-panels -->
+  <!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
+  <section class="pg-about" aria-label="About this playground">
+    <h2>What can you try in this playground?</h2>
+    <ul>
+      <li><strong>Toolbar configuration</strong>: toggle individual buttons or swap to a custom toolbar layout</li>
+      <li><strong>Themes</strong>: switch between light, dark, and auto (system preference) themes</li>
+      <li><strong>Markdown shortcuts</strong>: type <code>**bold**</code>, <code># Heading</code>, <code>- list</code> and watch them transform instantly</li>
+      <li><strong>@mention</strong>: type <code>@</code> to trigger the mention autocomplete</li>
+      <li><strong>Export</strong>: download the editor content as HTML or Markdown</li>
+      <li><strong>Bubble toolbar</strong>: select any text to see the floating context toolbar</li>
+    </ul>
+    <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
+  </section>
 </main><!-- .pg-layout -->
-
-<!-- Static content for crawlers and AI engines — playground body is JS-rendered -->
-<section class="pg-about" aria-label="About this playground">
-  <h2>What can you try in this playground?</h2>
-  <ul>
-    <li><strong>Toolbar configuration</strong> — toggle individual buttons or swap to a custom toolbar layout</li>
-    <li><strong>Themes</strong> — switch between light, dark, and auto (system preference) themes</li>
-    <li><strong>Markdown shortcuts</strong> — type <code>**bold**</code>, <code># Heading</code>, <code>- list</code> and watch them transform instantly</li>
-    <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
-    <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
-    <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
-  </ul>
-  <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
-</section>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <span>Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge</span>
-    <nav class="footer-links">
+    <nav class="footer-links" aria-label="Footer links">
       <a href="./">Home</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="docs.html">Docs</a>
@@ -278,6 +278,7 @@
     const icon = header.querySelector('.card-toggle');
     body.classList.toggle('hidden');
     icon.classList.toggle('open');
+    header.setAttribute('aria-expanded', String(!body.classList.contains('hidden')));
   }
 </script>
 
@@ -330,10 +331,10 @@ const SNIPPETS = {
 <tbody>
 <tr><td>Rich text editing</td><td>✓</td><td>✓</td><td>✓</td></tr>
 <tr><td>Image upload</td><td>5 MB</td><td>50 MB</td><td>Unlimited</td></tr>
-<tr><td>Collaboration</td><td>—</td><td>✓</td><td>✓</td></tr>
-<tr><td>Custom toolbar</td><td>—</td><td>✓</td><td>✓</td></tr>
-<tr><td>Plugin API</td><td>—</td><td>—</td><td>✓</td></tr>
-<tr><td>Priority support</td><td>—</td><td>—</td><td>✓</td></tr>
+<tr><td>Collaboration</td><td>No</td><td>✓</td><td>✓</td></tr>
+<tr><td>Custom toolbar</td><td>No</td><td>✓</td><td>✓</td></tr>
+<tr><td>Plugin API</td><td>No</td><td>No</td><td>✓</td></tr>
+<tr><td>Priority support</td><td>No</td><td>No</td><td>✓</td></tr>
 </tbody></table>
 <p>All plans include <strong>unlimited editors per page</strong> and <strong>TypeScript support</strong>.</p>`,
 
@@ -373,7 +374,7 @@ const editor = AutumnNote.create('#editor', {
 <h2>Text Colours</h2>
 <p><span style="color:#e11d48">Red text</span>, <span style="color:#2563eb">blue text</span>, <span style="background-color:#fef08a">highlighted text</span>.</p>
 <h2>Blockquote</h2>
-<blockquote>Design is not just what it looks like and feels like. Design is how it works. — Steve Jobs</blockquote>
+<blockquote>Design is not just what it looks like and feels like. Design is how it works. (Steve Jobs)</blockquote>
 <h2>Lists</h2>
 <ul><li>Unordered item one</li><li>Unordered item two</li><li>Unordered item three</li></ul>
 <ol><li>First ordered step</li><li>Second ordered step</li><li>Third ordered step</li></ol>`,
@@ -388,7 +389,7 @@ title: Markdown Import Demo
 Markdown Import
 ===============
 
-This content was loaded from **raw markdown**, not HTML — the same pipeline used when you paste markdown text or drop a \`.md\` file. The frontmatter above was stripped automatically.
+This content was loaded from **raw markdown**, not HTML, the same pipeline used when you paste markdown text or drop a \`.md\` file. The frontmatter above was stripped automatically.
 
 ## Inline formatting ##
 
@@ -525,19 +526,35 @@ window.loadSnippet = (key) => {
 };
 window.switchTab = (tab) => {
   currentTab = tab;
-  document.querySelectorAll('.output-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.output-tab').forEach(t => {
+    const on = t.dataset.tab === tab;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-pressed', String(on));
+  });
   document.querySelectorAll('.output-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
 };
+function announce(msg) {
+  const live = document.getElementById('a11y-status');
+  if (!live) return;
+  live.textContent = '';
+  setTimeout(() => { live.textContent = msg; }, 50);
+}
 window.copyOutput = () => {
   let text = '';
   if (currentTab === 'html') text = editor?.getHTML() || '';
   else if (currentTab === 'markdown') text = editor?.getMarkdown() || '';
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.act-btn');
+    const btn = document.querySelector('#copy-btn .btn-label');
     const orig = btn.textContent;
     btn.textContent = '✓ Copied!';
+    announce('Copied to clipboard');
     setTimeout(() => { btn.textContent = orig; }, 1500);
-  }).catch(() => {});
+  }).catch(() => {
+    const btn = document.querySelector('#copy-btn .btn-label');
+    btn.textContent = '✗ Copy failed';
+    announce('Copy failed. Select the output and copy it manually.');
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
 };
 window.downloadOutput = () => {
   if (!editor) return;
@@ -551,7 +568,7 @@ window.downloadOutput = () => {
   a.href = URL.createObjectURL(new Blob([content], { type: mime }));
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(a.href);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
 window.sharePlayground = () => {
   if (!editor) return;
@@ -562,9 +579,10 @@ window.sharePlayground = () => {
   const hash = btoa(encodeURIComponent(JSON.stringify(state)));
   const url = location.origin + location.pathname + '#' + hash;
   navigator.clipboard.writeText(url).then(() => {
-    const btn = document.querySelector('.act-btn.primary');
+    const btn = document.querySelector('#share-btn .btn-label');
     const orig = btn.textContent;
     btn.textContent = '✓ Link copied!';
+    announce('Copied to clipboard');
     setTimeout(() => { btn.textContent = orig; }, 2000);
   }).catch(() => { prompt('Copy this URL:', url); });
 };
@@ -620,5 +638,6 @@ document.body.classList.toggle('dark', document.getElementById('cfg-theme').valu
 createEditor(hashHtml || undefined);
 </script>
 
+<span id="a11y-status" class="sr-only" role="status" aria-live="polite"></span>
 </body>
 </html>

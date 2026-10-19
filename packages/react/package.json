@@ -10,8 +10,10 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "sideEffects": false,
   "files": [

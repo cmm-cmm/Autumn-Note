@@ -801,3 +801,67 @@ describe('BubbleToolbar _ACTIONS — action function bodies', () => {
     bt.destroy();
   });
 });
+
+// ── Accessibility ─────────────────────────────────────────────────────────────
+
+describe('BubbleToolbar accessibility', () => {
+  it('names the toolbar from the locale', () => {
+    const { bt } = makeBubble();
+    expect(bt._el.getAttribute('aria-label')).toBe('Formatting');
+    bt.destroy();
+
+    const ctx = { ...makeContext(), locale: { a11y: { formatting: 'Định dạng' } } };
+    const localised = new BubbleToolbar(ctx);
+    localised.initialize();
+    expect(localised._el.getAttribute('aria-label')).toBe('Định dạng');
+    localised.destroy();
+  });
+
+  it('exposes toggle state with aria-pressed, in step with an-active', () => {
+    const { bt, ctx } = makeBubble();
+    const bold = bt._el.querySelector('[data-name="bold"]');
+    expect(bold.getAttribute('aria-pressed')).toBe('false');
+    // Colour and one-shot buttons are not toggles
+    expect(bt._el.querySelector('[data-name="foreColor"]').hasAttribute('aria-pressed')).toBe(false);
+    expect(bt._el.querySelector('[data-name="removeFormat"]').hasAttribute('aria-pressed')).toBe(false);
+
+    const range = document.createRange();
+    range.selectNodeContents(ctx.layoutInfo.editable.querySelector('strong'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    bt._syncActive();
+    expect(bold.classList.contains('an-active')).toBe(true);
+    expect(bold.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('renders colour swatches as named buttons with localised "No highlight"', () => {
+    const ctx = { ...makeContext(), locale: { contextMenu: { noHighlight: 'Sin resaltado', customColor: 'Color personalizado', customColorLabel: 'Personalizado…' } } };
+    const bt = new BubbleToolbar(ctx);
+    bt.initialize();
+    const picker = /** @type {any} */ (bt._picker);
+    const swatches = picker._paletteEl.querySelectorAll('.an-context-color-swatch');
+    expect(swatches.length).toBeGreaterThan(0);
+    swatches.forEach((sw) => {
+      expect(sw.tagName).toBe('BUTTON');
+      expect(sw.getAttribute('type')).toBe('button');
+      expect(sw.getAttribute('aria-label')).toBeTruthy();
+    });
+    const none = picker._noColorBtn;
+    expect(none.tagName).toBe('BUTTON');
+    expect(none.getAttribute('aria-label')).toBe('Sin resaltado');
+    expect(none.title).toBe('Sin resaltado');
+    expect(picker._colorInput.getAttribute('aria-label')).toBe('Color personalizado');
+    expect(bt._picker.querySelector('.an-context-color-custom span').textContent).toBe('Personalizado…');
+    bt.destroy();
+  });
+
+  it('hides button SVG icons from assistive tech', () => {
+    const { bt } = makeBubble();
+    const svgs = [...bt._el.querySelectorAll('svg'), ...bt._picker.querySelectorAll('svg')];
+    expect(svgs.length).toBeGreaterThan(0);
+    svgs.forEach((svg) => {
+      expect(svg.getAttribute('aria-hidden')).toBe('true');
+      expect(svg.getAttribute('focusable')).toBe('false');
+    });
+  });
+});

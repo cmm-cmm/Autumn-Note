@@ -253,6 +253,7 @@ export const ja = {
     toolbar:    'エディターツールバー',
     statistics: 'エディターの統計',
     tableSize:  '表のサイズを選択',
+    formatting: '書式',
   },
 
   tooltips: {

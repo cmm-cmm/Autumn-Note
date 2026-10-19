@@ -265,6 +265,7 @@ export const en = {
     toolbar:    'Editor toolbar',
     statistics: 'Editor statistics',
     tableSize:  'Select table size',
+    formatting: 'Formatting',
   },
 
   tooltips: {

@@ -1,5 +1,8 @@
-import { createElement, on, trapFocus, makeDraggable, portalOf } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable, portalOf, setIcon } from '../core/dom.js';
 import { withSavedRange } from '../core/range.js';
+
+/** Source of unique ids for dialog titles (aria-labelledby targets). */
+let titleSeq = 0;
 
 /**
  * Shared lifecycle and shell-building logic for all modal dialogs.
@@ -17,6 +20,8 @@ export class BaseDialog {
     /** @type {HTMLElement|null} First focusable input; set by subclass in _buildDialog(). */
     this._firstInput = null;
     this._removeTrap = null;
+    /** @type {HTMLElement|null} Element focused before the dialog opened. */
+    this._returnFocus = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -56,16 +61,70 @@ export class BaseDialog {
 
   _open() {
     if (this._dialog) {
+      const active = /** @type {HTMLElement|null} */ (document.activeElement);
+      this._returnFocus = active && active !== document.body && !this._dialog.contains(active) ? active : null;
       this._dialog.style.display = 'flex';
       this._removeTrap = trapFocus(this._dialog, () => this._close());
       setTimeout(() => this._firstInput?.focus(), 50);
     }
   }
 
-  _close() {
-    if (this._dialog) this._dialog.style.display = 'none';
+  /**
+   * Hides the dialog and puts keyboard focus back where the user was.
+   *
+   * Dismissing (Cancel, Escape, overlay click) returns focus to the element
+   * that opened the dialog, or to the editable with the saved selection when
+   * that element is gone. After an insert, pass `{ toEditor: true }`: the
+   * caller has already placed the caret after the new content, so focus moves
+   * to the editable and that caret is kept rather than the stale saved range.
+   * @param {{ toEditor?: boolean }} [opts]
+   */
+  _close({ toEditor = false } = {}) {
+    const dialog = this._dialog;
+    const wasOpen = !!dialog && dialog.style.display !== 'none';
+    if (dialog) dialog.style.display = 'none';
     if (this._removeTrap) { this._removeTrap(); this._removeTrap = null; }
+    const savedRange = this._savedRange;
+    const returnFocus = this._returnFocus;
     this._savedRange = null;
+    this._returnFocus = null;
+    if (!wasOpen) return;
+
+    // Only move focus that the dialog itself holds (or that was lost to
+    // <body>); a subclass or the host page that already focused something
+    // else keeps it.
+    const active = document.activeElement;
+    if (active && active !== document.body && !dialog.contains(active)) return;
+
+    if (toEditor) { this._focusEditable(); return; }
+    const editable = this.context.layoutInfo?.editable;
+    if (returnFocus?.isConnected && returnFocus !== editable) {
+      returnFocus.focus({ preventScroll: true });
+      if (document.activeElement === returnFocus) return;
+    }
+    this._focusEditable(savedRange);
+  }
+
+  /**
+   * Focuses the editable without losing the caret: focusing can reset the
+   * selection in some browsers, so the live (or given saved) range is re-applied.
+   * @param {import('../core/range.js').WrappedRange|null} [savedRange]
+   */
+  _focusEditable(savedRange = null) {
+    const editable = this.context.layoutInfo?.editable;
+    if (!editable) return;
+    const sel = globalThis.getSelection();
+    const live = sel?.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+    editable.focus({ preventScroll: true });
+    let saved = null;
+    try { saved = savedRange?.toNativeRange() ?? null; } catch { saved = null; } // stale after a DOM change
+    if (sel && saved && editable.contains(saved.commonAncestorContainer)) {
+      sel.removeAllRanges();
+      sel.addRange(saved);
+    } else if (sel && live && editable.contains(live.commonAncestorContainer)) {
+      sel.removeAllRanges();
+      sel.addRange(live);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -81,18 +140,20 @@ export class BaseDialog {
    * @returns {{ overlay: HTMLElement, box: HTMLElement }}
    */
   _buildDialogShell(ariaLabel, iconHtml, titleText) {
+    const titleId = `an-dialog-title-${++titleSeq}`;
     const overlay = createElement('div', {
       class: 'an-dialog-overlay',
       role: 'dialog',
       'aria-modal': 'true',
       'aria-label': ariaLabel,
+      'aria-labelledby': titleId,
     });
     const box = createElement('div', { class: 'an-dialog-box' });
 
     const header = createElement('div', { class: 'an-dialog-header' });
-    const iconEl = createElement('span', { class: 'an-dialog-icon' });
-    iconEl.innerHTML = iconHtml;
-    const titleEl = createElement('h3', { class: 'an-dialog-title' });
+    const iconEl = createElement('span', { class: 'an-dialog-icon', 'aria-hidden': 'true' });
+    setIcon(iconEl, iconHtml);
+    const titleEl = createElement('h3', { class: 'an-dialog-title', id: titleId });
     titleEl.textContent = titleText;
     header.appendChild(iconEl);
     header.appendChild(titleEl);

@@ -133,9 +133,12 @@ function main() {
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
     );
     shipped = packedFiles(raw).map((f) => f.path);
-  } catch {
-    // When npm is not available in the current runtime/environment,
-    // determine shipped files directly from package.json#files.
+  } catch (err) {
+    // Only a missing npm binary (a Bun- or Deno-only machine) falls back. Any
+    // other failure, an npm error or output packedFiles() cannot read, must
+    // still fail the release gate rather than quietly check a guessed list.
+    if (err?.code !== 'ENOENT') throw err;
+    console.warn('check-package-files: npm not found, approximating the tarball from package.json#files.');
     shipped = fallbackPackedFiles();
   }
 

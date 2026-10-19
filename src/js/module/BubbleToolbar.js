@@ -11,7 +11,7 @@
  * Any name not found in the built-in map is silently ignored.
  */
 
-import { on, portalOf } from '../core/dom.js';
+import { on, portalOf, setIcon } from '../core/dom.js';
 import { resolvePalette } from '../core/palette.js';
 import * as Style from '../editing/Style.js';
 import { resolveIcon } from './Buttons.js';
@@ -137,7 +137,7 @@ export class BubbleToolbar {
     const el = document.createElement('div');
     el.className = 'an-bubble-toolbar';
     el.setAttribute('role', 'toolbar');
-    el.setAttribute('aria-label', 'Formatting');
+    el.setAttribute('aria-label', this.context.locale?.a11y?.formatting || 'Formatting');
 
     const items = this.options.bubbleToolbarItems || ['bold', 'italic', 'underline', 'link', 'foreColor', 'hiliteColor', 'removeFormat'];
     for (const name of items) {
@@ -148,13 +148,14 @@ export class BubbleToolbar {
       btn.dataset.name = name;
       const label = this.context.locale?.toolbar?.[name];
       btn.setAttribute('aria-label', typeof label === 'string' ? label : name);
+      if (_ACTIVE[name]) btn.setAttribute('aria-pressed', 'false');
 
       if (_COLOR_TYPES[name]) {
         // Color button: SVG icon stacked above a colored strip, matching ContextMenu style
         btn.className = 'an-bubble-btn an-bubble-btn--color';
         const iconWrap = document.createElement('span');
         iconWrap.className = 'an-bubble-btn-svg';
-        iconWrap.innerHTML = icon;
+        setIcon(iconWrap, icon);
         const strip = document.createElement('span');
         strip.className = 'an-bubble-color-strip';
         strip.style.background = name === 'foreColor' ? '#000000' : 'transparent';
@@ -162,7 +163,7 @@ export class BubbleToolbar {
         btn.appendChild(strip);
       } else {
         btn.className = 'an-bubble-btn';
-        btn.innerHTML = icon;
+        setIcon(btn, icon);
       }
 
       btn.addEventListener('mousedown', (e) => {
@@ -205,11 +206,11 @@ export class BubbleToolbar {
     palette.className = 'an-context-color-palette';
 
     resolvePalette(this.options).forEach((color) => {
-      const sw = document.createElement('div');
+      const sw = document.createElement('button');
+      sw.type = 'button';
       sw.className = 'an-context-color-swatch';
       sw.title = color;
       sw.style.background = color;
-      sw.setAttribute('role', 'button');
       sw.setAttribute('aria-label', color);
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -219,12 +220,14 @@ export class BubbleToolbar {
     });
 
     // "No highlight" swatch — only shown for hiliteColor
-    const noColorBtn = document.createElement('div');
+    const CL = this.context.locale?.contextMenu;
+    const noHighlight = CL?.noHighlight || 'No highlight';
+    const noColorBtn = document.createElement('button');
+    noColorBtn.type = 'button';
     noColorBtn.className = 'an-context-color-swatch an-context-color-none';
-    noColorBtn.title = 'No highlight';
-    noColorBtn.setAttribute('role', 'button');
-    noColorBtn.setAttribute('aria-label', 'No highlight');
-    noColorBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`;
+    noColorBtn.title = noHighlight;
+    noColorBtn.setAttribute('aria-label', noHighlight);
+    setIcon(noColorBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`);
     noColorBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._applyColor('hiliteColor', 'transparent');
@@ -236,14 +239,15 @@ export class BubbleToolbar {
     const colorInput = document.createElement('input');
     colorInput.type = 'color';
     colorInput.value = '#000000';
-    colorInput.title = 'Custom color';
+    colorInput.title = CL?.customColor || 'Custom color';
+    colorInput.setAttribute('aria-label', colorInput.title);
     // stopPropagation so the picker's mousedown-preventDefault doesn't block the native color dialog
     colorInput.addEventListener('mousedown', (e) => e.stopPropagation());
     colorInput.addEventListener('change', () => {
       this._applyColor(this._pickerType, colorInput.value);
     });
     const customLabel = document.createElement('span');
-    customLabel.textContent = 'Custom…';
+    customLabel.textContent = CL?.customColorLabel || 'Custom…';
     customRow.appendChild(colorInput);
     customRow.appendChild(customLabel);
 
@@ -386,7 +390,9 @@ export class BubbleToolbar {
     if (!this._btnCache) return;
     this._btnCache.forEach((btn) => {
       const activeFn = _ACTIVE[/** @type {HTMLElement} */ (btn).dataset.name];
-      btn.classList.toggle('an-active', !!(activeFn?.(this.context)));
+      const active = !!(activeFn?.(this.context));
+      btn.classList.toggle('an-active', active);
+      if (activeFn) btn.setAttribute('aria-pressed', String(active));
     });
   }
 

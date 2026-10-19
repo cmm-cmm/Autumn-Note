@@ -54,7 +54,7 @@
     }
     .nf-code {
       font-size: clamp(56px, 10vw, 96px); font-weight: 800;
-      letter-spacing: -.03em; color: #e8751a; line-height: 1;
+      letter-spacing: -.03em; color: #b45309; line-height: 1;
       margin-bottom: 12px;
     }
     .nf-title {
@@ -72,7 +72,7 @@
       cursor: pointer; transition: opacity .15s, transform .12s; border: none;
     }
     .btn:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-primary { background: #e8751a; color: #fff; }
+    .btn-primary { background: #b45309; color: #fff; }
     .btn-secondary {
       background: #fff; color: #1c1917;
       border: 1px solid #e7e5e4;
@@ -99,9 +99,30 @@
     @media (max-width: 480px) {
       .header-nav .nav-link { padding: 6px 8px; font-size: 13px; }
     }
+    .skip-link{position:absolute;left:-9999px;top:8px;z-index:9999;background:#b45309;color:#fff;padding:6px 14px;border-radius:6px}
+    .skip-link:focus{left:8px}
+    a[href], button { cursor: pointer; }
+    :focus-visible { outline: 2px solid #b45309; outline-offset: 2px; }
+    .site-header :focus-visible, .site-footer :focus-visible { outline-color: #fdba74; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    /* Phones: brand on the first row, the nav on its own row underneath, so the
+       header never pushes the page wider than the screen. Nav targets reach 44px. */
+    @media (max-width: 600px) {
+      .header-inner { height: auto; flex-wrap: wrap; padding: 6px 12px; row-gap: 0; }
+      .header-nav { width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+      .header-nav .nav-link, .lang-switch a {
+        display: inline-flex; align-items: center; min-height: 44px; flex-shrink: 0;
+      }
+    }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <!-- ===================== HEADER ===================== -->
   <header class="site-header">
     <div class="header-inner">
@@ -118,7 +139,7 @@
     </div>
   </header>
 
-  <main class="not-found">
+  <main class="not-found" id="main-content">
     <p class="nf-code">404</p>
     <h1 class="nf-title">Page not found</h1>
     <p class="nf-sub">

@@ -2,8 +2,9 @@
 // Inspired by Summernote's variables
 
 // Colors
-$an-primary:        #3b82f6 !default;   // blue-500
-$an-primary-hover:  #2563eb !default;   // blue-600
+$an-primary:        #2563eb !default;   // blue-600: white text on it is 5.17:1
+$an-primary-hover:  #1d4ed8 !default;   // blue-700
+$an-input-border:   #8b93a1 !default;   // form-field edge, 3:1 against $an-bg
 $an-border:         #d1d5db !default;   // gray-300
 $an-bg:             #ffffff !default;
 $an-bg-toolbar:     #f9fafb !default;   // gray-50
@@ -22,8 +23,9 @@ $an-dark-bg-toolbar:     #181825 !default;
 $an-dark-bg-btn-hover:   #2a2a3e !default;
 $an-dark-bg-btn-active:  #1a3a5c !default;
 $an-dark-border:         #3f3f5f !default;
+$an-dark-input-border:   #7f849c !default;
 $an-dark-text:           #cdd6f4 !default;
-$an-dark-muted:          #6c7086 !default;
+$an-dark-muted:          #9399b2 !default;   // 5.2:1 or better on every dark surface
 $an-dark-statusbar-bg:   #181825 !default;
 
 // Fonts

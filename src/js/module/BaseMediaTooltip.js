@@ -9,7 +9,7 @@
  * Mirrors the existing BaseDialog / BaseResizer pattern.
  */
 
-import { createElement, on } from '../core/dom.js';
+import { createElement, on, setIcon } from '../core/dom.js';
 
 /** Delay before a hovered target shows its tooltip. */
 export const SHOW_DELAY = 100;
@@ -62,7 +62,7 @@ export class BaseMediaTooltip {
       class: isDanger ? 'an-link-tooltip-btn an-link-tooltip-btn--danger' : 'an-link-tooltip-btn',
       title,
     });
-    btn.innerHTML = icon;
+    setIcon(btn, icon);
     this._disposers.push(on(btn, 'click', (e) => {
       e.preventDefault();
       e.stopPropagation();

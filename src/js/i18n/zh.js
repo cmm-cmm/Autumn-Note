@@ -253,6 +253,7 @@ export const zh = {
     toolbar:    '编辑器工具栏',
     statistics: '编辑器统计',
     tableSize:  '选择表格大小',
+    formatting: '格式',
   },
 
   tooltips: {

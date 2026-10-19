@@ -253,6 +253,7 @@ export const fr = {
     toolbar:    'Barre d\'outils de l\'éditeur',
     statistics: 'Statistiques de l\'éditeur',
     tableSize:  'Choisir la taille du tableau',
+    formatting: 'Mise en forme',
   },
 
   tooltips: {

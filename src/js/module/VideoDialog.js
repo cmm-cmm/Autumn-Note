@@ -102,7 +102,7 @@ export class VideoDialog extends BaseDialog {
 
     if (this._savedRange) this._savedRange.select();
     this.context.invoke('editor.insertVideo', html);
-    this._close();
+    this._close({ toEditor: true });
   }
 
   // ---------------------------------------------------------------------------

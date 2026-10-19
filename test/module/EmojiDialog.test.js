@@ -262,3 +262,19 @@ describe('EmojiDialog._open / _close', () => {
     expect(ed._removeTrap).toBeNull();
   });
 });
+
+// ── Category tab state ────────────────────────────────────────────────────────
+
+describe('EmojiDialog category tabs expose aria-pressed', () => {
+  it('marks only the active category as pressed', async () => {
+    const { ed } = makeDialog();
+    await ed.show();
+    const tabs = Array.from(document.querySelectorAll('.an-icon-cat'));
+    expect(tabs[0].getAttribute('aria-pressed')).toBe('true');
+    tabs.slice(1).forEach((t) => expect(t.getAttribute('aria-pressed')).toBe('false'));
+
+    /** @type {HTMLElement} */ (tabs[1]).click();
+    expect(tabs[0].getAttribute('aria-pressed')).toBe('false');
+    expect(tabs[1].getAttribute('aria-pressed')).toBe('true');
+  });
+});

@@ -98,8 +98,8 @@ export const de = {
     insertBtn:        'Einfügen',
     cancelBtn:        'Abbrechen',
     detected:         (type) => `Erkannt: ${type}`,
-    unknownFormat:    'Unbekanntes Format — direktes Video-Einbetten wird versucht',
-    invalidUrl:       'Ungültige URL — bitte geben Sie einen gültigen Videolink ein.',
+    unknownFormat:    'Unbekanntes Format, direktes Video-Einbetten wird versucht',
+    invalidUrl:       'Ungültige URL, bitte geben Sie einen gültigen Videolink ein.',
   },
 
   emojiDialog: {
@@ -252,6 +252,7 @@ export const de = {
     toolbar:    'Editor-Werkzeugleiste',
     statistics: 'Editor-Statistik',
     tableSize:  'Tabellengröße wählen',
+    formatting: 'Formatierung',
   },
 
   tooltips: {

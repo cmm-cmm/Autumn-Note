@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import AutumnNote from '../../src/js/index.js';
 
 /**
@@ -160,5 +160,140 @@ describe('toolbar roving tabindex', () => {
     controls[0].focus();
     press(controls[0], 'ArrowRight');
     expect(document.activeElement).toBe(controls[1]);
+  });
+});
+
+/** Keyboard activation of a button: a click whose detail is 0. */
+function keyClick(el) {
+  el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+}
+
+describe('colour picker popup keyboard support', () => {
+  const portal = () => ctx.layoutInfo.portal || document.body;
+
+  it('renders swatches as named buttons', () => {
+    mount();
+    const swatches = portal().querySelectorAll('.an-color-swatch');
+    expect(swatches.length).toBeGreaterThan(0);
+    swatches.forEach((sw) => {
+      expect(sw.tagName).toBe('BUTTON');
+      expect(sw.getAttribute('type')).toBe('button');
+      expect(sw.getAttribute('aria-label')).toBe(sw.getAttribute('data-color'));
+      expect(sw.getAttribute('title')).toBe(sw.getAttribute('data-color'));
+    });
+  });
+
+  it('moves focus to the first swatch when opened from the keyboard', () => {
+    const toolbar = mount();
+    const arrow = /** @type {HTMLElement} */ (toolbar.querySelector('.an-color-arrow'));
+    arrow.focus();
+    keyClick(arrow);
+    expect(arrow.getAttribute('aria-expanded')).toBe('true');
+    const first = portal().querySelector('.an-color-popup .an-color-swatch');
+    expect(document.activeElement).toBe(first);
+  });
+
+  it('Escape closes the popup and returns focus to the arrow button', () => {
+    const toolbar = mount();
+    const arrow = /** @type {HTMLElement} */ (toolbar.querySelector('.an-color-arrow'));
+    arrow.focus();
+    keyClick(arrow);
+    press(/** @type {HTMLElement} */ (document.activeElement), 'Escape');
+    expect(arrow.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(arrow);
+  });
+
+  it('applying a swatch with the keyboard returns focus to the arrow button', () => {
+    const toolbar = mount();
+    const arrow = /** @type {HTMLElement} */ (toolbar.querySelector('.an-color-arrow'));
+    arrow.focus();
+    keyClick(arrow);
+    keyClick(/** @type {HTMLElement} */ (document.activeElement));
+    expect(arrow.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(arrow);
+  });
+});
+
+describe('table-size picker keyboard support', () => {
+  const open = () => {
+    const toolbar = mount();
+    const btn = /** @type {HTMLElement} */ (toolbar.querySelector('button[data-btn="table"]'));
+    btn.focus();
+    keyClick(btn);
+    const popup = /** @type {HTMLElement} */ ((ctx.layoutInfo.portal || document.body).querySelector('.an-table-picker-popup'));
+    return { btn, popup };
+  };
+
+  it('renders cells as named buttons with a single tab stop', () => {
+    const { popup } = open();
+    const cells = popup.querySelectorAll('.an-table-cell');
+    expect(cells).toHaveLength(100);
+    expect(cells[0].tagName).toBe('BUTTON');
+    expect(cells[0].getAttribute('type')).toBe('button');
+    expect(cells[12].getAttribute('aria-label')).toBe('2 × 3');
+    expect(popup.querySelectorAll('.an-table-cell[tabindex="0"]')).toHaveLength(1);
+  });
+
+  it('focuses the first cell on open', () => {
+    const { popup } = open();
+    expect(document.activeElement).toBe(popup.querySelector('.an-table-cell'));
+  });
+
+  it('arrow keys move focus and the size preview', () => {
+    const { popup } = open();
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowRight');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowRight');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowDown');
+    const focused = /** @type {HTMLElement} */ (document.activeElement);
+    expect(focused.dataset.row).toBe('2');
+    expect(focused.dataset.col).toBe('3');
+    expect(focused.getAttribute('tabindex')).toBe('0');
+    expect(popup.querySelectorAll('.an-table-cell.active')).toHaveLength(6);
+    expect(popup.querySelector('.an-table-label')?.textContent).toBe('2 × 3');
+    press(focused, 'ArrowUp');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowLeft');
+    expect(/** @type {HTMLElement} */ (document.activeElement).dataset.col).toBe('2');
+    expect(/** @type {HTMLElement} */ (document.activeElement).dataset.row).toBe('1');
+  });
+
+  it('clamps arrow movement at the grid edge', () => {
+    open();
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowUp');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowLeft');
+    const focused = /** @type {HTMLElement} */ (document.activeElement);
+    expect(focused.dataset.row).toBe('1');
+    expect(focused.dataset.col).toBe('1');
+  });
+
+  it('activating a cell inserts a table of that size', () => {
+    open();
+    const invoke = vi.spyOn(ctx, 'invoke');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowRight');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowRight');
+    press(/** @type {HTMLElement} */ (document.activeElement), 'ArrowDown');
+    keyClick(/** @type {HTMLElement} */ (document.activeElement));
+    // 2 rows × 3 columns; the table action takes (cols, rows)
+    expect(invoke).toHaveBeenCalledWith('editor.insertTable', 3, 2);
+  });
+
+  it('Escape closes the picker and returns focus to the trigger', () => {
+    const { btn, popup } = open();
+    press(/** @type {HTMLElement} */ (document.activeElement), 'Escape');
+    expect(popup.style.display).toBe('none');
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(btn);
+  });
+});
+
+describe('decorative icons', () => {
+  it('every rendered toolbar and portal SVG is hidden from assistive tech', () => {
+    mount({ useFontAwesome: false, bubbleToolbar: true });
+    const roots = [ctx.layoutInfo.container, ctx.layoutInfo.portal || document.body];
+    const svgs = roots.flatMap((r) => Array.from(r.querySelectorAll('svg')));
+    expect(svgs.length).toBeGreaterThan(10);
+    svgs.forEach((svg) => {
+      expect(svg.getAttribute('aria-hidden')).toBe('true');
+      expect(svg.getAttribute('focusable')).toBe('false');
+    });
   });
 });

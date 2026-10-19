@@ -3,7 +3,7 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon } from '../core/dom.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
 import { resolvePalette } from '../core/palette.js';
 
@@ -240,13 +240,13 @@ export class Toolbar {
     // Set icon — custom icon, else inline SVG (table) with optional FontAwesome fallback
     const customIcon = resolveIcon(this.options, [def.name, def.icon]);
     if (customIcon) {
-      btn.innerHTML = customIcon;
+      setIcon(btn, customIcon);
     } else if (this._faReady) {
       const faPrefix = this.options.fontAwesomeClass || 'fas';
-      btn.innerHTML = `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`;
+      setIcon(btn, `<i class="${faPrefix} fa-table" aria-hidden="true"></i>`);
     } else {
       const S = 'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`;
+      setIcon(btn, `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`);
     }
 
     // Popup
@@ -259,18 +259,24 @@ export class Toolbar {
     const label = createElement('div', { class: 'an-table-label' });
     label.textContent = this.context.locale.toolbar.insertTableLabel || 'Insert Table';
 
+    // Real buttons with a roving tabindex: one tab stop for the grid, arrow
+    // keys move between cells, Enter/Space activate through the click handler.
     const cells = [];
     for (let r = 1; r <= ROWS; r++) {
       for (let c = 1; c <= COLS; c++) {
-        const cell = createElement('div', {
+        const cell = createElement('button', {
+          type: 'button',
           class: 'an-table-cell',
           'data-row': String(r),
           'data-col': String(c),
+          'aria-label': `${r} × ${c}`,
+          tabindex: r === 1 && c === 1 ? '0' : '-1',
         });
         cells.push(cell);
         grid.appendChild(cell);
       }
     }
+    const cellAt = (r, c) => cells[(r - 1) * COLS + (c - 1)];
 
     popup.appendChild(grid);
     popup.appendChild(label);
@@ -286,7 +292,15 @@ export class Toolbar {
       label.textContent = (rows && cols) ? `${rows} × ${cols}` : (this.context.locale.toolbar.insertTableLabel || 'Insert Table');
     };
 
-    const openPopup = () => {
+    /** Moves the roving tab stop (and focus) to a cell and previews its size. */
+    const focusCell = (r, c) => {
+      const cell = cellAt(r, c);
+      cells.forEach((el) => el.setAttribute('tabindex', el === cell ? '0' : '-1'));
+      cell.focus({ preventScroll: true });
+      setHighlight(r, c);
+    };
+
+    const openPopup = (fromKeyboard = false) => {
       isOpen = true;
       const rect = btn.getBoundingClientRect();
 
@@ -306,18 +320,46 @@ export class Toolbar {
       popup.style.top  = `${top}px`;
       popup.style.visibility = '';
       btn.setAttribute('aria-expanded', 'true');
+      // Only a keyboard open moves focus in; a pointer user keeps the editor
+      // selection and sees no preselected 1 × 1 until they hover.
+      if (fromKeyboard) focusCell(1, 1);
+      else cells.forEach((el, i) => el.setAttribute('tabindex', i === 0 ? '0' : '-1'));
     };
 
     const closePopup = () => {
       isOpen = false;
+      // Focus inside the popup would be stranded once it hides: hand it back
+      // to the trigger (a cell click then moves it on to the editable).
+      const hadFocus = popup.contains(document.activeElement);
       popup.style.display = 'none';
       btn.setAttribute('aria-expanded', 'false');
       setHighlight(0, 0);
+      if (hadFocus) btn.focus({ preventScroll: true });
     };
 
     const d1 = on(btn, 'click', (e) => {
       e.stopPropagation();
-      if (isOpen) closePopup(); else openPopup();
+      // detail === 0: activated with Enter/Space rather than a pointer
+      if (isOpen) closePopup(); else openPopup(/** @type {MouseEvent} */ (e).detail === 0);
+    });
+
+    const GRID_KEYS = { ArrowRight: [0, 1], ArrowLeft: [0, -1], ArrowDown: [1, 0], ArrowUp: [-1, 0] };
+    const dKey = on(popup, 'keydown', (e) => {
+      const ke = /** @type {KeyboardEvent} */ (e);
+      if (ke.key === 'Escape') {
+        ke.preventDefault();
+        ke.stopPropagation();
+        closePopup();
+        btn.focus({ preventScroll: true });
+        return;
+      }
+      const step = GRID_KEYS[ke.key];
+      const cell = /** @type {HTMLElement|null} */ (/** @type {Element} */ (ke.target)?.closest('.an-table-cell'));
+      if (!step || !cell) return;
+      ke.preventDefault();
+      const r = Math.min(ROWS, Math.max(1, +cell.dataset.row + step[0]));
+      const c = Math.min(COLS, Math.max(1, +cell.dataset.col + step[1]));
+      focusCell(r, c);
     });
 
     const d2 = on(grid, 'mouseover', (e) => {
@@ -343,7 +385,7 @@ export class Toolbar {
 
     // Append popup to body so position:fixed is truly viewport-relative,
     // unaffected by any ancestor transform / filter (same pattern as color picker).
-    this._disposers.push(d1, d2, d3, d4, d5, () => {
+    this._disposers.push(d1, dKey, d2, d3, d4, d5, () => {
       if (popup.parentNode) popup.remove();
     });
 
@@ -380,7 +422,7 @@ export class Toolbar {
       ? `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`
       : `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" ${S} style="display:block"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/></svg>`;
 
-    applyBtn.innerHTML = resolveIcon(this.options, [def.name, def.icon]) ?? iconSvg;
+    setIcon(applyBtn, resolveIcon(this.options, [def.name, def.icon]) ?? iconSvg);
     const strip = createElement('span', { class: 'an-color-strip' });
     strip.style.background = currentColor;
     applyBtn.appendChild(strip);
@@ -395,7 +437,7 @@ export class Toolbar {
       'aria-haspopup': 'true',
       'aria-expanded': 'false',
     });
-    arrowBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>`;
+    setIcon(arrowBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:block"><path d="M7 10l5 5 5-5H7z"/></svg>`);
 
     // ---- Popup ----
     const popup = createElement('div', { class: 'an-color-popup' });
@@ -403,7 +445,7 @@ export class Toolbar {
 
     const swatches = createElement('div', { class: 'an-color-swatches' });
     resolvePalette(this.options).forEach((color) => {
-      const sw = createElement('div', { class: 'an-color-swatch', title: color, 'data-color': color });
+      const sw = createElement('button', { type: 'button', class: 'an-color-swatch', title: color, 'aria-label': color, 'data-color': color });
       sw.style.background = color;
       swatches.appendChild(sw);
     });
@@ -439,7 +481,8 @@ export class Toolbar {
       }
     };
 
-    const openPopup = () => {
+    /** @param {boolean} [fromKeyboard] move focus into the popup (keyboard activation) */
+    const openPopup = (fromKeyboard = false) => {
       // Close any other open color picker before opening this one
       this._colorPickerClosers.forEach((fn) => { if (fn !== closePopup) fn(); });
       saveSelection();
@@ -454,11 +497,16 @@ export class Toolbar {
       popup.style.left = `${Math.max(4, left)}px`;
       popup.style.display = 'block';
       arrowBtn.setAttribute('aria-expanded', 'true');
+      // preventScroll: the capture-phase scroll listener below would close it
+      if (fromKeyboard) /** @type {HTMLElement|null} */ (swatches.firstElementChild)?.focus({ preventScroll: true });
     };
 
     const closePopup = () => {
       isOpen = false;
+      // Return focus that would be stranded in the hidden popup to the trigger
+      const hadFocus = popup.contains(document.activeElement);
       popup.style.display = 'none';
+      if (hadFocus) arrowBtn.focus({ preventScroll: true });
       popup.style.top  = '';
       popup.style.left = '';
       arrowBtn.setAttribute('aria-expanded', 'false');
@@ -490,7 +538,16 @@ export class Toolbar {
 
     const d2b = on(arrowBtn, 'click', (e) => {
       e.stopPropagation();
-      if (isOpen) closePopup(); else openPopup();
+      // detail === 0: activated with Enter/Space rather than a pointer
+      if (isOpen) closePopup(); else openPopup(/** @type {MouseEvent} */ (e).detail === 0);
+    });
+
+    const dKey = on(popup, 'keydown', (e) => {
+      if (/** @type {KeyboardEvent} */ (e).key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      closePopup();
+      arrowBtn.focus({ preventScroll: true });
     });
 
     const d3 = on(swatches, 'mousedown', (e) => {
@@ -520,7 +577,7 @@ export class Toolbar {
     document.addEventListener('scroll', onScrollResize, { passive: true, capture: true });
     globalThis.addEventListener('resize',   onScrollResize, { passive: true });
 
-    this._disposers.push(d1, d2, d2b, d3, d3b, d4, d5, d6,
+    this._disposers.push(d1, d2, d2b, dKey, d3, d3b, d4, d5, d6,
       () => document.removeEventListener('scroll', onScrollResize, { capture: true }),
       () => globalThis.removeEventListener('resize',   onScrollResize),
       // Remove popup from body on editor destroy
@@ -648,21 +705,21 @@ export class Toolbar {
     const useFaNow = this._faReady;
     const customIcon = resolveIcon(this.options, [btnDef.name, btnDef.icon]);
     if (customIcon) {
-      btn.innerHTML = customIcon;
+      setIcon(btn, customIcon);
     } else if (useFaNow) {
       const faName = _FA_MAP.get(btnDef.icon) || _FA_MAP.get(btnDef.name) || null;
       if (faName) {
-        btn.innerHTML = `<i class="${faPrefix} ${faName}" aria-hidden="true"></i>`;
+        setIcon(btn, `<i class="${faPrefix} ${faName}" aria-hidden="true"></i>`);
       } else if (_SVG_MAP.has(btnDef.icon)) {
-        btn.innerHTML = _SVG_MAP.get(btnDef.icon);
+        setIcon(btn, _SVG_MAP.get(btnDef.icon));
       } else {
         btn.textContent = btnDef.icon || btnDef.name;
       }
     } else if (_SVG_MAP.has(btnDef.icon)) {
       // FontAwesome absent: use SVG fallback when available
-      btn.innerHTML = _SVG_MAP.get(btnDef.icon);
+      setIcon(btn, _SVG_MAP.get(btnDef.icon));
     } else if (_SVG_MAP.has(btnDef.name)) {
-      btn.innerHTML = _SVG_MAP.get(btnDef.name);
+      setIcon(btn, _SVG_MAP.get(btnDef.name));
     } else {
       btn.textContent = btnDef.icon || btnDef.name;
     }

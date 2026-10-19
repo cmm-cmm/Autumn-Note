@@ -183,11 +183,12 @@ export class ImageDialog extends BaseDialog {
     beforeInsert?.();
 
     this.context.invoke('editor.insertImage', src, alt, align);
-    this._close();
+    this._close({ toEditor: true });
   }
 
-  _close() {
+  /** @param {{ toEditor?: boolean }} [opts] */
+  _close(opts) {
     this._beforeInsert = null;
-    super._close();
+    super._close(opts);
   }
 }

@@ -4,7 +4,7 @@
       font-family: system-ui, -apple-system, sans-serif;
       background: #f9fafb; color: #111827; line-height: 1.65;
     }
-    a { color: #e8751a; text-decoration: none; }
+    a { color: #b45309; text-decoration: none; }
     a:hover { text-decoration: underline; }
     code { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; font-size: .88em; }
     p code, li code, td code {
@@ -45,7 +45,7 @@
     }
     .lang-switch a {
       color: #a8a29e; font-size: 12px; font-weight: 600;
-      padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s;
+      padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; min-height: 24px; transition: background .15s, color .15s;
     }
     .lang-switch a:hover { background: rgba(255,255,255,.08); color: #fff; }
     .lang-switch a.active { color: #fb923c; background: rgba(232,117,26,.15); }
@@ -73,11 +73,13 @@
       border: none; background: transparent; outline: none;
       font-size: 12px; color: #374151; width: 100%;
     }
-    .sidebar-search input::placeholder { color: #9ca3af; }
+    /* The input drops its own ring; the whole field shows focus instead. */
+    .sidebar-search:focus-within { outline: 2px solid #b45309; outline-offset: 2px; }
+    .sidebar-search input::placeholder { color: #6b7280; }
     .sidebar-group { margin-bottom: 4px; }
     .sidebar-group-title {
       font-size: 10px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase; color: #9ca3af;
+      text-transform: uppercase; color: #6b7280;
       padding: 8px 16px 4px;
     }
     .sidebar-link {
@@ -87,7 +89,7 @@
     }
     .sidebar-link:hover { background: #f3f4f6; color: #111827; text-decoration: none; }
     .sidebar-link.active {
-      color: #e8751a; background: #fff7ed;
+      color: #b45309; background: #fff7ed;
       border-left-color: #e8751a; font-weight: 600;
     }
     .sidebar-link.sub { padding-left: 28px; font-size: 12px; color: #6b7280; }
@@ -116,7 +118,7 @@
     }
     h2.section-h .badge {
       font-size: 11px; font-weight: 600; padding: 2px 8px;
-      border-radius: 999px; background: #fff7ed; color: #e8751a;
+      border-radius: 999px; background: #fff7ed; color: #b45309;
       border: 1px solid #fed7aa; vertical-align: middle;
     }
     h3.method-h {
@@ -169,7 +171,7 @@
     table.docs-table tr:hover td { background: #fafafa; }
     table.docs-table .opt-name { font-weight: 600; color: #b45309; white-space: nowrap; }
     table.docs-table .opt-type { color: #2563eb; white-space: nowrap; }
-    table.docs-table .opt-default { color: #059669; white-space: nowrap; }
+    table.docs-table .opt-default { color: #047857; white-space: nowrap; }
     table.docs-table .opt-desc { color: #374151; }
 
     /* Type badge */
@@ -191,7 +193,7 @@
 
     /* Footer */
     .site-footer {
-      background: #1c1917; color: #78716c;
+      background: #1c1917; color: #a8a29e;
       padding: 14px 20px; font-size: 12px; margin-top: 40px;
     }
     .footer-inner {
@@ -199,7 +201,7 @@
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
     }
     .footer-links { display: flex; gap: 16px; }
-    .footer-links a { color: #78716c; transition: color .15s; }
+    .footer-links a { color: #a8a29e; transition: color .15s; }
     .footer-links a:hover { color: #d6d3d1; }
     .heart-icon {
       display: inline-block;
@@ -209,7 +211,12 @@
     }
 
     @media (max-width: 768px) {
-      .docs-sidebar { display: none; }
+      /* Sidebar becomes a scrollable block above the content instead of vanishing. */
+      .docs-layout { flex-direction: column; }
+      .docs-sidebar {
+        position: static; width: auto; height: auto; max-height: 45vh;
+        border-right: 0; border-bottom: 1px solid #e5e7eb; padding: 12px 0;
+      }
       .docs-main { padding: 24px 20px; }
     }
     @media (max-width: 480px) {
@@ -222,3 +229,50 @@
       .nav-link { font-size: 12px; padding: 4px 7px; }
       .docs-table-wrap { font-size: 12px; }
     }
+
+/* =========================================================
+   INTERACTION BASELINE (a11y)
+   One place for the cursor, focus and disabled affordances so no
+   control falls through; dark surfaces swap the ring to a light tint
+   so it keeps 3:1 against its background.
+========================================================= */
+a[href], button, summary, select, label[for],
+[role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="option"],
+input[type="checkbox"], input[type="radio"], input[type="color"] {
+  cursor: pointer;
+}
+:disabled, [aria-disabled="true"] { cursor: not-allowed; opacity: .55; }
+:focus-visible { outline: 2px solid #b45309; outline-offset: 2px; }
+.site-header :focus-visible, .site-footer :focus-visible, .hero :focus-visible,
+.features-strip :focus-visible, .install-section :focus-visible,
+.code-wrap :focus-visible, .is-dark :focus-visible, .dark :focus-visible {
+  outline-color: #fdba74;
+}
+.skip-link {
+  position: absolute; left: -9999px; top: 8px; z-index: 9999;
+  background: #b45309; color: #fff; padding: 6px 14px; border-radius: 6px;
+}
+.skip-link:focus { left: 8px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.skip-link:focus { outline-color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Phones: brand on the first row, the nav on its own row underneath, so the
+   header never pushes the page wider than the screen. Nav targets reach 44px. */
+@media (max-width: 600px) {
+  .header-inner { height: auto; flex-wrap: wrap; padding: 6px 12px; row-gap: 0; }
+  .header-nav { width: 100%; flex-wrap: nowrap; overflow-x: auto; }
+  .header-nav .nav-link, .lang-switch a {
+    display: inline-flex; align-items: center; min-height: 44px; flex-shrink: 0;
+  }
+}

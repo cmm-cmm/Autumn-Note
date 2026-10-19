@@ -879,3 +879,130 @@ describe('ContextMenu._findExplicitStyle FONT element', () => {
     expect(result).toBeNull();
   });
 });
+
+// ── Keyboard & ARIA ───────────────────────────────────────────────────────────
+
+describe('ContextMenu keyboard and ARIA', () => {
+  const key = (el, k) => el.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+
+  const makeA11yMenu = (items) => {
+    const ctx = makeContext(items);
+    ctx.layoutInfo.editable.tabIndex = 0; // jsdom does not treat contenteditable as focusable
+    const cm = new ContextMenu(ctx);
+    cm.initialize();
+    return { ctx, cm };
+  };
+
+  const ITEMS = [
+    { name: 'a', label: 'A', icon: '', action: vi.fn() },
+    { name: 'b', label: 'B', icon: '', action: vi.fn(), disabled: true },
+    { separator: true },
+    { name: 'c', label: 'C', icon: '', action: vi.fn() },
+  ];
+
+  it('gives every actionable item role="menuitem"', () => {
+    const { cm } = makeA11yMenu();
+    const items = cm.el.querySelectorAll('.an-context-item');
+    expect(items.length).toBeGreaterThan(0);
+    items.forEach((it) => expect(it.getAttribute('role')).toBe('menuitem'));
+  });
+
+  it('focuses the first enabled item when shown', () => {
+    const { cm } = makeA11yMenu([{ name: 'x', label: 'X', icon: '', action: vi.fn(), disabled: true }, ...ITEMS]);
+    cm.showAt(10, 10);
+    expect(document.activeElement).toBe(cm.el.querySelector('[data-name="a"]'));
+  });
+
+  it('ArrowDown/ArrowUp/Home/End rove over enabled items only', () => {
+    const { cm } = makeA11yMenu(ITEMS);
+    cm.showAt(10, 10);
+    const a = cm.el.querySelector('[data-name="a"]');
+    const c = cm.el.querySelector('[data-name="c"]');
+    key(document.activeElement, 'ArrowDown');
+    expect(document.activeElement).toBe(c); // skips disabled "b"
+    key(document.activeElement, 'ArrowDown');
+    expect(document.activeElement).toBe(a); // wraps
+    key(document.activeElement, 'ArrowUp');
+    expect(document.activeElement).toBe(c);
+    key(document.activeElement, 'Home');
+    expect(document.activeElement).toBe(a);
+    key(document.activeElement, 'End');
+    expect(document.activeElement).toBe(c);
+  });
+
+  it('Escape hides the menu and returns focus to the editable', () => {
+    const { cm, ctx } = makeA11yMenu(ITEMS);
+    cm.showAt(10, 10);
+    key(document.activeElement, 'Escape');
+    expect(cm.el.style.display).toBe('none');
+    expect(document.activeElement).toBe(ctx.layoutInfo.editable);
+  });
+
+  it('activating an item returns focus to the editable with the saved selection', () => {
+    const items = [{ name: 'a', label: 'A', icon: '', action: vi.fn() }];
+    const { cm, ctx } = makeA11yMenu(items);
+    const text = ctx.layoutInfo.editable.querySelector('p').firstChild;
+    const range = document.createRange();
+    range.setStart(text, 1);
+    range.setEnd(text, 4);
+    cm._savedRange = range;
+    cm.showAt(10, 10);
+    /** @type {HTMLElement} */ (document.activeElement).click();
+    expect(items[0].action).toHaveBeenCalled();
+    expect(document.activeElement).toBe(ctx.layoutInfo.editable);
+    expect(window.getSelection().toString()).toBe('ell');
+  });
+
+  it('does not move focus when the menu is dismissed by clicking elsewhere', () => {
+    const { cm } = makeA11yMenu(ITEMS);
+    cm.showAt(10, 10);
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+    outside.click();
+    expect(cm.el.style.display).toBe('none');
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('a click on a disabled item does nothing', () => {
+    const action = vi.fn();
+    const { cm } = makeA11yMenu([{ name: 'd', label: 'D', icon: '', action, disabled: true }]);
+    cm.showAt(10, 10);
+    const btn = cm.el.querySelector('[data-name="d"]');
+    expect(btn.disabled).toBe(true);
+    // Disabled buttons swallow click(); dispatch directly as a pointer would
+    // reach it once the CSS no longer sets pointer-events: none.
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(action).not.toHaveBeenCalled();
+    expect(cm.el.style.display).toBe('block');
+  });
+
+  it('renders colour swatches as named buttons', () => {
+    const { cm } = makeA11yMenu();
+    cm.el.querySelector('[data-name="highlightColor"]').click();
+    const swatches = cm.el.querySelectorAll('.an-context-color-swatch');
+    expect(swatches.length).toBeGreaterThan(1);
+    swatches.forEach((sw) => {
+      expect(sw.tagName).toBe('BUTTON');
+      expect(sw.getAttribute('type')).toBe('button');
+      expect(sw.getAttribute('aria-label')).toBeTruthy();
+      expect(sw.hasAttribute('role')).toBe(false);
+    });
+    expect(cm.el.querySelector('.an-context-color-none')?.getAttribute('aria-label')).toBe(en.contextMenu.noHighlight);
+  });
+
+  it('moves focus into a submenu when navigating to it', () => {
+    const { cm } = makeA11yMenu();
+    cm.showAt(10, 10);
+    cm.el.querySelector('[data-name="textColor"]').click();
+    expect(document.activeElement).toBe(cm.el.querySelector('.an-context-back'));
+    expect(cm.el.querySelector('.an-context-back').getAttribute('role')).toBe('menuitem');
+  });
+
+  it('hides item SVG icons from assistive tech', () => {
+    const { cm } = makeA11yMenu();
+    const svgs = cm.el.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThan(0);
+    svgs.forEach((svg) => expect(svg.getAttribute('aria-hidden')).toBe('true'));
+  });
+});

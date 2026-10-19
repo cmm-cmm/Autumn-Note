@@ -1,6 +1,6 @@
 // LinkTooltip.js - Hover tooltip for links inside the editor
 // Displays a small action bar with: visit link, edit link, unlink
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon } from '../core/dom.js';
 import { writeClipboard } from '../core/clipboard.js';
 import * as Style from '../editing/Style.js';
 
@@ -101,7 +101,7 @@ export class LinkTooltip {
 
   _makeBtn(icon, title, handler) {
     const btn = createElement('button', { type: 'button', class: 'an-link-tooltip-btn', title });
-    btn.innerHTML = icon;
+    setIcon(btn, icon);
     this._disposers.push(on(btn, 'click', (e) => { e.preventDefault(); e.stopPropagation(); handler(); }));
     return btn;
   }

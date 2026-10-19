@@ -3,7 +3,7 @@
  * Click an emoji to insert it directly at the caret — no extra "Insert" step.
  */
 
-import { createElement, on, makeDraggable, portalOf } from '../core/dom.js';
+import { createElement, on, makeDraggable, portalOf, setIcon } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 
 /**
@@ -94,7 +94,7 @@ export class EmojiDialog extends BaseDialog {
     const titleRow = createElement('div', { class: 'an-icon-title-row' });
     const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
     const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
-    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>`;
+    setIcon(iconEl, `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>`);
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.title;
     titleGroup.append(iconEl, title);
@@ -113,11 +113,11 @@ export class EmojiDialog extends BaseDialog {
 
     // Category tabs
     const catBar = createElement('div', { class: 'an-icon-cats' });
-    const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all' });
+    const allTab = createElement('button', { type: 'button', class: 'an-icon-cat active', 'data-cat': 'all', 'aria-pressed': 'true' });
     allTab.textContent = L.all;
     catBar.appendChild(allTab);
     this._cats.forEach(({ id, label }) => {
-      const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id });
+      const tab = createElement('button', { type: 'button', class: 'an-icon-cat', 'data-cat': id, 'aria-pressed': 'false' });
       tab.textContent = L.categories?.[id] || label;
       catBar.appendChild(tab);
     });
@@ -177,7 +177,9 @@ export class EmojiDialog extends BaseDialog {
 
   _updateCatTabs() {
     this._catBar.querySelectorAll('.an-icon-cat').forEach((tab) => {
-      tab.classList.toggle('active', /** @type {HTMLElement} */ (tab).dataset.cat === this._activeCat);
+      const current = /** @type {HTMLElement} */ (tab).dataset.cat === this._activeCat;
+      tab.classList.toggle('active', current);
+      tab.setAttribute('aria-pressed', String(current));
     });
   }
 
@@ -251,7 +253,7 @@ export class EmojiDialog extends BaseDialog {
     }
 
     // 4. Close and restore editor focus
-    this._close();
+    this._close({ toEditor: true });
     editable.focus();
     this.context.invoke('editor.afterCommand');
   }

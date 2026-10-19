@@ -7,7 +7,7 @@
  * single / replace-all replacement.
  */
 
-import { createElement, on, trapFocus, makeDraggable } from '../core/dom.js';
+import { createElement, on, trapFocus, makeDraggable, setIcon } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 
 export class FindReplace extends BaseDialog {
@@ -133,7 +133,7 @@ export class FindReplace extends BaseDialog {
     const header = createElement('div', { class: 'an-fr-header' });
     const titleGroup = createElement('div', { class: 'an-dialog-title-group' });
     const iconEl = createElement('span', { class: 'an-dialog-icon an-dialog-icon--sm' });
-    iconEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+    setIcon(iconEl, `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`);
     const title = createElement('h3', { class: 'an-dialog-title' });
     title.textContent = L.findTitle;
     titleGroup.append(iconEl, title);
@@ -143,7 +143,7 @@ export class FindReplace extends BaseDialog {
       title: L.close,
       'aria-label': L.close,
     });
-    closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    setIcon(closeBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`);
     this._closeBtn = closeBtn;
     header.append(titleGroup, closeBtn);
     box.appendChild(header);
@@ -170,6 +170,7 @@ export class FindReplace extends BaseDialog {
       class: 'an-fr-icon-btn',
       title: L.caseSensitive.trim(),
       'aria-label': L.caseSensitive.trim(),
+      'aria-pressed': 'false',
     });
     caseBtn.textContent = 'Aa';
 
@@ -178,6 +179,7 @@ export class FindReplace extends BaseDialog {
       class: 'an-fr-icon-btn',
       title: L.useRegex,
       'aria-label': L.useRegex,
+      'aria-pressed': 'false',
     });
     regexBtn.textContent = '.*';
 
@@ -186,8 +188,9 @@ export class FindReplace extends BaseDialog {
       class: 'an-fr-icon-btn',
       title: L.wholeWord,
       'aria-label': L.wholeWord,
+      'aria-pressed': 'false',
     });
-    wholeWordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="7" y1="21" x2="7" y2="17"/><line x1="17" y1="21" x2="17" y2="17"/></svg>`;
+    setIcon(wholeWordBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="7" y1="21" x2="7" y2="17"/><line x1="17" y1="21" x2="17" y2="17"/></svg>`);
 
     const prevBtn = createElement('button', {
       type: 'button',
@@ -195,7 +198,7 @@ export class FindReplace extends BaseDialog {
       title: L.prevMatch,
       'aria-label': L.prevMatch,
     });
-    prevBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
+    setIcon(prevBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`);
 
     const nextBtn = createElement('button', {
       type: 'button',
@@ -203,7 +206,7 @@ export class FindReplace extends BaseDialog {
       title: L.nextMatch,
       'aria-label': L.nextMatch,
     });
-    nextBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+    setIcon(nextBtn, `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`);
 
     const counter = createElement('span', { class: 'an-fr-counter' });
     this._counterEl = counter;
@@ -244,12 +247,14 @@ export class FindReplace extends BaseDialog {
       this._caseSensitive = !this._caseSensitive;
       caseCheckbox.checked = this._caseSensitive;
       caseBtn.classList.toggle('an-fr-icon-btn--active', this._caseSensitive);
+      caseBtn.setAttribute('aria-pressed', String(this._caseSensitive));
       this._onSearch();
     });
     // Hidden checkbox change handler keeps backward-compat with programmatic toggles
     const d5 = on(caseCheckbox, 'change', () => {
       this._caseSensitive = caseCheckbox.checked;
       caseBtn.classList.toggle('an-fr-icon-btn--active', this._caseSensitive);
+      caseBtn.setAttribute('aria-pressed', String(this._caseSensitive));
       this._onSearch();
     });
     const d6 = on(nextBtn, 'click', () => this._next());
@@ -272,6 +277,7 @@ export class FindReplace extends BaseDialog {
     const dRegex = on(regexBtn, 'click', () => {
       this._useRegex = !this._useRegex;
       regexBtn.classList.toggle('an-fr-icon-btn--active', this._useRegex);
+      regexBtn.setAttribute('aria-pressed', String(this._useRegex));
       this._queryRegex = null; // force recompile
       this._lastQuery = null;
       this._onSearch();
@@ -279,6 +285,7 @@ export class FindReplace extends BaseDialog {
     const dWholeWord = on(wholeWordBtn, 'click', () => {
       this._wholeWord = !this._wholeWord;
       wholeWordBtn.classList.toggle('an-fr-icon-btn--active', this._wholeWord);
+      wholeWordBtn.setAttribute('aria-pressed', String(this._wholeWord));
       this._queryRegex = null;
       this._lastQuery = null;
       this._onSearch();

@@ -11,17 +11,21 @@
     ".": {
       "types": "./types/index.d.ts",
       "import": "./dist/autumnnote.es.js",
-      "require": "./dist/autumnnote.cjs"
+      "require": "./dist/autumnnote.cjs",
+      "default": "./dist/autumnnote.es.js"
     },
     "./i18n/*": {
       "types": "./types/i18n/*.d.ts",
-      "import": "./src/js/i18n/*.js"
+      "import": "./src/js/i18n/*.js",
+      "default": "./src/js/i18n/*.js"
     },
     "./dist/autumnnote.css": "./dist/autumnnote.css",
     "./core": {
       "types": "./types/core-entry.d.ts",
-      "import": "./dist/autumnnote.core.es.js"
-    }
+      "import": "./dist/autumnnote.core.es.js",
+      "default": "./dist/autumnnote.core.es.js"
+    },
+    "./package.json": "./package.json"
   },
   "sideEffects": [
     "*.css",

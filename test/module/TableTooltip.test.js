@@ -1096,3 +1096,18 @@ describe('TableTooltip integrated event paths', () => {
     expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
   });
 });
+
+describe('TableTooltip select-cells toggle exposes aria-pressed', () => {
+  it('tracks select mode, including the reset on hide', () => {
+    const { tt, ctx } = makeTooltip();
+    activateTable(tt, ctx);
+    expect(tt._selectBtn.getAttribute('aria-pressed')).toBe('false');
+    tt._toggleSelectMode();
+    expect(tt._selectBtn.getAttribute('aria-pressed')).toBe('true');
+    tt._toggleSelectMode();
+    expect(tt._selectBtn.getAttribute('aria-pressed')).toBe('false');
+    tt._toggleSelectMode();
+    tt._hide();
+    expect(tt._selectBtn.getAttribute('aria-pressed')).toBe('false');
+  });
+});
