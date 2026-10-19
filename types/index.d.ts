@@ -357,8 +357,9 @@ export interface AsnOptions {
    *
    * `'en'` is built in. Other codes must be registered first — the ESM bundle
    * ships English only, so import the locale from `autumnnote/i18n/<code>` and
-   * pass it to {@link registerLocale}. The UMD/CDN build pre-registers all
-   * eight ('en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko').
+   * pass it to {@link registerLocale}. In the UMD/CDN build, load
+   * `dist/i18n/<code>.umd.js` after the main script. Shipped codes:
+   * 'en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko', 'id'.
    *
    * A partial locale object works inline without registering anything.
    */
@@ -625,8 +626,8 @@ export interface AsnLocale {
 
 /**
  * Registry of locales selectable by code. The ESM bundle ships `'en'` only;
- * register others with {@link registerLocale}. The UMD/CDN build pre-registers
- * all eight ('en', 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko').
+ * register others with {@link registerLocale}. The UMD/CDN build ships `'en'`
+ * too; each `dist/i18n/<code>.umd.js` script registers its own locale.
  */
 export declare const locales: Record<string, AsnLocale>;
 

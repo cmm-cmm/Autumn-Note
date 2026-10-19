@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **The UMD/CDN build ships English only.** It used to pre-register every locale, so each `<script>` page paid for all of them (about 3 KB gzip per language) whatever it displayed. `autumnnote.umd.js`, `autumnnote.min.js` and `autumnnote.cjs` drop from 109.2 KB to 92.4 KB gzip. Each locale is now its own script, `dist/i18n/<code>.umd.js`, that registers itself when loaded after the main script. ESM/bundler users are not affected: they already imported locales one by one.
+
+### Migration
+
+If a page loads Autumn Note with a `<script>` tag and sets `lang` to anything other than `'en'`, add that locale's script after the main one:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/vi.umd.js"></script>
+<script>AutumnNote.create('#editor', { lang: 'vi' });</script>
+```
+
+Without it the editor falls back to English and the console warning names the missing script. With `require('autumnnote')` (CommonJS), require the locale and register it: `AutumnNote.registerLocale('vi', require('autumnnote/dist/i18n/vi.umd.js'))`.
+
+### Added
+
+- **Indonesian locale (`id`).** Import it from `autumnnote/i18n/id` or load `dist/i18n/id.umd.js`. The demo site's language pickers include it.
+- `pnpm build` also produces `dist/i18n/<code>.umd.js` for every locale file in `src/js/i18n/`, and `check:bundle` gives each one a size budget.
+
 ### Changed
 
 - **Default colours meet WCAG AA.** `$an-primary` is now `#2563eb` (white text on it is 5.17:1, was 3.68:1) and `$an-primary-hover` `#1d4ed8`; `$an-dark-muted` is `#9399b2` (was `#6c7086`, 3.0 to 3.6:1). Form fields use a new `--an-input-border` token so their edge reaches 3:1. Hosts that set `--an-primary` themselves are unaffected.

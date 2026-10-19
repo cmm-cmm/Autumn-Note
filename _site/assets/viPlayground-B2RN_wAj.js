@@ -1,4 +1,4 @@
-import{t as e}from"./all-BFtjiZmG.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Bắt đầu với Autumn Note</h1>
+import{t as e}from"./all-C68nzCpA.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,article:`<h1>Bắt đầu với Autumn Note</h1>
 <p>Autumn Note là một <strong>trình soạn thảo WYSIWYG không phụ thuộc</strong>, được xây dựng bằng vanilla JavaScript. Cài đặt chỉ trong vài giây:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
 <h2>Thiết lập cơ bản</h2>
@@ -10,7 +10,7 @@ import{t as e}from"./all-BFtjiZmG.js";/* empty css                   */var t=[{i
   onChange(html) { console.log(html); },
 });</code></pre>
 <h2>Tính năng chính</h2>
-<ul><li>Định dạng phong phú: đậm, nghiêng, gạch chân, gạch ngang</li><li>Bảng hỗ trợ gộp/tách ô</li><li>Tải ảnh lên bằng kéo-thả</li><li>Tự động gợi ý @mention</li><li>Tìm &amp; Thay thế</li><li>8 ngôn ngữ có sẵn</li></ul>`,checklist:`<h2>Danh sách công việc dự án</h2>
+<ul><li>Định dạng phong phú: đậm, nghiêng, gạch chân, gạch ngang</li><li>Bảng hỗ trợ gộp/tách ô</li><li>Tải ảnh lên bằng kéo-thả</li><li>Tự động gợi ý @mention</li><li>Tìm &amp; Thay thế</li><li>9 ngôn ngữ có sẵn</li></ul>`,checklist:`<h2>Danh sách công việc dự án</h2>
 <ul class="an-checklist">
   <li><input type="checkbox" contenteditable="false" checked>Khởi tạo repository dự án</li>
   <li><input type="checkbox" contenteditable="false" checked>Cài đặt dependencies</li>

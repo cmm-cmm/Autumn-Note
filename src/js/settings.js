@@ -241,7 +241,7 @@ export const defaultOptions = {
   // Accepts any valid CSS colour string, e.g. '#f97316', 'hsl(25,90%,55%)'.
   focusColor: null,
   // Display language for the editor UI.
-  // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko'.
+  // Built-in values: 'en' (default), 'vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko', 'id'.
   // Pass a partial or full locale object to override individual strings.
   lang: 'en',
 

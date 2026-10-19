@@ -8,10 +8,9 @@
  *   <script>
  *     const editor = AutumnNote.create('#my-editor');
  *   </script>
+ *
+ * English is built in. Other locales are separate scripts, dist/i18n/<code>.umd.js,
+ * that register themselves when loaded after this file; bundling them all here
+ * made every CDN page pay ~3 KB gzip per language it never showed.
  */
-// Script-tag consumers have no bundler to tree-shake with, so every locale is
-// pre-registered here and `lang: 'vi'` works without extra imports. ESM
-// consumers opt in per locale via `autumnnote/i18n/<code>` instead.
-import './i18n/all.js';
-
 export { default } from './index.js';

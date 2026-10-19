@@ -951,7 +951,7 @@ AutumnNote.registerButton({
     <!-- ── i18n ── -->
     <section class="docs-section" id="i18n" aria-label="Internationalization">
       <h2 class="section-h">Internationalisation</h2>
-      <p class="docs-p">Eight locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>. With a bundler only <code>en</code> is included by default. Register the ones you need so unused languages stay out of your bundle. The UMD/CDN build pre-registers all eight.</p>
+      <p class="docs-p">Nine locales ship with the package: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Every build includes only <code>en</code>. With a bundler, import and register the ones you need. With a <code>&lt;script&gt;</code> tag, load <code>dist/i18n/&lt;code&gt;.umd.js</code> after the main script and it registers itself, for example <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
         <pre><code class="language-js">import AutumnNote from 'autumnnote';
 import { vi } from 'autumnnote/i18n/vi';

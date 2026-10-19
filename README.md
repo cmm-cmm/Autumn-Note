@@ -104,7 +104,7 @@ Floating toolbars appear automatically when the user clicks on an editable eleme
 Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **Cut**, **Copy**, **Paste**, **Bold**, **Italic**, **Underline**, **Copy Format**, **Paste Format**, **Remove Format**, and a **colour palette** for quick text/highlight colour changes.
 
 ### Internationalisation
-- **Built-in locales** — English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), French (`fr`), German (`de`), Spanish (`es`), Korean (`ko`)
+- **Built-in locales** — English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), French (`fr`), German (`de`), Spanish (`es`), Korean (`ko`), Indonesian (`id`)
 - **Custom locale** — pass any partial locale object to override individual strings
 - **Per-instance language** — set a different `lang` per editor instance on the same page
 - **Auto-fallback** — unknown codes or missing keys fall back to English
@@ -210,6 +210,12 @@ import 'autumnnote/dist/autumnnote.css';
 
 ```html
 <script src="https://unpkg.com/autumnnote"></script>
+```
+
+The script-tag build ships English. For another language, add its locale script after the main one (see [Languages](#languages)):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"></script>
 ```
 
 
@@ -521,7 +527,7 @@ See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugi
 | `AutumnNote.defaults` | Read-only snapshot of the current default options. |
 | `AutumnNote.setDefaults(overrides)` | Merges options into the global defaults, applied to every future instance. |
 | `AutumnNote.resetDefaults()` | Restores the global defaults to their factory values. |
-| `AutumnNote.registerLocale(code, locale)` | Registers a locale so `lang: '<code>'` can select it. Only English ships in the ESM build — see [Languages](#languages). |
+| `AutumnNote.registerLocale(code, locale)` | Registers a locale so `lang: '<code>'` can select it. Only English ships in the ESM and UMD builds; see [Languages](#languages). |
 | `AutumnNote.registerModule(name, Class)` | Registers a custom module included in every future instance. |
 | `AutumnNote.registerButton(btnDef)` | Adds a button to the global registry. Call `editor.invoke('toolbar.rebuild')` afterwards to render it on existing instances. |
 | `AutumnNote.registerIcon(name, icon)` | Sets the icon for a button or icon name in every editor: SVG markup, or a CSS class list such as `'bi bi-type-bold'`. |
@@ -1027,7 +1033,7 @@ src/
 │   │   └── Mention.js        @mention autocomplete with floating dropdown
 │   ├── i18n/
 │   │   ├── index.js          Locale registry (resolveLocale, registerLocale)
-│   │   ├── all.js            Registers all eight locales — imported by the UMD build only
+│   │   ├── all.js            Registers every locale at once (used by the demo site)
 │   │   └── en.js, vi.js, …   One file per locale, importable as `autumnnote/i18n/<code>`
 │   ├── Context.js            Editor instance hub: module registry and event bus
 │   ├── settings.js           Default options (AsnOptions)
@@ -1077,6 +1083,7 @@ Build output in `dist/`:
 | `autumnnote.es.js` | ES Module | `import` in bundlers (tree-shakeable) |
 | `autumnnote.umd.js` | UMD | Browser `<script>` tag |
 | `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
+| `i18n/<code>.umd.js` | UMD | One locale for the `<script>` build; registers itself when loaded after `autumnnote.umd.js` |
 | `autumnnote.css` | CSS | Styles for both builds |
 
 ### Runtime integrations
@@ -1103,28 +1110,33 @@ The React wrapper supports `value`, `defaultValue`, and `onChange`; the Vue wrap
 
 ### Languages
 
-Eight locales ship with the package: `en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`.
+Nine locales ship with the package: `en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`, `id`. English is built into every build; each other locale is a small separate file (about 3 KB gzip) that you load only if you use it.
 
-**ESM / bundler** — English is built in; register any other locale you need. Bundling all eight cost every consumer ~17 KB gzip even when only English was ever rendered, so they are opt-in:
+**ESM / bundler**: import the locale and register it.
 
 ```js
 import AutumnNote from 'autumnnote';
-import { vi } from 'autumnnote/i18n/vi';
+import { id } from 'autumnnote/i18n/id';
 
-AutumnNote.registerLocale('vi', vi);
-AutumnNote.create('#editor', { lang: 'vi' });
+AutumnNote.registerLocale('id', id);
+AutumnNote.create('#editor', { lang: 'id' });
 ```
 
-**UMD / CDN (`<script>` tag)** — all eight locales are pre-registered, so `lang` works with no extra setup:
+**UMD / CDN (`<script>` tag)**: load the locale script after the main script. It registers itself, so `lang` works straight away:
 
 ```html
-<script src="dist/autumnnote.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"></script>
 <script>
-  AutumnNote.create('#editor', { lang: 'vi' });
+  AutumnNote.create('#editor', { lang: 'id' });
 </script>
 ```
 
-Requesting an unregistered code falls back to English and logs a warning telling you which import is missing. A partial locale object still works inline without registering anything:
+Self-hosting works the same way with `dist/autumnnote.umd.js` followed by `dist/i18n/<code>.umd.js`. Under CommonJS or AMD the locale file returns the locale object instead; pass it to `AutumnNote.registerLocale(code, locale)`.
+
+> **Upgrading from 3.x with a `<script>` tag:** the UMD/CDN build used to pre-register every locale. It now ships English only, which takes the CDN bundle from about 109 KB to 92 KB gzip. If your page sets `lang` to anything other than `'en'`, add that locale's `dist/i18n/<code>.umd.js` script after the main one. ESM users are not affected.
+
+Requesting an unregistered code falls back to English and logs a warning naming the import or script that is missing. A partial locale object still works inline without registering anything:
 
 ```js
 AutumnNote.create('#editor', { lang: { toolbar: { bold: 'Vet' } } });
@@ -1150,7 +1162,7 @@ The last two rows were measured rather than read off documentation, against `sum
 | Iframe support in setHTML | No | No | Restricted | **Yes (host-trusted)** |
 | Dark theme | No | No | Yes | **Yes (built-in)** |
 | RTL text direction | No | Partial | No | **Yes** |
-| Built-in i18n locales | No | No | Partial | **Yes (8 languages)** |
+| Built-in i18n locales | No | No | Partial | **Yes (9 languages)** |
 | Custom locale object | No | No | No | **Yes** |
 | Checklist (todo list) | No | No | No | **Yes** |
 | Find and Replace | No | No | No | **Yes (Ctrl+F / Ctrl+H)** |

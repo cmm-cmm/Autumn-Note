@@ -1,10 +1,9 @@
 /**
  * i18n/all.js — Registers every bundled locale.
  *
- * Imported by the UMD/CDN entry point, where script-tag consumers have no
- * bundler to tree-shake with and therefore expect `lang: 'vi'` to work out of
- * the box. ESM consumers should import only the locales they need from
- * `autumnnote/i18n/<code>` instead of pulling this in.
+ * Used by the demo site, which offers every language in its picker. Library
+ * consumers should import only the locales they need from
+ * `autumnnote/i18n/<code>` (ESM) or load `dist/i18n/<code>.umd.js` (CDN).
  */
 
 import { registerLocale } from './index.js';
@@ -15,6 +14,7 @@ import { fr } from './fr.js';
 import { de } from './de.js';
 import { es } from './es.js';
 import { ko } from './ko.js';
+import { id } from './id.js';
 
 registerLocale('vi', vi);
 registerLocale('ja', ja);
@@ -23,5 +23,6 @@ registerLocale('fr', fr);
 registerLocale('de', de);
 registerLocale('es', es);
 registerLocale('ko', ko);
+registerLocale('id', id);
 
-export { vi, ja, zh, fr, de, es, ko };
+export { vi, ja, zh, fr, de, es, ko, id };

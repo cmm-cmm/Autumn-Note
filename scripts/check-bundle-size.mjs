@@ -1,5 +1,6 @@
 import { gzipSync } from 'node:zlib';
 import { existsSync, readFileSync } from 'node:fs';
+import { bundledLocaleCodes } from './locales.mjs';
 
 // Lower bound catches a broken/empty build (e.g. a failed transform silently
 // producing a near-empty file) that would otherwise pass the upper-bound check.
@@ -13,6 +14,13 @@ const budgets = new Map([
   // stopped being worth importing.
   ['dist/autumnnote.core.es.js', { min: 20 * 1024, max: 60 * 1024 }],
 ]);
+
+// One script per locale for the CDN build. A missing file means a locale a
+// script-tag page cannot load; one far above a normal locale (~3 KB) means
+// something besides the strings got bundled into it.
+for (const code of bundledLocaleCodes()) {
+  budgets.set(`dist/i18n/${code}.umd.js`, { min: 1 * 1024, max: 6 * 1024 });
+}
 
 let failed = false;
 for (const [file, { min, max }] of budgets) {

@@ -1,7 +1,7 @@
 /**
  * i18n/index.js — Locale registry and resolver for autumn-note-ce.
  *
- * Only English ships in the ESM bundle. Bundling all eight locales cost every
+ * Only English ships in the ESM bundle. Bundling every locale cost each
  * consumer ~15 KB gzip even when they only ever rendered English, so the other
  * locales are opt-in via subpath imports:
  *
@@ -11,8 +11,8 @@
  *   AutumnNote.registerLocale('vi', vi);
  *   AutumnNote.create('#editor', { lang: 'vi' });
  *
- * The UMD/CDN build cannot tree-shake, so it pre-registers every locale and
- * `lang: 'vi'` keeps working there with no extra imports.
+ * The UMD/CDN build ships English only as well; each other locale is its own
+ * script, dist/i18n/<code>.umd.js, that registers itself when loaded.
  *
  * Usage:
  *   lang: 'en'          → built-in English (always available)
@@ -65,7 +65,8 @@ export function resolveLocale(lang) {
       console.warn(
         `[AutumnNote] Locale "${lang}" is not registered, falling back to English. ` +
         `Import it first: import { ${lang} } from 'autumnnote/i18n/${lang}'; ` +
-        `AutumnNote.registerLocale('${lang}', ${lang});`,
+        `AutumnNote.registerLocale('${lang}', ${lang}); ` +
+        `or, with a <script> tag, load dist/i18n/${lang}.umd.js after autumnnote.`,
       );
       return en;
     }

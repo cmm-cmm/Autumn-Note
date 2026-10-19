@@ -12,3 +12,4 @@ export declare const fr: Partial<AsnLocale>;
 export declare const de: Partial<AsnLocale>;
 export declare const es: Partial<AsnLocale>;
 export declare const ko: Partial<AsnLocale>;
+export declare const id: Partial<AsnLocale>;

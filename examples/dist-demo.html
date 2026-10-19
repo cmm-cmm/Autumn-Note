@@ -95,6 +95,7 @@
       <option value="de">Deutsch</option>
       <option value="es">Español</option>
       <option value="ko">한국어</option>
+      <option value="id">Bahasa Indonesia</option>
     </select>
   </div>
 
@@ -123,6 +124,15 @@
   </div>
 
   <script src="../dist/autumnnote.umd.js"></script>
+  <!-- The script-tag build ships English; each other language is its own file. -->
+  <script src="../dist/i18n/vi.umd.js"></script>
+  <script src="../dist/i18n/ja.umd.js"></script>
+  <script src="../dist/i18n/zh.umd.js"></script>
+  <script src="../dist/i18n/fr.umd.js"></script>
+  <script src="../dist/i18n/de.umd.js"></script>
+  <script src="../dist/i18n/es.umd.js"></script>
+  <script src="../dist/i18n/ko.umd.js"></script>
+  <script src="../dist/i18n/id.umd.js"></script>
   <script>
     const langSelect = document.getElementById('lang-select');
 

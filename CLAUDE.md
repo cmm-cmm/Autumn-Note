@@ -88,7 +88,7 @@ Single SCSS entry point `autumnnote.scss` (~2000 lines). Design tokens live in `
 
 ### Localization (`src/js/i18n/`)
 
-8 languages (en, vi, ja, zh, fr, de, es, ko). Resolved in `index.js` based on the `lang` option.
+9 languages (en, vi, ja, zh, fr, de, es, ko, id). Resolved in `index.js` based on the `lang` option. Only `en` is bundled; the UMD/CDN build gets one `dist/i18n/<code>.umd.js` per locale from `scripts/build-locales-umd.mjs`, and a new `src/js/i18n/<code>.js` file is picked up by it automatically.
 
 ### TypeScript (`types/index.d.ts`)
 

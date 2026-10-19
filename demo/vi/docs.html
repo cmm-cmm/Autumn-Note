@@ -952,7 +952,7 @@ AutumnNote.registerButton({
     <!-- ── i18n ── -->
     <section class="docs-section" id="i18n" aria-label="Đa ngôn ngữ">
       <h2 class="section-h">Đa ngôn ngữ (i18n)</h2>
-      <p class="docs-p">Gói có sẵn 8 locale: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>. Khi dùng bundler, mặc định chỉ <code>en</code> được đóng gói. Hãy đăng ký những ngôn ngữ bạn cần để các locale không dùng tới không làm phình bundle. Bản UMD/CDN đã đăng ký sẵn cả 8 locale.</p>
+      <p class="docs-p">Gói có sẵn 9 locale: <code>en</code>, <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code>, <code>id</code>. Mọi bản build chỉ đóng gói sẵn <code>en</code>. Khi dùng bundler, hãy import và đăng ký ngôn ngữ bạn cần. Khi dùng thẻ <code>&lt;script&gt;</code>, hãy tải <code>dist/i18n/&lt;code&gt;.umd.js</code> sau script chính và locale sẽ tự đăng ký, ví dụ <code>&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote/dist/i18n/id.umd.js"&gt;&lt;/script&gt;</code>.</p>
       <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Sao chép</button>
         <pre><code class="language-js">import AutumnNote from 'autumnnote';
 import { vi } from 'autumnnote/i18n/vi';

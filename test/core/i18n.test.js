@@ -52,6 +52,7 @@ describe('resolveLocale', () => {
     const warn = viMock.spyOn(console, 'warn').mockImplementation(() => {});
     expect(resolveLocale('vi')).toBe(en);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("autumnnote/i18n/vi"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('dist/i18n/vi.umd.js'));
   });
 
   it('accepts a partial object and merges with English', () => {
@@ -118,13 +119,42 @@ describe('locales registry', () => {
   });
 });
 
-describe('i18n/all.js — UMD/CDN bundle', () => {
+const SHIPPED = ['vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko', 'id'];
+
+describe('i18n/all.js — every locale at once (demo site)', () => {
   it('registers every bundled locale on import', async () => {
     await import('../../src/js/i18n/all.js');
-    for (const code of ['vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko']) {
+    for (const code of SHIPPED) {
       expect(locales, `missing locale: ${code}`).toHaveProperty(code);
     }
     // Registry is module-global; restore the ESM-only baseline for other files.
-    for (const code of ['vi', 'ja', 'zh', 'fr', 'de', 'es', 'ko']) delete locales[code];
+    for (const code of SHIPPED) delete locales[code];
+  });
+});
+
+describe('UMD/CDN entry', () => {
+  it('ships English only; other locales are separate dist/i18n scripts', async () => {
+    await import('../../src/js/index.umd.js');
+    expect(Object.keys(locales)).toEqual(['en']);
+  });
+
+  it('builds and size-checks one script per shipped locale', async () => {
+    const { bundledLocaleCodes } = await import('../../scripts/locales.mjs');
+    expect(bundledLocaleCodes()).toEqual([...SHIPPED].sort());
+  });
+});
+
+describe('id locale', () => {
+  it('translates every section and resolves over English', async () => {
+    const { id } = await import('../../src/js/i18n/id.js');
+    for (const key of Object.keys(en)) expect(id, `id missing section: ${key}`).toHaveProperty(key);
+    withLocale('id', id, () => {
+      const L = resolveLocale('id');
+      expect(L.toolbar.bold).toBe('Tebal (Ctrl+B)');
+      expect(L.statusbar.words(3)).toBe('Kata: 3');
+      expect(L.errors.imageSize(5)).toContain('5 MB');
+      // Keys left out of id.js because they match English still resolve.
+      expect(L.toolbar.paragraphItems.p).toBe(en.toolbar.paragraphItems.p);
+    });
   });
 });
