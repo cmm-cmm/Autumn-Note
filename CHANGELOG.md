@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Colour swatches, table-size cells and context-menu swatches are larger (at least 24px pitch) so they meet the WCAG 2.2 target size.
 - **Insert Image dialog redesign.** Uploading is a drop zone (click, keyboard or drag a file onto it) instead of a bare file input. A preview shows the image from the URL or the chosen file, with a loading pulse, an error state and a Remove button; the upload area steps aside while a preview is shown. Alignment is a segmented control using the image tooltip's float icons. New locale keys `imageDialog.dropTitle`, `dropHint`, `removeImage` and `previewError` in all 8 languages.
 - Dialog buttons read Cancel then the primary action, so the commit button is last in reading and tab order.
-- The CDN/UMD bundle stays within its 110 KiB gzip budget: built-in icons share one `svgIcon()` wrapper, the emoji and icon catalogues are stored as text per category, the shortcuts dialog and table cell shading reuse the English locale and the shared colour palette instead of private copies, and locale entries identical to English were dropped (locales are always merged over English).
+- The CDN/UMD bundle stays within its 110 KiB gzip budget: built-in icons share one `svgIcon()` wrapper and one set of path markup (`core/icon-paths.js`) instead of per-module copies, the emoji and icon catalogues are stored as text per category, the shortcuts dialog and table cell shading reuse the English locale and the shared colour palette instead of private copies, and locale entries identical to English were dropped (locales are always merged over English).
 
 ### Fixed
 
@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dark theme: context-menu hover text was unreadable (1.46:1); the dark primary button and autosave restore button have readable fills and hover states.
 - `prefers-reduced-motion` now also stops animation in the portal (bubble toolbar, crop toolbar, menus, tooltips).
 - The bubble toolbar's "Formatting", "No highlight" and custom-colour labels are translated (new `a11y.formatting` locale key).
+- **Dragging an image inside the editor duplicated it.** Chromium attaches a dragged `<img>` to `dataTransfer.files`, so the drop handler treated the move as a file upload: it inserted a full-size copy and left the original in place. A drag that starts inside the editor now moves the same image node (or its `figure`) to the drop point and records one undo step; dropping files from outside still uploads them. The image tooltip no longer jumps to the viewport corner after a move.
 - Image dialog labels were not tied to their inputs, and every editor on a page shared the same alignment radio ids and group, so choosing an alignment in one editor's dialog could uncheck it in another's.
 - Video error messages in all locales still contained an escaped em dash.
 - Package exports carry a `default` condition and export `./package.json`, for resolvers that do not match `import`/`require`.

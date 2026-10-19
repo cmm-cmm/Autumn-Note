@@ -7,8 +7,9 @@ import { createElement, on, setIcon, svgIcon } from '../core/dom.js';
 import { BaseDialog } from './BaseDialog.js';
 // Same glyphs as the image tooltip's float buttons, so both name a layout alike.
 import { ICONS as IMAGE_ICONS } from './ImageTooltip.js';
+import { PATHS } from '../core/icon-paths.js';
 
-const ICON_SVG = svgIcon(`<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>`, 20);
+const ICON_SVG = svgIcon(PATHS.image, 20);
 
 const UPLOAD_SVG = svgIcon(`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>`, 22);
 

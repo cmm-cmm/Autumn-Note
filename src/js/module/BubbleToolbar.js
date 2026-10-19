@@ -15,6 +15,7 @@ import { on, portalOf, setIcon } from '../core/dom.js';
 import { resolvePalette } from '../core/palette.js';
 import * as Style from '../editing/Style.js';
 import { resolveIcon } from './Buttons.js';
+import { PATHS } from '../core/icon-paths.js';
 
 
 // Minimal SVG icon set — only what the bubble toolbar needs.
@@ -23,15 +24,15 @@ const _svg = (p) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" ${_S} style="display:block">${p}</svg>`;
 
 const _ICONS = {
-  bold:          _svg('<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>'),
-  italic:        _svg('<line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/>'),
-  underline:     _svg('<path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/>'),
-  strikethrough: _svg('<path d="M17.3 12H6.7"/><path d="M10 6.5C10 5.1 11.1 4 12.5 4c1.4 0 2.5 1.1 2.5 2.5 0 .8-.4 1.5-1 2"/><path d="M14 17.5C14 19 12.9 20 11.5 20 10.1 20 9 18.9 9 17.5c0-.8.4-1.5 1-2"/>'),
-  link:          _svg('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'),
-  foreColor:     _svg('<path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>'),
-  hiliteColor:   _svg('<path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/><line x1="3" y1="21" x2="21" y2="21"/>'),
-  removeFormat:  _svg('<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>'),
-  inlineCode:    _svg('<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5c0 1.1.9 2 2 2a2 2 0 0 1-2 2v5a2 2 0 0 1-2 2h-1"/>'),
+  bold:          _svg(PATHS.bold),
+  italic:        _svg(PATHS.italic),
+  underline:     _svg(PATHS.underline),
+  strikethrough: _svg(PATHS.strike),
+  link:          _svg(PATHS.link),
+  foreColor:     _svg(PATHS.foreColor),
+  hiliteColor:   _svg(PATHS.highlight),
+  removeFormat:  _svg(PATHS.removeFormat),
+  inlineCode:    _svg(PATHS.code),
 };
 
 // Color buttons are handled via _openColorPicker; not in _ACTIONS.

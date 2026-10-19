@@ -508,3 +508,33 @@ describe('ImageTooltip._toggleCaption', () => {
     expect(ctx.invoke).not.toHaveBeenCalled();
   });
 });
+
+describe('ImageTooltip — image moved by drag', () => {
+  it('hides when a drag starts and never positions against a detached image', async () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    const container = document.createElement('div');
+    container.appendChild(editable);
+    document.body.appendChild(container);
+    const img = document.createElement('img');
+    editable.appendChild(img);
+    const ctx = { layoutInfo: { editable, container }, locale: en, options: {}, invoke: vi.fn(), triggerEvent: vi.fn() };
+    const tip = new ImageTooltip(ctx);
+    tip.initialize();
+
+    tip._active = img;
+    tip._show(img);
+    editable.dispatchEvent(new Event('dragstart', { bubbles: true }));
+    expect(tip._el.style.display).toBe('none');
+    expect(tip._active).toBeNull();
+
+    // The browser's move removes the original node.
+    tip._active = img;
+    tip._el.style.display = 'flex';
+    img.remove();
+    tip._positionNear(img);
+    expect(tip._el.style.display).toBe('none');
+
+    tip.destroy();
+  });
+});

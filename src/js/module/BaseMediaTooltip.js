@@ -81,6 +81,7 @@ export class BaseMediaTooltip {
     this._hideTimer = null;
     clearTimeout(this._showTimer);
     this._showTimer = setTimeout(() => {
+      if (!target.isConnected) return;
       this._active = target;
       this._show(target);
     }, SHOW_DELAY);
@@ -124,6 +125,9 @@ export class BaseMediaTooltip {
    * @param {HTMLElement} target
    */
   _positionNear(target) {
+    // A drag-move inside the editor replaces the node; a detached one has an
+    // all-zero rect and would pin the tooltip to the viewport corner.
+    if (!target.isConnected) { this._hide(); return; }
     const rect   = target.getBoundingClientRect();
     const tipW   = this._el.offsetWidth  || 220;
     const tipH   = this._el.offsetHeight || 32;

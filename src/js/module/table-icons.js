@@ -6,6 +6,7 @@
  */
 
 import { svgIcon } from '../core/dom.js';
+import { PATHS } from '../core/icon-paths.js';
 
 export const ICONS = {
   rowAbove:    svgIcon(`<rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3v7"/><path d="M9 7l3-4 3 4"/>`),
@@ -23,10 +24,10 @@ export const ICONS = {
   selectCells: svgIcon(`<path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z" fill="currentColor" opacity="0.15"/><path d="M4 4 L4 20 L9 15 L12 21 L14 20 L11 14 L17 14 Z"/>`, 13, 1.8),
   cellShade:   svgIcon(`<path d="M19 11L8.93 3.36a1 1 0 0 0-1.29.08L3.22 7.8a1 1 0 0 0-.07 1.29L11 20"/><path d="m5 14 5-5"/><path d="M22 22a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2c0-1.5 2.5-5 3.5-5s3.5 3.5 3.5 5z"/>`),
   borderColor: svgIcon(`<rect x="3" y="3" width="18" height="14" rx="1"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="1.5"/><line x1="12" y1="3" x2="12" y2="17" stroke-width="1.5"/><path d="M3 21h18" stroke-width="3"/>`),
-  alignLeft:    svgIcon(`<line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/>`),
+  alignLeft:    svgIcon(PATHS.alignLeft),
   alignCenter:  svgIcon(`<line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/>`),
-  alignRight:   svgIcon(`<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/>`),
-  alignJustify: svgIcon(`<line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/>`),
+  alignRight:   svgIcon(PATHS.alignRight),
+  alignJustify: svgIcon(PATHS.alignJustify),
   headerRow:    svgIcon(`<rect x="3" y="3" width="18" height="18" rx="1"/><rect x="3" y="3" width="18" height="8" rx="1" fill="currentColor" opacity="0.2"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="3" y1="16" x2="21" y2="16"/><line x1="9" y1="11" x2="9" y2="21"/><line x1="15" y1="11" x2="15" y2="21"/>`),
   sortAsc:     svgIcon(`<line x1="4" y1="6" x2="11" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="13" y2="18"/><path d="M15 9l3-3 3 3"/><line x1="18" y1="6" x2="18" y2="18"/>`),
   sortDesc:    svgIcon(`<line x1="4" y1="6" x2="13" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/><path d="M15 15l3 3 3-3"/><line x1="18" y1="6" x2="18" y2="18"/>`),

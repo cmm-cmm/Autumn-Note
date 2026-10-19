@@ -10,8 +10,9 @@
 import { createElement, on, svgIcon } from '../core/dom.js';
 import { sanitiseUrl, isAllowedIframeSrc } from '../core/sanitise.js';
 import { BaseDialog } from './BaseDialog.js';
+import { PATHS } from '../core/icon-paths.js';
 
-const ICON_SVG = svgIcon(`<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>`, 20);
+const ICON_SVG = svgIcon(PATHS.video, 20);
 
 export class VideoDialog extends BaseDialog {
   // ---------------------------------------------------------------------------

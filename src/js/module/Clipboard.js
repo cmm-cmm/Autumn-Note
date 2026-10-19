@@ -24,11 +24,28 @@ export class Clipboard {
     this._blobRegistry = new Map();
     /** @type {boolean} Set to true by Ctrl+Shift+V shortcut to force one-shot plain paste */
     this._forcePlain = false;
+    /**
+     * True while content dragged out of this editable is in flight. Chromium
+     * attaches a dragged <img> to dataTransfer.files, so without this a move
+     * inside the editor read as a file drop and inserted a second copy.
+     * @type {boolean}
+     */
+    this._internalDrag = false;
+    /** @type {HTMLElement|null} Image (or its figure) being moved by drag. */
+    this._dragged = null;
     const editable = this.context.layoutInfo.editable;
     this._disposers.push(
-      on(editable, 'paste',    (e) => this._onPaste(e)),
-      on(editable, 'dragover', (e) => this._onDragover(e)),
-      on(editable, 'drop',     (e) => this._onDrop(e)),
+      on(editable, 'paste',     (e) => this._onPaste(e)),
+      // Read defaultPrevented after every dragstart listener has run: a drag
+      // the editor cancels (iframes, read-only) never fires dragend.
+      on(editable, 'dragstart', (e) => globalThis.queueMicrotask(() => {
+        this._internalDrag = !e.defaultPrevented;
+        const img = this._internalDrag ? /** @type {Element} */ (e.target)?.closest?.('img') : null;
+        this._dragged = img ? /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img) : null;
+      })),
+      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; }),
+      on(editable, 'dragover',  (e) => this._onDragover(e)),
+      on(editable, 'drop',      (e) => this._onDrop(e)),
     );
 
     // Watch for removed images so their blob: URLs are revoked immediately,
@@ -342,6 +359,15 @@ export class Clipboard {
 
   _onDragover(event) {
     if (!event.dataTransfer) return;
+    // An image moved inside the editor: we relocate the node ourselves on
+    // drop (see _onDrop), so accept it as a move. Other internal drags (text)
+    // are left to the browser's own editing behaviour.
+    if (this._dragged) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      return;
+    }
+    if (this._internalDrag) return;
     const types = Array.from(event.dataTransfer.types || []);
     if (types.includes('Files')) {
       event.preventDefault();
@@ -351,6 +377,19 @@ export class Clipboard {
 
   _onDrop(event) {
     const dt = event.dataTransfer;
+    if (this._internalDrag) {
+      const node = this._dragged;
+      this._internalDrag = false;
+      this._dragged = null;
+      // Chromium also hands us the dragged image as a File; uploading that
+      // would leave the original in place and add a copy. Move the node.
+      if (node) {
+        event.preventDefault();
+        event.stopPropagation();
+        this._moveNodeToPoint(node, event.clientX, event.clientY);
+      }
+      return;
+    }
     if (!dt?.files?.length) return;
 
     const imageFiles = Array.from(dt.files).filter((f) => f.type.startsWith('image/'));
@@ -734,6 +773,36 @@ export class Clipboard {
    * @param {number} x
    * @param {number} y
    */
+  /**
+   * Moves `node` (an image, or its figure) to the caret position under the
+   * pointer. A figure is a block, so it lands after the block holding the caret.
+   * @param {HTMLElement} node
+   * @param {number} x
+   * @param {number} y
+   */
+  _moveNodeToPoint(node, x, y) {
+    const editable = this.context.layoutInfo.editable;
+    this._placeCaretAtPoint(x, y);
+    const sel = globalThis.getSelection();
+    const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
+    if (!range || !editable.contains(range.startContainer) || node.contains(range.startContainer)) return;
+
+    if (node.nodeName === 'FIGURE') {
+      let block = /** @type {Node} */ (range.startContainer);
+      while (block.parentNode && block.parentNode !== editable) block = block.parentNode;
+      if (block === node) return;
+      block.parentNode.insertBefore(node, block.nextSibling);
+    } else {
+      range.insertNode(node);
+    }
+    const after = document.createRange();
+    after.setStartAfter(node);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
+    this.context.invoke('editor.afterCommand');
+  }
+
   _placeCaretAtPoint(x, y) {
     let range;
     if (document.caretRangeFromPoint) {

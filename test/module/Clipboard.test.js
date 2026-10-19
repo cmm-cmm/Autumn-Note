@@ -985,3 +985,104 @@ describe('Clipboard image upload handler', () => {
     expect(editable.querySelector('img').style.getPropertyValue('--an-upload-progress')).toBe('0');
   });
 });
+
+// ── Moving content inside the editor ─────────────────────────────────────────
+// Chromium puts a dragged <img> in dataTransfer.files. A move within the
+// editor must stay a native move, not become a file upload of a second copy.
+
+describe('Clipboard — drags that start inside the editable', () => {
+  const imageDrop = () => ({
+    dataTransfer: { files: [new File(['x'], 'banner.png', { type: 'image/png' })], types: ['text/html', 'Files'], dropEffect: '' },
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    clientX: 10,
+    clientY: 10,
+  });
+  const startDrag = async (target, { cancel = false } = {}) => {
+    const ev = new Event('dragstart', { bubbles: true, cancelable: true });
+    if (cancel) target.addEventListener('dragstart', (e) => e.preventDefault(), { once: true });
+    target.dispatchEvent(ev);
+    await Promise.resolve();
+  };
+
+  it('lets an image moved within the editor move natively instead of inserting a copy', async () => {
+    const onImageUpload = vi.fn();
+    const { cb } = makeClipboard({ onImageUpload });
+    const img = document.createElement('img');
+    lastEditable.appendChild(img);
+
+    await startDrag(img);
+    const over = imageDrop();
+    cb._onDragover(over);
+    const drop = imageDrop();
+    cb._onDrop(drop);
+
+    expect(over.preventDefault).toHaveBeenCalled();
+    expect(over.dataTransfer.dropEffect).toBe('move');
+    expect(drop.preventDefault).toHaveBeenCalled();
+    expect(onImageUpload).not.toHaveBeenCalled();
+    expect(lastEditable.querySelectorAll('img')).toHaveLength(1);
+  });
+
+  it('moves the same image node to the drop point and records history', async () => {
+    const { ctx, cb } = makeClipboard();
+    lastEditable.innerHTML = '<p>one</p><p>two</p>';
+    const img = document.createElement('img');
+    lastEditable.firstChild.appendChild(img);
+    const target = lastEditable.lastChild.firstChild; // "two"
+    document.caretRangeFromPoint = () => {
+      const r = document.createRange();
+      r.setStart(target, 1);
+      return r;
+    };
+
+    await startDrag(img);
+    cb._onDrop(imageDrop());
+    delete document.caretRangeFromPoint;
+
+    expect(lastEditable.querySelectorAll('img')).toHaveLength(1);
+    expect(lastEditable.lastChild.querySelector('img')).toBe(img);
+    expect(lastEditable.firstChild.innerHTML).toBe('one');
+    expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');
+  });
+
+  it('leaves text drags to the browser', async () => {
+    const { cb } = makeClipboard();
+    lastEditable.innerHTML = '<p>drag me</p>';
+    await startDrag(lastEditable.firstChild.firstChild.parentNode);
+    const over = { dataTransfer: { types: ['text/html'], dropEffect: '' }, preventDefault: vi.fn() };
+    cb._onDragover(over);
+    const drop = { dataTransfer: { files: [], types: ['text/html'] }, preventDefault: vi.fn(), stopPropagation: vi.fn() };
+    cb._onDrop(drop);
+    expect(over.preventDefault).not.toHaveBeenCalled();
+    expect(drop.preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('treats the next drop as external again once the drag ends', async () => {
+    const onImageUpload = vi.fn();
+    const { cb } = makeClipboard({ onImageUpload });
+    const img = document.createElement('img');
+    lastEditable.appendChild(img);
+
+    await startDrag(img);
+    img.dispatchEvent(new Event('dragend', { bubbles: true }));
+    const drop = imageDrop();
+    cb._onDrop(drop);
+
+    expect(drop.preventDefault).toHaveBeenCalled();
+    expect(onImageUpload).toHaveBeenCalled();
+  });
+
+  it('a drag the editor cancels does not swallow a later file drop', async () => {
+    const onImageUpload = vi.fn();
+    const { cb } = makeClipboard({ onImageUpload });
+    const frame = document.createElement('span');
+    lastEditable.appendChild(frame);
+
+    await startDrag(frame, { cancel: true });
+    expect(cb._internalDrag).toBe(false);
+
+    cb._onDrop(imageDrop());
+    expect(onImageUpload).toHaveBeenCalled();
+  });
+});
