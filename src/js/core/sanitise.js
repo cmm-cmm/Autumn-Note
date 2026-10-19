@@ -174,8 +174,8 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
   // built-ins, so `<form><input id="remove">` turns form.remove (or tagName,
   // removeAttribute) into an element.
   const allElements = walked.filter((el) => {
-    if (ELEMENT_LOCAL_NAME.call(el) !== 'form') return true;
-    ELEMENT_REMOVE.call(el);
+    if (elementLocalName(el) !== 'form') return true;
+    Element.prototype.remove.call(el);
     return false;
   });
 
@@ -289,8 +289,16 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
   return body;
 }
 
-const ELEMENT_LOCAL_NAME = Object.getOwnPropertyDescriptor(Element.prototype, 'localName').get;
-const ELEMENT_REMOVE = Element.prototype.remove;
+/**
+ * `el.localName` via the Element.prototype getter, which a form's named
+ * properties cannot shadow. Looked up per call, not at module load, so the
+ * library still imports where there is no DOM (SSR).
+ * @param {Element} el
+ * @returns {string}
+ */
+function elementLocalName(el) {
+  return Object.getOwnPropertyDescriptor(Element.prototype, 'localName').get.call(el);
+}
 
 /**
  * `doc.body` via the Document.prototype getter, which a named property on

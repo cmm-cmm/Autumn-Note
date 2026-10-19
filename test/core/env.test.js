@@ -103,6 +103,16 @@ describe('env without a global navigator (SSR)', () => {
     await expect(import('../../src/js/core/env.js')).resolves.toBeDefined();
   });
 
+  it('imports the sanitiser and the full entry without a DOM', async () => {
+    // Reading Element.prototype at module scope made the import throw
+    // ReferenceError under SSR, where Element does not exist.
+    vi.stubGlobal('Element', undefined);
+    vi.stubGlobal('Document', undefined);
+    vi.resetModules();
+    await expect(import('../../src/js/core/sanitise.js')).resolves.toBeDefined();
+    await expect(import('../../src/js/index.js')).resolves.toBeDefined();
+  });
+
   it('answers every field with a safe default instead of throwing', () => {
     vi.stubGlobal('navigator', undefined);
     expect(env.isChrome).toBe(false);
