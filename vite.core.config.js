@@ -15,14 +15,14 @@ import { defineConfig } from 'vite';
  * build, which emits it.
  */
 export default defineConfig({
-  root: resolve(__dirname, 'demo'),
+  root: resolve(import.meta.dirname, 'demo'),
   publicDir: false,
   build: {
-    outDir: resolve(__dirname, 'dist'),
+    outDir: resolve(import.meta.dirname, 'dist'),
     emptyOutDir: false,
     copyPublicDir: false,
     lib: {
-      entry: resolve(__dirname, 'src/js/core.js'),
+      entry: resolve(import.meta.dirname, 'src/js/core.js'),
       formats: ['es'],
       fileName: () => 'autumnnote.core.es.js',
     },

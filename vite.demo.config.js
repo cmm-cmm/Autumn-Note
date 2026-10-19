@@ -8,28 +8,28 @@ import { demoVersion } from './scripts/vite-plugin-demo-version.mjs';
 // under a `demo/` folder matching the `base` prefix.
 const base = process.env.DEMO_BASE_PATH || '/';
 const outDir = process.env.DEMO_OUT_DIR
-  ? resolve(__dirname, process.env.DEMO_OUT_DIR)
-  : resolve(__dirname, '_site');
+  ? resolve(import.meta.dirname, process.env.DEMO_OUT_DIR)
+  : resolve(import.meta.dirname, '_site');
 
 export default defineConfig({
   base,
   plugins: [demoVersion()],
   // Demo site source lives in demo/ — keep build output flat at _site/
   // so published URLs (/, /docs.html, /playground.html) stay unchanged.
-  root: resolve(__dirname, 'demo'),
-  publicDir: resolve(__dirname, 'public'),
+  root: resolve(import.meta.dirname, 'demo'),
+  publicDir: resolve(import.meta.dirname, 'public'),
   build: {
     outDir,
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main:       resolve(__dirname, 'demo/index.html'),
-        docs:       resolve(__dirname, 'demo/docs.html'),
-        playground: resolve(__dirname, 'demo/playground.html'),
-        notFound:   resolve(__dirname, 'demo/404.html'),
-        viMain:       resolve(__dirname, 'demo/vi/index.html'),
-        viDocs:       resolve(__dirname, 'demo/vi/docs.html'),
-        viPlayground: resolve(__dirname, 'demo/vi/playground.html'),
+        main:       resolve(import.meta.dirname, 'demo/index.html'),
+        docs:       resolve(import.meta.dirname, 'demo/docs.html'),
+        playground: resolve(import.meta.dirname, 'demo/playground.html'),
+        notFound:   resolve(import.meta.dirname, 'demo/404.html'),
+        viMain:       resolve(import.meta.dirname, 'demo/vi/index.html'),
+        viDocs:       resolve(import.meta.dirname, 'demo/vi/docs.html'),
+        viPlayground: resolve(import.meta.dirname, 'demo/vi/playground.html'),
       },
     },
   },

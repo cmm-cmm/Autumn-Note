@@ -13,14 +13,14 @@ export default defineConfig(async () => {
 
   return {
     // Dev server entry now lives in demo/ (landing page used for `npm run dev`)
-    root: resolve(__dirname, 'demo'),
-    publicDir: resolve(__dirname, 'public'),
+    root: resolve(import.meta.dirname, 'demo'),
+    publicDir: resolve(import.meta.dirname, 'public'),
     build: {
-      outDir: resolve(__dirname, 'dist'),
+      outDir: resolve(import.meta.dirname, 'dist'),
       emptyOutDir: true,
       copyPublicDir: false,
       lib: {
-        entry: resolve(__dirname, 'src/js/index.js'),
+        entry: resolve(import.meta.dirname, 'src/js/index.js'),
         formats: ['es'],
         fileName: () => 'autumnnote.es.js',
       },

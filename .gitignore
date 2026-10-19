@@ -46,4 +46,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+bun.lock
+bun.lockb
 vitest.browser.local.config.js

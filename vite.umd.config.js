@@ -6,7 +6,7 @@ export default defineConfig({
   publicDir: false,
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/js/index.umd.js'),
+      entry: resolve(import.meta.dirname, 'src/js/index.umd.js'),
       name: 'AutumnNote',
       formats: ['umd'],
       fileName: () => 'autumnnote.umd.js',

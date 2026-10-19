@@ -14,9 +14,40 @@
  * the npm invocation only runs when this file is executed directly.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+/**
+ * Fallback when `npm` binary is not installed in the current environment
+ * (e.g. Bun or Deno runtime). Derives the shipped file list from `package.json#files`.
+ * @param {string} [rootDir='.']
+ * @returns {string[]}
+ */
+export function fallbackPackedFiles(rootDir = '.') {
+  const pkg = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf8'));
+  const patterns = pkg.files || [];
+  const results = new Set(['package.json', 'README.md', 'LICENSE']);
+
+  function walk(relPath) {
+    const full = join(rootDir, relPath);
+    try {
+      const stat = statSync(full);
+      if (stat.isDirectory()) {
+        for (const child of readdirSync(full)) {
+          walk(join(relPath, child).replaceAll('\\', '/'));
+        }
+      } else if (stat.isFile()) {
+        results.add(relPath.replaceAll('\\', '/'));
+      }
+    } catch {
+      // Ignored: path not created yet
+    }
+  }
+
+  for (const pat of patterns) walk(pat);
+  return Array.from(results);
+}
 
 /**
  * `npm pack --json` has two shapes in the wild, and this repo hits both: CI runs
@@ -93,15 +124,22 @@ export function npmInvocation(platform = process.platform, comspec = process.env
 }
 
 function main() {
-  const { command, args } = npmInvocation();
-  const raw = execFileSync(
-    command,
-    args,
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-  );
+  let shipped;
+  try {
+    const { command, args } = npmInvocation();
+    const raw = execFileSync(
+      command,
+      args,
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    );
+    shipped = packedFiles(raw).map((f) => f.path);
+  } catch {
+    // When npm is not available in the current runtime/environment,
+    // determine shipped files directly from package.json#files.
+    shipped = fallbackPackedFiles();
+  }
 
   /** @type {string[]} POSIX-style paths, relative to the package root. */
-  const shipped = packedFiles(raw).map((f) => f.path);
   const shippedSet = new Set(shipped);
 
   // Only source files can carry unresolvable relative imports; dist bundles are

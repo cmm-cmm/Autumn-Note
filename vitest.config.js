@@ -4,13 +4,13 @@ import { defineConfig } from 'vitest/config';
 // has no methods unless --localstorage-file is given. Turn it off in the test
 // workers so the jsdom Storage is what the editor sees. Guarded so a future
 // Node that drops the flag doesn't refuse to start the workers.
-const execArgv = process.allowedNodeEnvironmentFlags.has('--experimental-webstorage')
+const execArgv = process.allowedNodeEnvironmentFlags?.has?.('--experimental-webstorage')
   ? ['--no-experimental-webstorage']
   : [];
 
 export default defineConfig({
   test: {
-    environment: 'jsdom',
+    environment: './test/support/jsdom-environment.js',
     globals: true,
     include: ['test/**/*.test.js'],
     exclude: ['test/browser/**'],
