@@ -8,13 +8,17 @@ overrides:
   #   brace-expansion  GHSA — DoS via unbounded intermediate arrays
   #   postcss          GHSA-6g55-p6wh-862q follow-up — arbitrary .map read
   #   nanoid           custom generators loop forever when size is 0
+  #   undici           GHSA-rfgv-xxqx-mfg5 / -w293-vg96-wgc3 / -vp8m-p9jh-q5pm (jsdom)
+  #   source-map-js    GHSA-68fv-2mgg-jv7q — event-loop DoS (@vue/compiler-*)
   # Each is a patch-level bump within the same major, so pinning forward is
   # safe. Raise these to the advisory's `patched_versions` — a floor that
   # merely satisfies an older advisory silently stops holding when the next
   # one lands, which is how `pnpm audit --audit-level high` in CI went red.
-  brace-expansion: '>=5.0.9'
+  brace-expansion: '>=5.0.11'
   postcss: '>=8.5.23'
   nanoid: '>=3.3.17'
+  undici: '>=8.10.2'
+  source-map-js: '>=1.2.2'
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
