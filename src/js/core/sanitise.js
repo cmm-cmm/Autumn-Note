@@ -157,17 +157,27 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
 
   // One walk collects every element (in document order, as querySelectorAll
   // would) and every comment.
-  const allElements = [];
+  const walked = [];
   const comments = [];
   const walker = Document.prototype.createTreeWalker.call(doc, body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    (node.nodeType === Node.COMMENT_NODE ? comments : allElements).push(node);
+    (node.nodeType === Node.COMMENT_NODE ? comments : walked).push(node);
   }
 
   // Comments serialise their data unescaped, so a comment that holds a
   // terminator once a filler character is stripped (`-` U+200B `->`) re-parses
   // into live markup. Nothing the editor writes is a comment.
   for (const node of comments) node.remove();
+
+  // <form> goes first, through Element.prototype, and is never touched again:
+  // a form exposes its controls by id and name as properties that override
+  // built-ins, so `<form><input id="remove">` turns form.remove (or tagName,
+  // removeAttribute) into an element.
+  const allElements = walked.filter((el) => {
+    if (ELEMENT_LOCAL_NAME.call(el) !== 'form') return true;
+    ELEMENT_REMOVE.call(el);
+    return false;
+  });
 
   // Named properties go before anything else touches the document: the DOM
   // implementation itself may call document methods they shadow.
@@ -202,6 +212,9 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
         el.remove();
         continue;
       }
+      // An iframe's children are raw text that is never rendered and
+      // serialises unescaped, like the raw-text elements above.
+      el.replaceChildren();
     }
 
     // Strip dangerous attributes
@@ -276,6 +289,9 @@ export function sanitiseToBody(html, { allowIframes = false, iframeHosts = null 
   return body;
 }
 
+const ELEMENT_LOCAL_NAME = Object.getOwnPropertyDescriptor(Element.prototype, 'localName').get;
+const ELEMENT_REMOVE = Element.prototype.remove;
+
 /**
  * `doc.body` via the Document.prototype getter, which a named property on
  * the document instance cannot shadow.
@@ -331,7 +347,9 @@ function isSafeSrcset(value, { allowData = false } = {}) {
   const tokens = (value || '').trim().split(/\s+/).filter(Boolean);
   for (const token of tokens) {
     if (/^[\d.]+[xw],?$/i.test(token)) continue; // width/density descriptor
-    const url = token.replace(/,+$/, ''); // trailing comma = candidate separator
+    let end = token.length; // trailing commas = candidate separator (a
+    while (end > 0 && token[end - 1] === ',') end--; // scan: /,+$/ is quadratic)
+    const url = token.slice(0, end);
     if (!url) continue;
     if (!isSafeUrl(url, { media: true, allowData })) return false;
   }

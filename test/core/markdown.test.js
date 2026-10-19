@@ -1225,10 +1225,10 @@ describe('htmlToMarkdown — round-trip fidelity', () => {
       .toBe('![a](i.png "T")');
   });
 
-  it('wraps a destination containing parentheses so it re-parses whole', () => {
+  it('percent-encodes parentheses in a destination so it re-parses whole', () => {
     const md = htmlToMarkdown('<p><a href="http://e.com/a(b)">x</a></p>');
-    expect(md).toBe('[x](<http://e.com/a(b)>)');
-    expect(markdownToHTML(md)).toBe('<p><a href="http://e.com/a(b)">x</a></p>');
+    expect(md).toBe('[x](http://e.com/a%28b%29)');
+    expect(markdownToHTML(md)).toBe('<p><a href="http://e.com/a%28b%29">x</a></p>');
   });
 
   it('fences a code span around an embedded backtick', () => {
@@ -1621,5 +1621,64 @@ describe('htmlToMarkdown — many backtick runs', () => {
     const code = '`a'.repeat(300000);
     expect(() => htmlToMarkdown(`<pre><code>${code}</code></pre>`)).not.toThrow();
     expect(() => htmlToMarkdown(`<p><code>${code}</code></p>`)).not.toThrow();
+  });
+});
+
+describe('markdown — re-audit regressions', () => {
+  it.each([
+    ['a long punctuation run in a bare URL', `# t\n\nhttp://${'.'.repeat(100000)}x`],
+    ['a long space run inside a paragraph line', `# t\n\na${' '.repeat(100000)}b\nc`],
+  ])('converts %s in linear time', (_, md) => {
+    const t = performance.now();
+    markdownToHTML(md);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
+  it('still trims trailing punctuation from bare URLs and keeps hard breaks', () => {
+    expect(markdownToHTML('see http://e.com/a.')).toBe('<p>see <a href="http://e.com/a">http://e.com/a</a>.</p>');
+    expect(markdownToHTML('a  \nb')).toBe('<p>a<br>b</p>');
+  });
+
+  it('caps nested list depth', () => {
+    const md = Array.from({ length: 300 }, (_, i) => `${'  '.repeat(i)}- x`).join('\n');
+    const html = markdownToHTML(md);
+    expect((html.match(/<ul>/g) || []).length).toBeLessThanOrEqual(101);
+  });
+
+  it('exports arbitrarily deep markup without running out of stack', () => {
+    const html = `${'<span>'.repeat(2000)}deep${'</span>'.repeat(2000)}`;
+    expect(htmlToMarkdown(html)).toContain('deep');
+  });
+});
+
+describe('htmlToMarkdown — every Markdown context stays closed (re-audit)', () => {
+  const RAW = '&lt;img src=x onerror=__x()&gt;';
+  it.each([
+    ['a destination with a space and >', `<p><a href="http://a.test/ &gt;${RAW}">t</a></p>`],
+  ])('%s', (_, html) => {
+    const md = htmlToMarkdown(html);
+    // Raw HTML would need a "<img" that is not inside a code span or fence.
+    const outsideCode = md.replace(/^(`{3,})[^\n]*\n[\s\S]*?\n\1$/gm, '').replace(/(`+)[^`]*?\1/g, '');
+    expect(outsideCode).not.toMatch(/<img/);
+  });
+
+  it('escapes a backslash at the end of a title, so the closing quote stays a quote', () => {
+    const md = htmlToMarkdown(`<p><a href="http://a.test/" title="${RAW}\\">t</a></p>`);
+    expect(md).toBe(String.raw`[t](http://a.test/ "<img src=x onerror=__x()>\\")`);
+  });
+
+  it('keeps a code span on one line, so <br><br> cannot end it', () => {
+    const md = htmlToMarkdown(`<p><code>a<br><br>${RAW}</code></p>`);
+    expect(md).not.toContain('\n');
+    expect(md).toMatch(/^`[^`]*`$/);
+  });
+
+  it('drops backticks from the fence info string, which would invalidate the fence', () => {
+    const md = htmlToMarkdown(`<pre><code class="language-x\`\`\`">${RAW}</code></pre>`);
+    expect(md.split('\n')[0]).toBe('```x');
+  });
+
+  it('keeps a plain language class', () => {
+    expect(htmlToMarkdown('<pre><code class="language-js">x</code></pre>')).toMatch(/^```js\n/);
   });
 });

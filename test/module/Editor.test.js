@@ -911,3 +911,15 @@ describe('Editor.getHTML — cleanup does not change markup structure', () => {
     expect(editor.getHTML()).toBe('<p>a<span class="icon"></span>b</p>');
   });
 });
+
+describe('Editor.getHTML — raw-text children are not edited', () => {
+  it('leaves U+200B inside raw text alone, so it cannot complete an end tag', () => {
+    const editor = new Editor(makeContext('<p>a</p>'));
+    const iframe = document.createElement('iframe');
+    iframe.textContent = '</iframe\u200B><img src=x onerror="window.__x=1">';
+    editor.context.layoutInfo.editable.appendChild(iframe);
+    const reparsed = document.createElement('div');
+    reparsed.innerHTML = editor.getHTML();
+    expect(reparsed.querySelector('[onerror]')).toBeNull();
+  });
+});

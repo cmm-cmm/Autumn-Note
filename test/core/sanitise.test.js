@@ -602,3 +602,35 @@ describe('sanitiseHTML — re-parse and clobbering hazards', () => {
     expect(sanitiseHTML('<p>a</p><img name="querySelectorAll"><img name="createTreeWalker">')).toBe('<p>a</p><img><img>');
   });
 });
+
+describe('sanitiseToBody — iframes, forms and srcset (re-audit)', () => {
+  it('empties a kept iframe: its fallback text is raw text that serialises unescaped', () => {
+    const body = sanitiseToBody('<iframe src="https://www.youtube.com/embed/x"></iframe\u200B><img src=x onerror="window.__x=1"></iframe>', { allowIframes: true });
+    const iframe = body.querySelector('iframe');
+    expect(iframe).not.toBeNull();
+    expect(iframe.childNodes.length).toBe(0);
+  });
+
+  it('removes a form even when its controls shadow the members the sanitiser calls', () => {
+    // jsdom lacks the [LegacyOverrideBuiltIns] named getter browsers give
+    // HTMLFormElement; model it on the prototype for the duration of the call.
+    const proto = HTMLFormElement.prototype;
+    const shadow = ['tagName', 'remove', 'removeAttribute', 'getAttribute', 'attributes', 'closest'];
+    const saved = shadow.map((k) => [k, Object.getOwnPropertyDescriptor(proto, k)]);
+    for (const k of shadow) Object.defineProperty(proto, k, { configurable: true, get: () => document.createElement('input') });
+    try {
+      expect(sanitiseHTML('<form><input id="tagName"><input name="removeAttribute"></form><p>ok</p>')).toBe('<p>ok</p>');
+    } finally {
+      for (const [k, d] of saved) {
+        if (d) Object.defineProperty(proto, k, d);
+        else delete proto[k];
+      }
+    }
+  });
+
+  it('checks a srcset of long comma runs in linear time', () => {
+    const t = performance.now();
+    sanitiseHTML(`<img srcset="a${','.repeat(100000)}b 1x">`);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+});

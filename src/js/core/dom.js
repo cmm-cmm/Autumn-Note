@@ -439,3 +439,17 @@ export function makeDraggable(handle, box) {
 export function portalOf(context) {
   return context?.layoutInfo?.portal || document.body;
 }
+
+/** Elements whose text children serialise unescaped (HTML raw-text content). */
+const RAW_TEXT_PARENTS = new Set(['IFRAME', 'XMP', 'NOEMBED', 'NOFRAMES', 'PLAINTEXT', 'SCRIPT', 'STYLE', 'NOSCRIPT']);
+
+/**
+ * Whether a text node is raw text: it serialises unescaped, so editing its
+ * characters can complete its parent's end tag and turn it into markup on
+ * the next parse. Character-level cleanups leave such text alone.
+ * @param {Node} node
+ * @returns {boolean}
+ */
+export function isRawText(node) {
+  return RAW_TEXT_PARENTS.has(node.parentNode?.nodeName ?? '');
+}

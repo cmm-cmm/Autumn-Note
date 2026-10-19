@@ -10,12 +10,13 @@ import { sanitiseHTML, sanitiseUrl } from '../core/sanitise.js';
 import { isMarkdown, markdownToHTML } from '../core/markdown.js';
 
 /**
- * True while content dragged out of any Autumn Note editable on the page is in
- * flight. A drop of it into another instance is left to the browser, which
- * moves it (the content is already editor content); cleaning it into a copy
- * would leave the original behind.
+ * DataTransfer type every editor instance adds to drags that start in its
+ * editable, with the instance's id as the value. A drop decides where it came
+ * from by reading its own DataTransfer, not a flag left by an earlier drag: a
+ * dragend that never arrives (its source node was removed mid-drag) would
+ * otherwise leave every later external drop unsanitised.
  */
-let editorDragInFlight = false;
+const EDITOR_DRAG_TYPE = 'application/x-autumnnote-drag';
 
 export class Clipboard {
   /**
@@ -41,18 +42,27 @@ export class Clipboard {
     this._internalDrag = false;
     /** @type {HTMLElement|null} Image (or its figure) being moved by drag. */
     this._dragged = null;
+    /** Value this instance puts under EDITOR_DRAG_TYPE. */
+    this._dragId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    /**
+     * Whether the last dragstart could be tagged. Only a dragstart without a
+     * DataTransfer (a synthetic event) falls back to `_internalDrag`.
+     */
+    this._dragTagged = false;
     const editable = this.context.layoutInfo.editable;
     this._disposers.push(
       on(editable, 'paste',     (e) => this._onPaste(e)),
-      // Read defaultPrevented after every dragstart listener has run: a drag
-      // the editor cancels (iframes, read-only) never fires dragend.
-      on(editable, 'dragstart', (e) => globalThis.queueMicrotask(() => {
-        this._internalDrag = !e.defaultPrevented;
-        editorDragInFlight = this._internalDrag;
-        const img = this._internalDrag ? /** @type {Element} */ (e.target)?.closest?.('img') : null;
-        this._dragged = img ? /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img) : null;
-      })),
-      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; editorDragInFlight = false; }),
+      // Tag the drag with this instance's id (see EDITOR_DRAG_TYPE).
+      on(editable, 'dragstart', (e) => {
+        const drag = /** @type {DragEvent} */ (e);
+        this._dragTagged = false;
+        try {
+          drag.dataTransfer?.setData(EDITOR_DRAG_TYPE, this._dragId);
+          this._dragTagged = Boolean(drag.dataTransfer);
+        } catch (err) { void err; /* a DataTransfer that rejects custom types */ }
+        this._watchDragstart(drag);
+      }),
+      on(editable, 'dragend',   () => { this._internalDrag = false; this._dragged = null; }),
       on(editable, 'dragover',  (e) => this._onDragover(e)),
       on(editable, 'drop',      (e) => this._onDrop(e)),
     );
@@ -69,6 +79,32 @@ export class Clipboard {
     this._mutationObserver.observe(editable, { childList: true, subtree: true });
 
     return this;
+  }
+
+  /**
+   * Reads defaultPrevented after every dragstart listener has run: a drag the
+   * editor cancels (iframes, read-only) never fires dragend.
+   * @param {DragEvent} e
+   */
+  _watchDragstart(e) {
+    globalThis.queueMicrotask(() => {
+      this._internalDrag = !e.defaultPrevented;
+      const img = this._internalDrag ? /** @type {Element} */ (e.target)?.closest?.('img') : null;
+      this._dragged = img ? /** @type {HTMLElement} */ (img.closest('figure.an-figure') || img) : null;
+    });
+  }
+
+  /**
+   * Where a dropped drag started: this editor, another Autumn Note editor on
+   * the page, or outside both.
+   * @param {DataTransfer|null|undefined} dt
+   * @returns {'self'|'editor'|'external'}
+   */
+  _dragSource(dt) {
+    if (Array.from(dt?.types || []).includes(EDITOR_DRAG_TYPE)) {
+      return dt.getData(EDITOR_DRAG_TYPE) === this._dragId ? 'self' : 'editor';
+    }
+    return this._internalDrag && !this._dragTagged ? 'self' : 'external';
   }
 
   destroy() {
@@ -136,9 +172,11 @@ export class Clipboard {
       // Office namespace elements: <o:p>, <w:sDt>, <m:oMath>, <v:shape> …
       .replace(/<\/?(o|w|m|v|st1):[a-z][^<>]*>/gi, '')
       // MsoNormal, MsoBodyText, etc. class attributes
-      .replace(/\s+class="Mso[^"]*"/gi, '')
+      // Whitespace runs are matched from their first character only
+      // ((?<!\s)): an unanchored \s+ retries from every space of a long run.
+      .replace(/(?<!\s)\s+class="Mso[^"]*"/gi, '')
       // mso-* properties inside inline style attributes
-      .replace(/\s+style="([^"]*)"/gi, (_m, style) => {
+      .replace(/(?<!\s)\s+style="([^"]*)"/gi, (_m, style) => {
         const cleaned = style.split(';')
           .map((s) => s.trim())
           .filter((s) => s && !/^mso-/i.test(s) && !/^(tab-stops|margin-[a-z]+-alt)/i.test(s))
@@ -146,7 +184,7 @@ export class Clipboard {
         return cleaned ? ` style="${cleaned}"` : '';
       })
       // Empty paragraphs Word sprinkles everywhere
-      .replace(/<p(?:\s[^<>]*)?>\s*(&nbsp;)?\s*<\/p>/gi, '');
+      .replace(/<p(?:\s[^<>]*)?>\s*(?:&nbsp;\s*)?<\/p>/gi, '');
   }
 
   /**
@@ -398,7 +436,11 @@ export class Clipboard {
 
   _onDrop(event) {
     const dt = event.dataTransfer;
-    if (this._internalDrag) {
+    const source = this._dragSource(dt);
+    // Content from another editor instance is already editor content: the
+    // browser moves it, where cleaning it would insert a copy.
+    if (source === 'editor') return;
+    if (source === 'self') {
       const node = this._dragged;
       this._internalDrag = false;
       this._dragged = null;
@@ -451,7 +493,7 @@ export class Clipboard {
    */
   _dropExternalHtml(event, dt) {
     if (!dt || !Array.from(dt.types || []).includes('text/html')) return;
-    if (this.options.pasteCleanHTML === false || editorDragInFlight) return;
+    if (this.options.pasteCleanHTML === false) return;
     // Read-only: Editor's own drop listener already cancels the drop.
     if (this.context.layoutInfo.container?.classList.contains('an-disabled')) return;
     const raw = dt.getData('text/html') || '';

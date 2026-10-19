@@ -1063,3 +1063,19 @@ describe('checklist to paragraph keeps inert content inert', () => {
     expect(document.body.querySelector('p').textContent).toBe('item');
   });
 });
+
+describe('checklist to paragraph leaves raw text alone', () => {
+  it('does not strip U+200B from an iframe text child', () => {
+    document.body.innerHTML = '<ul class="an-checklist"><li><input type="checkbox" contenteditable="false">item</li></ul>';
+    const li = document.body.querySelector('li');
+    const iframe = document.createElement('iframe');
+    iframe.textContent = '</iframe\u200B><img src=x onerror="window.__x=1">';
+    li.appendChild(iframe);
+    setCollapsedCursor(li.childNodes[1], 2);
+    toggleChecklist();
+    expect(document.body.querySelector('iframe').textContent).toContain('\u200B');
+    const reparsed = document.createElement('div');
+    reparsed.innerHTML = document.body.innerHTML;
+    expect(reparsed.querySelector('[onerror]')).toBeNull();
+  });
+});

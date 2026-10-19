@@ -171,14 +171,63 @@ function _longestBacktickRun(text) {
   return longest;
 }
 
-function _destination(el, attr) {
-  const url = el.getAttribute(attr) || '';
-  const wrapped = /[\s()]/.test(url) ? `<${url}>` : url;
-  const title = el.getAttribute('title');
-  return title ? `${wrapped} "${title.replaceAll('"', String.raw`\"`)}"` : wrapped;
+/**
+ * `text` without the trailing run of characters from `chars`, found by
+ * scanning backwards (linear, unlike an end-anchored regex).
+ * @param {string} text
+ * @param {string} chars
+ * @returns {string}
+ */
+function _trimEndChars(text, chars) {
+  let end = text.length;
+  while (end > 0 && chars.includes(text[end - 1])) end--;
+  return text.slice(0, end);
 }
 
+/**
+ * A link or image destination, plus its title. Characters that would end or
+ * reshape the destination are percent-encoded instead of using the `<url>`
+ * form, which a `>` inside the URL closes early; the title escapes `\` before
+ * `"` so a trailing backslash cannot escape its closing quote. Either break
+ * leaves the rest of the attribute as raw Markdown — and raw HTML.
+ * @param {Element} el
+ * @param {string} attr
+ * @returns {string}
+ */
+function _destination(el, attr) {
+  const url = (el.getAttribute(attr) || '')
+    .replace(/[\s()<>]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`);
+  const title = el.getAttribute('title');
+  return title ? `${url} "${title.replaceAll('\\', '\\\\').replaceAll('"', String.raw`\"`)}"` : url;
+}
+
+/**
+ * Element nesting past which export flattens a subtree to its escaped text.
+ * Each level is a recursive call, so arbitrarily deep markup would otherwise
+ * run getMarkdown() out of stack.
+ */
+const MAX_EXPORT_DEPTH = 500;
+let _exportDepth = 0;
+
 function _domToMd(node, depth = 0) {
+  if (_exportDepth >= MAX_EXPORT_DEPTH) {
+    return node.nodeType === 1 || node.nodeType === 3 ? _escapeInlineMd(node.textContent.replace(/\s+/g, ' ')) : '';
+  }
+  _exportDepth++;
+  try {
+    return _domToMdAt(node, depth);
+  } finally {
+    _exportDepth--;
+  }
+}
+
+/**
+ * The body of {@link _domToMd}, which tracks the nesting depth around it.
+ * @param {Node} node
+ * @param {number} depth - list nesting depth
+ * @returns {string}
+ */
+function _domToMdAt(node, depth) {
   if (node.nodeType === 3) {
     const text = node.textContent.replace(/\s+/g, ' ');
     // Text inside <code>/<pre> is already literal in Markdown; everywhere else
@@ -232,7 +281,10 @@ function _domToMd(node, depth = 0) {
     case 'code': {
       // Inside <pre> we emit raw text; outside we wrap in backticks
       if (el.closest('pre')) return inner();
-      const content = inner();
+      // A code span cannot hold a line break (a <br> exports as "  \n"): two
+      // of them make a blank line that ends the span and leaves its text as
+      // raw Markdown. CommonMark turns line endings in a span into spaces anyway.
+      const content = inner().replace(/[ \t]*\n[ \t]*/g, ' ');
       // A code span has to be fenced by more backticks than the longest run it
       // contains, and padded with spaces when it starts or ends with one —
       // otherwise `a ` b` closes at the wrong backtick and mangles the text.
@@ -242,7 +294,9 @@ function _domToMd(node, depth = 0) {
     }
     case 'pre': {
       const codeEl = el.querySelector('code');
-      const langMatch = /language-(\S+)/.exec(codeEl?.className || '');
+      // Only characters a language name uses: a backtick in the info string
+      // makes the opening fence invalid, and the code then reads as Markdown.
+      const langMatch = /language-([\w#+.-]+)/.exec(codeEl?.className || '');
       const lang = langMatch ? langMatch[1] : '';
       const content = _codeText(codeEl || el);
       // The fence has to outrun every backtick run in the code, or a line of
@@ -737,7 +791,10 @@ function _joinParagraphLines(paraLines) {
     // its indent into the paragraph text.
     const ln = paraLines[idx].replace(/^[ \t]+/, '');
     if (!isLast && /\\$/.test(ln)) { joined += ln.replace(/\\$/, '') + HARD_BREAK; continue; }
-    if (!isLast && / {2,}$/.test(ln)) { joined += ln.replace(/ {2,}$/, '') + HARD_BREAK; continue; }
+    // Trailing spaces counted by a backward scan: / {2,}$/ restarts at every
+    // space of a long interior run and costs quadratic time.
+    const trimmed = _trimEndChars(ln, ' ');
+    if (!isLast && ln.length - trimmed.length >= 2) { joined += trimmed + HARD_BREAK; continue; }
     joined += ln + (isLast ? '' : ' ');
   }
   return joined;
@@ -886,8 +943,14 @@ function _parseListBlock(lines, startIdx) {
         continue;
       }
 
-      if (/^\s*(?:[-*+]|\d+[.)]) /.test(line)) {
-        const nested = _parseListBlock(lines, i);
+      if (/^\s*(?:[-*+]|\d+[.)]) /.test(line) && _blockDepth < MAX_BLOCK_DEPTH) {
+        _blockDepth++;
+        let nested;
+        try {
+          nested = _parseListBlock(lines, i);
+        } finally {
+          _blockDepth--;
+        }
         items[items.length - 1].sub += nested.html;
         i = nested.endIdx;
         pendingBlank = false;
@@ -1096,10 +1159,11 @@ function _applyAutolinks(text) {
     (_, addr) => `<a href="mailto:${_escAttrQuotes(addr)}">${addr}</a>`,
   );
   text = text.replace(/(^|[\s(])(https?:\/\/[^\s()]+)/g, (m, pre, rawUrl) => {
-    const trail = /[.,;:!?)]+$/.exec(rawUrl);
-    const url = trail ? rawUrl.slice(0, -trail[0].length) : rawUrl;
+    // Trailing punctuation by a backward scan, not /[.,;:!?)]+$/ (quadratic
+    // on a long run of it that is not at the end).
+    const url = _trimEndChars(rawUrl, '.,;:!?)');
     if (!url) return m;
-    const suffix = trail ? trail[0] : '';
+    const suffix = rawUrl.slice(url.length);
     return `${pre}<a href="${_escAttrQuotes(url)}">${url}</a>${suffix}`;
   });
   return text;

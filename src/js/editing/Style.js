@@ -6,7 +6,7 @@
  * docs/EXEC_COMMAND_MIGRATION.md.
  */
 
-import { closest, isElement, isPara, repairListNesting } from '../core/dom.js';
+import { closest, isElement, isPara, isRawText, repairListNesting } from '../core/dom.js';
 import { currentRange } from '../core/range.js';
 import {
   insertHTMLNative, insertTextNative, insertLineBreakNative, insertHorizontalRuleNative,
@@ -207,7 +207,7 @@ function _stripZwsNodes(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = /** @type {Text} */ (node);
-    if (text.data.includes('\u200B')) text.data = text.data.replaceAll('\u200B', '');
+    if (text.data.includes('\u200B') && !isRawText(text)) text.data = text.data.replaceAll('\u200B', '');
   }
   root.normalize();
 }

@@ -1190,18 +1190,64 @@ describe('Clipboard._onDrop — HTML drop edge cases', () => {
     expect(ctx.invoke).not.toHaveBeenCalledWith('editor.afterCommand');
   });
 
-  it('leaves a drag out of another editor instance to the browser, which moves it', async () => {
-    const { cb: source, ctx: sourceCtx } = makeClipboard();
+  // A DataTransfer-like store shared by a dragstart and the drop it ends in.
+  const transfer = (html) => {
+    const data = { 'text/html': html };
+    return {
+      files: [],
+      get types() { return Object.keys(data); },
+      getData: (t) => data[t] || '',
+      setData: (t, v) => { data[t] = v; },
+      dropEffect: '',
+    };
+  };
+  const dragFrom = async (editable, dt) => {
     const p = document.createElement('p');
     p.textContent = 'moved';
-    sourceCtx.layoutInfo.editable.appendChild(p);
-    p.dispatchEvent(new Event('dragstart', { bubbles: true, cancelable: true }));
+    editable.appendChild(p);
+    const ev = new Event('dragstart', { bubbles: true, cancelable: true });
+    ev.dataTransfer = dt;
+    p.dispatchEvent(ev);
     await Promise.resolve();
+    return p;
+  };
+  const dropWith = (dt) => ({ dataTransfer: dt, preventDefault: vi.fn(), stopPropagation: vi.fn(), clientX: 0, clientY: 0 });
+
+  it('leaves a drag out of another editor instance to the browser, which moves it', async () => {
+    const { cb: source, ctx: sourceCtx } = makeClipboard();
+    const dt = transfer('<p>moved</p>');
+    await dragFrom(sourceCtx.layoutInfo.editable, dt);
     const { cb: target } = makeClipboard();
-    const event = drop('<p>moved</p>');
+    const event = dropWith(dt);
     target._onDrop(event);
     expect(event.preventDefault).not.toHaveBeenCalled();
-    sourceCtx.layoutInfo.editable.dispatchEvent(new Event('dragend'));
     source.destroy();
+  });
+
+  it('still sanitises an external drop after an editor drag whose dragend never arrived', async () => {
+    const { cb, ctx } = makeClipboard();
+    const p = await dragFrom(ctx.layoutInfo.editable, transfer('<p>moved</p>'));
+    p.remove(); // the source node goes, so no dragend reaches the editable
+    const event = dropWith(transfer('<p>x<img src="y" onerror="window.__x=1"></p>'));
+    cb._onDrop(event);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(inserted()).not.toContain('onerror');
+  });
+});
+
+describe('Clipboard._cleanWordHtml — whitespace runs (re-audit)', () => {
+  it.each([
+    ['empty-paragraph regex', `<span style="mso-x:1">a</span><p>${' '.repeat(100000)}x`],
+    ['class/style regexes', `<b>mso-</b>${' '.repeat(100000)}x`],
+  ])('%s run in linear time', (_, html) => {
+    const { cb } = makeClipboard();
+    const t = performance.now();
+    cb._cleanExternalHtml(html);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+
+  it('still strips Mso classes and mso- styles', () => {
+    const { cb } = makeClipboard();
+    expect(cb._cleanWordHtml('<p class="MsoNormal" style="mso-x:1; color: red">a</p>')).toBe('<p style="color: red">a</p>');
   });
 });

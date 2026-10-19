@@ -10,7 +10,7 @@ import { insertTable } from '../editing/Table.js';
 import { resolveKeyMap, matchesCombo } from '../core/keymap.js';
 import { resolveButton } from './Buttons.js';
 import { handleKeydown } from '../editing/Typing.js';
-import { on } from '../core/dom.js';
+import { isRawText, on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
 import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
@@ -34,7 +34,7 @@ function stripCaretFillers(root) {
   const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = /** @type {Text} */ (node);
-    if (text.data.includes('\u200B')) text.data = text.data.replaceAll('\u200B', '');
+    if (text.data.includes('\u200B') && !isRawText(text)) text.data = text.data.replaceAll('\u200B', '');
   }
   // Reverse document order visits children before their parents, so a
   // nested empty pair (<b><i></i></b>) goes in one pass.
