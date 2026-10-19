@@ -179,6 +179,25 @@ export const svgIcon = (body, size = 13, strokeWidth = 1.75) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="square" stroke-linejoin="miter">${body}</svg>`;
 
 /**
+ * Fixes a <select>'s width at the width it has natively, where the widest
+ * option sets it. Under `appearance: base-select` (see "Dropdown option lists"
+ * in the stylesheet) a select sizes to its selected option instead, so a
+ * toolbar would shift each time the value changes. The width is set in `em`
+ * so it follows the select's font size across breakpoints. Does nothing
+ * where customizable selects are not supported, or before layout.
+ * @param {HTMLSelectElement} select
+ */
+export function lockSelectWidth(select) {
+  if (!select.isConnected || !globalThis.CSS?.supports?.('appearance', 'base-select')) return;
+  select.style.width = '';
+  select.classList.add('an-select--measure');
+  const width = select.getBoundingClientRect().width;
+  const fontSize = Number.parseFloat(getComputedStyle(select).fontSize) || 12;
+  select.classList.remove('an-select--measure');
+  if (width > 0) select.style.width = `${Math.ceil((width / fontSize) * 100) / 100}em`;
+}
+
+/**
  * Removes a node from its parent.
  * @param {Node} node
  */

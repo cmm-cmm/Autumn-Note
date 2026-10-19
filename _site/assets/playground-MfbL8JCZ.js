@@ -1,4 +1,4 @@
-import{a as e,n as t,r as n,t as r}from"./site-DvR5oxyb.js";import{t as i}from"./all-Doy_tl4s.js";var a=[{id:1,label:`editor`},{id:2,label:`reviewer`},{id:3,label:`designer`},{id:4,label:`support`},{id:5,label:`maintainer`}],o={empty:``,article:`<h1>Getting started with autumnnote-plus</h1>
+import{a as e,n as t,r as n,t as r}from"./site-CG5BpnAI.js";import{t as i}from"./all-jlg3EyYo.js";var a=[{id:1,label:`editor`},{id:2,label:`reviewer`},{id:3,label:`designer`},{id:4,label:`support`},{id:5,label:`maintainer`}],o={empty:``,article:`<h1>Getting started with autumnnote-plus</h1>
 <p>autumnnote-plus is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it from npm:</p>
 <pre><code class="language-bash">npm install autumnnote-plus</code></pre>
 <h2>Basic setup</h2>

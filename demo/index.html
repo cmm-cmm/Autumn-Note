@@ -41,7 +41,7 @@
       { "@type": "Question", "name": "How is autumnnote-plus different from autumnnote?", "acceptedAnswer": { "@type": "Answer", "text": "autumnnote-plus is an unofficial fork of Autumn Note 3.1.0. It keeps the same API, options, events and CSS classes, and adds security fixes, an Indonesian locale, accessibility fixes and a smaller CDN build that loads locales on demand." } },
       { "@type": "Question", "name": "Can I switch without changing my imports?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Install it under the old name with an npm alias: npm install autumnnote@npm:autumnnote-plus@^4.0.0." } },
       { "@type": "Question", "name": "Is it free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is published under the MIT License, the same licence as the original project, for personal and commercial use." } },
-      { "@type": "Question", "name": "Which Node.js version do I need?", "acceptedAnswer": { "@type": "Answer", "text": "Installing from npm needs Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs nothing but a modern browser." } },
+      { "@type": "Question", "name": "Which package managers and Node.js versions work?", "acceptedAnswer": { "@type": "Answer", "text": "npm, pnpm, yarn and Bun all install it. The package asks for Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs nothing but a modern browser." } },
       { "@type": "Question", "name": "Does it use document.execCommand?", "acceptedAnswer": { "@type": "Answer", "text": "No. Every formatting command is the editor's own DOM transform, and copy and cut use the async Clipboard API." } }
     ]
   }
@@ -59,6 +59,7 @@
 
   <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/image/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" />
@@ -97,13 +98,21 @@
           <h1 class="display-xl hero__title" id="hero-title">Rich text with <span class="accent">zero</span> dependencies.</h1>
           <p class="lede hero__lede">A WYSIWYG editor in plain JavaScript. No jQuery, no runtime packages, no <code>execCommand</code>: every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup.</p>
 
+          <div class="hero__install">
+            <div class="pm-switch" role="group" aria-label="Package manager">
+              <button type="button" data-pm="npm" aria-pressed="true">npm</button>
+              <button type="button" data-pm="pnpm" aria-pressed="false">pnpm</button>
+              <button type="button" data-pm="yarn" aria-pressed="false">yarn</button>
+              <button type="button" data-pm="bun" aria-pressed="false">bun</button>
+            </div>
           <div class="cmd hero__cmd">
             <span class="cmd__prompt" aria-hidden="true">$</span>
-            <code class="cmd__text">npm install autumnnote-plus</code>
-            <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus" aria-label="Copy install command">
+            <code class="cmd__text" data-install="autumnnote-plus">npm install autumnnote-plus</code>
+            <button class="cmd__copy" type="button" data-copy-cmd aria-label="Copy install command">
               <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg>
               <span data-copy-label>Copy</span>
             </button>
+          </div>
           </div>
 
           <div class="hero__actions">
@@ -122,10 +131,9 @@
           <div class="editor-frame">
             <div class="editor-frame__bar">
               <span class="label">Live editor</span>
-              <label class="lang-picker">
-                <span class="sr-only">Editor language</span>
+              <div class="lang-picker">
                 <svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3"/></svg>
-                <select id="lang-select">
+                <select id="lang-select" aria-label="Editor language" data-button-class="select-btn--quiet">
                   <option value="en">English</option>
                   <option value="vi">Tiếng Việt</option>
                   <option value="ja">日本語</option>
@@ -136,7 +144,7 @@
                   <option value="ko">한국어</option>
                   <option value="id">Bahasa Indonesia</option>
                 </select>
-              </label>
+              </div>
             </div>
             <textarea id="editor"><h2>Try it here</h2><p>Select any text to open the <strong>bubble toolbar</strong>. Type <code>@</code> to mention someone, or <code>/</code> on an empty line for the command menu.</p><ul><li>Start a line with <code>## </code> for a heading</li><li>Wrap a word in <code>**</code> to make it bold</li></ul></textarea>
           </div>
@@ -281,13 +289,21 @@
     <section class="section install" aria-labelledby="install-title">
       <div class="wrap">
         <div class="install__head" data-reveal>
-          <p class="label">Install</p>
-          <h2 class="display-m" id="install-title">Pick your setup.</h2>
+          <div>
+            <p class="label">Install</p>
+            <h2 class="display-m" id="install-title">Pick your setup.</h2>
+          </div>
+          <div class="pm-switch" role="group" aria-label="Package manager">
+            <button type="button" data-pm="npm" aria-pressed="true">npm</button>
+            <button type="button" data-pm="pnpm" aria-pressed="false">pnpm</button>
+            <button type="button" data-pm="yarn" aria-pressed="false">yarn</button>
+            <button type="button" data-pm="bun" aria-pressed="false">bun</button>
+          </div>
         </div>
 
         <div class="install__box" data-reveal>
           <div class="tabs" role="tablist" aria-label="Install options">
-            <button class="tab" type="button" role="tab" id="tab-esm" aria-controls="panel-esm" aria-selected="true">npm + ESM</button>
+            <button class="tab" type="button" role="tab" id="tab-esm" aria-controls="panel-esm" aria-selected="true">ES module</button>
             <button class="tab" type="button" role="tab" id="tab-react" aria-controls="panel-react" aria-selected="false" tabindex="-1">React</button>
             <button class="tab" type="button" role="tab" id="tab-vue" aria-controls="panel-vue" aria-selected="false" tabindex="-1">Vue 3</button>
             <button class="tab" type="button" role="tab" id="tab-cdn" aria-controls="panel-cdn" aria-selected="false" tabindex="-1">CDN</button>
@@ -296,8 +312,8 @@
           <div class="tabpanel" role="tabpanel" id="panel-esm" aria-labelledby="tab-esm">
             <div class="cmd">
               <span class="cmd__prompt" aria-hidden="true">$</span>
-              <code class="cmd__text">npm install autumnnote-plus</code>
-              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus" aria-label="Copy npm command"><span data-copy-label>Copy</span></button>
+              <code class="cmd__text" data-install="autumnnote-plus">npm install autumnnote-plus</code>
+              <button class="cmd__copy" type="button" data-copy-cmd aria-label="Copy npm command"><span data-copy-label>Copy</span></button>
             </div>
             <div class="code">
               <button class="code__copy" type="button" data-copy-target="code-esm" aria-label="Copy ESM example"><span data-copy-label>Copy</span></button>
@@ -315,8 +331,8 @@
           <div class="tabpanel" role="tabpanel" id="panel-react" aria-labelledby="tab-react" hidden>
             <div class="cmd">
               <span class="cmd__prompt" aria-hidden="true">$</span>
-              <code class="cmd__text">npm install autumnnote-plus autumnnote-plus-react</code>
-              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus autumnnote-plus-react" aria-label="Copy React install command"><span data-copy-label>Copy</span></button>
+              <code class="cmd__text" data-install="autumnnote-plus autumnnote-plus-react">npm install autumnnote-plus autumnnote-plus-react</code>
+              <button class="cmd__copy" type="button" data-copy-cmd aria-label="Copy React install command"><span data-copy-label>Copy</span></button>
             </div>
             <div class="code">
               <button class="code__copy" type="button" data-copy-target="code-react" aria-label="Copy React example"><span data-copy-label>Copy</span></button>
@@ -334,8 +350,8 @@
           <div class="tabpanel" role="tabpanel" id="panel-vue" aria-labelledby="tab-vue" hidden>
             <div class="cmd">
               <span class="cmd__prompt" aria-hidden="true">$</span>
-              <code class="cmd__text">npm install autumnnote-plus autumnnote-plus-vue</code>
-              <button class="cmd__copy" type="button" data-copy="npm install autumnnote-plus autumnnote-plus-vue" aria-label="Copy Vue install command"><span data-copy-label>Copy</span></button>
+              <code class="cmd__text" data-install="autumnnote-plus autumnnote-plus-vue">npm install autumnnote-plus autumnnote-plus-vue</code>
+              <button class="cmd__copy" type="button" data-copy-cmd aria-label="Copy Vue install command"><span data-copy-label>Copy</span></button>
             </div>
             <div class="code">
               <button class="code__copy" type="button" data-copy-target="code-vue" aria-label="Copy Vue example"><span data-copy-label>Copy</span></button>
@@ -388,8 +404,8 @@
             <p>Yes. It is MIT licensed, like the original project, for personal and commercial use.</p>
           </details>
           <details class="faq__item" data-reveal>
-            <summary><span>Which Node.js version do I need?</span><span class="faq__mark" aria-hidden="true"></span></summary>
-            <p>Installing from npm needs Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs only a modern browser.</p>
+            <summary><span>Which package managers and Node.js versions work?</span><span class="faq__mark" aria-hidden="true"></span></summary>
+            <p>npm, pnpm, yarn and Bun all install it; pick yours in the switch above the install command. The package asks for Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs only a modern browser.</p>
           </details>
           <details class="faq__item" data-reveal>
             <summary><span>Does it use <code>document.execCommand</code>?</span><span class="faq__mark" aria-hidden="true"></span></summary>

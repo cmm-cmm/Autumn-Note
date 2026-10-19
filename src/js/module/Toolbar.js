@@ -3,7 +3,7 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on, portalOf, setIcon, ICON_STROKE } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon, ICON_STROKE, lockSelectWidth } from '../core/dom.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
 import { resolvePalette } from '../core/palette.js';
 import { PATHS } from '../core/icon-paths.js';
@@ -127,6 +127,8 @@ export class Toolbar {
     this._colorPickerClosers = [];
     /** @type {number|null} rAF handle for debounced refresh */
     this._refreshRaf = null;
+    /** @type {number|null} rAF handle for locking dropdown widths */
+    this._lockRaf = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -145,6 +147,7 @@ export class Toolbar {
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
     this._initRovingFocus();
+    this.lockSelectWidths();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
         .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),
@@ -152,9 +155,25 @@ export class Toolbar {
     return this;
   }
 
+  /**
+   * Keeps each dropdown at its native width (see lockSelectWidth). Locks now
+   * when the toolbar is in the document (Context calls this right after
+   * mounting it), and again a frame later, after late web fonts.
+   */
+  lockSelectWidths() {
+    const lock = () => this.el?.querySelectorAll('select.an-select')
+      .forEach((s) => lockSelectWidth(/** @type {HTMLSelectElement} */ (s)));
+    lock();
+    if (typeof requestAnimationFrame !== 'function') return;
+    if (this._lockRaf) cancelAnimationFrame(this._lockRaf);
+    this._lockRaf = requestAnimationFrame(() => { this._lockRaf = null; lock(); });
+  }
+
   destroy() {
     if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
     this._refreshRaf = null;
+    if (this._lockRaf) cancelAnimationFrame(this._lockRaf);
+    this._lockRaf = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this.el?.parentNode) {
@@ -928,6 +947,7 @@ export class Toolbar {
     // rebuild() cleared the disposers, taking the keydown/focusin listeners
     // with them — re-arm navigation over the new controls.
     this._initRovingFocus();
+    this.lockSelectWidths();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
         .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),

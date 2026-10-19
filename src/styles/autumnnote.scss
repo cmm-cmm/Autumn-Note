@@ -2385,6 +2385,96 @@ $an-video-accent: #8b5cf6; // violet-500
 }
 
 // =============================================================================
+// Dropdown option lists
+// =============================================================================
+
+// Where the browser supports customizable selects (Chromium 135+), the option
+// list is drawn in the editor's own style; other browsers keep their native
+// picker. A base-select sizes to its selected option rather than its widest,
+// so Toolbar locks each toolbar select to its native width (see
+// lockSelectWidth in core/dom.js) and the toolbar does not jump as the value
+// changes.
+@supports (appearance: base-select) {
+  .an-select,
+  .an-code-lang-select,
+  .an-icon-option-select {
+    &,
+    &::picker(select) {
+      appearance: base-select;
+    }
+
+    // The button holds the selected option; keep its text centred.
+    align-items: center;
+
+    &::picker(select) {
+      margin-block: 4px;
+      padding: 4px;
+      min-width: anchor-size(width);
+      max-height: min(320px, 60vh);
+      overflow-y: auto;
+      border: 1px solid var(--an-border, #{$an-border});
+      border-radius: var(--an-radius, #{$an-radius});
+      background: var(--an-bg-raised, var(--an-bg, #{$an-bg}));
+      color: var(--an-text, #{$an-text});
+      box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.08);
+      scrollbar-width: thin;
+    }
+
+    option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 4px 10px;
+      border-radius: var(--an-radius-sm, #{$an-radius-sm});
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover,
+      &:focus-visible {
+        background: var(--an-bg-btn-hover, #{$an-bg-btn-hover});
+        outline: none;
+      }
+
+      &:checked {
+        background: var(--an-bg-btn-active, #{$an-bg-btn-active});
+        font-weight: 600;
+      }
+
+      // Group headers in the font list.
+      &:disabled {
+        color: var(--an-muted, #{$an-muted});
+        font-size: 11px;
+        cursor: default;
+        background: none;
+      }
+
+      &::checkmark {
+        display: none;
+      }
+
+      // The toolbar's placeholder ("Font", "Size") is not a choice.
+      &[hidden] {
+        display: none;
+      }
+    }
+  }
+
+  // These two draw their own chevron as a background image.
+  .an-select::picker-icon,
+  .an-code-lang-select::picker-icon {
+    display: none;
+  }
+
+  // Lets lockSelectWidth() read the native width (widest option).
+  .an-select.an-select--measure {
+    appearance: none;
+    width: auto !important;
+  }
+}
+
+// =============================================================================
 // Dark theme — apply via options: { theme: 'dark' }
 // =============================================================================
 

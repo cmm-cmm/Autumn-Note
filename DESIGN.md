@@ -42,7 +42,8 @@ The accent marks one word in a headline, the `+` of the logo, active states and 
 ## Shape and depth
 
 - Radius never exceeds 12px (owner direction): panels and code blocks 12px, buttons and inputs 8px, small marks 6px. Buttons: primary solid, secondary outlined. Badges: none above headlines (dropped by the owner).
-- No shadows except on floating editor UI. Depth comes from surface steps and 1px lines.
+- Dropdowns: a styled list (site: `demo/assets/select.js`; editor: customizable `<select>` where supported) with a coral `+` on the chosen option.
+- No shadows except on floating UI (editor UI and the open dropdown list). Depth comes from surface steps and 1px lines.
 
 ## Motion
 

@@ -5,6 +5,7 @@
  */
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
+import { enhanceSelects } from './select.js';
 
 const THEME_KEY = 'anp-theme';
 const root = document.documentElement;
@@ -186,14 +187,16 @@ export async function copyText(text) {
 /**
  * Buttons with `data-copy` copy that text; with `data-copy-target` they copy
  * the text of the element with that id, and with `data-copy-next` the text of
- * the element right after them. Feedback stays in the button and is
+ * the element right after them; `data-copy-cmd` copies its command chip. Feedback stays in the button and is
  * announced for screen readers.
  */
 function initCopyButtons() {
   document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-copy], [data-copy-target], [data-copy-next]');
+    const btn = e.target.closest('[data-copy], [data-copy-target], [data-copy-next], [data-copy-cmd]');
     if (!btn) return;
-    const source = 'copyNext' in btn.dataset ? btn.nextElementSibling : document.getElementById(btn.dataset.copyTarget);
+    const source = 'copyCmd' in btn.dataset ? btn.closest('.cmd')?.querySelector('.cmd__text')
+      : 'copyNext' in btn.dataset ? btn.nextElementSibling
+        : document.getElementById(btn.dataset.copyTarget);
     const text = btn.dataset.copy ?? source?.textContent ?? '';
     const labelEl = btn.querySelector('[data-copy-label]') || btn;
     const original = labelEl.dataset.original || labelEl.textContent;
@@ -210,6 +213,50 @@ function initCopyButtons() {
       announce('Copy failed. Select the text and copy it manually.');
     }
     setTimeout(() => { labelEl.textContent = original; delete btn.dataset.state; }, 1800);
+  });
+}
+
+/* ── Package manager ──────────────────────────────────────────────────── */
+
+const PM_KEY = 'anp-pm';
+const PM_VERBS = { npm: 'npm install', pnpm: 'pnpm add', yarn: 'yarn add', bun: 'bun add' };
+
+function savedPm() {
+  try {
+    const pm = localStorage.getItem(PM_KEY);
+    if (pm && pm in PM_VERBS) return pm;
+  } catch (err) { void err; }
+  return 'npm';
+}
+
+/**
+ * Elements with `data-install="pkg …"` show the install command for the
+ * chosen package manager; every `.pm-switch` on the page picks it, and the
+ * choice is remembered for the next visit.
+ */
+function setPm(pm, { persist = true } = {}) {
+  if (!(pm in PM_VERBS)) return;
+  document.querySelectorAll('[data-install]').forEach((el) => {
+    el.textContent = `${PM_VERBS[pm]} ${el.dataset.install}`;
+    // Docs code blocks are highlighted by Prism; redo it for the new text.
+    if (el.matches('code[class*="language-"]')) globalThis.Prism?.highlightElement(el);
+  });
+  document.querySelectorAll('.pm-switch [data-pm]').forEach((btn) => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.pm === pm));
+  });
+  if (persist) {
+    try { localStorage.setItem(PM_KEY, pm); } catch (err) { void err; }
+  }
+}
+
+function initPm() {
+  if (!document.querySelector('[data-install]')) return;
+  setPm(savedPm(), { persist: false });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pm-switch [data-pm]');
+    if (!btn) return;
+    setPm(btn.dataset.pm);
+    announce(`Commands now use ${btn.dataset.pm}`);
   });
 }
 
@@ -268,4 +315,6 @@ initLenis();
 initMenu();
 initCopyButtons();
 initTabs();
+initPm();
+enhanceSelects();
 initReveal();

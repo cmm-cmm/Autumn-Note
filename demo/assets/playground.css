@@ -91,7 +91,7 @@ kbd {
   background: var(--bg); color: var(--text);
   font: 14px var(--font-body);
 }
-.cfg-select { max-width: 170px; cursor: pointer; }
+.cfg-row .select-btn { width: 170px; }
 .cfg-input { width: 96px; font-family: var(--font-mono); font-size: 13px; }
 .cfg-select:focus-visible, .cfg-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .cfg-select option { background: var(--surface); color: var(--text); }

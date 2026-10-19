@@ -38,6 +38,7 @@
   --header-bg: rgba(5, 5, 5, .72);
   --scroll-thumb: #3a3a3f;
   --scroll-thumb-hover: #5a5a62;
+  --shadow-float: 0 18px 48px -12px rgba(0, 0, 0, .7), 0 2px 6px rgba(0, 0, 0, .4);
 }
 
 :root[data-theme='light'] {
@@ -58,6 +59,7 @@
   --header-bg: rgba(250, 250, 250, .78);
   --scroll-thumb: #c4c4ca;
   --scroll-thumb-hover: #9b9ba3;
+  --shadow-float: 0 18px 40px -14px rgba(9, 9, 11, .22), 0 2px 6px rgba(9, 9, 11, .06);
 }
 
 /* ── Base ────────────────────────────────────────────────────────────── */
@@ -215,6 +217,75 @@ code, kbd, pre { font-family: var(--font-mono); }
 .cmd__copy:hover { background: var(--surface-2); color: var(--text); }
 .cmd__copy[data-state='done'] { color: var(--accent); }
 
+/* ── Package manager switch ──────────────────────────────────────────── */
+
+/* Picks the command every install chip shows (site.js). A segmented control:
+   the chosen manager is the one filled, so the state reads without colour. */
+.pm-switch {
+  display: inline-flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--line); border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.pm-switch button {
+  min-height: 36px; min-width: 52px; padding: 0 12px;
+  border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: var(--muted);
+  font: 500 12.5px var(--font-mono); letter-spacing: .02em; cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.pm-switch button:hover { color: var(--text); }
+.pm-switch button[aria-pressed='true'] { background: var(--invert-bg); color: var(--invert-text); }
+
+/* ── Select ──────────────────────────────────────────────────────────── */
+
+/* The button that stands in for a native <select> (select.js). */
+.select-btn {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 40px; min-width: 0; max-width: 100%; padding: 0 10px 0 12px;
+  border: 1px solid var(--control); border-radius: var(--radius-md);
+  background: var(--bg); color: var(--text);
+  font: 500 14px var(--font-body); text-align: left; cursor: pointer;
+  transition: border-color .15s, background-color .15s;
+}
+.select-btn:hover { border-color: var(--text); }
+.select-btn__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-btn__chevron { flex: none; color: var(--muted); transition: transform .2s var(--ease-out); }
+.select-btn[aria-expanded='true'] { border-color: var(--text); }
+.select-btn[aria-expanded='true'] .select-btn__chevron { transform: rotate(180deg); }
+
+/* Inside a toolbar-like bar: no frame until hovered. */
+.select-btn--quiet { min-height: 44px; border-color: transparent; background: transparent; color: var(--muted); }
+.select-btn--quiet:hover, .select-btn--quiet[aria-expanded='true'] { border-color: var(--line); background: var(--surface-2); color: var(--text); }
+
+/* The open list floats over the page, so it is one of the few surfaces with
+   a shadow (DESIGN.md: floating UI only). */
+.select-list {
+  position: fixed; z-index: 200;
+  margin: 0; padding: 4px; list-style: none;
+  max-width: min(320px, calc(100vw - 16px)); overflow-y: auto; overscroll-behavior: contain;
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+  scrollbar-width: thin;
+  animation: select-in .16s var(--ease-out);
+}
+.select-list:focus { outline: none; }
+.select-list:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.select-list[hidden] { display: none; }
+.select-list__option {
+  position: relative; display: flex; align-items: center;
+  min-height: 38px; padding: 0 36px 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--muted); cursor: pointer; white-space: nowrap;
+}
+.select-list__option.is-active { background: var(--surface-2); color: var(--text); }
+.select-list__option[aria-selected='true'] { color: var(--text); font-weight: 600; }
+.select-list__option[aria-selected='true']::after {
+  content: '+'; position: absolute; right: 12px;
+  font-family: var(--font-mono); font-weight: 500; color: var(--accent);
+}
+@keyframes select-in { from { opacity: 0; transform: translateY(-4px); } }
+
 /* ── Header ──────────────────────────────────────────────────────────── */
 
 /* The one glass surface on the site (antislop R-10 dose cap): the header
@@ -355,6 +426,7 @@ html[data-theme-vt='active']::view-transition-new(root) {
 
 @media (prefers-reduced-motion: reduce) {
   .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .select-list { animation: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0s !important; animation-delay: 0s !important; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

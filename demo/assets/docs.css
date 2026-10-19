@@ -123,6 +123,8 @@
   font: 500 12px var(--font-mono); letter-spacing: .04em; color: var(--muted);
 }
 
+.pm-switch--docs { margin: 4px 0 4px; }
+
 .callout {
   margin: 20px 0; padding: 16px 20px;
   border: 1px solid var(--line); border-radius: var(--radius-md);

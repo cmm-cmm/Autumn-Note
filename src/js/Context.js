@@ -152,6 +152,8 @@ export class Context {
     if (toolbar?.el) {
       container.insertBefore(toolbar.el, editable);
       this.layoutInfo.toolbar = toolbar.el;
+      // Now that it is laid out, fix the dropdown widths (customizable selects).
+      this.invoke('toolbar.lockSelectWidths');
     }
 
     const statusbar = this._modules.get('statusbar');
