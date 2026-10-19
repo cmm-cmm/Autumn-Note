@@ -27,6 +27,14 @@ $an-dark-input-border:   #7f849c !default;
 $an-dark-text:           #cdd6f4 !default;
 $an-dark-muted:          #9399b2 !default;   // 5.2:1 or better on every dark surface
 $an-dark-statusbar-bg:   #181825 !default;
+$an-dark-bg-raised:      #24273a !default;   // dialogs, menus, popovers, tooltips
+$an-dark-bg-subtle:      #313244 !default;   // inputs, inline code, header cells, hovers
+$an-dark-border-strong:  #45475a !default;
+$an-dark-text-soft:      #a6adc8 !default;   // secondary labels and icon buttons
+$an-dark-primary-strong: #3b5bdb !default;   // filled buttons with white text (5.67:1)
+$an-dark-primary-strong-hover: #364fc7 !default;
+$an-dark-active:         #818cf8 !default;   // pressed toggles and the active picker cell
+$an-dark-active-strong:  #6366f1 !default;   // selected table cells
 
 // Fonts
 $an-font-family:    system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !default;

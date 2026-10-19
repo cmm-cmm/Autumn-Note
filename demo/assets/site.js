@@ -37,10 +37,43 @@ function setTheme(theme, { persist = true } = {}) {
   document.dispatchEvent(new CustomEvent('site:themechange', { detail: { theme } }));
 }
 
+/**
+ * The theme change grows as a circle from the point that was clicked, using
+ * the View Transitions API (as on habibiahmada.dev). Without the API, or when
+ * the visitor prefers reduced motion, the theme just switches.
+ */
+function toggleTheme(event, button) {
+  const next = currentTheme() === 'light' ? 'dark' : 'light';
+  if (typeof document.startViewTransition !== 'function' || reducedMotion.matches) {
+    setTheme(next);
+    return;
+  }
+  const vv = globalThis.visualViewport;
+  const w = vv?.width ?? globalThis.innerWidth;
+  const h = vv?.height ?? globalThis.innerHeight;
+  let x = event.clientX - (vv?.offsetLeft ?? 0);
+  let y = event.clientY - (vv?.offsetTop ?? 0);
+  // Keyboard activation has no pointer position: start from the button.
+  if (!event.detail || !Number.isFinite(x) || !Number.isFinite(y)) {
+    const r = button.getBoundingClientRect();
+    x = r.left + r.width / 2;
+    y = r.top + r.height / 2;
+  }
+  root.dataset.themeVt = 'active';
+  root.style.setProperty('--vt-cx', `${(x / w) * 100}%`);
+  root.style.setProperty('--vt-cy', `${(y / h) * 100}%`);
+  const transition = document.startViewTransition(() => setTheme(next));
+  transition.finished.finally(() => {
+    delete root.dataset.themeVt;
+    root.style.removeProperty('--vt-cx');
+    root.style.removeProperty('--vt-cy');
+  });
+}
+
 function initTheme() {
   setTheme(currentTheme(), { persist: false });
   document.querySelectorAll('.theme-toggle').forEach((btn) => {
-    btn.addEventListener('click', () => setTheme(currentTheme() === 'light' ? 'dark' : 'light'));
+    btn.addEventListener('click', (e) => toggleTheme(e, btn));
   });
   // Follow the system setting until the visitor picks a theme here.
   globalThis.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
@@ -59,7 +92,7 @@ export function editorThemeVars(theme = currentTheme()) {
   const shared = { radius: '12px', 'radius-sm': '8px' };
   return theme === 'light'
     ? { ...shared, bg: '#ffffff', 'bg-toolbar': '#fafafa', border: '#e4e4e7', text: '#09090b', muted: '#52525b', 'bg-btn-hover': '#f4f4f5', 'bg-btn-active': '#e4e4e7', 'input-border': '#8a8a93', 'statusbar-bg': '#fafafa' }
-    : { ...shared, bg: '#0c0c0d', 'bg-toolbar': '#111113', border: '#26262a', text: '#fafafa', muted: '#a1a1aa', 'bg-btn-hover': '#1c1c1f', 'bg-btn-active': '#2a2a2f', 'input-border': '#71717a', 'statusbar-bg': '#111113' };
+    : { ...shared, bg: '#0c0c0d', 'bg-toolbar': '#111113', border: '#26262a', text: '#fafafa', muted: '#a1a1aa', 'bg-btn-hover': '#1c1c1f', 'bg-btn-active': '#2a2a2f', 'input-border': '#71717a', 'statusbar-bg': '#111113', 'bg-raised': '#141416', 'bg-subtle': '#1c1c1f', 'border-strong': '#3a3a3f', 'text-soft': '#a1a1aa' };
 }
 
 /** Options that make an editor follow the site theme. */
@@ -75,16 +108,29 @@ function initLenis() {
   if (reducedMotion.matches) return;
   lenis = new Lenis({
     autoRaf: true,
-    lerp: 0.11,
+    lerp: 0.12,
     // Anchor links land below the sticky header through the page's
     // scroll-padding-top, which Lenis already honours.
     anchors: true,
-    // The editors and their floating UI scroll on their own, so they keep
-    // native scrolling; other scroll areas opt out with data-lenis-prevent.
-    prevent: (node) => Boolean(node.closest?.('.an-container, .an-portal')),
+    // Scroll areas inside the page (the editors, code blocks, the docs
+    // contents) scroll themselves while they can, then hand back to the page,
+    // instead of Lenis ignoring them and the two fighting over the scroll.
+    allowNestedScroll: true,
+    stopInertiaOnNavigate: true,
+    // Floating editor UI and dialogs keep native scrolling.
+    prevent: (node) => Boolean(node.closest?.('.an-portal, [role="dialog"], [data-lenis-prevent]')),
   });
+  // Fullscreen mode and dialogs lock the page with overflow: hidden; Lenis
+  // scrolls the window itself, so it pauses while that lock is on.
+  const syncLock = () => {
+    if (!lenis) return;
+    const locked = document.body.style.overflow === 'hidden';
+    if (locked) lenis.stop(); else lenis.start();
+  };
+  const lockObserver = new MutationObserver(syncLock);
+  lockObserver.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
   reducedMotion.addEventListener('change', (e) => {
-    if (e.matches && lenis) { lenis.destroy(); lenis = null; }
+    if (e.matches && lenis) { lockObserver.disconnect(); lenis.destroy(); lenis = null; }
   });
 }
 

@@ -164,6 +164,62 @@ function restoreSelection(host, saved) {
   setSelection(r);
 }
 
+/**
+ * A caret in an empty block has no characters to count, so a saved character
+ * offset puts it back at the end of the block before. When the caret's block
+ * is empty, this returns a node that moves with that block's content (its
+ * empty text node or <br>), for {@link keepingCaret} after the transform.
+ * @param {Range} range
+ * @param {Element} host
+ * @returns {Node|null}
+ */
+function emptyBlockAnchor(range, host) {
+  if (!range.collapsed) return null;
+  const block = leafBlock(range.startContainer, host);
+  if (block === host || block.textContent) return null;
+  const at = range.startContainer;
+  if (at.nodeType === Node.TEXT_NODE) return at;
+  return at.childNodes[range.startOffset] ?? at.lastChild ?? null;
+}
+
+/**
+ * While a block transform runs: the anchor from {@link emptyBlockAnchor}, and
+ * the block {@link keepFillable} refilled with a <br> if that removed it.
+ * @type {{ anchor: Node|null, refuge: Element|null }}
+ */
+const caretTrack = { anchor: null, refuge: null };
+
+/**
+ * Runs `transform`, then puts the caret back: in the empty block it was in
+ * when there was one, otherwise at the saved character offsets.
+ * @param {Range} range
+ * @param {Element} host
+ * @param {() => void} transform
+ */
+function keepingCaret(range, host, transform) {
+  const saved = saveSelection(host, range);
+  caretTrack.anchor = emptyBlockAnchor(range, host);
+  caretTrack.refuge = null;
+  try {
+    transform();
+  } finally {
+    const { anchor, refuge } = caretTrack;
+    caretTrack.anchor = null;
+    caretTrack.refuge = null;
+    const inHost = (n) => n?.isConnected && host.contains(n) && n.parentNode;
+    if (inHost(anchor)) {
+      // Not inside an empty text node: Chromium moves such a caret to the
+      // previous visible position, which is the very jump this avoids.
+      if (anchor.nodeType === Node.TEXT_NODE && /** @type {Text} */ (anchor).data) setCaret(anchor, 0);
+      else setCaret(anchor.parentNode, [...anchor.parentNode.childNodes].indexOf(/** @type {ChildNode} */ (anchor)));
+    } else if (inHost(refuge)) {
+      setCaret(refuge, 0);
+    } else {
+      restoreSelection(host, saved);
+    }
+  }
+}
+
 /** @param {Range} range */
 function setSelection(range) {
   const sel = globalThis.getSelection?.();
@@ -923,6 +979,7 @@ const LIST_LIKE = new Set(['UL', 'OL', 'DL', 'TABLE', 'TBODY', 'THEAD', 'TFOOT',
  */
 function keepFillable(el) {
   if (el.textContent || el.querySelector('br, img, input, iframe, video, hr, table')) return;
+  if (caretTrack.anchor && el.contains(caretTrack.anchor)) caretTrack.refuge = el;
   while (el.firstChild) el.firstChild.remove();
   el.appendChild(document.createElement('br'));
 }
@@ -963,30 +1020,30 @@ export function formatBlock(tag, editable) {
   if (!host) return false;
   const name = String(tag).replace(/[<>]/g, '').toLowerCase();
   if (!name) return false;
-  const saved = saveSelection(host, range);
-  const created = [];
-  for (const block of blocksIn(range, host)) {
-    if (block.nodeName.toLowerCase() === name) continue;
-    if (CONTAINER_BLOCKS.has(block.nodeName)) {
-      if (name === 'p') continue;
-      const inner = document.createElement(name);
-      while (block.firstChild && !isBlockNode(block.firstChild)) inner.appendChild(block.firstChild);
-      block.insertBefore(inner, block.firstChild);
-      created.push(inner);
-      continue;
+  keepingCaret(range, host, () => {
+    const created = [];
+    for (const block of blocksIn(range, host)) {
+      if (block.nodeName.toLowerCase() === name) continue;
+      if (CONTAINER_BLOCKS.has(block.nodeName)) {
+        if (name === 'p') continue;
+        const inner = document.createElement(name);
+        while (block.firstChild && !isBlockNode(block.firstChild)) inner.appendChild(block.firstChild);
+        block.insertBefore(inner, block.firstChild);
+        created.push(inner);
+        continue;
+      }
+      // A heading inside a list item or cell goes back to plain content.
+      if (name === 'p' && CONTAINER_BLOCKS.has(block.parentElement?.nodeName ?? '')) {
+        unwrap(block);
+        continue;
+      }
+      if (block.nodeName === 'PRE') preToLines(block);
+      const next = retag(block, name);
+      keepFillable(next);
+      created.push(next);
     }
-    // A heading inside a list item or cell goes back to plain content.
-    if (name === 'p' && CONTAINER_BLOCKS.has(block.parentElement?.nodeName ?? '')) {
-      unwrap(block);
-      continue;
-    }
-    if (block.nodeName === 'PRE') preToLines(block);
-    const next = retag(block, name);
-    keepFillable(next);
-    created.push(next);
-  }
-  if (name === 'pre') joinAdjacentPre(created);
-  restoreSelection(host, saved);
+    if (name === 'pre') joinAdjacentPre(created);
+  });
   return true;
 }
 
@@ -1108,18 +1165,18 @@ export function toggleList(type, editable) {
   const host = hostOf(range, editable);
   if (!host) return false;
   const tag = type.toUpperCase();
-  const saved = saveSelection(host, range);
-  const groups = selectedItems(range, host);
-  const lists = [...groups.keys()];
-  if (lists.length && lists.every((list) => list.nodeName === tag)) {
-    for (const [list, items] of groups) itemsToParagraphs(list, items);
-  } else {
-    // Collected before retagging, which moves the nodes the range points into.
-    const loose = blocksIn(range, host).filter((b) => b.nodeName !== 'LI' && !b.closest('li'));
-    for (const list of lists) if (list.nodeName !== tag) retagList(list, tag.toLowerCase());
-    makeList(loose, tag.toLowerCase());
-  }
-  restoreSelection(host, saved);
+  keepingCaret(range, host, () => {
+    const groups = selectedItems(range, host);
+    const lists = [...groups.keys()];
+    if (lists.length && lists.every((list) => list.nodeName === tag)) {
+      for (const [list, items] of groups) itemsToParagraphs(list, items);
+    } else {
+      // Collected before retagging, which moves the nodes the range points into.
+      const loose = blocksIn(range, host).filter((b) => b.nodeName !== 'LI' && !b.closest('li'));
+      for (const list of lists) if (list.nodeName !== tag) retagList(list, tag.toLowerCase());
+      makeList(loose, tag.toLowerCase());
+    }
+  });
   return true;
 }
 

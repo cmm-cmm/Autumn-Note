@@ -184,7 +184,7 @@ kbd {
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
   flex: none; min-height: 44px; padding: 0 18px;
-  border: 1px solid transparent; border-radius: var(--radius-pill);
+  border: 1px solid transparent; border-radius: var(--radius-md);
   background: transparent; color: var(--muted);
   font: 500 12px var(--font-mono); letter-spacing: .12em; text-transform: uppercase;
   cursor: pointer;
@@ -205,7 +205,7 @@ kbd {
 .code__copy {
   position: absolute; top: 8px; right: 8px; z-index: 1;
   min-height: 36px; padding: 0 12px;
-  border: 1px solid var(--line); border-radius: var(--radius-pill);
+  border: 1px solid var(--line); border-radius: var(--radius-md);
   background: var(--surface); color: var(--muted);
   font: 500 12px var(--font-mono); cursor: pointer;
 }

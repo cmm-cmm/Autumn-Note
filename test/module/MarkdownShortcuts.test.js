@@ -545,3 +545,35 @@ describe('MarkdownShortcuts extended block rules', () => {
     expect(ctx.layoutInfo.editable.querySelector('p')).toBeNull();
   });
 });
+
+// ── Caret after a block shortcut ─────────────────────────────────────────────
+
+describe('MarkdownShortcuts caret placement', () => {
+  // Typing `##` + Space on an empty line after another paragraph used to
+  // leave the caret at the end of the PREVIOUS paragraph, so the heading text
+  // went into the wrong block.
+  const run = (marker, convert) => {
+    const ctx = makeContext();
+    const { editable } = ctx.layoutInfo;
+    editable.innerHTML = `<p>First paragraph.</p><p>${marker}</p>`;
+    const ms = new MarkdownShortcuts(ctx);
+    setCursorAt(editable.lastChild.firstChild, marker.length);
+    convert(ms);
+    const range = window.getSelection().getRangeAt(0);
+    return { editable, range };
+  };
+
+  it.each([
+    ['#', 'H1', (ms) => ms._convertToHeading(1)],
+    ['##', 'H2', (ms) => ms._convertToHeading(2)],
+    ['>', 'BLOCKQUOTE', (ms) => ms._convertToBlockquote()],
+  ])('keeps the caret in the new block after "%s"', (marker, tag, convert) => {
+    const { editable, range } = run(marker, convert);
+    const block = editable.lastElementChild;
+    expect(block.tagName).toBe(tag);
+    expect(block.textContent).toBe('');
+    expect(range.collapsed).toBe(true);
+    expect(block.contains(range.startContainer) || range.startContainer === block).toBe(true);
+    expect(editable.firstElementChild.textContent).toBe('First paragraph.');
+  });
+});

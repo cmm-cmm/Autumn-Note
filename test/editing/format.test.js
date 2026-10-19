@@ -311,6 +311,14 @@ describe('blocks', () => {
     expect(html()).toBe('<h2 style="text-align: center;">ti|tle</h2>');
   });
 
+  it('keeps the caret in an empty block after the block before it', () => {
+    // A character offset cannot tell the end of "one" from the empty block,
+    // so the caret used to land at the end of the paragraph above.
+    setup('<p>one</p><p>|</p>');
+    F.formatBlock('h2');
+    expect(html()).toBe('<p>one</p><h2>|<br></h2>');
+  });
+
   it('accepts the <tag> form of the value', () => {
     setup('<p>x|</p>');
     Style.execCommand('formatBlock', '<blockquote>');
@@ -360,6 +368,17 @@ describe('blocks', () => {
 });
 
 describe('lists', () => {
+  it.each(['ul', 'ol'])('keeps the caret in an empty paragraph that becomes a %s', (type) => {
+    // Same character-offset ambiguity as formatBlock: the caret used to land
+    // at the end of the paragraph above the new list.
+    setup('<p>one</p><p>|<br></p>');
+    F.toggleList(type);
+    const range = globalThis.getSelection().getRangeAt(0);
+    expect(host.innerHTML).toBe(`<p>one</p><${type}><li><br></li></${type}>`);
+    expect(range.startContainer.nodeName).toBe('LI');
+    expect(range.startOffset).toBe(0);
+  });
+
   it('makes one list from consecutive paragraphs', () => {
     setup('<p>{a</p><p>b}</p>');
     F.toggleList('ul');

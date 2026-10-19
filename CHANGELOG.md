@@ -11,8 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Built-in icons are redrawn.** The toolbar and shared icons (`core/icon-paths.js`) are a new set drawn for square line caps and mitred joins: sharp frames, 45° cuts where a corner needs softening, square list bullets and a 1.75px stroke. The remaining dialog, tooltip and table icons follow the same rules. `svgIcon()` and the new `ICON_STROKE` constant in `core/dom.js` hold the stroke style in one place. Custom icons set through the `icons` option are unaffected. The ES build is 0.6 KiB gzip smaller.
+- **Built-in icons are redrawn.** The toolbar and shared icons (`core/icon-paths.js`) are a new set drawn for square line caps and mitred joins: sharp frames, 45° cuts where a corner needs softening, square list bullets and a 1.75px stroke. The remaining dialog, tooltip and table icons follow the same rules. `svgIcon()` and the new `ICON_STROKE` constant in `core/dom.js` hold the stroke style in one place. Custom icons set through the `icons` option are unaffected. The ES build is about 0.3 KiB gzip smaller.
 - The demo site is redesigned and moves to `autumnnote.habibiahmada.dev`. It is English only; the editor keeps its nine languages, and the demos let you switch them.
+- **The dark theme is themeable everywhere.** Dialogs, menus, popovers, inputs, the filled primary button and the pressed-toggle accent read new tokens (`--an-bg-raised`, `--an-bg-subtle`, `--an-border-strong`, `--an-text-soft`, `--an-primary-strong`, `--an-active` and their tints) instead of literal colours, so `themeVars` and `.an-theme-dark` overrides reach them. Defaults are unchanged; see README "Theming".
+
+### Fixed
+
+- **Block shortcuts put the caret in the wrong block.** Typing `## `, `# `, `> `, `- ` or `1. ` on an empty line after another paragraph made the heading, quote or list, but left the caret at the end of the paragraph above, so the next characters went there. The same happened to the Heading, Quote and list commands on any empty line. `formatBlock` and `toggleList` saved the caret as a character offset, which cannot tell the end of one block from the empty block after it; they now put the caret back in the empty block.
 
 ## [4.0.0] - 2026-10-19
 

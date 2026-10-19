@@ -41,13 +41,14 @@ The accent marks one word in a headline, the `+` of the logo, active states and 
 
 ## Shape and depth
 
-- Buttons: pill (primary solid, secondary outlined). Panels, inputs and code blocks: 10-14px radius. Badges: none above headlines (dropped by the owner).
+- Radius never exceeds 12px (owner direction): panels and code blocks 12px, buttons and inputs 8px, small marks 6px. Buttons: primary solid, secondary outlined. Badges: none above headlines (dropped by the owner).
 - No shadows except on floating editor UI. Depth comes from surface steps and 1px lines.
 
 ## Motion
 
 - Lenis smooth scrolling on every page, off when the visitor prefers reduced motion.
 - Sections fade and rise once as they enter the viewport; nothing loops.
+- View Transitions: the theme toggle grows the new theme as a circle from the click, and moving between pages keeps the header still while the old page fades out and the new one rises in (as on habibiahmada.dev). Both are skipped under reduced motion or without the API.
 
 ## Icons
 

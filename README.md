@@ -731,8 +731,9 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 
 | Token | Light default | Used for |
 |---|---|---|
-| `--an-primary` | `#3b82f6` | Accent: active buttons, links, focus ring, selections |
-| `--an-primary-hover` | `#2563eb` | Accent hover |
+| `--an-primary` | `#2563eb` | Accent: active buttons, links, focus ring, selections |
+| `--an-primary-hover` | `#1d4ed8` | Accent hover |
+| `--an-input-border` | `#8b93a1` | Form-field edges in dialogs |
 | `--an-border` | `#d1d5db` | Borders and separators |
 | `--an-bg` | `#ffffff` | Editor and dialog background |
 | `--an-bg-toolbar` | `#f9fafb` | Toolbar background |
@@ -745,6 +746,19 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
 | `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
+
+The dark theme sets the tokens above to its own palette, and adds these for the surfaces and accents only it uses:
+
+| Token | Dark default | Used for |
+|---|---|---|
+| `--an-bg-raised` | `#24273a` | Dialogs, menus, popovers and tooltips |
+| `--an-bg-subtle` | `#313244` | Inputs, inline code, table header cells, hover fills |
+| `--an-border-strong` | `#45475a` | Edges of the emoji, icon and find panels |
+| `--an-text-soft` | `#a6adc8` | Secondary labels and icon buttons |
+| `--an-primary-strong` / `--an-primary-strong-hover` | `#3b5bdb` / `#364fc7` | Filled buttons with white text (keep it at 4.5:1 or more against white) |
+| `--an-active` / `--an-active-strong` | `#818cf8` / `#6366f1` | Pressed toggles, the active picker cell, selected-cell outline |
+| `--an-active-tint` / `--an-active-tint-strong` / `--an-active-border` | `--an-active` at 15% / `--an-active-strong` at 20% / `--an-active` at 30% | Fills and edges of pressed toggles |
+| `--an-cell-selected` | `--an-active-strong` at 25% | Selected table cells |
 
 Three ways to set them, from broadest to narrowest:
 
