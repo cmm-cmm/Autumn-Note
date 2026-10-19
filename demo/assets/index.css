@@ -179,7 +179,25 @@
       display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
       flex-wrap: wrap;
     }
-    #lang-bar label { font-size: 13px; font-weight: 600; color: #57534e; }
+    #lang-bar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #57534e;
+    }
+    .ui-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .heart-icon {
+      display: inline-block;
+      vertical-align: -2px;
+      color: #ef4444;
+      fill: currentColor;
+    }
     #lang-select {
       padding: 5px 10px; border: 1px solid #e7e5e4; border-radius: 7px;
       font-size: 13px; background: #fff; cursor: pointer; color: #1c1917;

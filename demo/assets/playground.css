@@ -108,6 +108,9 @@
     }
     .card-header:hover { background: #fafafa; }
     .card-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 12px; font-weight: 700; letter-spacing: .05em;
       text-transform: uppercase; color: #6b7280;
     }
@@ -155,7 +158,14 @@
       line-height: 1.3;
     }
     .snippet-btn:hover { background: #fff3e8; border-color: #e8751a; color: #e8751a; }
-    .snippet-icon { font-size: 14px; display: block; margin-bottom: 2px; }
+    .snippet-icon {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      color: #6b7280;
+    }
+    .snippet-btn:hover .snippet-icon { color: #e8751a; }
 
     /* ── Output panel ── */
     .output-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -206,9 +216,21 @@
       width: 100%; font-size: 12px; font-weight: 700;
       padding: 8px; border-radius: 7px; cursor: pointer;
       background: #e8751a; color: #fff; border: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       transition: background .15s, transform .1s;
     }
     .apply-btn:hover { background: #d4611a; transform: translateY(-1px); }
+    .ui-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .heart-icon {
+      display: inline-block;
+      vertical-align: -2px;
+      color: #ef4444;
+      fill: currentColor;
+    }
 
     /* ── Footer ── */
     .site-footer {

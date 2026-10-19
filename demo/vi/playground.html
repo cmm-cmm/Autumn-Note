@@ -99,7 +99,7 @@
   <div class="pg-panels">
     <!-- Left: Editor -->
     <div class="panel-editor" id="editor-panel">
-      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>! ✨</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
+      <textarea id="editor-el"><p>Chào mừng đến với <strong>Autumn Note Playground</strong>!</p><p>Thử tất cả tính năng tại đây — định dạng văn bản, chèn <a href="#">liên kết</a>, nhúng bảng, hoặc dùng thanh công cụ nổi sau khi chọn văn bản.</p><p>Mẹo: gõ <code>**đậm**</code>, <code>## tiêu đề</code>, hoặc <code>- mục</code> ở đầu dòng để kích hoạt <em>phím tắt markdown</em>.</p></textarea>
     </div>
 
     <!-- Right: Config + Snippets + Output -->
@@ -108,7 +108,7 @@
       <!-- Config card -->
       <div class="card">
         <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
-          <span class="card-title">⚙ Tùy chọn</span>
+          <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Tùy chọn</span>
           <span class="card-toggle open">▶</span>
         </div>
         <div class="card-body" id="cfg-body">
@@ -172,38 +172,38 @@
             <label class="cfg-label" for="cfg-height">Chiều cao (px)</label>
             <input type="number" id="cfg-height" class="cfg-input" value="300" min="0" step="50" placeholder="auto" />
           </div>
-          <button class="apply-btn" onclick="applyConfig()">↺ Áp dụng tùy chọn</button>
+          <button class="apply-btn" onclick="applyConfig()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Áp dụng tùy chọn</button>
         </div>
       </div>
 
       <!-- Snippet card -->
       <div class="card">
         <div class="card-header" role="button" tabindex="0" onclick="toggleCard(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard(this);}">
-          <span class="card-title">📄 Tải mẫu</span>
+          <span class="card-title"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Tải mẫu</span>
           <span class="card-toggle open">▶</span>
         </div>
         <div class="card-body" id="snip-body">
           <div class="snippet-grid">
             <button class="snippet-btn" onclick="loadSnippet('article')">
-              <span class="snippet-icon">📝</span>Bài viết
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg></span>Bài viết
             </button>
             <button class="snippet-btn" onclick="loadSnippet('checklist')">
-              <span class="snippet-icon">✅</span>Danh sách việc
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Danh sách việc
             </button>
             <button class="snippet-btn" onclick="loadSnippet('table')">
-              <span class="snippet-icon">📊</span>Bảng
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg></span>Bảng
             </button>
             <button class="snippet-btn" onclick="loadSnippet('code')">
-              <span class="snippet-icon">💻</span>Khối mã
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>Khối mã
             </button>
             <button class="snippet-btn" onclick="loadSnippet('formatting')">
-              <span class="snippet-icon">🎨</span>Định dạng
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/></svg></span>Định dạng
             </button>
             <button class="snippet-btn" onclick="loadSnippet('markdown')">
-              <span class="snippet-icon">📄</span>Markdown
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="8" y2="17"/><polyline points="8 15 10 13 12 15"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="16" y1="15" x2="16" y2="17"/><polyline points="14 15 16 17 18 15"/></svg></span>Markdown
             </button>
             <button class="snippet-btn" onclick="loadSnippet('empty')">
-              <span class="snippet-icon">🗑</span>Xóa
+              <span class="snippet-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>Xóa
             </button>
           </div>
         </div>
@@ -232,13 +232,13 @@
         </div>
         <div class="action-row">
           <button class="act-btn" onclick="copyOutput()" title="Sao chép kết quả vào clipboard">
-            📋 Sao chép
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Sao chép
           </button>
           <button class="act-btn" onclick="downloadOutput()" title="Tải file xuống">
-            ⬇ Tải xuống
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Tải xuống
           </button>
           <button class="act-btn primary" onclick="sharePlayground()" title="Chia sẻ cấu hình này">
-            🔗 Chia sẻ
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Chia sẻ
           </button>
         </div>
       </div>
@@ -263,7 +263,7 @@
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span>Built with ❤️ by KonexForge</span>
+    <span>Built with <svg class="heart-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> by KonexForge</span>
     <nav class="footer-links">
       <a href="./">Trang chủ</a>
       <a href="https://github.com/cmm-cmm/Autumn-Note" target="_blank" rel="noopener noreferrer">GitHub</a>

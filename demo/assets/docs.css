@@ -201,6 +201,12 @@
     .footer-links { display: flex; gap: 16px; }
     .footer-links a { color: #78716c; transition: color .15s; }
     .footer-links a:hover { color: #d6d3d1; }
+    .heart-icon {
+      display: inline-block;
+      vertical-align: -2px;
+      color: #ef4444;
+      fill: currentColor;
+    }
 
     @media (max-width: 768px) {
       .docs-sidebar { display: none; }
