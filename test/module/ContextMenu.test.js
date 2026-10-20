@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ContextMenu } from '../../src/js/module/ContextMenu.js';
 import { en } from '../../src/js/i18n/en.js';
 
@@ -846,8 +846,98 @@ describe('ContextMenu default item actions', () => {
 
     delete Range.prototype.getBoundingClientRect;
 
-    // openY should be selRect.bottom + 4 = 200 + 4 = 204
-    expect(cm._lastY).toBe(204);
+    // The menu opens below the selected line (bottom 200 + 6px gap), even
+    // though the click was above it.
+    expect(cm._lastY).toBe(200);
+    expect(cm.el.style.top).toBe('206px');
+  });
+});
+
+describe('ContextMenu placement around the line being edited', () => {
+  const rect = (top, bottom, left = 100) => ({ top, bottom, left, right: left + 1, width: 1, height: bottom - top });
+  afterEach(() => {
+    delete Range.prototype.getBoundingClientRect;
+    delete Range.prototype.getClientRects;
+  });
+
+  function openWithCaret(caretRect, event, { menuHeight = 200, viewport = 800 } = {}) {
+    Object.defineProperty(Range.prototype, 'getClientRects', { value: () => [caretRect], configurable: true, writable: true });
+    const { cm, ctx } = makeMenu();
+    const editable = ctx.layoutInfo.editable;
+    const p = editable.querySelector('p');
+    const range = document.createRange();
+    range.setStart(p.firstChild, 2);
+    range.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    Object.defineProperty(cm.el, 'offsetHeight', { value: menuHeight, configurable: true });
+    Object.defineProperty(cm.el, 'offsetWidth', { value: 200, configurable: true });
+    const prevH = window.innerHeight;
+    window.innerHeight = viewport;
+    cm._onContextMenu({ target: editable, preventDefault: vi.fn(), ...event });
+    window.innerHeight = prevH;
+    return cm;
+  }
+
+  it('opens below the caret line, not over the text after a blinking caret', () => {
+    // Right-click just beside the caret, inside its line (300-320).
+    const cm = openWithCaret(rect(300, 320), { clientX: 140, clientY: 310 });
+    expect(cm.el.style.top).toBe('326px');
+  });
+
+  it('opens above the caret line when there is no room below', () => {
+    const cm = openWithCaret(rect(700, 720), { clientX: 140, clientY: 710 }, { menuHeight: 200, viewport: 800 });
+    // 700 - 6px gap - 200px menu
+    expect(cm.el.style.top).toBe('494px');
+  });
+
+  it('caps the height on the roomier side when neither side fits', () => {
+    const cm = openWithCaret(rect(300, 320), { clientX: 140, clientY: 310 }, { menuHeight: 600, viewport: 700 });
+    // below: 700 - 326 - 8 = 366, above: 300 - 6 - 8 = 286
+    expect(cm.el.style.top).toBe('326px');
+    expect(cm.el.style.maxHeight).toBe('366px');
+  });
+
+  it('uses the caret line for the keyboard menu key (no pointer position)', () => {
+    const cm = openWithCaret(rect(400, 420, 250), { clientX: 0, clientY: 0 });
+    expect(cm.el.style.top).toBe('426px');
+    expect(cm.el.style.left).toBe('250px');
+  });
+
+  it('follows the click when the caret is on a distant line', () => {
+    const cm = openWithCaret(rect(100, 120), { clientX: 140, clientY: 500 });
+    // pointer line 490-510, below it
+    expect(cm.el.style.top).toBe('516px');
+  });
+});
+
+describe('ContextMenu on small screens', () => {
+  let original;
+  beforeEach(() => {
+    original = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  });
+  afterEach(() => { window.matchMedia = original; });
+
+  it('puts clipboard and bold/italic/underline in one row of labelled icon buttons', () => {
+    const { cm } = makeMenu();
+    cm._renderItems(cm._items);
+    const row = cm.el.querySelector('.an-context-quick');
+    expect(row).not.toBeNull();
+    expect(row.getAttribute('role')).toBe('group');
+    const names = [...row.querySelectorAll('[role="menuitem"]')].map((b) => b.dataset.name);
+    expect(names).toEqual(['cut', 'copy', 'paste', 'bold', 'italic', 'underline']);
+    row.querySelectorAll('[role="menuitem"]').forEach((b) => {
+      expect(b.getAttribute('aria-label')).toBeTruthy();
+      expect(b.querySelector('.an-context-label')).toBeNull();
+    });
+    // No separator is left first, last or doubled after the move.
+    const rest = [...cm.el.children].filter((c) => c !== row);
+    expect(rest[0].classList.contains('an-context-sep')).toBe(false);
+    expect(rest.at(-1).classList.contains('an-context-sep')).toBe(false);
+    rest.forEach((c, i) => {
+      if (i && c.classList.contains('an-context-sep')) expect(rest[i - 1].classList.contains('an-context-sep')).toBe(false);
+    });
   });
 });
 

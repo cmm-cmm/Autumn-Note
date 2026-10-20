@@ -1617,6 +1617,41 @@
   padding: 5px 4px;
   display: none;
   user-select: none;
+  // ContextMenu caps the height when the menu cannot fit beside the line it
+  // keeps clear of; the rest scrolls inside the menu.
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+// Small screens and touch (ContextMenu adds the class): clipboard and
+// bold/italic/underline as one row of icon buttons, and rows tall enough to
+// tap.
+.an-contextmenu--compact {
+  min-width: 0;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+
+  .an-context-item,
+  .an-context-back {
+    min-height: 40px;
+  }
+}
+
+.an-context-quick {
+  display: flex;
+  gap: 2px;
+  padding: 0 0 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--an-border, #{$an-border});
+
+  .an-context-item--icon {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
 }
 
 .an-context-item {
@@ -2906,6 +2941,65 @@ $an-video-accent: #8b5cf6; // violet-500
       border-radius: 2px;
     }
   }
+}
+
+// Edge hints for a toolbar that scrolls sideways (Toolbar._initScrollHints):
+// a chevron over a fade, pinned to each edge with position: sticky, shown
+// only while there is more to scroll that way. The negative margin lets the
+// hint overlay the row instead of taking space in it.
+.an-toolbar-scroll {
+  display: none;
+  position: sticky;
+  z-index: 2;
+  flex: none;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  margin-block: -(nth($an-toolbar-pad, 1));
+  color: var(--an-text, #{$an-text});
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+
+  svg { display: block; }
+}
+
+.an-toolbar-scroll--start {
+  inset-inline-start: 0;
+  margin-inline-end: -32px;
+  justify-content: flex-start;
+  padding-inline-start: 2px;
+  background: linear-gradient(to right, var(--an-bg-toolbar, #{$an-bg-toolbar}) 55%, transparent);
+}
+
+.an-toolbar-scroll--end {
+  inset-inline-end: 0;
+  margin-inline-start: -32px;
+  justify-content: flex-end;
+  padding-inline-end: 2px;
+  background: linear-gradient(to left, var(--an-bg-toolbar, #{$an-bg-toolbar}) 55%, transparent);
+}
+
+.an-dir-rtl {
+  .an-toolbar-scroll--start { background: linear-gradient(to left, var(--an-bg-toolbar, #{$an-bg-toolbar}) 55%, transparent); }
+  .an-toolbar-scroll--end { background: linear-gradient(to right, var(--an-bg-toolbar, #{$an-bg-toolbar}) 55%, transparent); }
+  .an-toolbar-scroll svg { transform: scaleX(-1); }
+}
+
+.an-toolbar--scrollable .an-toolbar-scroll {
+  display: flex;
+}
+
+.an-toolbar--more-start .an-toolbar-scroll--start,
+.an-toolbar--more-end .an-toolbar-scroll--end {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .an-toolbar-scroll { transition: none; }
 }
 
 // =============================================================================

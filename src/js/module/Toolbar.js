@@ -3,7 +3,7 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on, portalOf, setIcon, ICON_STROKE, lockSelectWidth } from '../core/dom.js';
+import { createElement, on, portalOf, setIcon, svgIcon, ICON_STROKE, lockSelectWidth } from '../core/dom.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
 import { resolvePalette } from '../core/palette.js';
 import { PATHS } from '../core/icon-paths.js';
@@ -129,6 +129,8 @@ export class Toolbar {
     this._refreshRaf = null;
     /** @type {number|null} rAF handle for locking dropdown widths */
     this._lockRaf = null;
+    /** @type {(() => void)|null} refreshes the edge scroll hints */
+    this._updateScrollHints = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -147,6 +149,7 @@ export class Toolbar {
     this._faReady = this._detectFontAwesome();
     this._buildButtons();
     this._initRovingFocus();
+    this._initScrollHints();
     this.lockSelectWidths();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()
@@ -161,8 +164,12 @@ export class Toolbar {
    * mounting it), and again a frame later, after late web fonts.
    */
   lockSelectWidths() {
-    const lock = () => this.el?.querySelectorAll('select.an-select')
-      .forEach((s) => lockSelectWidth(/** @type {HTMLSelectElement} */ (s)));
+    const lock = () => {
+      this.el?.querySelectorAll('select.an-select')
+        .forEach((s) => lockSelectWidth(/** @type {HTMLSelectElement} */ (s)));
+      // The row's width may have changed without the toolbar resizing.
+      this._updateScrollHints?.();
+    };
     lock();
     if (typeof requestAnimationFrame !== 'function') return;
     if (this._lockRaf) cancelAnimationFrame(this._lockRaf);
@@ -765,6 +772,7 @@ export class Toolbar {
   _controls() {
     if (!this.el) return [];
     return /** @type {HTMLElement[]} */ (Array.from(this.el.querySelectorAll('button, select')));
+    // (The scroll hints are <div>s, so they stay out of this list.)
   }
 
   /** @returns {HTMLElement[]} controls that can actually receive focus */
@@ -791,6 +799,61 @@ export class Toolbar {
       ? focused
       : navigable.find((el) => el.getAttribute('tabindex') === '0') || navigable[0];
     all.forEach((el) => el.setAttribute('tabindex', el === active ? '0' : '-1'));
+  }
+
+  /**
+   * When the toolbar is one scrolling row (narrow screens, or
+   * `toolbarOverflow: 'scroll'`), nothing showed that more controls sat past
+   * the edge. A chevron pinned to each edge, over a fade, appears while there
+   * is more to scroll that way and scrolls the row when pressed. They are for
+   * pointer and touch: keyboard users move with the arrow keys, which scroll
+   * the focused control into view, so the hints stay out of the tab order and
+   * the accessibility tree.
+   */
+  _initScrollHints() {
+    if (!this.el) return;
+    const hint = (side) => {
+      const el = createElement('div', { class: `an-toolbar-scroll an-toolbar-scroll--${side}`, 'aria-hidden': 'true' });
+      setIcon(el, svgIcon(side === 'start' ? '<polyline points="15 18 9 12 15 6"/>' : '<polyline points="9 18 15 12 9 6"/>', 14, 2));
+      return el;
+    };
+    const start = hint('start');
+    const end = hint('end');
+    this.el.prepend(start);
+    this.el.append(end);
+
+    const update = () => {
+      const el = this.el;
+      if (!el) return;
+      const max = el.scrollWidth - el.clientWidth;
+      // scrollLeft runs negative in right-to-left layouts.
+      const pos = Math.abs(el.scrollLeft);
+      const overflow = max > 1;
+      el.classList.toggle('an-toolbar--scrollable', overflow);
+      el.classList.toggle('an-toolbar--more-start', overflow && pos > 1);
+      el.classList.toggle('an-toolbar--more-end', overflow && pos < max - 1);
+    };
+    const scrollBy = (dir) => {
+      const el = this.el;
+      if (!el) return;
+      const rtl = getComputedStyle(el).direction === 'rtl';
+      const amount = Math.max(80, el.clientWidth * 0.7) * dir * (rtl ? -1 : 1);
+      const reduce = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      el.scrollBy({ left: amount, behavior: reduce ? 'auto' : 'smooth' });
+    };
+    this._disposers.push(
+      on(start, 'click', () => scrollBy(-1)),
+      on(end, 'click', () => scrollBy(1)),
+      on(this.el, 'scroll', update, { passive: true }),
+    );
+    const RO = globalThis.ResizeObserver;
+    if (typeof RO === 'function') {
+      const ro = new RO(update);
+      ro.observe(this.el);
+      this._disposers.push(() => ro.disconnect());
+    }
+    this._updateScrollHints = update;
+    update();
   }
 
   /** Wires arrow-key navigation. Called on build and again after rebuild(). */
@@ -947,6 +1010,7 @@ export class Toolbar {
     // rebuild() cleared the disposers, taking the keydown/focusin listeners
     // with them — re-arm navigation over the new controls.
     this._initRovingFocus();
+    this._initScrollHints();
     this.lockSelectWidths();
     this._btnMap = new Map(
       (this.options.toolbar || []).flat()

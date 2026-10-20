@@ -53,9 +53,9 @@ function makeColorSubItems(colorType) {
 }
 
 const defaultItems = [
-  { name: 'cut',       label: 'Cut',          icon: ICONS.cut,       action: (ctx) => { cutSelection(() => ctx.invoke('editor.afterCommand')); } },
-  { name: 'copy',      label: 'Copy',         icon: ICONS.copy,      action: () => { copySelection(); } },
-  { name: 'paste',     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
+  { name: 'cut', quick: true,       label: 'Cut',          icon: ICONS.cut,       action: (ctx) => { cutSelection(() => ctx.invoke('editor.afterCommand')); } },
+  { name: 'copy', quick: true,      label: 'Copy',         icon: ICONS.copy,      action: () => { copySelection(); } },
+  { name: 'paste', quick: true,     label: 'Paste',        icon: ICONS.paste,     action: (ctx) => {
     if (!navigator.clipboard) return;
     const editable = ctx.layoutInfo?.editable;
     if (!editable) return;
@@ -88,9 +88,9 @@ const defaultItems = [
     }
   } },
   { separator: true },
-  { name: 'bold',      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
-  { name: 'italic',    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },
-  { name: 'underline', label: 'Underline',    icon: ICONS.underline, action: (ctx) => ctx.invoke('editor.underline') },
+  { name: 'bold', quick: true,      label: 'Bold',         icon: ICONS.bold,      action: (ctx) => ctx.invoke('editor.bold') },
+  { name: 'italic', quick: true,    label: 'Italic',       icon: ICONS.italic,    action: (ctx) => ctx.invoke('editor.italic') },
+  { name: 'underline', quick: true, label: 'Underline',    icon: ICONS.underline, action: (ctx) => ctx.invoke('editor.underline') },
   { separator: true },
   { name: 'textColor',      label: 'Text Color',      icon: ICONS.textColor,      colorStrip: 'foreColor',  navigate: makeColorSubItems('foreColor') },
   { name: 'highlightColor', label: 'Highlight Color', icon: ICONS.highlightColor, colorStrip: 'hiliteColor', navigate: makeColorSubItems('hiliteColor') },
@@ -118,6 +118,8 @@ export class ContextMenu {
     this._lastY = 0;
     this._copiedFormat = null;
     this._savedRange = null;
+    /** @type {{ left: number, top: number, bottom: number }|null} line the open menu keeps clear of */
+    this._avoid = null;
   }
 
   initialize() {
@@ -158,6 +160,10 @@ export class ContextMenu {
 
     if (!this.el) return;
     this.el.innerHTML = '';
+    const compact = this._isCompact();
+    this.el.classList.toggle('an-contextmenu--compact', compact);
+    /** @type {HTMLElement|null} */
+    let quickRow = null;
 
     items.forEach((it) => {
       if (it.separator || it.sep) {
@@ -354,15 +360,28 @@ export class ContextMenu {
         return;
       }
 
-      // Regular item
-      const btn = createElement('button', { type: 'button', class: 'an-context-item', role: 'menuitem', 'data-name': it.name || '' });
+      // Regular item. On small screens the `quick` items (clipboard and
+      // bold/italic/underline) share one row of icon buttons at the top.
+      const label = this.context.locale.contextMenu[it.name] || it.label || it.name;
+      const inQuickRow = compact && it.quick && it.icon;
+      if (inQuickRow && !quickRow) {
+        quickRow = createElement('div', { class: 'an-context-quick', role: 'group' });
+        this.el.prepend(quickRow);
+      }
+      const btn = createElement('button', {
+        type: 'button',
+        class: inQuickRow ? 'an-context-item an-context-item--icon' : 'an-context-item',
+        role: 'menuitem',
+        'data-name': it.name || '',
+        ...(inQuickRow ? { 'aria-label': label, title: label } : {}),
+      });
       if (typeof it.disabled === 'function' ? it.disabled(this.context) : !!it.disabled) /** @type {HTMLButtonElement} */ (btn).disabled = true;
       if (it.icon) {
         const iconSpan = createElement('span', { class: 'an-context-icon', 'aria-hidden': 'true' });
         setIcon(iconSpan, it.icon);
         btn.appendChild(iconSpan);
       }
-      btn.appendChild(createElement('span', { class: 'an-context-label' }, [(this.context.locale.contextMenu[it.name] || it.label || it.name)]));
+      if (!inQuickRow) btn.appendChild(createElement('span', { class: 'an-context-label' }, [label]));
       const off = on(btn, 'click', (e) => {
         e.stopPropagation();
         // Disabled items stay hoverable (cursor: not-allowed), so guard here too
@@ -372,8 +391,74 @@ export class ContextMenu {
         try { it.action(this.context); } catch (err) { console.error(err); }
       });
       this._menuDisposers.push(off);
-      this.el.appendChild(btn);
+      (inQuickRow ? quickRow : this.el).appendChild(btn);
     });
+
+    // Moving items into the quick row can leave separators at the start, at
+    // the end or next to each other.
+    if (quickRow) {
+      let prevSep = true;
+      for (const child of [...this.el.children]) {
+        if (child === quickRow) continue;
+        const isSep = child.classList.contains('an-context-sep');
+        if (isSep && prevSep) child.remove();
+        prevSep = isSep;
+      }
+      const last = this.el.lastElementChild;
+      if (last?.classList.contains('an-context-sep')) last.remove();
+    }
+  }
+
+  /** Small screens and touch: a shorter menu with a row of icon buttons. */
+  _isCompact() {
+    return !!globalThis.matchMedia?.('(max-width: 640px), (pointer: coarse)').matches;
+  }
+
+  /**
+   * The line of text the menu must not cover: the line of the selection or
+   * caret nearest the click, or the click's own line when the caret is
+   * somewhere else. For the keyboard menu key (no pointer position) it is
+   * the caret's line.
+   * @param {MouseEvent} event
+   * @returns {{ left: number, top: number, bottom: number }}
+   */
+  _avoidRect(event) {
+    const fromKeyboard = event.clientX === 0 && event.clientY === 0;
+    const y = event.clientY;
+    const pointerLine = { left: event.clientX, top: y - 10, bottom: y + 10 };
+    const range = this._savedRange;
+    if (!range) return pointerLine;
+    let rects = [];
+    try { rects = Array.from(range.getClientRects()).filter((r) => r.height > 0); } catch (_) { void _; }
+    if (!rects.length) {
+      try {
+        const r = range.getBoundingClientRect();
+        if (r.height > 0) rects = [r];
+      } catch (_) { void _; }
+    }
+    if (!rects.length) {
+      // An empty block (only a <br>) gives no rects: use the block's first line.
+      const node = range.startContainer;
+      const el = /** @type {Element|null} */ (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement);
+      const r = el?.getBoundingClientRect();
+      if (r && r.height > 0) {
+        const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight) || 20;
+        rects = [{ left: r.left, top: r.top, bottom: Math.min(r.bottom, r.top + lineHeight) }];
+      }
+    }
+    if (!rects.length) return pointerLine;
+    if (fromKeyboard) {
+      const last = rects[rects.length - 1];
+      return { left: last.left, top: last.top, bottom: last.bottom };
+    }
+    const distance = (r) => (y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0);
+    const nearest = rects.reduce((a, b) => (distance(b) < distance(a) ? b : a));
+    if (distance(nearest) > 30) {
+      // A selection stays visible wherever the click was; a caret far from
+      // the click is not what the user is looking at.
+      return range.collapsed ? pointerLine : { left: event.clientX, top: nearest.top, bottom: nearest.bottom };
+    }
+    return { left: event.clientX, top: Math.min(nearest.top, pointerLine.top), bottom: Math.max(nearest.bottom, pointerLine.bottom) };
   }
 
   _onContextMenu(event) {
@@ -387,25 +472,12 @@ export class ContextMenu {
     this._savedRange = (winSel?.rangeCount > 0) ? winSel.getRangeAt(0).cloneRange() : null;
     this._renderItems(this._items);
 
-    // Open below the selected text so the selection stays visible.
-    // Only apply when there is a real (non-collapsed) selection — a collapsed range
-    // (cursor only) also has height > 0, which would misplace the menu relative
-    // to the actual click point.
-    const openX = event.clientX;
-    let openY = event.clientY;
-    if (this._savedRange && !this._savedRange.collapsed) {
-      try {
-        const selRect = this._savedRange.getBoundingClientRect();
-        if (selRect.width > 0 && selRect.height > 0) {
-          // Keep X at click position (feels natural); Y just below the selection.
-          openY = selRect.bottom + 4;
-        }
-      } catch (_) { void _; }
-    }
-
-    this._lastX = openX;
-    this._lastY = openY;
-    this.showAt(openX, openY);
+    // Open next to the line being worked on rather than over it: below the
+    // caret or selection line, or above it when there is no room below.
+    const avoid = this._avoidRect(event);
+    this._lastX = avoid.left;
+    this._lastY = avoid.bottom;
+    this.showAt(avoid.left, avoid.bottom, avoid);
   }
 
   _maybeHide(event) {
@@ -413,8 +485,14 @@ export class ContextMenu {
     if (!this.el.contains(event.target)) this.hide();
   }
 
-  showAt(x, y) {
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {{ left: number, top: number, bottom: number }|null} [avoid] - a line the menu must not cover
+   */
+  showAt(x, y, avoid = null) {
     if (!this.el) return;
+    this._avoid = avoid;
     this.el.style.display = 'block';
     this._reposition(x, y);
     this.el.setAttribute('aria-hidden', 'false');
@@ -452,19 +530,58 @@ export class ContextMenu {
     items[next].focus({ preventScroll: true });
   }
 
+  /**
+   * Places the menu at (x, y), its top-left corner, kept inside the viewport.
+   * After a right-click it stays clear of the line in `this._avoid`: below
+   * it, above it, or (when neither side has room for the whole menu) on the
+   * roomier side with its height capped so it scrolls.
+   * @param {number} [x]
+   * @param {number} [y]
+   */
   _reposition(x, y) {
     if (!this.el) return;
+    const margin = 8;
+    const gap = 6;
+    const vw = globalThis.innerWidth;
+    const vh = globalThis.innerHeight;
     const rx = x === undefined ? this._lastX : x;
     const ry = y === undefined ? this._lastY : y;
+    this.el.style.maxHeight = '';
     const w = this.el.offsetWidth;
-    const h = this.el.offsetHeight;
-    let left = rx;
+    let h = this.el.offsetHeight;
     let top = ry;
-    // Clamp to viewport so the menu never overflows the screen edge
-    if (left + w > globalThis.innerWidth - 8) left = globalThis.innerWidth - w - 8;
-    if (left < 8) left = 8;
-    if (top + h > globalThis.innerHeight - 8) top = globalThis.innerHeight - h - 8;
-    if (top < 8) top = 8;
+    const avoid = this._avoid;
+    if (avoid) {
+      const below = vh - (avoid.bottom + gap) - margin;
+      const above = avoid.top - gap - margin;
+      if (h <= below) top = avoid.bottom + gap;
+      else if (h <= above) top = avoid.top - gap - h;
+      else if (Math.max(below, above) >= 160) {
+        if (below >= above) {
+          top = avoid.bottom + gap;
+          this.el.style.maxHeight = `${below}px`;
+        } else {
+          h = above;
+          this.el.style.maxHeight = `${above}px`;
+          top = avoid.top - gap - h;
+        }
+      } else {
+        // No room on either side: covering the line cannot be helped.
+        this.el.style.maxHeight = `${vh - 2 * margin}px`;
+        h = Math.min(h, vh - 2 * margin);
+        top = Math.min(Math.max(margin, ry), vh - h - margin);
+      }
+    } else {
+      if (h > vh - 2 * margin) {
+        this.el.style.maxHeight = `${vh - 2 * margin}px`;
+        h = vh - 2 * margin;
+      }
+      if (top + h > vh - margin) top = vh - h - margin;
+    }
+    let left = rx;
+    if (left + w > vw - margin) left = vw - w - margin;
+    if (left < margin) left = margin;
+    if (top < margin) top = margin;
     this.el.style.left = `${left}px`;
     this.el.style.top = `${top}px`;
   }

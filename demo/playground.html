@@ -307,15 +307,13 @@ const SNIPPETS = {
 </ul>
 <p>Progress: <strong>2 / 7</strong> tasks completed</p>`,
 
-  table: `<h2>Build sizes in 4.0.0</h2>
+  table: `<h2>Build sizes in __ASN_VERSION__</h2>
 <table class="an-table"><thead><tr><th>Build</th><th>File</th><th>Size (gzip)</th></tr></thead>
 <tbody>
-<tr><td>ES module</td><td>dist/autumnnote.es.js</td><td>97.9 KiB</td></tr>
-<tr><td>UMD (CDN)</td><td>dist/autumnnote.umd.js</td><td>93.4 KiB</td></tr>
-<tr><td>Minified</td><td>dist/autumnnote.min.js</td><td>93.4 KiB</td></tr>
-<tr><td>CommonJS</td><td>dist/autumnnote.cjs</td><td>93.4 KiB</td></tr>
-<tr><td>Core ES module</td><td>dist/autumnnote.core.es.js</td><td>57.3 KiB</td></tr>
-<tr><td>One locale</td><td>dist/i18n/&lt;code&gt;.umd.js</td><td>3.2 to 3.7 KiB</td></tr>
+<tr><td>ES module</td><td>dist/autumnnote.es.js</td><td>__ASN_SIZE_ES__ KiB</td></tr>
+<tr><td>UMD (CDN, also .min.js and .cjs)</td><td>dist/autumnnote.umd.js</td><td>__ASN_SIZE_UMD__ KiB</td></tr>
+<tr><td>Core ES module</td><td>dist/autumnnote.core.es.js</td><td>__ASN_SIZE_CORE__ KiB</td></tr>
+<tr><td>One locale</td><td>dist/i18n/&lt;code&gt;.umd.js</td><td>__ASN_SIZE_LOCALE_MIN__ to __ASN_SIZE_LOCALE_MAX__ KiB</td></tr>
 </tbody></table>
 <p>Measured by <code>pnpm check:bundle</code>, which fails the build when a file leaves its budget.</p>`,
 
