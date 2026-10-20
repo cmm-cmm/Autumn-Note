@@ -1,6 +1,11 @@
 name = "autumnnote-plus"
 compatibility_date = "2026-06-30"
 workers_dev = false
+# Production is only on the custom domain below, but the staging Preview
+# (scripts/cloudflare-preview.mjs) is served at
+# staging-autumnnote-plus.habibiahmadaziz.workers.dev. Without this, Preview
+# URLs follow workers_dev and answer "error code: 1042".
+preview_urls = true
 
 routes = [
   { pattern = "autumnnote.habibiahmada.dev", custom_domain = true },
