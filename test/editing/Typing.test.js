@@ -1059,3 +1059,39 @@ describe('Typing Tab in a table', () => {
     expect(editable.textContent).toBe('plain    ');
   });
 });
+
+describe('Typing Enter at the end of a heading', () => {
+  const enter = () => ({ key: 'Enter', shiftKey: false, preventDefault: vi.fn() });
+  const mount = (html) => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    editable.innerHTML = html;
+    document.body.appendChild(editable);
+    return editable;
+  };
+
+  it('opens a <p>, not a <div>, after the heading', () => {
+    const editable = mount('<h2>Release notes</h2>');
+    setCaret(editable.querySelector('h2').firstChild, 13);
+    const event = enter();
+    expect(handleKeydown(event, editable, {})).toBe(true);
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(editable.innerHTML).toBe('<h2>Release notes</h2><p><br></p>');
+    const range = window.getSelection().getRangeAt(0);
+    expect(range.startContainer.nodeName).toBe('P');
+  });
+
+  it('works on an empty heading and inside inline formatting', () => {
+    const editable = mount('<h3><strong>Bold</strong></h3>');
+    setCaret(editable.querySelector('strong').firstChild, 4);
+    expect(handleKeydown(enter(), editable, {})).toBe(true);
+    expect(editable.lastElementChild.outerHTML).toBe('<p><br></p>');
+  });
+
+  it('leaves Enter in the middle of a heading to the browser', () => {
+    const editable = mount('<h2>Release notes</h2>');
+    setCaret(editable.querySelector('h2').firstChild, 4);
+    expect(handleKeydown(enter(), editable, {})).toBe(false);
+    expect(editable.innerHTML).toBe('<h2>Release notes</h2>');
+  });
+});

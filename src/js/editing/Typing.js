@@ -458,6 +458,28 @@ export function handleKeydown(event, editable, options = {}) {
         return true;
       }
     }
+
+    // Enter at the end of a heading starts a paragraph. Left to the browser,
+    // Chrome and Safari open a <div> there, which the block shortcuts and the
+    // Style dropdown do not treat as a paragraph.
+    if (para && /^H[1-6]$/.test(para.nodeName.toUpperCase()) && range.isCollapsed()) {
+      const native = range.toNativeRange();
+      native.setEnd(para, para.childNodes.length);
+      const rest = native.cloneContents();
+      if (native.toString() === '' && !rest.querySelector('img, video, iframe, input')) {
+        event.preventDefault();
+        const p = document.createElement('p');
+        p.appendChild(document.createElement('br'));
+        /** @type {Element} */ (para).after(p);
+        const sel = globalThis.getSelection();
+        const caret = document.createRange();
+        caret.setStart(p, 0);
+        caret.collapse(true);
+        sel?.removeAllRanges();
+        sel?.addRange(caret);
+        return true;
+      }
+    }
   }
 
   return false;

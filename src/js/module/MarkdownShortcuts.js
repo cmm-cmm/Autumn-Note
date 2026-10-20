@@ -182,6 +182,20 @@ export class MarkdownShortcuts {
     startRange.setStart(range.startContainer.parentNode || range.startContainer, 0);
     startRange.setEnd(range.startContainer, range.startOffset);
     startRange.deleteContents();
+
+    // A block left with nothing in it gets a <br> and the caret. formatBlock
+    // skips a block that already has the target tag (`## ` typed in an <h2>),
+    // and with no <br> the browser has no line to keep the caret on, so the
+    // next characters land outside the block.
+    const block = /** @type {Element} */ (startRange.startContainer);
+    if (block !== this.context.layoutInfo.editable && block.nodeType === Node.ELEMENT_NODE
+      && !block.textContent && !block.querySelector('br, img, video, iframe, hr, input')) {
+      block.replaceChildren(document.createElement('br'));
+      range.setStart(block, 0);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
   }
 
   _convertToHeading(level) {

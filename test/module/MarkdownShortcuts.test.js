@@ -397,6 +397,39 @@ describe('MarkdownShortcuts._selectLineAndDelete', () => {
     window.getSelection().removeAllRanges();
     expect(() => ms._selectLineAndDelete()).not.toThrow();
   });
+  it('keeps an emptied block fillable with the caret inside it', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ctx.layoutInfo.editable.innerHTML = '<h2>##</h2>';
+    const h2 = ctx.layoutInfo.editable.firstChild;
+    setCursorAt(h2.firstChild, 2);
+    ms._selectLineAndDelete();
+    expect(h2.innerHTML).toBe('<br>');
+    const range = window.getSelection().getRangeAt(0);
+    expect(range.startContainer).toBe(h2);
+    expect(range.startOffset).toBe(0);
+  });
+
+  it('typing "## " in a block that is already an <h2> keeps the text in it', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ctx.layoutInfo.editable.innerHTML = '<h2>##</h2>';
+    setCursorAt(ctx.layoutInfo.editable.firstChild.firstChild, 2);
+    expect(ms._applyBlockRule()).toBe(true);
+    expect(ctx.layoutInfo.editable.innerHTML).toBe('<h2><br></h2>');
+    expect(window.getSelection().getRangeAt(0).startContainer.nodeName).toBe('H2');
+  });
+
+  it('leaves a block with other content as it was', () => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ctx.layoutInfo.editable.innerHTML = '<p>## <img src="x.png"></p>';
+    const p = ctx.layoutInfo.editable.firstChild;
+    setCursorAt(p.firstChild, 3);
+    ms._selectLineAndDelete();
+    expect(p.querySelector('br')).toBeNull();
+    expect(p.querySelector('img')).not.toBeNull();
+  });
 });
 
 // ── Keydown delegation ────────────────────────────────────────────────────────

@@ -638,6 +638,18 @@
     }
   }
 
+  // HTML loaded with setHTML() or pasted often names the language on <code>
+  // only; CodeTooltip mirrors it onto <pre> just when the language changes.
+  // Prism's theme then paints the text light on the editor's light block.
+  // The code follows the <pre> colour, and where :has() works the block gets
+  // the same dark look. Kept apart from the rule above: a browser without
+  // :has() drops the whole rule it appears in.
+  pre > code[class*='language-'] { color: inherit; }
+  pre:has(> code[class*='language-']) {
+    background: #2d2d2d;
+    color: #ccc;
+  }
+
   // Code block line numbers (toggled via CodeTooltip)
   .an-code-line-numbers {
     position: relative;
