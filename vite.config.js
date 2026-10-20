@@ -2,11 +2,12 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { demoVersion } from './scripts/vite-plugin-demo-version.mjs';
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ mode }) => {
   // `npm run dev` serves demo/ from this config, so the demo pages need the
   // same version substitution the demo build applies.
   const plugins = [demoVersion()];
-  if (process.env.ANALYZE) {
+  // `pnpm analyze` builds with --mode analyze.
+  if (mode === 'analyze') {
     const { visualizer } = await import('rollup-plugin-visualizer');
     plugins.push(visualizer({ open: true, filename: 'dist/stats.html', gzipSize: true }));
   }

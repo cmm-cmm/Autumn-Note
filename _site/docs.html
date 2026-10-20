@@ -82,10 +82,13 @@
       <div class="sidebar-group">
         <p class="sidebar-group-title label">Getting Started</p>
         <a class="sidebar-link" href="#installation">Installation</a>
+        <a class="sidebar-link" href="#cdn">Use from a CDN</a>
         <a class="sidebar-link" href="#framework-wrappers">Framework Wrappers</a>
         <a class="sidebar-link sub" href="#wrapper-react">React</a>
         <a class="sidebar-link sub" href="#wrapper-vue">Vue 3</a>
+        <a class="sidebar-link" href="#other-frameworks">Other frameworks</a>
         <a class="sidebar-link" href="#quick-start">Quick Start</a>
+        <a class="sidebar-link" href="#backend">Using with a backend</a>
       </div>
       <div class="sidebar-group">
         <p class="sidebar-group-title label">Configuration</p>
@@ -147,16 +150,51 @@
         <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
         <pre><code class="language-bash" data-install="autumnnote-plus">npm install autumnnote-plus</code></pre>
       </div>
-      <p class="docs-p">Or use the CDN, no build step needed:</p>
-      <div class="code-wrap">
-        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
-        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css"&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"&gt;&lt;/script&gt;</code></pre>
-      </div>
+      <p class="docs-p">Or skip the install and load it from a CDN: see <a href="#cdn">Use from a CDN</a>.</p>
       <div class="callout"><strong>Requirements:</strong> installing from npm needs <strong>Node 22 LTS (22.22.2+) or Node 24.15+</strong>. The editor itself runs in any modern browser. The CDN build has no requirements.</div>
     </section>
 
     <!-- ── Framework Wrappers ── -->
+    <!-- ── CDN ── -->
+    <section class="docs-section" id="cdn" aria-label="Use from a CDN">
+      <h2 class="section-h">Use from a CDN</h2>
+      <p class="docs-p">No install and no build step: load the stylesheet and the script, then create an editor. The script defines a global <code>AutumnNote</code>. Pin the version in the URL, so a new release never changes your page without you.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/autumnnote.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/autumnnote.umd.js"&gt;&lt;/script&gt;
+
+&lt;textarea id="editor"&gt;&lt;/textarea&gt;
+&lt;script&gt;
+  const editor = AutumnNote.create('#editor', { placeholder: 'Start typing…' });
+&lt;/script&gt;</code></pre>
+      </div>
+      <h3 class="sub-h" id="cdn-languages">Other languages</h3>
+      <p class="docs-p">The script carries English only. For another interface language, load that locale's script after the main one; it registers itself. The files are <code>dist/i18n/&lt;code&gt;.umd.js</code> for <code>vi</code>, <code>ja</code>, <code>zh</code>, <code>fr</code>, <code>de</code>, <code>es</code>, <code>ko</code> and <code>id</code>.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-html">&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/autumnnote.umd.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/i18n/id.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  AutumnNote.create('#editor', { lang: 'id' });
+&lt;/script&gt;</code></pre>
+      </div>
+      <h3 class="sub-h" id="cdn-esm">As an ES module</h3>
+      <p class="docs-p">Browsers that support <code>&lt;script type="module"&gt;</code> can import the ES build straight from the CDN. Locales come from the package's <code>src/js/i18n/</code> folder and are registered with <code>registerLocale()</code>.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-html">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/autumnnote.css"&gt;
+&lt;script type="module"&gt;
+  import AutumnNote from 'https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/dist/autumnnote.es.js';
+  import { id } from 'https://cdn.jsdelivr.net/npm/autumnnote-plus@4.1.0/src/js/i18n/id.js';
+
+  AutumnNote.registerLocale('id', id);
+  AutumnNote.create('#editor', { lang: 'id' });
+&lt;/script&gt;</code></pre>
+      </div>
+      <div class="callout"><strong>Integrity and other CDNs:</strong> with a pinned version you can add <code>integrity</code> and <code>crossorigin="anonymous"</code> to the tags; jsDelivr lists the hash for each file on the package's page. unpkg serves the same paths at <code>https://unpkg.com/autumnnote-plus@4.1.0/…</code>.</div>
+    </section>
+
     <section class="docs-section" id="framework-wrappers" aria-label="Framework Wrappers">
       <h2 class="section-h">Framework Wrappers <span class="badge">v1.6.0</span></h2>
       <p class="docs-p">
@@ -263,6 +301,69 @@ function handleSave() {
     </section>
 
     <!-- ── Quick Start ── -->
+    <!-- ── Other frameworks ── -->
+    <section class="docs-section" id="other-frameworks" aria-label="Other frameworks">
+      <h2 class="section-h">Other frameworks</h2>
+      <p class="docs-p">The editor is plain JavaScript, so any framework can use <code>autumnnote-plus</code> directly. The React and Vue wrappers above only take care of three things you can do yourself: create the editor once its element is in the page, destroy it when the component goes away, and pass changes back. Do the same in your framework's mount and unmount hooks.</p>
+      <h3 class="sub-h" id="with-svelte">Svelte</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-markup">&lt;script&gt;
+  import { onMount } from 'svelte';
+  import AutumnNote from 'autumnnote-plus';
+  import 'autumnnote-plus/dist/autumnnote.css';
+
+  let { value = $bindable('') } = $props();
+  let el;
+
+  onMount(() =&gt; {
+    const editor = AutumnNote.create(el, { onChange: (html) =&gt; (value = html) });
+    editor.setHTML(value);
+    return () =&gt; AutumnNote.destroy(el);
+  });
+&lt;/script&gt;
+
+&lt;div bind:this={el}&gt;&lt;/div&gt;</code></pre>
+      </div>
+      <h3 class="sub-h" id="with-angular">Angular</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-ts">import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import AutumnNote from 'autumnnote-plus';
+
+@Component({ selector: 'app-editor', standalone: true, template: '&lt;div #host&gt;&lt;/div&gt;' })
+export class EditorComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('host') host!: ElementRef&lt;HTMLDivElement&gt;;
+  @Output() changed = new EventEmitter&lt;string&gt;();
+
+  ngAfterViewInit() {
+    AutumnNote.create(this.host.nativeElement, { onChange: (html: string) =&gt; this.changed.emit(html) });
+  }
+
+  ngOnDestroy() {
+    AutumnNote.destroy(this.host.nativeElement);
+  }
+}</code></pre>
+      </div>
+      <p class="docs-p">Add <code>"node_modules/autumnnote-plus/dist/autumnnote.css"</code> to <code>styles</code> in <code>angular.json</code>.</p>
+      <h3 class="sub-h" id="with-solid">Solid, Preact, Lit and others</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-js">// Solid
+import { onCleanup, onMount } from 'solid-js';
+import AutumnNote from 'autumnnote-plus';
+
+function Editor(props) {
+  let el;
+  onMount(() =&gt; AutumnNote.create(el, { onChange: props.onChange }));
+  onCleanup(() =&gt; AutumnNote.destroy(el));
+  return &lt;div ref={el} /&gt;;
+}</code></pre>
+      </div>
+      <h3 class="sub-h" id="with-ssr">Next.js, Nuxt, Astro and other server rendering</h3>
+      <p class="docs-p">Importing <code>autumnnote-plus</code> on the server is safe, but the editor itself runs only in the browser. Render it from a client component: <code>'use client'</code> in Next.js, <code>&lt;ClientOnly&gt;</code> in Nuxt, <code>client:only</code> in Astro, or the framework's equivalent. The React and Vue wrappers work there unchanged.</p>
+    </section>
+
     <section class="docs-section" id="quick-start" aria-label="Quick Start">
       <h2 class="section-h">Quick Start</h2>
       <p class="docs-p">Wrap any <code>&lt;textarea&gt;</code> or <code>&lt;div&gt;</code> in your HTML:</p>
@@ -291,6 +392,59 @@ editor.destroy(); // clean up when done</code></pre>
     </section>
 
     <!-- ── Options ── -->
+    <!-- ── Backend ── -->
+    <section class="docs-section" id="backend" aria-label="Using with a backend">
+      <h2 class="section-h">Using with a backend</h2>
+      <p class="docs-p">The editor runs in the browser, so the server's language does not matter: PHP, Python, Ruby, Go, Java, .NET or Node all receive the same thing, a string of HTML. Put the editor on a <code>&lt;textarea&gt;</code> inside your form. The editor writes its content back into the textarea on every change, so the form posts it like any other field.</p>
+      <h3 class="sub-h" id="backend-laravel">Laravel (Blade)</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-markup">&lt;form method="POST" action="/posts"&gt;
+  @csrf
+  &lt;textarea id="body" name="body"&gt;{{ old('body', $post-&gt;body ?? '') }}&lt;/textarea&gt;
+  &lt;button&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script&gt;AutumnNote.create('#body');&lt;/script&gt;</code></pre>
+      </div>
+      <h3 class="sub-h" id="backend-django">Django</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-markup">&lt;form method="post"&gt;
+  {% csrf_token %}
+  &lt;textarea id="body" name="body"&gt;{{ form.body.value|default:'' }}&lt;/textarea&gt;
+  &lt;button&gt;Save&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script&gt;AutumnNote.create('#body');&lt;/script&gt;</code></pre>
+      </div>
+      <h3 class="sub-h" id="backend-rails">Rails (ERB)</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
+        <pre><code class="language-markup">&lt;%= form_with model: @post do |f| %&gt;
+  &lt;%= f.text_area :body, id: "body" %&gt;
+  &lt;%= f.submit %&gt;
+&lt;% end %&gt;
+
+&lt;script&gt;AutumnNote.create('#body');&lt;/script&gt;</code></pre>
+      </div>
+      <p class="docs-p">Each page also needs the stylesheet and script from <a href="#cdn">Use from a CDN</a>, or your bundler's import. For a JSON API, send <code>editor.getHTML()</code> (or <code>editor.getMarkdown()</code>) with <code>fetch</code> instead of a form.</p>
+      <h3 class="sub-h" id="backend-sanitise">Sanitise again on the server</h3>
+      <p class="docs-p">The editor cleans what it inserts, but that runs in the user's browser, and anyone can post to your server without it. Treat the field like any other user input: run it through an HTML sanitiser on the server before you store or show it.</p>
+      <div class="docs-table-wrap"><table class="docs-table">
+        <thead><tr><th>Language</th><th>Sanitiser</th></tr></thead>
+        <tbody>
+          <tr><td>PHP</td><td><code>symfony/html-sanitizer</code>, HTML Purifier</td></tr>
+          <tr><td>Python</td><td><code>nh3</code></td></tr>
+          <tr><td>Ruby</td><td><code>rails-html-sanitizer</code>, Loofah</td></tr>
+          <tr><td>Go</td><td><code>bluemonday</code></td></tr>
+          <tr><td>Java</td><td>OWASP Java HTML Sanitizer</td></tr>
+          <tr><td>.NET</td><td><code>HtmlSanitizer</code> (Ganss.Xss)</td></tr>
+          <tr><td>Node</td><td><code>sanitize-html</code>, DOMPurify with jsdom</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
     <section class="docs-section" id="options" aria-label="Options">
       <h2 class="section-h">All Options <span class="badge">50+ options</span></h2>
       <p class="docs-p">Pass these to <code>AutumnNote.create(selector, options)</code> or <code>AutumnNote.setDefaults(options)</code>.</p>
