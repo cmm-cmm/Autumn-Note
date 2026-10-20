@@ -111,6 +111,10 @@ Tests live in `test/` mirroring the `src/js/` structure:
 
 Environment is jsdom (simulated browser). Use `globals: true` — no explicit imports of `describe`/`it`/`expect` needed.
 
+## Branches
+
+`dev` → `staging` → `main`, each step a pull request (CONTRIBUTING.md, "Branches"). Work on `dev`. `staging` and `main` are protected: no direct pushes, merges need the seven CI checks, and the `branch-policy` workflow only lets `dev` into `staging` and `staging` into `main`. Pushes to `staging` deploy a Cloudflare Preview (`scripts/cloudflare-preview.mjs`); pushes to `main` deploy the production site, and a merge that changes the version publishes to npm.
+
 ## Key Constraints
 
 - **Zero runtime dependencies** — do not introduce any.

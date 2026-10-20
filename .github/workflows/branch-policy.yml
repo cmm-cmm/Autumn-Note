@@ -1,0 +1,33 @@
+name: Branch policy
+
+# Changes move dev -> staging -> main (CONTRIBUTING.md, "Branches"). This check
+# is required on staging and main, so a pull request from anywhere else cannot
+# be merged there. Pull requests into dev, from forks or feature branches, are
+# not restricted.
+on:
+  pull_request:
+    branches: [main, staging]
+
+permissions: {}
+
+jobs:
+  branch-policy:
+    name: branch-policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check where the pull request comes from
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          case "$BASE" in
+            main)    allowed=staging ;;
+            staging) allowed=dev ;;
+            *)       echo "No rule for $BASE."; exit 0 ;;
+          esac
+          if [ "$HEAD" != "$allowed" ] || [ "$SAME_REPO" != "true" ]; then
+            echo "::error::Pull requests into $BASE must come from $allowed in this repository, not from $HEAD. Open yours against dev; see CONTRIBUTING.md#branches."
+            exit 1
+          fi
+          echo "$HEAD -> $BASE is allowed."
