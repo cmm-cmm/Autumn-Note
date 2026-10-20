@@ -86,7 +86,7 @@ Publish to npm will then start from the release event and skip every package tha
 1. Update `CHANGELOG.md`: move the entries under `## [Unreleased]` into a new `## [x.y.z] - YYYY-MM-DD` section.
 2. Set the same version in `package.json`, `packages/react/package.json` and `packages/vue/package.json`. If the core's major version changes, update the wrappers' `peerDependencies` range for `autumnnote-plus` too.
 3. Commit on `dev`, open a pull request from `dev` to `staging`, and merge it once CI is green.
-4. Check the staging Preview (the link is on the Cloudflare check of the merge commit).
+4. Check the staging Preview at <https://staging-autumnnote-plus.habibiahmadaziz.workers.dev> once the Cloudflare check on the merge commit is green.
 5. Open a pull request from `staging` to `main` and merge it once CI is green. That merge is the release: Auto Release and Publish to npm do the rest; watch both runs in the Actions tab.
 
 `staging` and `main` are protected: a direct push is refused, and the branch-policy check rejects a pull request into `main` from anywhere but `staging`.

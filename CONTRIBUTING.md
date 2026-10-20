@@ -78,7 +78,7 @@ So: open your pull request against **`dev`**. A maintainer takes it on to `stagi
 
 ### For maintainers: promoting and releasing
 
-1. **dev → staging.** Open a pull request from `dev` to `staging` and merge it once CI is green. Then check the Preview: its link is on the Cloudflare check of the merge commit.
+1. **dev → staging.** Open a pull request from `dev` to `staging` and merge it once CI is green. Then check the Preview at <https://staging-autumnnote-plus.habibiahmadaziz.workers.dev> once the Cloudflare check on the merge commit is green.
 2. **staging → main.** When the Preview looks right, open a pull request from `staging` to `main` and merge it once CI is green. That deploys the production site.
 3. **Releasing** is the same path with a version bump on `dev` first. The steps are in [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
