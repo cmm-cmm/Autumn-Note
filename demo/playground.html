@@ -609,10 +609,18 @@ function loadSavedConfig() {
   } catch (_) { void _; }
 }
 
-// Follow the site theme toggle when the editor is set to "Follow the site".
+// The site's theme button sets the editor's theme too, like on the home page.
+// A Light or Dark picked here earlier (and remembered in localStorage) used to
+// pin the editor, so the button seemed to do nothing to it; pressing the button
+// is the newer choice, so the editor goes back to following the site.
 document.addEventListener('site:themechange', () => {
-  if (editor && document.getElementById('cfg-theme').value === 'site') {
-    editor.updateOptions(appearance('site'));
+  const select = document.getElementById('cfg-theme');
+  const pinned = select.value !== 'site';
+  select.value = 'site';
+  if (editor) editor.updateOptions(appearance('site'));
+  if (pinned) {
+    saveState();
+    announce('Editor theme now follows the site');
   }
 });
 
