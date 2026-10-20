@@ -69,7 +69,6 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
-    "@vitejs/plugin-react": "^6.0.5",
     "autumnnote-plus": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
