@@ -1,6 +1,28 @@
-# autumnnote-plus — Autumn Note with security fixes
+<h1 align="center">
+  <a href="https://autumnnote.habibiahmada.dev">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/media/wordmark-dark.png">
+      <img src="docs/media/wordmark-light.png" width="300" alt="autumnnote-plus">
+    </picture>
+  </a>
+</h1>
 
-<p align="center"><img src="public/image/banner.png" width="120" alt="Autumn Note Banner"/></p>
+<h3 align="center">Rich text with zero dependencies.</h3>
+
+<p align="center">
+  A WYSIWYG editor in plain JavaScript. No jQuery, no runtime packages, no <code>execCommand</code>:<br>
+  every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup.
+</p>
+
+<p align="center">
+  <a href="https://autumnnote.habibiahmada.dev"><b>Website</b></a> ·
+  <a href="https://autumnnote.habibiahmada.dev/docs"><b>Docs</b></a> ·
+  <a href="https://autumnnote.habibiahmada.dev/playground"><b>Playground</b></a> ·
+  <a href="https://www.npmjs.com/package/autumnnote-plus"><b>npm</b></a> ·
+  <a href="CHANGELOG.md"><b>Changelog</b></a>
+</p>
+
+<p align="center">
 
 [![npm](https://img.shields.io/npm/v/autumnnote-plus?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote-plus)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote-plus?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote-plus)
@@ -11,15 +33,39 @@
 [![jQuery](https://img.shields.io/badge/jQuery-free-lightgrey)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-definitions-3178C6?logo=typescript&logoColor=white)](types/index.d.ts)
 
+</p>
+
+<p align="center">
+  <img src="docs/media/demo.gif" width="582" alt="Typing in autumnnote-plus: '## ' becomes a heading, '- ' a bullet list and '1. ' a numbered list, then a word is selected and made bold from the bubble toolbar">
+</p>
+
+```bash
+npm install autumnnote-plus
+```
+
+```js
+import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
+
+AutumnNote.create('#editor');
+```
+
 > **Unofficial fork.** `autumnnote-plus` is a community fork of [Autumn Note](https://github.com/cmm-cmm/Autumn-Note) by Minh Pham, maintained by [Habibi Ahmad Aziz](https://github.com/habibiahmada). It is not published or endorsed by the Autumn Note author. It tracks Autumn Note 3.1.0 and adds the security fixes from a source-and-sandbox audit (re-parse XSS paths, HTML drag-and-drop, Markdown export, quadratic regexes), an Indonesian locale, accessibility fixes and per-locale CDN scripts. See [What's different](#whats-different-from-autumn-note) and the [CHANGELOG](CHANGELOG.md). The fixes have been reported to the original project.
 
 A **zero-dependency WYSIWYG rich-text editor** built with vanilla JavaScript (ES2022+) — no jQuery, no runtime dependencies. Lightweight alternative to Summernote, Quill, TinyMCE, Froala, CKEditor, ProseMirror, Trix, and Slate — with React and Vue 3 wrappers ([`autumnnote-plus-react`](packages/react), [`autumnnote-plus-vue`](packages/vue)).
 
-> **Fast. Lightweight. Reliable. Efficient.**
+> **Fast. Lightweight. Reliable. Efficient.** About 95 KiB gzip for every feature, 46 KiB with the [minimal build](#minimal-build), and nothing else to install.
+
+<p align="center">
+  <a href="https://autumnnote.habibiahmada.dev">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/media/hero-dark.png">
+      <img src="docs/media/hero-light.png" alt="The autumnnote-plus website: the headline 'Rich text with zero dependencies.' next to the live editor with its full toolbar">
+    </picture>
+  </a>
+</p>
 
 Original Autumn Note site (runs the upstream release, not this fork): [Live Demo](https://autumn.konexforge.com/) · [Docs](https://autumn.konexforge.com/docs.html) · [Playground](https://autumn.konexforge.com/playground.html)
-
-<p align="center"><img src="examples/Screenshot.png" alt="Autumn Note Screenshot"/></p>
 
 ---
 
@@ -275,10 +321,14 @@ AutumnNote.create('#editor', {
 });
 ```
 
-| Entry | Modules | ES bundle (gzip) |
-|---|---|---|
-| `autumnnote-plus` | all | 84.1 KiB |
-| `autumnnote-plus/core` | editor, toolbar, statusbar, clipboard, placeholder | **44.2 KiB** |
+| Entry | Modules | In an app, minified (gzip) | `dist` ES file, unminified (gzip) |
+|---|---|---|---|
+| `autumnnote-plus` | all | 94.5 KiB | 97.1 KiB |
+| `autumnnote-plus/core` | editor, toolbar, statusbar, clipboard, placeholder | **46.1 KiB** | 56.7 KiB |
+
+The first column is what a bundler ships for `AutumnNote.create('#editor')`; the
+`dist` files keep their whitespace and every export so your build can tree-shake
+and minify them. The stylesheet is another 10 KiB gzip.
 
 Same API, same types, same stylesheet — the difference is only which modules are
 installed. A toolbar button whose module is absent still renders, but invoking it

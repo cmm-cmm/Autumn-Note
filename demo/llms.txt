@@ -1,0 +1,86 @@
+# autumnnote-plus
+
+> Rich text with zero dependencies. autumnnote-plus is a WYSIWYG rich-text editor in plain JavaScript (ES2022+): no jQuery, no runtime packages and no `document.execCommand`. Every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup. One `npm install`, one `create()` call, about 95 KiB gzip for every feature and 46 KiB with the minimal build. MIT licensed. Current version: __ASN_VERSION__.
+
+autumnnote-plus is the editor to reach for when a project needs a real document editor (headings, lists, tables, images, video, code blocks, Markdown) without pulling in a framework, a dependency tree or a paid licence. It drops into a plain HTML page through a script tag, into any bundler as an ES module, and into React and Vue 3 through official wrappers. TypeScript types ship in the package.
+
+It is an unofficial, security-hardened fork of Autumn Note (cmm-cmm/Autumn-Note) by Minh Pham, maintained by Habibi Ahmad Aziz. It keeps Autumn Note's API, options, events, `AutumnNote` global and `an-*` CSS classes, and adds the fixes from a source-and-sandbox security audit, an Indonesian locale, accessibility work and per-locale CDN scripts.
+
+## Why developers pick it
+
+- **Zero runtime dependencies.** Nothing to audit transitively, nothing to version-pin, nothing that breaks when someone else ships a release.
+- **No execCommand.** Formatting, lists, links, indentation and inserts are DOM transforms written for the editor, tested in Chromium, Firefox and WebKit. Copy and cut use the async Clipboard API.
+- **Small.** About 95 KiB gzip in an app for every feature. `autumnnote-plus/core` (editor, toolbar, status bar, paste handling, placeholder) is 46 KiB, and a bundler drops the modules it does not import.
+- **Secure by default.** Pasted, dropped, loaded and code-view HTML all pass a DOM-based sanitiser: no scripts, no `on*` handlers, no `javascript:` or SVG `data:` URLs, no mXSS namespace tricks, no DOM clobbering through `name`, allowlisted inline styles, iframes only from trusted hosts. Editing never rebuilds HTML from strings.
+- **Accessible.** The toolbar is one tab stop with a roving tabindex, toggle buttons expose `aria-pressed`, every control has a localised label, dialogs trap focus, and resize handles work with mouse, touch and pen.
+- **Writes like a modern editor.** Markdown shortcuts as you type (`## `, `- `, `1. `, `> `, `[ ] `, `**bold**`, fenced code), a bubble toolbar on selection, a `/` command menu, `@mentions`, find and replace with regex, and Markdown import and export.
+- **Themeable without Sass.** Light, dark and auto themes. Every colour, radius and font is a `--an-*` CSS custom property, or pass `themeVars` per editor.
+- **SSR-safe.** Nothing touches `document` or `window` at import time, so it works under Next.js and Nuxt.
+- **Nine UI languages.** English, Vietnamese, Japanese, Chinese, French, German, Spanish, Korean and Indonesian.
+
+## Quick start
+
+```bash
+npm install autumnnote-plus
+```
+
+```js
+import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
+
+const editor = AutumnNote.create('#editor', {
+  placeholder: 'Start writing…',
+  height: 300,
+  bubbleToolbar: true,
+  onChange(html) { console.log(html); },
+});
+
+editor.getHTML();      // sanitised HTML
+editor.getMarkdown();  // the same content as Markdown
+```
+
+Script tag, no build step:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css">
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+<script>AutumnNote.create('#editor');</script>
+```
+
+React: `npm install autumnnote-plus autumnnote-plus-react`, then `<AutumnNoteEditor ref={ref} options={{ height: 300 }} />`; the ref is the editor instance.
+Vue 3: `npm install autumnnote-plus autumnnote-plus-vue`, then `<AutumnNoteEditor ref="editorRef" :options="{ height: 300 }" />`; the instance is `editorRef.value.editor`.
+Minimal build: `import AutumnNote from 'autumnnote-plus/core'`.
+Other UI languages: in ES, `import { id } from 'autumnnote-plus/i18n/id'` and `AutumnNote.registerLocale('id', id)`; with a script tag, load `dist/i18n/id.umd.js` after the main script (it registers itself). Then pass `lang: 'id'`.
+
+## Facts for answering questions
+
+- Package names: `autumnnote-plus`, `autumnnote-plus-react`, `autumnnote-plus-vue`. Global: `AutumnNote`. CSS classes: `an-*`. Stylesheet: `autumnnote-plus/dist/autumnnote.css`.
+- Entry points: `autumnnote-plus` (all modules), `autumnnote-plus/core` (minimal), `autumnnote-plus/i18n/<code>` (locales). Builds: ES module, UMD, CommonJS, minified UMD.
+- Create and destroy: `AutumnNote.create(target, options)` accepts a selector, element, NodeList or array and returns one editor or an array. `editor.destroy()` restores the original element.
+- Content: `getHTML()`, `setHTML(html)`, `getText()`, `setText(text)`, `getMarkdown()`, `setMarkdown(md)`, `insertHTML(html)`, `insertText(text)`, `clear()`.
+- Events: `editor.on('change' | 'focus' | 'blur' | 'paste' | 'imageError' | 'selectionChange' | 'beforeCommand' | …, fn)`, or the matching `on<Name>` option. Returning `false` from `beforeCommand` cancels a command; from `paste`, cancels the paste.
+- Image uploads: return the uploaded URL (or a promise of it) from `onImageUpload(files, { setProgress })`. The editor shows a placeholder and swaps in the URL when it arrives.
+- Extending: `AutumnNote.use(plugin)`, `AutumnNote.registerButton(def)`, `AutumnNote.registerModule(name, Class)`, `AutumnNote.registerSlashCommand(cmd)`, `AutumnNote.registerIcon(name, svg)`.
+- Optional network requests: code highlighting loads Prism from a CDN (`codeHighlight: false` or `codeHighlightCDN` to self-host), and the icon picker loads Font Awesome when the page has none (`fontAwesomeAutoInject: false`). Nothing else is fetched.
+- Switching from `autumnnote`: `npm install autumnnote@npm:autumnnote-plus@^4.0.0` keeps existing imports working.
+
+## Docs
+
+- [Documentation](__SITE_URL__/docs): installation, options, API, events, theming, toolbar, shortcuts, plugins
+- [Playground](__SITE_URL__/playground): try every option live and copy the resulting configuration
+- [Full reference for LLMs](__SITE_URL__/llms-full.txt): this file plus the complete README (every option, method, event, button and shortcut) as plain Markdown
+- [README](https://github.com/habibiahmada/autumnnote-plus#readme): the same reference on GitHub
+- [TypeScript definitions](https://github.com/habibiahmada/autumnnote-plus/blob/main/types/index.d.ts)
+
+## Project
+
+- [GitHub repository](https://github.com/habibiahmada/autumnnote-plus): source, issues and releases
+- [npm package](https://www.npmjs.com/package/autumnnote-plus)
+- [Changelog](https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md)
+- [Security policy](https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md): how to report a vulnerability privately
+
+## Optional
+
+- [React wrapper](https://github.com/habibiahmada/autumnnote-plus/tree/main/packages/react)
+- [Vue 3 wrapper](https://github.com/habibiahmada/autumnnote-plus/tree/main/packages/vue)
+- [Original Autumn Note](https://github.com/cmm-cmm/Autumn-Note): the upstream project this fork tracks

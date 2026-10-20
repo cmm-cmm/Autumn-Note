@@ -1,0 +1,1145 @@
+# autumnnote-plus
+
+> Rich text with zero dependencies. autumnnote-plus is a WYSIWYG rich-text editor in plain JavaScript (ES2022+): no jQuery, no runtime packages and no `document.execCommand`. Every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup. One `npm install`, one `create()` call, about 95 KiB gzip for every feature and 46 KiB with the minimal build. MIT licensed. Current version: 4.0.0.
+
+autumnnote-plus is the editor to reach for when a project needs a real document editor (headings, lists, tables, images, video, code blocks, Markdown) without pulling in a framework, a dependency tree or a paid licence. It drops into a plain HTML page through a script tag, into any bundler as an ES module, and into React and Vue 3 through official wrappers. TypeScript types ship in the package.
+
+It is an unofficial, security-hardened fork of Autumn Note (cmm-cmm/Autumn-Note) by Minh Pham, maintained by Habibi Ahmad Aziz. It keeps Autumn Note's API, options, events, `AutumnNote` global and `an-*` CSS classes, and adds the fixes from a source-and-sandbox security audit, an Indonesian locale, accessibility work and per-locale CDN scripts.
+
+## Why developers pick it
+
+- **Zero runtime dependencies.** Nothing to audit transitively, nothing to version-pin, nothing that breaks when someone else ships a release.
+- **No execCommand.** Formatting, lists, links, indentation and inserts are DOM transforms written for the editor, tested in Chromium, Firefox and WebKit. Copy and cut use the async Clipboard API.
+- **Small.** About 95 KiB gzip in an app for every feature. `autumnnote-plus/core` (editor, toolbar, status bar, paste handling, placeholder) is 46 KiB, and a bundler drops the modules it does not import.
+- **Secure by default.** Pasted, dropped, loaded and code-view HTML all pass a DOM-based sanitiser: no scripts, no `on*` handlers, no `javascript:` or SVG `data:` URLs, no mXSS namespace tricks, no DOM clobbering through `name`, allowlisted inline styles, iframes only from trusted hosts. Editing never rebuilds HTML from strings.
+- **Accessible.** The toolbar is one tab stop with a roving tabindex, toggle buttons expose `aria-pressed`, every control has a localised label, dialogs trap focus, and resize handles work with mouse, touch and pen.
+- **Writes like a modern editor.** Markdown shortcuts as you type (`## `, `- `, `1. `, `> `, `[ ] `, `**bold**`, fenced code), a bubble toolbar on selection, a `/` command menu, `@mentions`, find and replace with regex, and Markdown import and export.
+- **Themeable without Sass.** Light, dark and auto themes. Every colour, radius and font is a `--an-*` CSS custom property, or pass `themeVars` per editor.
+- **SSR-safe.** Nothing touches `document` or `window` at import time, so it works under Next.js and Nuxt.
+- **Nine UI languages.** English, Vietnamese, Japanese, Chinese, French, German, Spanish, Korean and Indonesian.
+
+## Quick start
+
+```bash
+npm install autumnnote-plus
+```
+
+```js
+import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
+
+const editor = AutumnNote.create('#editor', {
+  placeholder: 'Start writing…',
+  height: 300,
+  bubbleToolbar: true,
+  onChange(html) { console.log(html); },
+});
+
+editor.getHTML();      // sanitised HTML
+editor.getMarkdown();  // the same content as Markdown
+```
+
+Script tag, no build step:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/autumnnote.css">
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+<script>AutumnNote.create('#editor');</script>
+```
+
+React: `npm install autumnnote-plus autumnnote-plus-react`, then `<AutumnNoteEditor ref={ref} options={{ height: 300 }} />`; the ref is the editor instance.
+Vue 3: `npm install autumnnote-plus autumnnote-plus-vue`, then `<AutumnNoteEditor ref="editorRef" :options="{ height: 300 }" />`; the instance is `editorRef.value.editor`.
+Minimal build: `import AutumnNote from 'autumnnote-plus/core'`.
+Other UI languages: in ES, `import { id } from 'autumnnote-plus/i18n/id'` and `AutumnNote.registerLocale('id', id)`; with a script tag, load `dist/i18n/id.umd.js` after the main script (it registers itself). Then pass `lang: 'id'`.
+
+## Facts for answering questions
+
+- Package names: `autumnnote-plus`, `autumnnote-plus-react`, `autumnnote-plus-vue`. Global: `AutumnNote`. CSS classes: `an-*`. Stylesheet: `autumnnote-plus/dist/autumnnote.css`.
+- Entry points: `autumnnote-plus` (all modules), `autumnnote-plus/core` (minimal), `autumnnote-plus/i18n/<code>` (locales). Builds: ES module, UMD, CommonJS, minified UMD.
+- Create and destroy: `AutumnNote.create(target, options)` accepts a selector, element, NodeList or array and returns one editor or an array. `editor.destroy()` restores the original element.
+- Content: `getHTML()`, `setHTML(html)`, `getText()`, `setText(text)`, `getMarkdown()`, `setMarkdown(md)`, `insertHTML(html)`, `insertText(text)`, `clear()`.
+- Events: `editor.on('change' | 'focus' | 'blur' | 'paste' | 'imageError' | 'selectionChange' | 'beforeCommand' | …, fn)`, or the matching `on<Name>` option. Returning `false` from `beforeCommand` cancels a command; from `paste`, cancels the paste.
+- Image uploads: return the uploaded URL (or a promise of it) from `onImageUpload(files, { setProgress })`. The editor shows a placeholder and swaps in the URL when it arrives.
+- Extending: `AutumnNote.use(plugin)`, `AutumnNote.registerButton(def)`, `AutumnNote.registerModule(name, Class)`, `AutumnNote.registerSlashCommand(cmd)`, `AutumnNote.registerIcon(name, svg)`.
+- Optional network requests: code highlighting loads Prism from a CDN (`codeHighlight: false` or `codeHighlightCDN` to self-host), and the icon picker loads Font Awesome when the page has none (`fontAwesomeAutoInject: false`). Nothing else is fetched.
+- Switching from `autumnnote`: `npm install autumnnote@npm:autumnnote-plus@^4.0.0` keeps existing imports working.
+
+## Docs
+
+- [Documentation](https://autumnnote.habibiahmada.dev/docs): installation, options, API, events, theming, toolbar, shortcuts, plugins
+- [Playground](https://autumnnote.habibiahmada.dev/playground): try every option live and copy the resulting configuration
+- [Full reference for LLMs](https://autumnnote.habibiahmada.dev/llms-full.txt): this file plus the complete README (every option, method, event, button and shortcut) as plain Markdown
+- [README](https://github.com/habibiahmada/autumnnote-plus#readme): the same reference on GitHub
+- [TypeScript definitions](https://github.com/habibiahmada/autumnnote-plus/blob/main/types/index.d.ts)
+
+## Project
+
+- [GitHub repository](https://github.com/habibiahmada/autumnnote-plus): source, issues and releases
+- [npm package](https://www.npmjs.com/package/autumnnote-plus)
+- [Changelog](https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md)
+- [Security policy](https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md): how to report a vulnerability privately
+
+## Optional
+
+- [React wrapper](https://github.com/habibiahmada/autumnnote-plus/tree/main/packages/react)
+- [Vue 3 wrapper](https://github.com/habibiahmada/autumnnote-plus/tree/main/packages/vue)
+- [Original Autumn Note](https://github.com/cmm-cmm/Autumn-Note): the upstream project this fork tracks
+
+---
+
+# Full reference (autumnnote-plus 4.0.0)
+
+## Features
+
+### Editing
+- **Text formatting** — bold, italic, underline, strikethrough, superscript, subscript
+- **Paragraph styles** — Normal, H1–H6, Blockquote, Code block
+- **Font family** — customisable dropdown (10 families by default)
+- **Font size** — configurable default via `defaultFontSize`; applied to new content
+- **Line height** — dropdown from 1.0 to 3.0
+- **Text and highlight colour** — native colour picker with last-used colour memory; custom brand swatches via `colorSwatches`
+- **Alignment** — left, center, right, justify
+- **Lists** — unordered and ordered, with indent / outdent; Tab/Shift+Tab in list context
+- **Checklist** — interactive checkbox list; toggle items by clicking; converts to/from plain paragraphs on outdent
+- **Undo / redo** — built-in history stack (configurable depth via `historyLimit`, `Ctrl+Z` / `Ctrl+Y`)
+- **Tab key** — configurable spaces-per-tab; smart list indentation inside `<li>`
+- **RTL support** — set `direction: 'rtl'` to flip the editor layout and text direction
+
+### Insert
+- **Horizontal rule** — inserts an `<hr>` at the current caret position
+- **Link dialog** — URL, display text (auto-filled from selection), "Open in new tab" checkbox; edits existing links when caret is inside an `<a>`
+- **Image dialog** — insert by URL with alt text, or file upload (base64 embed); enforces `maxImageSize`; file input restricted to browser-renderable MIME types
+- **Server-side image upload** — return the uploaded URL from `onImageUpload` (or a promise of it) and the editor drops in a dimmed placeholder previewing the local file straight away, then swaps in the real URL when it lands. Report progress with the supplied `setProgress(file, ratio)`; a rejection marks the image failed and fires `imageError` with a `retry()` for that file. A handler that returns nothing keeps the previous behaviour and inserts the image itself:
+
+  ```js
+  AutumnNote.create('#editor', {
+    async onImageUpload(files, { setProgress }) {
+      return Promise.all(files.map(async (file) => {
+        const body = new FormData();
+        body.append('file', file);
+        setProgress(file, 0.1);
+        const res = await fetch('/api/upload', { method: 'POST', body });
+        setProgress(file, 1);
+        return (await res.json()).url;   // inserted in place of the placeholder
+      }));
+    },
+  });
+  ```
+- **Image crop overlay** — inline interactive crop tool triggered from the image tooltip; corner and edge drag handles; canvas-based crop export; CORS fallback warning
+- **Video dialog** — paste a YouTube watch/short URL, Vimeo URL, or direct `.mp4 / .webm / .ogg` URL; configurable width; renders as responsive `<iframe>` or `<video>`
+- **Table** — interactive grid picker (up to 10x10); optional header row (`tableHeaderRow`); floating tooltip for full row/column/cell management
+- **Emoji picker** — approximately 380 Unicode emoji across 7 categories (Smileys, People, Animals, Food, Travel, Objects, Symbols); keyword search; click to insert as plain UTF-8 character
+- **FA Icon picker** — FontAwesome 6 Free Solid icons across 8 categories; keyword search; configurable style, size, and colour; inserts as `<i>` element; auto-injects FA CDN if not on the page
+
+### Search
+- **Find and Replace** — `Ctrl+F` to find, `Ctrl+H` for find-and-replace; compact non-blocking floating panel (top-right); TreeWalker text matching; `<mark>` highlighting; case-sensitive `Aa` toggle; **regex mode** (`.*` toggle); icon-button Prev/Next navigation (↑ ↓); single and replace-all modes
+- **Auto language detection** — when selected text is formatted as a code block the editor analyses the content and applies Prism.js syntax highlighting. 22 languages: JavaScript, TypeScript, Python, HTML, CSS, SCSS, JSON, YAML, Markdown, XML, SQL, Bash, Java, C#, PHP, Ruby, Go, Rust, C++, C, Kotlin, Swift. Detection weighs every matching signal and picks the highest-scoring language, requiring a clear margin before it commits — a snippet that could be two things is left unhighlighted rather than guessed at, and prose is never treated as code
+
+### Inline tooltips
+Floating toolbars appear automatically when the user clicks on an editable element:
+
+| Element | Actions |
+|---|---|
+| **Link** | Open in new tab, Edit (reopens dialog), Unlink |
+| **Image** | Edit alt/URL (reopens dialog), Crop, Delete |
+| **Video** | Edit (reopens dialog), Delete |
+| **Table cell** | Row above/below, Delete row, Column left/right, Delete column, Merge cells, Unmerge cells, Cell selection mode, Column width, Row height, Border width/color, **Cell background colour**, **Cell padding**, **Sort ↑↓**, **Export CSV**, **Toggle header row**, Delete table |
+| **Code block** | Copy code, Language selector (20 languages + SCSS), **Line numbers toggle**, Delete block |
+
+### Context menu
+Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **Cut**, **Copy**, **Paste**, **Bold**, **Italic**, **Underline**, **Copy Format**, **Paste Format**, **Remove Format**, and a **colour palette** for quick text/highlight colour changes.
+
+### Internationalisation
+- **Built-in locales** — English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), French (`fr`), German (`de`), Spanish (`es`), Korean (`ko`), Indonesian (`id`)
+- **Custom locale** — pass any partial locale object to override individual strings
+- **Per-instance language** — set a different `lang` per editor instance on the same page
+- **Auto-fallback** — unknown codes or missing keys fall back to English
+
+### UI
+- **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
+- **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
+- **Dark / light / auto theme** — `theme: 'dark'`, `'light'` (default), or `'auto'` (follows OS `prefers-color-scheme`); full SCSS variable coverage; dark styles propagate to all floating elements (dialogs, tooltips, colour pickers)
+- **Draggable dialogs** — all dialogs (Link, Image, Video, Emoji, Icon, Find & Replace) can be repositioned by dragging their title bar; position is clamped to the viewport
+- **Image resizer** — drag handle on selected image to resize proportionally
+- **Video resizer** — drag handle on selected video embed to resize
+- **Statusbar** — live word and character count; drag handle to resize editor height; limit warnings when `maxChars` or `maxWords` is reached
+- **Code view** — toggle raw HTML; sanitised before applying back to the editor
+- **Fullscreen** — expands the editor to fill the viewport
+- **Placeholder** — CSS `::before` pseudo-element, zero DOM node cost
+- **Read-only mode** — `readOnly: true` renders a non-editable preview with toolbar hidden; toggle at runtime via `editor.setDisabled()`
+- **Auto-save** — `autoSave: true` persists content to `localStorage` on every change; key configurable via `autoSaveKey`
+- **Auto-save restore** — when `autoSave` and `autoSaveRestore` are both `true`, a dismissible banner prompts the user to restore or discard a previously saved draft on load; configurable age window via `autoSaveRestoreTimeout`
+- **Bubble toolbar** — `bubbleToolbar: true` shows a compact floating toolbar above selected text; default buttons: bold, italic, underline, strikethrough, link, **text colour**, **highlight colour**, remove format, inline code; each colour button displays a live colour-strip indicator and opens an inline colour palette (matching the context menu); button set configurable via `bubbleToolbarItems`
+- **Markdown shortcuts** — `markdownShortcuts: true` (default) converts Markdown syntax typed in the editor into HTML in real time: `# `–`###### ` → H1–H6, `> ` → blockquote, `- ` / `* ` / `+ ` → unordered list, `1. ` / `1) ` → ordered list (any number, e.g. `3. `, starts the list there), `[ ] ` / `[x] ` → checklist, `---` / `***` / `___` → HR, ` ``` ` / `~~~` → code block; inline: `**bold**`, `*italic*`, `~~strikethrough~~`, `` `code` ``. Rules are suppressed inside code blocks and code spans, where Markdown syntax is literal text. Block rules also work with virtual keyboards, IMEs and dictation, which insert text without a Space keydown
+- **Markdown conversion** — `getMarkdown()` / `setMarkdown()` / `downloadMarkdown()` and `.md` file drop go through a CommonMark-leaning converter: fenced (` ``` ` and `~~~`, any fence length, indented) and 4-space indented code blocks, link and image titles, angle-bracket destinations, reference links, footnotes, GFM tables with or without outer pipes and with column alignment, task lists, character references, and a UTF-8 BOM. Markdown syntax appearing in ordinary prose is escaped on the way out, so text round-trips as text
+- **Custom focus ring** — `focusColor` accepts any CSS colour string to override the default blue focus ring
+- **Spellcheck** — browser spellcheck enabled by default (`spellcheck: true`)
+
+### Integration
+- **No jQuery** — pure vanilla ES2022, zero runtime dependencies
+- **Bootstrap friendly** — optional Bootstrap 4/5 styling (`useBootstrap: true`)
+- **FontAwesome ready** — auto-detects FA on the page; falls back to built-in SVG icons
+- **Plugin API** — first-class plugin system: `AutumnNote.use(plugin)`, `context.getPlugin(name)`, global button registry (`registerButton`), per-instance installation, `AsnPlugin<T>` TypeScript interface
+- **Tree-shakeable** — ES module build; all core utilities individually exported
+- **TypeScript definitions** — bundled `types/index.d.ts` with full JSDoc coverage
+- **@mention autocomplete** — type `@` (or any custom trigger) to open a floating dropdown backed by a user-supplied `onSearch` function (callback or `async`/Promise); inserts a non-editable mention chip; customisable chip HTML via `onInsert`
+
+### Accessibility
+- **Toolbar is a single tab stop** — it carries `role="toolbar"` and a roving tabindex, so keyboard users reach the text area with one Tab instead of stepping through every button. Left/Right move between controls and wrap at the ends, Home/End jump to the extremes, and the arrows reverse under `direction: 'rtl'`. Up/Down are left to `<select>` controls so they keep native value changing
+- **Toggle state is announced** — buttons that track an active state (bold, italic, …) expose `aria-pressed`, not just a CSS class
+- **Labelled controls** — every toolbar button carries a localised `aria-label`; the editable area is a `role="textbox"` with `aria-multiline`
+- **Dialogs trap focus** — Tab and Shift+Tab cycle inside the open dialog, Escape closes it
+- **Touch support** — image and video resize handles are driven by pointer events, so they work with mouse, touch and pen; handles get an enlarged transparent hit area
+
+### Security
+- All HTML (pasted content, `setHTML()`, or code-view output) passes through a DOM-based sanitiser that strips `<script>`, `<object>`, `<embed>`, and all `on*` event handler attributes
+- **SVG animation elements are removed** (`<animate>`, `<set>`, `<animateTransform>`, `<animateMotion>`) — they can rewrite an attribute *after* sanitisation finishes, which otherwise lets `<svg><a><animate attributeName="href" values="javascript:…">` survive an attribute-level filter and still navigate on click
+- **MathML HTML-integration points are removed** (`<mglyph>`, `<malignmark>`, `<annotation-xml>`) — they make the parser switch namespaces mid-tree, so a crafted fragment could re-parse into different markup than it serialised from (mXSS). Sanitising is a fixed point; ordinary formula markup is untouched
+- **Comments and raw-text elements are removed** (`<xmp>`, `<noembed>`, `<noframes>`, `<plaintext>`), and kept iframes lose their fallback content — that content serialises unescaped, so it could turn into live markup the next time the HTML is parsed
+- **`name` attributes are removed** — `<img name="body">` would otherwise shadow `document.body` (DOM clobbering) for the editor and the host page
+- Editing operations (checklist toggles, table header and merge, code-block language, `getHTML()` cleanup) move or clone DOM nodes instead of editing HTML strings and parsing them again, and undo/redo snapshots use unguessable image tokens
+- `<iframe>` elements are permitted in `setHTML()` with src restricted to trusted CDN hosts; `srcdoc` is stripped
+- Links use an HTTP(S)/`mailto:`/`tel:` allowlist; images additionally allow approved raster data URIs, while SVG data URIs are rejected
+- **Every URL-bearing attribute is filtered**, not just `href`/`src`: `poster`, `background` and `srcset` are validated against the media allowlist (`srcset` candidate by candidate), and `ping` is stripped outright since its only effect is an outbound beacon
+- **Inline styles are allowlisted by property**, and any value calling `url()`, `image-set()`, `src()`, `expression()` or `@import` is dropped so pasted content cannot phone home
+- Clipboard paste, and HTML dragged in from another page or app, are sanitised before inserting
+- `pasteStripAttributes` option strips `class`, `style`, and `data-*` from pasted HTML
+
+Found a vulnerability? Please follow [SECURITY.md](https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md) rather than opening a public issue.
+
+### Server-side rendering
+The package is safe to `import` in a Node/SSR context — no module reads `document`, `window` or `navigator` at import time, so the React and Vue wrappers work under Next.js and Nuxt. Editors are only created when you call `create()` in the browser.
+
+### Optional external assets
+The editor itself ships zero runtime dependencies, but two features fetch a file from a CDN the first time they are needed:
+
+| Feature | Asset | Turn it off with | Point it elsewhere with |
+|---|---|---|---|
+| Code-block highlighting | Prism core, theme, and one grammar per language used | `codeHighlight: false` | `codeHighlightCDN` |
+| Icon picker | Font Awesome stylesheet, only when the page has none | `fontAwesomeAutoInject: false` | `fontAwesomeCDN` |
+
+Injected `<link>`/`<script>` elements carry `crossorigin="anonymous"` and `referrerpolicy="no-referrer"`, and a `cspNonce` if you supply one. Nothing is fetched when the host page already provides Prism or Font Awesome.
+
+**`Tracking Prevention blocked access to storage for …` in the console.** This is Microsoft Edge, not the editor. Edge's Tracking Prevention denies storage access (cookies, `localStorage`) to subresources loaded from domains on its tracking-protection list, and logs one line per attempt. `cdn.jsdelivr.net` is on that list; the default `cdnjs.cloudflare.com` is not. The asset still downloads and Prism still highlights — Prism never touches storage — so this is console noise rather than a failure. To silence it, either leave `codeHighlightCDN` at its default or self-host:
+
+```js
+AutumnNote.create('#editor', {
+  // Serve prism.min.js, themes/ and components/ from your own origin.
+  // A trailing slash is fine — it is normalised before the paths are appended.
+  codeHighlightCDN: '/vendor/prism',
+});
+```
+
+Self-hosting also removes the third-party request entirely, which is usually what a strict CSP wants anyway. Alternatively, load Prism yourself before calling `create()` — the editor detects `window.Prism` and injects nothing.
+
+---
+
+## What's different from Autumn Note
+
+`autumnnote-plus` 4.0.0 is Autumn Note 3.1.0 plus:
+
+- **Security fixes** — content that the sanitiser had made inert could become a live event handler after undo/redo, `getHTML()`/`print()`, a checklist toggle or a table header toggle; HTML dragged in from another page skipped the sanitiser; the default mention chip inserted names as HTML; Markdown export could emit inert text as raw HTML; several regexes took quadratic time on pasted content. Details are in the [CHANGELOG](https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md#security).
+- **Breaking: the UMD/CDN build ships English only.** Other languages are separate scripts (`dist/i18n/<code>.umd.js`), which is why this is 4.0.0. ESM users are not affected.
+- An Indonesian locale (`id`), keyboard and screen-reader fixes, a redesigned Insert Image dialog, and image moves by drag no longer duplicating the image.
+
+The API is otherwise the same: options, events, the `AutumnNote` global and the `an-*` CSS classes are unchanged.
+
+### Switching from `autumnnote`
+
+Install it under the old name with an npm alias, and existing `import ... from 'autumnnote'` lines keep working:
+
+```bash
+npm install autumnnote@npm:autumnnote-plus@^4.0.0
+```
+
+Or install it as `autumnnote-plus` and change the imports (`'autumnnote'` → `'autumnnote-plus'`, `'autumnnote/i18n/id'` → `'autumnnote-plus/i18n/id'`). With React or Vue, switch the wrapper too: `autumnnote-react` → `autumnnote-plus-react`, `autumnnote-vue` → `autumnnote-plus-vue` (the original wrappers only accept `autumnnote` below 4.0.0). CDN pages change the package in the URL and add a locale script if `lang` is not `'en'`.
+
+---
+
+## Installation
+
+### npm / pnpm / yarn
+
+```bash
+npm install autumnnote-plus
+```
+
+```js
+import AutumnNote from 'autumnnote-plus';
+import 'autumnnote-plus/dist/autumnnote.css';
+```
+
+### CDN
+
+**jsDelivr** (Recommended):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+```
+
+**unpkg:**
+
+```html
+<script src="https://unpkg.com/autumnnote-plus"></script>
+```
+
+The script-tag build ships English. For another language, add its locale script after the main one (see [Languages](#languages)):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"></script>
+```
+
+```html
+<link rel="stylesheet" href="dist/autumnnote.css" />
+<script src="dist/autumnnote.umd.js"></script>
+```
+
+> **FontAwesome icons** — the editor auto-detects FontAwesome on the page and falls back to built-in SVG icons when absent. To enable FA icons, include the FA stylesheet:
+>
+> ```html
+> <!-- FontAwesome 6 Free (recommended) -->
+> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+> ```
+
+---
+
+## Minimal build
+
+The default entry installs every module. When you only need basic formatting,
+import `autumnnote-plus/core` instead — it leaves the dialogs, floating tooltips,
+emoji and icon pickers and the crop overlay out of the bundle entirely rather
+than shipping them switched off:
+
+```js
+import AutumnNote from 'autumnnote-plus/core';
+import 'autumnnote-plus/dist/autumnnote.css';   // same stylesheet as the full build
+
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'underline'], ['ul', 'ol'], ['undo', 'redo']],
+});
+```
+
+| Entry | Modules | In an app, minified (gzip) | `dist` ES file, unminified (gzip) |
+|---|---|---|---|
+| `autumnnote-plus` | all | 94.5 KiB | 97.1 KiB |
+| `autumnnote-plus/core` | editor, toolbar, statusbar, clipboard, placeholder | **46.1 KiB** | 56.7 KiB |
+
+The first column is what a bundler ships for `AutumnNote.create('#editor')`; the
+`dist` files keep their whitespace and every export so your build can tree-shake
+and minify them. The stylesheet is another 10 KiB gzip.
+
+Same API, same types, same stylesheet — the difference is only which modules are
+installed. A toolbar button whose module is absent still renders, but invoking it
+logs a warning and does nothing, so give this preset a toolbar naming only
+buttons the core modules serve.
+
+---
+
+## Framework Wrappers
+
+React and Vue 3 wrappers (`autumnnote-plus-react`, `autumnnote-plus-vue`) are available as separate packages in this monorepo (managed with pnpm workspaces).
+
+### React
+
+```bash
+npm install autumnnote-plus autumnnote-plus-react
+```
+
+```js
+import 'autumnnote-plus/dist/autumnnote.css';
+```
+
+```jsx
+import { useRef } from 'react';
+import AutumnNoteEditor from 'autumnnote-plus-react';
+
+function MyEditor() {
+  const editorRef = useRef(null);
+
+  return (
+    <AutumnNoteEditor
+      ref={editorRef}
+      options={{ placeholder: 'Start typing…', height: 300, bubbleToolbar: true }}
+    />
+  );
+}
+
+// Access the editor instance:
+editorRef.current.getHTML();
+editorRef.current.invoke('editor.setHTML', '<p>Hello!</p>');
+```
+
+The `ref` is forwarded to the underlying `Context` instance via `useImperativeHandle`. Pass a `key` prop to force remount when options change.
+
+### Vue 3
+
+```bash
+npm install autumnnote-plus autumnnote-plus-vue
+```
+
+```js
+import 'autumnnote-plus/dist/autumnnote.css';
+```
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import AutumnNoteEditor from 'autumnnote-plus-vue';
+
+const editorRef = ref(null);
+</script>
+
+<template>
+  <AutumnNoteEditor
+    ref="editorRef"
+    :options="{ placeholder: 'Start typing…', height: 300 }"
+  />
+</template>
+```
+
+Access the editor instance via `editorRef.value.editor`; Vue unwraps the component's internal shallow ref.
+
+---
+
+## Quick Start
+
+### ES Module
+
+```js
+import AutumnNote from 'autumnnote-plus';
+
+const editor = AutumnNote.create('#my-editor', {
+  placeholder: 'Start typing…',
+  height: 300,
+  onChange(html) {
+    console.log(html);
+  },
+});
+```
+
+### Script tag (UMD)
+
+```html
+<div id="my-editor"><p>Hello!</p></div>
+<script src="dist/autumnnote.umd.js"></script>
+<script>
+  const editor = AutumnNote.create('#my-editor');
+</script>
+```
+
+### With Bootstrap 5
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  useBootstrap: true,
+  toolbarButtonClass: 'btn btn-sm btn-light',
+});
+```
+
+### Dark mode
+
+```js
+const editor = AutumnNote.create('#my-editor', { theme: 'dark' });
+// or follow the OS setting, and switch later without re-creating
+editor.updateOptions({ theme: 'auto' });
+```
+
+The theme applies to that editor only — a light and a dark editor can share a page. See [Theming](#theming) for colours.
+
+### Read-only preview
+
+```js
+const preview = AutumnNote.create('#preview', { readOnly: true, statusbar: false });
+preview.setHTML(savedHtml);
+```
+
+### Auto-save draft
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  autoSave: true,
+  autoSaveKey: 'my-draft',
+});
+```
+
+### Custom image upload
+
+Return the URL and the editor places the image for you — a placeholder appears
+at the caret immediately and is replaced when the upload resolves:
+
+```js
+AutumnNote.create('#my-editor', {
+  async onImageUpload(files, { setProgress }) {
+    return Promise.all(files.map(async (file) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      setProgress(file, 0.1);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      setProgress(file, 1);
+      return (await res.json()).url;
+    }));
+  },
+  onImageError({ file, message, retry }) {
+    console.warn(message, file?.name);
+    retry?.();          // re-sends just that file
+  },
+});
+```
+
+Returning nothing keeps the original behaviour — the handler inserts the image
+itself and no placeholder is shown:
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  onImageUpload(files) {
+    upload(files[0]).then(({ url }) =>
+      editor.invoke('editor.insertImage', url, files[0].name));
+  },
+});
+```
+
+> `onImageUpload` **uploads** and resolves to any URL the sanitiser accepts.
+> `imageProcessor` **transforms** a file and must resolve to a data URL — use it
+> for compression or format conversion, not for sending the file somewhere.
+
+### Bubble toolbar
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  bubbleToolbar: true,
+  bubbleToolbarItems: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'removeFormat'],
+});
+```
+
+### @mention autocomplete
+
+```js
+const editor = AutumnNote.create('#my-editor', {
+  mention: {
+    onSearch(query, callback) {
+      const users = [
+        { id: 1, label: 'Alice' },
+        { id: 2, label: 'Bob' },
+        { id: 3, label: 'Charlie' },
+      ];
+      callback(users.filter(u => u.label.toLowerCase().includes(query.toLowerCase())));
+    },
+    onInsert(item) {
+      // optional: return custom HTML for the mention chip. Labels are often
+      // other users' display names, so build it with DOM APIs (or escape them).
+      const chip = document.createElement('span');
+      chip.className = 'mention';
+      chip.dataset.id = item.id;
+      chip.textContent = `@${item.label}`;
+      return chip.outerHTML;
+    },
+  },
+});
+```
+
+---
+
+## Plugin API
+
+Plugins package editor extensions — custom modules, toolbar buttons, and event handlers — into a reusable, distributable object.
+
+```js
+import AutumnNote from 'autumnnote-plus';
+
+const WordCountPlugin = {
+  name: 'word-count',
+  version: '1.0.0',
+  // Buttons registered BEFORE create() — usable by name in toolbar config
+  buttons: [{
+    name: 'wordCountBtn',
+    icon: 'hashtag',
+    tooltip: 'Word count',
+    action: (ctx) => alert(`${ctx.getWordCount()} words`),
+  }],
+  // Called after all built-in modules initialise
+  install(ctx, options) {
+    ctx.on('change', () => console.log('words:', ctx.getWordCount()));
+    return { getMax: () => options.maxWords };
+  },
+  uninstall(ctx) { /* cleanup */ },
+};
+
+// Global — applied to every future editor instance
+AutumnNote.use(WordCountPlugin, { maxWords: 500 });
+
+const editor = AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic', 'wordCountBtn']], // 'wordCountBtn' resolved from registry
+});
+
+editor.getPlugin('word-count').getMax(); // → 500
+```
+
+**Per-instance installation:**
+
+```js
+const editor = AutumnNote.create('#editor');
+editor.use(WordCountPlugin, { maxWords: 200 });
+editor.invoke('toolbar.rebuild'); // re-render toolbar with new buttons
+```
+
+| Method | Description |
+|---|---|
+| `AutumnNote.use(plugin, opts?)` | Install globally. Buttons registered immediately; `install()` called after modules init. |
+| `AutumnNote.hasPlugin(name)` | Returns `true` if plugin registered globally. |
+| `AutumnNote.registerButton(def)` | Register a single button globally by name. |
+| `context.use(plugin, opts?)` | Install on this instance only. |
+| `context.getPlugin<T>(name)` | Returns the public API from `plugin.install()`. |
+
+See the [full Plugin API docs →](https://autumn.konexforge.com/docs.html#plugin-api)
+
+---
+
+## API
+
+### Factory
+
+| Method | Description |
+|---|---|
+| `AutumnNote.create(selector, options?)` | Creates editor instance(s). `selector` can be a CSS string, `Element`, `NodeList`, or `Element[]`. Returns a `Context` or `Context[]`. |
+| `AutumnNote.destroy(selector)` | Destroys editor(s) and restores the original element. |
+| `AutumnNote.getInstance(selector)` | Returns the `Context` for a given element, or `null`. |
+| `AutumnNote.defaults` | Read-only snapshot of the current default options. |
+| `AutumnNote.setDefaults(overrides)` | Merges options into the global defaults, applied to every future instance. |
+| `AutumnNote.resetDefaults()` | Restores the global defaults to their factory values. |
+| `AutumnNote.registerLocale(code, locale)` | Registers a locale so `lang: '<code>'` can select it. Only English ships in the ESM and UMD builds; see [Languages](#languages). |
+| `AutumnNote.registerModule(name, Class)` | Registers a custom module included in every future instance. |
+| `AutumnNote.registerButton(btnDef)` | Adds a button to the global registry. Call `editor.invoke('toolbar.rebuild')` afterwards to render it on existing instances. |
+| `AutumnNote.registerIcon(name, icon)` | Sets the icon for a button or icon name in every editor: SVG markup, or a CSS class list such as `'bi bi-type-bold'`. |
+| `AutumnNote.registerSlashCommand(command)` | Adds or replaces a slash-menu command for future instances. |
+| `AutumnNote.use(plugin, options?)` | Installs a plugin globally — see [Plugin API](#plugin-api). |
+| `AutumnNote.hasPlugin(name)` | Returns `true` if a plugin with that name is registered globally. |
+| `AutumnNote.buttons` | All pre-built button definitions, reachable without named imports (UMD/CJS). |
+| `AutumnNote.version` | The library version string. |
+
+### Context (instance methods)
+
+| Method | Description |
+|---|---|
+| `editor.getHTML()` | Returns the current HTML. Zero-width spaces from the icon picker are stripped automatically. |
+| `editor.setHTML(html)` | Sets HTML content (sanitised). Only trusted HTTPS YouTube/Vimeo `<iframe>` sources are preserved. |
+| `editor.getText()` | Returns plain text with no markup. |
+| `editor.setText(text)` | Replaces the content with plain text (escaped, no markup). |
+| `editor.getMarkdown()` | Returns the current content converted to Markdown. |
+| `editor.setMarkdown(md)` | Replaces the content, converting the given Markdown to HTML. |
+| `editor.insertHTML(html)` | Inserts sanitised HTML at the current cursor position. |
+| `editor.insertText(text)` | Inserts plain text at the current cursor position. |
+| `editor.downloadHTML(filename?)` | Downloads the current content as an `.html` file (default `document.html`). |
+| `editor.downloadText(filename?)` | Downloads the current content as a `.txt` file (default `document.txt`). |
+| `editor.downloadMarkdown(filename?)` | Downloads the current content as a `.md` file (default `document.md`). |
+| `editor.print(title?)` | Opens the browser print dialog with the current content in a clean printable layout. |
+| `editor.clear()` | Clears all content, resets to an empty `<p>`. |
+| `editor.clearHistory()` | Resets the undo/redo stack. |
+| `editor.getUndoCount()` | Returns the number of available undo steps. |
+| `editor.getRedoCount()` | Returns the number of available redo steps. |
+| `editor.getWordCount()` | Returns the current word count. |
+| `editor.getCharCount()` | Returns the current character count. |
+| `editor.getTableOfContents()` | Returns an array of `{ level, text, element }` heading objects. |
+| `editor.setDisabled(bool)` | Disables (`true`) or re-enables (`false`) the editor and toolbar. |
+| `editor.focus()` | Moves keyboard focus to the editable area. |
+| `editor.blur()` | Removes keyboard focus from the editable area. |
+| `editor.isFullscreen()` | Returns `true` if the editor is currently in fullscreen mode. |
+| `editor.destroy()` | Removes the editor, disposes all modules, and restores the original element. Returns a promise that settles once the closing auto-save has finished, so `await editor.destroy()` is meaningful with an async `autoSaveAdapter`. |
+| `editor.updateOptions(partial)` | Merges options into a live instance. Modules gated behind an option (`bubbleToolbar`, `mention`, `slashMenu`, `markdownShortcuts`, `autoSaveRestore`) are started or torn down to match. |
+| `editor.on(event, fn)` | Subscribes to an editor event. Returns an unsubscribe function. |
+| `editor.off(event, fn)` | Removes a previously registered listener. |
+| `editor.invoke('module.method', ...args)` | Calls any registered module method by dot-separated name. |
+
+### Events
+
+Every event reaches both `editor.on(name, fn)` listeners and the matching `on<Name>` option callback (e.g. `paste` → `onPaste`).
+
+| Name | Payload | Description |
+|---|---|---|
+| `change` | `html: string` | Fired after every content mutation. Debounced internally. |
+| `focus` | `context` | Editor gained focus. |
+| `blur` | `context` | Editor lost focus. |
+| `init` | `context` | Fired once after the editor has fully initialised. |
+| `imageError` | `{ file, message, error?, retry? }` | Fired when an image is rejected (e.g. over `maxImageSize`) or an upload fails. `retry()` is present on upload failures and re-sends that one file. |
+| `paste` | `{ text, html }` | Fired on every paste, before the editor inserts anything. Return `false` to cancel the paste, or an HTML string to insert instead (it is sanitised). |
+| `pasteError` | `{ message, size?, maxBytes? }` | Fired when paste/drop exceeds `maxPasteSize` or a dropped Markdown file cannot be read. |
+| `selectionChange` | `context` | Fired when the cursor or selection changes. |
+| `destroy` | `context` | Fired just before the editor is destroyed. |
+| `charLimitReached` | `context` | Fired when `maxChars` is hit. |
+| `wordLimitReached` | `context` | Fired when `maxWords` is hit. |
+| `autoSave` | `{ key, html, savedAt }` | Fired after an auto-save write. |
+| `autoSaveError` | `{ key, error }` | Fired when an auto-save write fails. |
+| `autoSaveRestore` | `html, context` | Fired after the user restores a draft from the restore banner. |
+| `optionsChange` | `overrides` | Fired after `updateOptions()`. |
+| `beforeCommand` | `{ name, value?, source, event? }` | Fired before a command runs from the toolbar, a shortcut, the context menu or the bubble toolbar (`source`). Return `false` to cancel it — e.g. to gate features by plan or log usage. |
+
+Image uploads are not an event: they go to the `onImageUpload` handler, whose return value the editor uses.
+
+---
+
+## Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `placeholder` | `string` | `''` | Placeholder text shown when the editor is empty. |
+| `height` | `number` | `200` | Initial editor height in pixels. |
+| `minHeight` | `number` | `100` | Minimum resizable height in pixels. |
+| `maxHeight` | `number` | `0` | Maximum resizable height in pixels. `0` = unlimited. |
+| `focus` | `boolean` | `false` | Automatically focus the editor on creation. |
+| `resizable` | `boolean` | `true` | Show the resize handle at the bottom of the editor. |
+| `statusbar` | `boolean` | `true` | Show the statusbar (word/char count, resize handle). Set `false` to hide it, e.g. for a read-only viewer. `getWordCount()`/`getCharCount()` keep working. |
+| `toolbar` | `Array[]` | all buttons | Toolbar layout. See [Toolbar Customisation](#toolbar-customisation). |
+| `toolbarOverflow` | `string` | `'wrap'` | Toolbar overflow strategy: `'wrap'` or `'scroll'`. |
+| `useBootstrap` | `boolean` | `false` | Apply Bootstrap CSS classes to toolbar buttons. |
+| `toolbarButtonClass` | `string` | `'btn btn-sm btn-light'` | CSS classes for toolbar buttons when `useBootstrap` is `true`. |
+| `useFontAwesome` | `boolean` | `true` | Use FA icons when FontAwesome is detected on the page. |
+| `fontAwesomeClass` | `string` | `'fas'` | FA prefix: `'fas'` for FA 5, `'fa-solid'` for FA 6. |
+| `fontAwesomeAutoInject` | `boolean` | `true` | Let the icon dialog pull Font Awesome CSS from a CDN when the page has none. Set `false` under a strict CSP or offline. |
+| `fontAwesomeCDN` | `string` | cdnjs FA 6.5.2 | Stylesheet URL for that injection — point it at a self-hosted copy to keep the request first-party. |
+| `pasteAsPlainText` | `boolean` | `false` | Strip all formatting when pasting. |
+| `pasteCleanHTML` | `boolean` | `true` | Sanitise HTML on paste and on drag-and-drop from outside the editor. `false` leaves both to the browser. |
+| `pasteStripAttributes` | `boolean` | `false` | Strip `class`, `style`, and `data-*` attributes from pasted HTML. |
+| `markdownPaste` | `boolean` | `true` | Convert pasted Markdown shortcuts to HTML as you type. |
+| `allowImageUpload` | `boolean` | `true` | Allow drag/paste/file upload in the image dialog. |
+| `maxImageSize` | `number` | `5` | Maximum image file size in megabytes. |
+| `tabSize` | `number` | `4` | Number of spaces inserted when Tab is pressed. |
+| `historyLimit` | `number` | `100` | Maximum undo steps to retain. |
+| `defaultFontFamily` | `string` | `'Arial'` | Font shown by default in the font-family dropdown. |
+| `defaultFontSize` | `string` | `'14px'` | Default font size applied to new content. |
+| `fontFamilies` | `string[]` | 10 fonts | Font families available in the font-family dropdown. |
+| `fontSizes` | `string[]` | `8px`–`72px` | Sizes in the font-size dropdown. |
+| `lineHeights` | `string[]` | `'1.0'`–`'3.0'` | Values in the line-height dropdown. |
+| `paragraphStyles` | `{ value, label }[]` | Normal, H1–H6, Quote, Code | Block formats in the paragraph-style dropdown (`value` is a block tag). |
+| `icons` | `object` | `null` | Per-editor icon overrides keyed by button or icon name — SVG markup, or a CSS class list. See [Icons](#icons). |
+| `buttons` | `object \| array` | `null` | Per-editor button definitions, usable by name in `toolbar`. |
+| `keyMap` | `object` | `null` | Keyboard shortcut overrides merged over the defaults. See [Keyboard Shortcuts](#keyboard-shortcuts). |
+| `stickyToolbar` | `boolean` | `false` | Pin the toolbar to the viewport top when the page is scrolled. |
+| `stickyToolbarOffset` | `number` | `0` | Top offset in pixels for the sticky toolbar (e.g. height of a fixed nav bar). |
+| `theme` | `string` | `'light'` | Colour theme: `'light'`, `'dark'`, or `'auto'` (follows system preference). Changeable at runtime. |
+| `themeVars` | `object` | `null` | Design-token overrides for this editor, e.g. `{ primary: '#f97316', radius: '10px' }`. See [Theming](#theming). |
+| `zIndexOffset` | `number` | `0` | Added to the z-index of every floating layer (tooltips, popovers, dialogs, fullscreen), e.g. to sit above a host modal. |
+| `popupContainer` | `string \| Element \| ShadowRoot` | `null` | Where dialogs, tooltips and menus mount (default `document.body`). Use inside a focus-trapping modal or a shadow root. The element must not set `transform`, `filter` or `contain`. |
+| `readOnly` | `boolean` | `false` | Start the editor in non-editable (read-only) mode with toolbar hidden. |
+| `spellcheck` | `boolean` | `true` | Enable browser spellcheck in the editable area. |
+| `direction` | `string` | `'ltr'` | Text direction: `'ltr'` or `'rtl'`. |
+| `autoSave` | `boolean` | `false` | Persist content to `localStorage` on every change. |
+| `autoSaveKey` | `string` | `'autumnnote-autosave'` | `localStorage` key used when `autoSave` is enabled. |
+| `autoSaveDelay` | `number` | `400` | Debounce in ms between the last change and the auto-save write. |
+| `maxChars` | `number` | `0` | Maximum character count. `0` = unlimited. Shows warning in statusbar. |
+| `maxWords` | `number` | `0` | Maximum word count. `0` = unlimited. Shows warning in statusbar. |
+| `tableHeaderRow` | `boolean` | `false` | Insert a `<thead>` header row when creating new tables. |
+| `codeHighlight` | `boolean` | `true` | Auto-load Prism.js for syntax highlighting inside `<pre><code>` blocks. |
+| `codeHighlightCDN` | `string` | cdnjs Prism 1.29.0 | Base URL for Prism assets; override to self-host. A trailing slash is normalised away. See [Optional external assets](#optional-external-assets). |
+| `cspNonce` | `string` | `''` | CSP nonce applied to dynamically injected Prism and Font Awesome assets. |
+| `externalAssetCrossOrigin` | `string` | `'anonymous'` | `crossorigin` value for optional external assets; set `''` to omit it. |
+| `externalAssetReferrerPolicy` | `string` | `'no-referrer'` | Referrer policy for optional external assets; set `''` to omit it. |
+| `colorSwatches` | `string[]` | `[]` | Custom brand colour swatches prepended to the colour palette (toolbar, bubble toolbar, context menu). |
+| `colorPalette` | `string[]` | `null` | Replaces the built-in 24-colour palette in the toolbar, bubble toolbar and context menu. |
+| `linkDefaults` | `object` | `{ openInNewTab: false, rel: 'noopener noreferrer', defaultProtocol: 'https://' }` | Link dialog defaults. `openInNewTab` pre-ticks the checkbox; `rel` is used for new-tab links (`noopener` is always added); `defaultProtocol` prefixes bare domains (`''` disables). Relative links (`/path`, `#id`, `?q`) are never prefixed. |
+| `videoProviders` | `array` | `null` | Extra video sources for the video dialog: `[{ name, match: RegExp, embed: (match, url) => embedUrl }]`, tried before YouTube/Vimeo. The embed host must be built in or in `iframeHosts`. |
+| `iframeHosts` | `string[]` | `null` | Extra hostnames whose iframes survive sanitisation (exact hostnames, HTTPS only), e.g. `['player.twitch.tv']`. Every listed host can render arbitrary content in the document — list only hosts you trust. |
+| `onBeforeCommand` | `function` | `null` | See the `beforeCommand` event. |
+| `focusColor` | `string` | `null` | Custom focus ring colour (any valid CSS colour). Overrides the default blue. |
+| `lang` | `string \| object` | `'en'` | UI display language. `'en'` is built in; other codes must be registered first — see [Languages](#languages). Pass a partial locale object for custom overrides. |
+| `markdownShortcuts` | `boolean` | `true` | Convert Markdown-style syntax typed in the editor to HTML in real time (block and inline rules). |
+| `bubbleToolbar` | `boolean` | `false` | Show a mini floating toolbar above the text selection for quick formatting. |
+| `bubbleToolbarItems` | `string[]` | `['bold','italic','underline','link','foreColor','hiliteColor','removeFormat']` | Buttons shown in the bubble toolbar. Available names: `'bold'`, `'italic'`, `'underline'`, `'strikethrough'`, `'link'`, `'foreColor'`, `'hiliteColor'`, `'removeFormat'`, `'inlineCode'`. |
+| `autoSaveRestore` | `boolean` | `false` | When `autoSave` is also `true`, show a restore banner on load if a draft exists. |
+| `autoSaveRestoreTimeout` | `number` | `7` | Max draft age in days before it is auto-discarded. `0` = no expiry. |
+| `onAutoSaveRestore` | `Function` | `null` | `(html, context) => void` — called after the user restores a draft. |
+| `maxPasteSize` | `number` | `5242880` | Maximum paste payload size in bytes (default 5 MB). Pastes larger than this are silently dropped. |
+| `minImageSize` | `number` | `20` | Minimum image dimension in px during resize (width and height). |
+| `mention` | `object` | `null` | @mention configuration object. Set `mention.onSearch` to activate. See [Mentions](#mentions). |
+| `contextMenu` | `object` | `null` | Right-click menu override. `contextMenu.items` replaces the built-in list; see `ContextMenuItem` in the type definitions. |
+| `slashMenu` | `boolean` | `true` | Show the `/` command palette when `/` is typed at the start of an empty line. |
+| `slashCommands` | `object[]` | `[]` | Extra entries appended to the `/` command palette. |
+| `historyMaxBytes` | `number` | `10485760` | Combined character budget for the undo/redo snapshot stack (default 10 MB). The oldest snapshots are dropped past it. |
+| `blockIds` | `boolean` | `false` | Add stable `data-an-block-id` attributes to top-level blocks, so an external adapter can address them. |
+| `documentAdapters` | `object` | `{}` | Import/export adapters keyed by format name. |
+| `collaborationAdapter` | `object` | `null` | Bridge notified of local HTML changes. |
+| `autoSaveAdapter` | `object` | `null` | Async persistence for auto-save (`save`, `load`, `remove`) instead of `localStorage`. May be a class instance. |
+| `imageProcessor` | `function` | `null` | `(file, { context }) => dataUrl` — transforms pasted/dropped images before insertion (e.g. compress in a Web Worker). |
+| `onChange` | `Function` | `null` | `(html: string) => void` — called on every content change. |
+| `onFocus` | `Function` | `null` | `(context) => void` — called when the editor gains focus. |
+| `onBlur` | `Function` | `null` | `(context) => void` — called when the editor loses focus. |
+| `onInit` | `Function` | `null` | `(context) => void` — called once after the editor is initialised. |
+| `onImageUpload` | `Function` | `null` | `(files, { context, setProgress }) => void \| string \| string[] \| Promise<…>` — upload handler; overrides the base64 embed. Return the uploaded URL(s) to have the editor insert them, or nothing to insert them yourself. |
+| `onImageError` | `Function` | `null` | `({ file, message }) => void` — called when an image is rejected. |
+| `onPaste` | `Function` | `null` | `({ text, html }) => void \| false \| string` — called on every paste, before insertion. Return `false` to cancel it or an HTML string to insert instead. See the `paste` event. |
+| `onPasteError` | `Function` | `null` | `({ message, size?, maxBytes? }) => void` — called when pasted or dropped content cannot be processed. |
+| `onSelectionChange` | `Function` | `null` | `(context) => void` — called when cursor or selection changes. |
+| `onDestroy` | `Function` | `null` | `(context) => void` — called just before the editor is destroyed. |
+| `onCharLimitReached` | `Function` | `null` | `(context) => void` — called when `maxChars` is hit. |
+| `onWordLimitReached` | `Function` | `null` | `(context) => void` — called when `maxWords` is hit. |
+
+---
+
+## Theming
+
+Every colour, radius and font the editor uses is a CSS custom property with a built-in fallback, so you can theme it without a Sass build.
+
+| Token | Light default | Used for |
+|---|---|---|
+| `--an-primary` | `#2563eb` | Accent: active buttons, links, focus ring, selections |
+| `--an-primary-hover` | `#1d4ed8` | Accent hover |
+| `--an-input-border` | `#8b93a1` | Form-field edges in dialogs |
+| `--an-border` | `#d1d5db` | Borders and separators |
+| `--an-bg` | `#ffffff` | Editor and dialog background |
+| `--an-bg-toolbar` | `#f9fafb` | Toolbar background |
+| `--an-bg-btn-hover` | `#f3f4f6` | Button hover |
+| `--an-bg-btn-active` | `#dbeafe` | Active (pressed) button |
+| `--an-text` | `#111827` | Text |
+| `--an-muted` | `#6b7280` | Secondary text, placeholders |
+| `--an-statusbar-bg` | `#f9fafb` | Statusbar background |
+| `--an-radius` / `--an-radius-sm` | `6px` / `4px` | Corner radii |
+| `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
+| `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
+| `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
+
+The dark theme sets the tokens above to its own palette, and adds these for the surfaces and accents only it uses:
+
+| Token | Dark default | Used for |
+|---|---|---|
+| `--an-bg-raised` | `#24273a` | Dialogs, menus, popovers and tooltips |
+| `--an-bg-subtle` | `#313244` | Inputs, inline code, table header cells, hover fills |
+| `--an-border-strong` | `#45475a` | Edges of the emoji, icon and find panels |
+| `--an-text-soft` | `#a6adc8` | Secondary labels and icon buttons |
+| `--an-primary-strong` / `--an-primary-strong-hover` | `#3b5bdb` / `#364fc7` | Filled buttons with white text (keep it at 4.5:1 or more against white) |
+| `--an-active` / `--an-active-strong` | `#818cf8` / `#6366f1` | Pressed toggles, the active picker cell, selected-cell outline |
+| `--an-active-tint` / `--an-active-tint-strong` / `--an-active-border` | `--an-active` at 15% / `--an-active-strong` at 20% / `--an-active` at 30% | Fills and edges of pressed toggles |
+| `--an-cell-selected` | `--an-active-strong` at 25% | Selected table cells |
+
+Three ways to set them, from broadest to narrowest:
+
+```css
+/* 1. Every editor on the page */
+:root { --an-primary: #f97316; --an-radius: 10px; }
+
+/* 2. Dark mode only (theme: 'dark', or 'auto' when the OS is dark) */
+.an-theme-dark { --an-bg: #0b1020; }
+@media (prefers-color-scheme: dark) { .an-theme-auto { --an-bg: #0b1020; } }
+```
+
+```js
+// 3. One editor, including its dialogs and tooltips; changeable at runtime
+const editor = AutumnNote.create('#editor', {
+  themeVars: { primary: '#f97316', 'bg-toolbar': '#fff7ed' },
+});
+editor.updateOptions({ themeVars: null });          // drop all overrides
+editor.updateOptions({ themeVars: { primary: '#10b981' } });
+```
+
+Each editor mounts its dialogs, tooltips and menus in its own portal element (`.an-portal`), which carries the editor's theme class and `themeVars`. Use `popupContainer` to put that portal somewhere other than `document.body`.
+
+## Toolbar Customisation
+
+The `toolbar` option accepts an array of **groups**. Each group lists buttons by **name** — plain strings, so the config can come from JSON, framework props or the UMD build:
+
+```js
+AutumnNote.create('#editor', {
+  toolbar: [
+    ['paragraphStyle', 'fontSize'],
+    ['bold', 'italic', 'underline', 'strikethrough'],
+    ['ul', 'ol', 'checklist'],
+    ['link', 'image', 'table'],
+    ['undo', 'redo'],
+  ],
+});
+```
+
+Built-in names: `paragraphStyle`, `fontFamily`, `fontSize`, `lineHeight`, `undo`, `redo`, `bold`, `italic`, `underline`, `strikethrough`, `inlineCode`, `superscript`, `subscript`, `foreColor`, `backColor`, `alignLeft`, `alignCenter`, `alignRight`, `alignJustify`, `ul`, `ol`, `checklist`, `indent`, `outdent`, `hr`, `link`, `image`, `video`, `table`, `emoji`, `icon`, `removeFormat`, `direction`, `codeview`, `fullscreen`, `find`, `findReplace`, `print`, `shortcuts`.
+
+### Buttons for one editor
+
+`buttons` defines buttons for a single editor, without touching the global registry — two editors can each have their own `save`:
+
+```js
+AutumnNote.create('#editor', {
+  toolbar: [['bold', 'italic'], ['save']],
+  buttons: {
+    save: { icon: '<svg viewBox="0 0 24 24">…</svg>', tooltip: 'Save', action: (ctx) => save(ctx.getHTML()) },
+  },
+});
+```
+
+### Dropdown lists and colours
+
+```js
+AutumnNote.create('#editor', {
+  fontSizes: ['12px', '14px', '16px', '20px'],
+  lineHeights: ['1.2', '1.5', '2'],
+  paragraphStyles: [{ value: 'p', label: 'Body' }, { value: 'h2', label: 'Title' }],
+  colorPalette: ['#0f172a', '#f97316', '#10b981'], // replaces the 24 defaults
+  colorSwatches: ['#7c3aed'],                       // prepended to the palette
+});
+```
+
+### Icons
+
+Buttons use built-in SVG icons (or Font Awesome when the page loads it). Override any of them per editor with `icons`, or for every editor with `AutumnNote.registerIcon()`. A value starting with `<` is markup; anything else is a CSS class list:
+
+```js
+AutumnNote.registerIcon('bold', 'bi bi-type-bold');            // Bootstrap Icons, all editors
+AutumnNote.create('#editor', {
+  icons: { italic: '<svg viewBox="0 0 24 24">…</svg>', table: 'ti ti-table' },
+});
+```
+
+Keys are button names (`bold`) or icon ids (`list-ul`). The per-editor option wins over `registerIcon()`.
+
+### Button objects
+
+Button definition objects are also exported, for building your own or wrapping a built-in one:
+
+```js
+import AutumnNote, {
+  boldBtn, italicBtn, underlineBtn, strikeBtn,
+  superscriptBtn, subscriptBtn,
+  alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn,
+  ulBtn, olBtn, checklistBtn, indentBtn, outdentBtn,
+  undoBtn, redoBtn,
+  hrBtn, linkBtn, imageBtn, videoBtn,
+  emojiBtn, iconBtn, tableBtn,
+  fontFamilyBtn, paragraphStyleBtn, lineHeightBtn,
+  foreColorBtn, backColorBtn,
+  findBtn, findReplaceBtn,
+  codeviewBtn, fullscreenBtn, shortcutsBtn,
+} from 'autumnnote-plus';
+```
+
+### Default toolbar layout
+
+```js
+[
+  [paragraphStyleBtn, fontFamilyBtn, lineHeightBtn],
+  [undoBtn, redoBtn],
+  [boldBtn, italicBtn, underlineBtn, strikeBtn],
+  [superscriptBtn, subscriptBtn],
+  [foreColorBtn, backColorBtn],
+  [alignLeftBtn, alignCenterBtn, alignRightBtn, alignJustifyBtn],
+  [ulBtn, olBtn, checklistBtn, indentBtn, outdentBtn],
+  [hrBtn, linkBtn, imageBtn, videoBtn, tableBtn, emojiBtn, iconBtn],
+  [codeviewBtn, fullscreenBtn, shortcutsBtn],
+]
+```
+
+### Custom toolbar example
+
+```js
+AutumnNote.create('#editor', {
+  toolbar: [
+    [undoBtn, redoBtn],
+    [boldBtn, italicBtn, underlineBtn],
+    [ulBtn, olBtn, checklistBtn],
+    [linkBtn, imageBtn],
+    [findBtn, findReplaceBtn],
+  ],
+});
+```
+
+### Hiding the toolbar
+
+Pass an empty array for a toolbar-less editor (keyboard shortcuts still work):
+
+```js
+AutumnNote.create('#editor', { toolbar: [] });
+```
+
+### All available buttons
+
+| Export | Tooltip |
+|---|---|
+| `paragraphStyleBtn` | Paragraph Style (dropdown) |
+| `fontFamilyBtn` | Font Family (dropdown) |
+| `lineHeightBtn` | Line Height (dropdown) |
+| `undoBtn` / `redoBtn` | Undo / Redo |
+| `boldBtn` / `italicBtn` / `underlineBtn` / `strikeBtn` | Text style |
+| `superscriptBtn` / `subscriptBtn` | Super / Subscript |
+| `foreColorBtn` / `backColorBtn` | Text colour / Highlight colour |
+| `alignLeftBtn` / `alignCenterBtn` / `alignRightBtn` / `alignJustifyBtn` | Alignment |
+| `ulBtn` / `olBtn` / `checklistBtn` | Lists |
+| `indentBtn` / `outdentBtn` | Indentation |
+| `hrBtn` | Horizontal Rule |
+| `linkBtn` | Insert / Edit Link |
+| `imageBtn` | Insert Image |
+| `videoBtn` | Insert Video |
+| `tableBtn` | Insert Table (grid picker) |
+| `emojiBtn` | Insert Emoji |
+| `iconBtn` | Insert FA Icon |
+| `findBtn` | Find (Ctrl+F) |
+| `findReplaceBtn` | Find & Replace (Ctrl+H) |
+| `codeviewBtn` | HTML Code View |
+| `fullscreenBtn` | Fullscreen |
+| `shortcutsBtn` | Keyboard Shortcuts dialog |
+
+### Setting global defaults
+
+```js
+Object.assign(AutumnNote.defaults, {
+  height: 400,
+  theme: 'dark',
+  fontFamilies: ['Inter', 'Roboto', 'Georgia', 'Courier New'],
+  colorSwatches: ['#e74c3c', '#f39c12', '#2ecc71', '#3498db'],
+});
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Keys | Action |
+|---|---|
+| `Ctrl + Z` | Undo |
+| `Ctrl + Shift + Z` / `Ctrl + Y` | Redo |
+| `Ctrl + B` | Bold |
+| `Ctrl + I` | Italic |
+| `Ctrl + U` | Underline |
+| `Ctrl + K` | Insert / edit link |
+| ``Ctrl + ` `` | Inline code |
+| `Ctrl + Shift + V` | Paste as plain text |
+| `Ctrl + F` | Open Find dialog |
+| `Ctrl + H` | Open Find & Replace dialog |
+| `Ctrl + Shift + /` | Open Keyboard Shortcuts dialog |
+| `Shift + Enter` | Insert line break |
+| `Tab` | Insert spaces / indent list item |
+| `Shift + Tab` | Outdent list item |
+
+`Ctrl` is `Cmd` on macOS.
+
+### Changing shortcuts
+
+`keyMap` is merged over the defaults. Combos are written `Mod+B` (`Mod` = Ctrl or Cmd), `Ctrl+Alt+1`, `Mod+Shift+Z`; Shift and Alt must match exactly, so AltGr characters never trigger a Ctrl shortcut. A value can be:
+
+- `false` — disable the default (e.g. give `Ctrl+F` back to the browser)
+- a command name — `undo`, `redo`, `bold`, `italic`, `underline`, `inlineCode`, `link`, `find`, `findReplace`, `shortcuts`, `pastePlainText`, **or any toolbar button name**
+- a function `(context, event) => {}` — return `false` to let the key through
+- `{ run, description }` — a function plus the label the shortcuts dialog shows
+
+```js
+AutumnNote.create('#editor', {
+  keyMap: {
+    'Mod+F': false,                       // browser find
+    'Mod+H': false,
+    'Mod+Shift+F': 'find',                // editor find moves here
+    'Mod+Shift+X': 'strikethrough',       // any toolbar button
+    'Mod+Alt+1': { run: (ctx) => ctx.invoke('editor.formatBlock', 'h1'), description: 'Heading 1' },
+  },
+});
+```
+
+The shortcuts dialog (`Ctrl + Shift + /`) reflects the keyMap: disabled shortcuts disappear and custom ones are listed under *Custom*. Shortcuts need Ctrl, Cmd or Alt; plain keys belong to typing.
+
+> The number of spaces inserted by `Tab` is controlled by the `tabSize` option.
+
+---
+
+## Mentions
+
+The `mention` option object activates `@mention` autocomplete. Only `onSearch` is required; all other fields are optional.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `onSearch` | `Function` | — | `(query, callback) => void` — called when the user types after the trigger character. Pass an array of `{ id, label, avatar? }` to the callback. |
+| `onInsert` | `Function` | `null` | `(item) => string \| null` — return custom HTML for the inserted mention chip. Return `null` to use the built-in chip. |
+| `trigger` | `string` | `'@'` | Character that opens the dropdown. |
+| `minChars` | `number` | `0` | Minimum characters after the trigger before `onSearch` is called. `0` = open immediately. |
+| `maxResults` | `number` | `8` | Maximum items shown in the dropdown. |
+| `debounce` | `number` | `200` | Debounce delay in milliseconds for `onSearch` calls. |
+| `mentionClass` | `string` | `'an-mention'` | CSS class applied to the inserted mention chip. |
+| `allowSpaces` | `boolean` | `false` | Allow spaces in the query string before the dropdown closes. |
+
+### Example
+
+```js
+AutumnNote.create('#editor', {
+  mention: {
+    trigger: '@',
+    minChars: 1,
+    onSearch(query, callback) {
+      fetch(`/api/users?q=${encodeURIComponent(query)}`)
+        .then(r => r.json())
+        .then(users => callback(users)); // [{ id, label, avatar? }]
+    },
+  },
+});
+```
+
+---
+
+## Languages
+
+Nine locales ship with the package: `en`, `vi`, `ja`, `zh`, `fr`, `de`, `es`, `ko`, `id`. English is built into every build; each other locale is a small separate file (about 3 KB gzip) that you load only if you use it.
+
+**ESM / bundler**: import the locale and register it.
+
+```js
+import AutumnNote from 'autumnnote-plus';
+import { id } from 'autumnnote-plus/i18n/id';
+
+AutumnNote.registerLocale('id', id);
+AutumnNote.create('#editor', { lang: 'id' });
+```
+
+**UMD / CDN (`<script>` tag)**: load the locale script after the main script. It registers itself, so `lang` works straight away:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus"></script>
+<script src="https://cdn.jsdelivr.net/npm/autumnnote-plus/dist/i18n/id.umd.js"></script>
+<script>
+  AutumnNote.create('#editor', { lang: 'id' });
+</script>
+```
+
+Self-hosting works the same way with `dist/autumnnote.umd.js` followed by `dist/i18n/<code>.umd.js`. Under CommonJS or AMD the locale file returns the locale object instead; pass it to `AutumnNote.registerLocale(code, locale)`.
+
+> **Upgrading from 3.x with a `<script>` tag:** the UMD/CDN build used to pre-register every locale. It now ships English only, which takes the CDN bundle from about 109 KB to 92 KB gzip. If your page sets `lang` to anything other than `'en'`, add that locale's `dist/i18n/<code>.umd.js` script after the main one. ESM users are not affected.
+
+Requesting an unregistered code falls back to English and logs a warning naming the import or script that is missing. A partial locale object still works inline without registering anything:
+
+```js
+AutumnNote.create('#editor', { lang: { toolbar: { bold: 'Vet' } } });
+```
+
+---
+
+## Comparison
+
+The table below compares Autumn Note against popular WYSIWYG editors: **Summernote**, **Quill**, and **TinyMCE**. Comparison is based on publicly documented feature sets.
+
+The last two rows were measured rather than read off documentation, against `summernote@0.9.1`, `quill@2.0.3` and `tinymce@8.8.2`: a bare `await import('<pkg>')` in Node throws `document is not defined`, `self is not defined` and `window is not defined` respectively, and `npm view <pkg> dist.attestations` returns nothing for all three.
+
+| Feature | Summernote | Quill | TinyMCE | **Autumn Note** |
+|---|---|---|---|---|
+| jQuery dependency | Required | Required | Optional | **None** |
+| Runtime dependencies | Several | Several | 1–2 | **Zero** |
+| JavaScript standard | ES5 / legacy | ES6 mix | ES6 | **ES2022** |
+| Module format | IIFE / AMD | IIFE | CommonJS + IIFE | **ES Module + UMD** |
+| Build tool | Grunt | Gulp | Rollup | **Vite** |
+| TypeScript definitions | External / partial | Partial | Yes | **Yes (bundled)** |
+| HTML sanitisation | Basic | Whitelist-only | Moderate | **DOM-based (XSS-safe)** |
+| Iframe support in setHTML | No | No | Restricted | **Yes (host-trusted)** |
+| Dark theme | No | No | Yes | **Yes (built-in)** |
+| RTL text direction | No | Partial | No | **Yes** |
+| Built-in i18n locales | No | No | Partial | **Yes (9 languages)** |
+| Custom locale object | No | No | No | **Yes** |
+| Checklist (todo list) | No | No | No | **Yes** |
+| Find and Replace | No | No | No | **Yes (Ctrl+F / Ctrl+H)** |
+| Emoji picker | No | No | No | **Yes (~380 emoji)** |
+| FA icon picker | No | No | No | **Yes (FA 6, searchable)** |
+| Video embeds | No | No | No | **Yes (YouTube, Vimeo, direct)** |
+| Image crop tool | No | No | No | **Yes (inline)** |
+| Image / video resize | No | No | No | **Yes (drag handles)** |
+| Inline tooltips | No | No | Partial | **Yes (link, image, video, table, code)** |
+| Table cell merge/unmerge | No | No | Yes | **Yes** |
+| Table cell selection mode | No | No | No | **Yes** |
+| Context menu | No | No | No | **Yes (with colour palette)** |
+| Sticky toolbar | No | No | No | **Yes** |
+| Auto-save to localStorage | No | No | No | **Yes** |
+| Character / word limits | No | No | No | **Yes** |
+| Custom focus ring colour | No | No | No | **Yes** |
+| Read-only mode | No | Partial | Yes | **Yes** |
+| Custom colour swatches | No | No | No | **Yes** |
+| Code view (HTML source) | No | Yes | Yes | **Yes (sanitised)** |
+| Syntax highlighting | No | No | Partial | **Yes (Prism.js via CDN)** |
+| Keyboard-navigable toolbar | No | Partial | Yes | **Yes (ARIA toolbar pattern)** |
+| Bare `import` under SSR | No | No | No | **Yes** |
+| npm provenance attestation | No | No | No | **Yes (OIDC + SLSA)** |
