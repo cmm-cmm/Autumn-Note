@@ -64,6 +64,9 @@ function toggleTheme(event, button) {
   root.style.setProperty('--vt-cx', `${(x / w) * 100}%`);
   root.style.setProperty('--vt-cy', `${(y / h) * 100}%`);
   const transition = document.startViewTransition(() => setTheme(next));
+  // A second click mid-animation, or a hidden tab, skips the transition and
+  // rejects `ready`; the theme still changes, so the rejection is not an error.
+  transition.ready.catch(() => {});
   transition.finished.finally(() => {
     delete root.dataset.themeVt;
     root.style.removeProperty('--vt-cx');
