@@ -11,3 +11,9 @@ directory = "./_site"
 not_found_handling = "404-page"
 # Default html_handling: pages are served at /docs and /playground (the site
 # links them that way); /docs.html redirects there.
+
+# Builds of non-production branches (dev) deploy with `wrangler preview`,
+# which refuses to run without this block. It may stay empty: assets and
+# compatibility settings above apply to previews too. A preview is its own
+# deployment named after the branch; it never touches the production site.
+[previews]
