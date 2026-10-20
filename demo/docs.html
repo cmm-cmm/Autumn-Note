@@ -100,7 +100,8 @@
       </div>
       <div class="sidebar-group">
         <p class="sidebar-group-title label">Features</p>
-        <a class="sidebar-link" href="#whats-new-4-0">What's new in 4.0.0</a>
+        <a class="sidebar-link" href="#whats-new-latest">What's new in __ASN_VERSION__</a>
+        <a class="sidebar-link sub" href="#whats-new-4-0">4.0.0: the fork</a>
         <a class="sidebar-link sub" href="#whats-new-3-1">What's new in 3.1.0</a>
         <a class="sidebar-link sub" href="#whats-new">What's new in 3.0.0</a>
         <a class="sidebar-link sub" href="#whats-new-1-8">1.8.0 highlights</a>
@@ -638,6 +639,13 @@ const editor = AutumnNote.create('#editor', {
     </section>
 
     <!-- ── What's New v3.1.0 ── -->
+    <!-- Filled from this version's CHANGELOG.md entry at build time. -->
+    <section class="docs-section" id="whats-new-latest" aria-label="What's new in __ASN_VERSION__">
+      <h2 class="section-h">What's new <span class="badge">v__ASN_VERSION__</span></h2>
+      <!-- asn:release-notes -->
+      <p class="docs-p">Earlier releases are in the <a href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md">CHANGELOG</a> and on the <a href="https://github.com/habibiahmada/autumnnote-plus/releases">releases page</a>.</p>
+    </section>
+
     <section class="docs-section" id="whats-new-4-0" aria-label="What's new in 4.0.0">
       <h2 class="section-h">What's new <span class="badge">v4.0.0</span></h2>
       <p class="docs-p">4.0.0 is the first release of <code>autumnnote-plus</code>, an unofficial fork of Autumn Note 3.1.0. Options, events, CSS classes and the <code>AutumnNote</code> global are unchanged.</p>
@@ -645,7 +653,7 @@ const editor = AutumnNote.create('#editor', {
       <p class="docs-p">Install <code>autumnnote-plus</code>, <code>autumnnote-plus-react</code> and <code>autumnnote-plus-vue</code>. File names inside the package (<code>dist/autumnnote.css</code>, <code>dist/autumnnote.umd.js</code>) stay the same. To keep existing <code>'autumnnote'</code> imports, install under an alias:</p>
       <div class="code-wrap">
         <button class="copy-btn" type="button" data-copy-next aria-label="Copy code"><svg class="i i--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h11v11H9z"/><path d="M15 9V4H4v11h5"/></svg><span data-copy-label>Copy</span></button>
-        <pre><code class="language-bash">npm install autumnnote@npm:autumnnote-plus@^4.0.0</code></pre>
+        <pre><code class="language-bash">npm install autumnnote@npm:autumnnote-plus@^__ASN_VERSION__</code></pre>
       </div>
       <h3 class="sub-h">The CDN build ships English only</h3>
       <p class="docs-p">The UMD, CJS and minified builds drop from 109.2 KB to 92.4 KB gzip. Each locale is its own script, <code>dist/i18n/&lt;code&gt;.umd.js</code>, that registers itself when loaded after the main one. ESM users are not affected.</p>

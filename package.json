@@ -45,7 +45,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && vite build --config vite.umd.config.js && vite build --config vite.cdn.config.js && vite build --config vite.core.config.js && node scripts/create-cjs-alias.mjs && node scripts/build-locales-umd.mjs",
-    "build:demo": "vite build --config vite.demo.config.js",
+    "build:demo": "pnpm build && vite build --config vite.demo.config.js",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "test": "vitest run",
@@ -61,7 +61,7 @@
     "build:wrappers": "pnpm --filter autumnnote-plus-react build && pnpm --filter autumnnote-plus-vue build",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:package": "node scripts/check-package-files.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && pnpm build:demo && pnpm build:wrappers",
+    "check": "pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm build && pnpm test:wrappers && pnpm check:bundle && pnpm check:package && vite build --config vite.demo.config.js && pnpm build:wrappers",
     "build:core": "vite build --config vite.core.config.js",
     "build:locales": "node scripts/build-locales-umd.mjs"
   },

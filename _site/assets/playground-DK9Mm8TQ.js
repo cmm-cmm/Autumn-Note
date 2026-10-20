@@ -1,4 +1,4 @@
-import{a as e,n as t,r as n,t as r}from"./site-C00g-u2h.js";import{t as i}from"./all-C2HHQk9z.js";var a=[{id:1,label:`editor`},{id:2,label:`reviewer`},{id:3,label:`designer`},{id:4,label:`support`},{id:5,label:`maintainer`}],o={empty:``,article:`<h1>Getting started with autumnnote-plus</h1>
+import{a as e,n as t,r as n,t as r}from"./site-C00g-u2h.js";import{t as i}from"./all-D2Z2cA9u.js";var a=[{id:1,label:`editor`},{id:2,label:`reviewer`},{id:3,label:`designer`},{id:4,label:`support`},{id:5,label:`maintainer`}],o={empty:``,article:`<h1>Getting started with autumnnote-plus</h1>
 <p>autumnnote-plus is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it from npm:</p>
 <pre><code class="language-bash">npm install autumnnote-plus</code></pre>
 <h2>Basic setup</h2>
@@ -20,14 +20,12 @@ import{a as e,n as t,r as n,t as r}from"./site-C00g-u2h.js";import{t as i}from".
   <li><input type="checkbox" contenteditable="false">Deploy to staging</li>
   <li><input type="checkbox" contenteditable="false">Code review &amp; sign-off</li>
 </ul>
-<p>Progress: <strong>2 / 7</strong> tasks completed</p>`,table:`<h2>Build sizes in 4.0.0</h2>
+<p>Progress: <strong>2 / 7</strong> tasks completed</p>`,table:`<h2>Build sizes in 4.1.0</h2>
 <table class="an-table"><thead><tr><th>Build</th><th>File</th><th>Size (gzip)</th></tr></thead>
 <tbody>
-<tr><td>ES module</td><td>dist/autumnnote.es.js</td><td>97.9 KiB</td></tr>
-<tr><td>UMD (CDN)</td><td>dist/autumnnote.umd.js</td><td>93.4 KiB</td></tr>
-<tr><td>Minified</td><td>dist/autumnnote.min.js</td><td>93.4 KiB</td></tr>
-<tr><td>CommonJS</td><td>dist/autumnnote.cjs</td><td>93.4 KiB</td></tr>
-<tr><td>Core ES module</td><td>dist/autumnnote.core.es.js</td><td>57.3 KiB</td></tr>
+<tr><td>ES module</td><td>dist/autumnnote.es.js</td><td>99.5 KiB</td></tr>
+<tr><td>UMD (CDN, also .min.js and .cjs)</td><td>dist/autumnnote.umd.js</td><td>95.0 KiB</td></tr>
+<tr><td>Core ES module</td><td>dist/autumnnote.core.es.js</td><td>57.7 KiB</td></tr>
 <tr><td>One locale</td><td>dist/i18n/&lt;code&gt;.umd.js</td><td>3.2 to 3.7 KiB</td></tr>
 </tbody></table>
 <p>Measured by <code>pnpm check:bundle</code>, which fails the build when a file leaves its budget.</p>`,code:`<h2>Code example</h2>

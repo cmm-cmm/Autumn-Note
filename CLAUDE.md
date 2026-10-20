@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev                # Vite dev server with HMR
 pnpm build              # Build ES + UMD + CSS → dist/
-pnpm build:demo         # Build demo site (vite.demo.config.js)
+pnpm build:demo         # Build the library, then the demo site (sizes come from dist/)
 pnpm build:cdn          # CDN build with bundle visualizer
 pnpm preview            # Preview dist/ locally
 

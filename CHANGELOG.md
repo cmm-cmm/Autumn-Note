@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The context menu no longer covers what you are typing.** It used to open with its corner at the pointer, so a right-click just past the caret hid the rest of that line. It now finds the line being edited (the caret's or the selection's line nearest the click, or the caret's line for the keyboard menu key) and opens below it, or above it when there is no room below. When neither side has room for the whole menu, it takes the roomier side and scrolls.
+- **A shorter context menu on phones.** On screens up to 640 px wide and on touch devices, Cut, Copy, Paste, Bold, Italic and Underline share one row of labelled icon buttons, and the other rows are tall enough to tap.
+- **The scrolling toolbar shows that it scrolls.** In a one-row toolbar (screens up to 640 px, or `toolbarOverflow: 'scroll'`), a chevron over a fade appears at each edge while there are more controls that way, and scrolls the row when pressed. Keyboard navigation is unchanged.
+- **The site's version, sizes and release notes come from the repository.** The version, the npm alias, the release-notes link and the bundle sizes on the site are filled in at build time from `package.json` and `dist/`, and the docs' "What's new" section is rendered from this file. `pnpm build:demo` now builds the library first.
+
 ## [4.1.0] - 2026-10-20
 
 Redrawn icons, a fully themeable dark mode, styled dropdowns and a 4.3 KiB lighter `autumnnote-plus/core`, plus fixes for Markdown shortcuts on mobile keyboards, headings, and code blocks loaded as HTML (now readable and syntax-highlighted). No breaking changes: options, events and the API are the same as 4.0.0, with one addition, `codeTooltip.detectLanguage(pre)`.

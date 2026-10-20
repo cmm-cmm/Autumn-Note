@@ -39,7 +39,7 @@
     "@type": "FAQPage",
     "mainEntity": [
       { "@type": "Question", "name": "How is autumnnote-plus different from autumnnote?", "acceptedAnswer": { "@type": "Answer", "text": "autumnnote-plus is an unofficial fork of Autumn Note 3.1.0. It keeps the same API, options, events and CSS classes, and adds security fixes, an Indonesian locale, accessibility fixes and a smaller CDN build that loads locales on demand." } },
-      { "@type": "Question", "name": "Can I switch without changing my imports?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Install it under the old name with an npm alias: npm install autumnnote@npm:autumnnote-plus@^4.0.0." } },
+      { "@type": "Question", "name": "Can I switch without changing my imports?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Install it under the old name with an npm alias: npm install autumnnote@npm:autumnnote-plus@^__ASN_VERSION__." } },
       { "@type": "Question", "name": "Is it free to use?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is published under the MIT License, the same licence as the original project, for personal and commercial use." } },
       { "@type": "Question", "name": "Which package managers and Node.js versions work?", "acceptedAnswer": { "@type": "Answer", "text": "npm, pnpm, yarn and Bun all install it. The package asks for Node 22.22.2 or newer, or 24.15.0 or newer. The CDN build needs nothing but a modern browser." } },
       { "@type": "Question", "name": "Does it use document.execCommand?", "acceptedAnswer": { "@type": "Answer", "text": "No. Every formatting command is the editor's own DOM transform, and copy and cut use the async Clipboard API." } }
@@ -123,7 +123,7 @@
 
           <dl class="hero__facts">
             <div><dt class="label">Version</dt><dd>__ASN_VERSION__</dd></div>
-            <div><dt class="label">CDN build</dt><dd>93 KB gzip</dd></div>
+            <div><dt class="label">CDN build</dt><dd>__ASN_SIZE_UMD__ KiB gzip</dd></div>
             <div><dt class="label">Licence</dt><dd>MIT</dd></div>
           </dl>
         </div>
@@ -256,7 +256,7 @@
           <h2 class="display-l" id="fork-title">The same editor, with the <span class="accent">holes</span> closed.</h2>
           <p class="lede">autumnnote-plus starts from Autumn Note 3.1.0 by Minh Pham. A security audit of that release found ways for sanitised content to turn back into live markup. Each one is fixed here with a regression test, and each was reported to the original maintainer.</p>
           <div class="fork__links">
-            <a class="btn btn--ghost" href="https://github.com/habibiahmada/autumnnote-plus/blob/main/CHANGELOG.md#400---2026-10-19" rel="noopener noreferrer">Read the 4.0.0 changelog</a>
+            <a class="btn btn--ghost" href="__ASN_RELEASE_URL__" rel="noopener noreferrer">Read the v__ASN_VERSION__ release notes</a>
             <a class="btn btn--text" href="https://github.com/habibiahmada/autumnnote-plus/blob/main/SECURITY.md" rel="noopener noreferrer">Security policy</a>
           </div>
         </div>
@@ -394,11 +394,11 @@
         <div class="faq__list">
           <details class="faq__item" data-reveal>
             <summary><span>How is autumnnote-plus different from autumnnote?</span><span class="faq__mark" aria-hidden="true"></span></summary>
-            <p>It is an unofficial fork of Autumn Note 3.1.0. The API, options, events, CSS classes and the <code>AutumnNote</code> global are unchanged. On top of that come the security fixes above, an Indonesian locale, keyboard and contrast fixes in the editor UI, and a CDN build that no longer carries every language (109 KB down to 93 KB gzip).</p>
+            <p>It is an unofficial fork of Autumn Note 3.1.0. The API, options, events, CSS classes and the <code>AutumnNote</code> global are unchanged. On top of that come the security fixes above, an Indonesian locale, keyboard and contrast fixes in the editor UI, and a CDN build that no longer carries every language (109.2 KiB gzip in 3.1.0, __ASN_SIZE_UMD__ KiB now).</p>
           </details>
           <details class="faq__item" data-reveal>
             <summary><span>Can I switch without changing my imports?</span><span class="faq__mark" aria-hidden="true"></span></summary>
-            <p>Yes. Install it under the old name with an npm alias: <code>npm install autumnnote@npm:autumnnote-plus@^4.0.0</code>. Code that imports <code>'autumnnote'</code> keeps working.</p>
+            <p>Yes. Install it under the old name with an npm alias: <code>npm install autumnnote@npm:autumnnote-plus@^__ASN_VERSION__</code>. Code that imports <code>'autumnnote'</code> keeps working.</p>
           </details>
           <details class="faq__item" data-reveal>
             <summary><span>Is it free to use?</span><span class="faq__mark" aria-hidden="true"></span></summary>
