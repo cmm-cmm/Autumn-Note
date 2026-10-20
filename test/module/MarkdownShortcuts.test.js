@@ -118,7 +118,7 @@ describe('MarkdownShortcuts block pattern matching', () => {
     vi.spyOn(ms, '_convertToList');
     vi.spyOn(ms, '_getLineContext').mockReturnValue({ text: '1.', range: null, lineNode: null });
     ms._applyBlockRule();
-    expect(ms._convertToList).toHaveBeenCalledWith('ol');
+    expect(ms._convertToList).toHaveBeenCalledWith('ol', 1);
   });
 
   it('recognises [ ] as checklist pattern', () => {
@@ -575,5 +575,101 @@ describe('MarkdownShortcuts caret placement', () => {
     expect(range.collapsed).toBe(true);
     expect(block.contains(range.startContainer) || range.startContainer === block).toBe(true);
     expect(editable.firstElementChild.textContent).toBe('First paragraph.');
+  });
+});
+
+// ── Keyboards that send no usable keydown ────────────────────────────────────
+// Virtual keyboards (key "Unidentified"), IMEs, autocorrect and dictation insert
+// text through beforeinput/input only, so the Space keydown rule never ran.
+
+describe('MarkdownShortcuts block rules from the input event', () => {
+  const typeSpace = (text, { space = ' ', inputType = 'insertText', isComposing = false, html } = {}) => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    const { editable } = ctx.layoutInfo;
+    if (html) editable.innerHTML = html;
+    else editable.innerHTML = '<p></p>';
+    const host = editable.querySelector('li:last-child') ?? editable.querySelector('p');
+    host.textContent = text + space;
+    setCursorAt(host.firstChild, host.firstChild.length);
+    editable.dispatchEvent(new InputEvent('input', { bubbles: true, inputType, data: space, isComposing }));
+    return { editable, ctx };
+  };
+
+  it.each([
+    ['-', '<ul><li><br></li></ul>'],
+    ['*', '<ul><li><br></li></ul>'],
+    ['1.', '<ol><li><br></li></ol>'],
+    ['>', '<blockquote><br></blockquote>'],
+    ['##', '<h2><br></h2>'],
+  ])('converts "%s" + space typed without a keydown', (marker, expected) => {
+    const { editable, ctx } = typeSpace(marker);
+    expect(editable.innerHTML).toBe(expected);
+    expect(ctx.triggerEvent).toHaveBeenCalledWith('change', expect.anything());
+  });
+
+  it('accepts the no-break space Chrome inserts at the end of a line', () => {
+    const { editable } = typeSpace('1.', { space: ' ' });
+    expect(editable.innerHTML).toBe('<ol><li><br></li></ol>');
+  });
+
+  it('waits while an IME composition is still open', () => {
+    const { editable } = typeSpace('-', { isComposing: true });
+    expect(editable.querySelector('ul')).toBeNull();
+  });
+
+  it('leaves text that only ends in a space alone', () => {
+    const { editable } = typeSpace('hello');
+    expect(editable.innerHTML).toBe('<p>hello </p>');
+  });
+
+  it('ignores deletions', () => {
+    const { editable } = typeSpace('-', { inputType: 'deleteContentBackward' });
+    expect(editable.querySelector('ul')).toBeNull();
+  });
+});
+
+describe('MarkdownShortcuts ordered-list numbers', () => {
+  const fire = (html, text) => {
+    const ctx = makeContext();
+    const ms = new MarkdownShortcuts(ctx);
+    ms.initialize();
+    const { editable } = ctx.layoutInfo;
+    editable.innerHTML = html;
+    const host = editable.querySelector('li:last-child') ?? editable.lastElementChild;
+    host.textContent = text;
+    setCursorAt(host.firstChild, text.length);
+    return { fired: ms._applyBlockRule(), editable };
+  };
+
+  it('starts an ordered list at the typed number', () => {
+    const { fired, editable } = fire('<p></p>', '3.');
+    expect(fired).toBe(true);
+    expect(editable.innerHTML).toBe('<ol start="3"><li><br></li></ol>');
+  });
+
+  it('keeps 1. as a plain ordered list without a start attribute', () => {
+    expect(fire('<p></p>', '1.').editable.innerHTML).toBe('<ol><li><br></li></ol>');
+  });
+
+  it('typing "2. " on a new item of an ordered list keeps the list and drops the marker', () => {
+    const { fired, editable } = fire('<ol><li>angka</li><li></li></ol>', '2.');
+    expect(fired).toBe(true);
+    expect(editable.querySelector('ol').children).toHaveLength(2);
+    expect(editable.querySelector('li:last-child').textContent).toBe('');
+    expect(editable.querySelector('p')).toBeNull();
+  });
+
+  it('typing "- " inside a bullet list keeps the list', () => {
+    const { editable } = fire('<ul><li>satu</li><li></li></ul>', '-');
+    expect(editable.querySelectorAll('ul > li')).toHaveLength(2);
+    expect(editable.querySelector('p')).toBeNull();
+  });
+
+  it('still switches a bullet list to numbers when "1. " is typed in it', () => {
+    const { editable } = fire('<ul><li></li></ul>', '1.');
+    expect(editable.querySelector('ol')).not.toBeNull();
+    expect(editable.querySelector('ul')).toBeNull();
   });
 });

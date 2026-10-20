@@ -8,7 +8,7 @@
  *   #[#[#]]·     → H1 / H2 / H3
  *   >·           → blockquote
  *   -·  or *·   → unordered list item
- *   1.·          → ordered list item
+ *   1.·  or 3)·  → ordered list item (a number other than 1 sets `start`)
  *   [ ]·         → checklist item
  *   ---          → horizontal rule  (on Enter)
  *   ```          → code block       (on Enter)
@@ -35,7 +35,7 @@ export class MarkdownShortcuts {
     if (!this.options.markdownShortcuts) return this;
     const editable = this.context.layoutInfo.editable;
     const d1 = on(editable, 'keydown', (e) => this._onKeydown(/** @type {KeyboardEvent} */ (e)));
-    const d2 = on(editable, 'input', () => this._onInput());
+    const d2 = on(editable, 'input', (e) => this._onInput(/** @type {InputEvent} */ (e)));
     this._disposers.push(d1, d2);
     return this;
   }
@@ -112,17 +112,30 @@ export class MarkdownShortcuts {
     return display === 'block' || display === 'list-item' || display === 'table-cell';
   }
 
-  /** Applies block rule on Space key. Returns true if a rule fired. */
-  _applyBlockRule() {
+  /**
+   * Applies a block rule when Space is typed. Returns true if a rule fired.
+   *
+   * Called from keydown before the space is inserted, and from the input event
+   * after it was (`spaceTyped`): virtual keyboards, IMEs, autocorrect and
+   * dictation insert text without a usable keydown (`key` is "Unidentified"),
+   * so the keydown path alone never fired for them.
+   * @param {boolean} [spaceTyped] - the line already ends in the typed space
+   */
+  _applyBlockRule(spaceTyped = false) {
     const ctx = this._getLineContext();
     if (!ctx) return false;
-    const { text } = ctx;
+    let { text } = ctx;
+    if (spaceTyped) {
+      // Chrome inserts a trailing space as U+00A0 in contenteditable.
+      if (!/[ \u00a0]$/.test(text)) return false;
+      text = text.slice(0, -1);
+    }
 
     const blockPatterns = [
       { re: /^(#{1,6})$/, handler: (m) => this._convertToHeading(m[1].length) },
       { re: /^>$/, handler: () => this._convertToBlockquote() },
       { re: /^[-*+]$/, handler: () => this._convertToList('ul') },
-      { re: /^1[.)]$/, handler: () => this._convertToList('ol') },
+      { re: /^(\d{1,9})[.)]$/, handler: (m) => this._convertToList('ol', Number(m[1])) },
       // `[x]` starts the item already ticked, matching the `- [x]` the
       // converter reads and writes.
       { re: /^\[([ xX])\]$/, handler: (m) => this._convertToChecklist(m[1].toLowerCase() === 'x') },
@@ -183,11 +196,34 @@ export class MarkdownShortcuts {
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
-  _convertToList(type) {
+  /**
+   * @param {'ul'|'ol'} type
+   * @param {number} [start] - first number of a new ordered list (`3.` → 3)
+   */
+  _convertToList(type, start = 1) {
+    const list = this._listAtCaret();
     this._selectLineAndDelete();
-    if (type === 'ul') Style.insertUnorderedList();
-    else Style.insertOrderedList();
+    // Already in this kind of list (typing "2. " on the item Enter just made):
+    // the marker is redundant. Converting again would toggle the list off.
+    if (list?.tagName.toLowerCase() !== type || list.classList.contains('an-checklist')) {
+      if (type === 'ul') Style.insertUnorderedList();
+      else Style.insertOrderedList();
+      const ol = type === 'ol' ? this._listAtCaret() : null;
+      // Only a list this shortcut just made; one merged into a neighbour keeps its numbering.
+      if (ol && start !== 1 && ol.children.length === 1) ol.setAttribute('start', String(start));
+    }
     this.context.triggerEvent('change', this.context.getHTML());
+  }
+
+  /** @returns {HTMLElement|null} the list holding the caret, if any */
+  _listAtCaret() {
+    const sel = globalThis.getSelection();
+    const node = sel?.rangeCount ? sel.getRangeAt(0).startContainer : null;
+    const el = /** @type {Element|null} */ (
+      node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement ?? null
+    );
+    const list = /** @type {HTMLElement|null} */ (el?.closest('ul, ol') ?? null);
+    return list && this.context.layoutInfo.editable.contains(list) ? list : null;
   }
 
   /** @param {boolean} [checked] - start the new item ticked (from `[x]`) */
@@ -220,12 +256,25 @@ export class MarkdownShortcuts {
     this.context.triggerEvent('change', this.context.getHTML());
   }
 
+  /**
+   * True when this input event inserted text ending in a space, outside an
+   * active IME composition (the composition commits its own text first).
+   * @param {InputEvent} [e]
+   * @returns {boolean}
+   */
+  _typedSpace(e) {
+    if (!e || e.isComposing || typeof e.inputType !== 'string') return false;
+    return e.inputType.startsWith('insert') && /[ \u00a0]$/.test(e.data ?? '');
+  }
+
   // ---------------------------------------------------------------------------
   // Inline rules (input event)
   // ---------------------------------------------------------------------------
 
-  _onInput() {
+  /** @param {InputEvent} [e] */
+  _onInput(e) {
     if (this._inCodeContext()) return;
+    if (this._typedSpace(e) && this._applyBlockRule(true)) return;
     const sel = globalThis.getSelection();
     if (!sel?.rangeCount) return;
     const range = sel.getRangeAt(0);

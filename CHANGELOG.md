@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Markdown block shortcuts work on every keyboard.** `1. `, `- `, `> `, `# ` and the other block shortcuts fired only on a Space `keydown`. Virtual keyboards (which report `key: "Unidentified"`), IMEs, autocorrect and dictation insert text without one, so on them typing `1. ` stayed plain text. The rules now also run on the `input` event when the inserted text ends in a space (including the no-break space Chrome inserts).
+- Typing any number with `.` or `)` starts an ordered list, and a number other than 1 sets its `start` (`3. ` begins at 3). Typing `2. ` or `- ` on a new item of a list of the same kind keeps the list and drops the marker; before, it toggled the list back to paragraphs.
 - **Block shortcuts put the caret in the wrong block.** Typing `## `, `# `, `> `, `- ` or `1. ` on an empty line after another paragraph made the heading, quote or list, but left the caret at the end of the paragraph above, so the next characters went there. The same happened to the Heading, Quote and list commands on any empty line. `formatBlock` and `toggleList` saved the caret as a character offset, which cannot tell the end of one block from the empty block after it; they now put the caret back in the empty block.
 
 ## [4.0.0] - 2026-10-19
