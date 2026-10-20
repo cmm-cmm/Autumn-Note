@@ -10,6 +10,8 @@ overrides:
   #   nanoid           custom generators loop forever when size is 0
   #   undici           GHSA-rfgv-xxqx-mfg5 / -w293-vg96-wgc3 / -vp8m-p9jh-q5pm (jsdom)
   #   source-map-js    GHSA-68fv-2mgg-jv7q — event-loop DoS (@vue/compiler-*)
+  #   vite             GHSA-587h-7wmj-h5pm — launch-editor existence check bypass on
+  #                    Windows (dev server only; vitest carries its own vite)
   # Each is a patch-level bump within the same major, so pinning forward is
   # safe. Raise these to the advisory's `patched_versions` — a floor that
   # merely satisfies an older advisory silently stops holding when the next
@@ -19,6 +21,8 @@ overrides:
   nanoid: '>=3.3.17'
   undici: '>=8.10.2'
   source-map-js: '>=1.2.2'
+  # Caret, not >=: a vite major would change the build, not just patch it.
+  vite: '^8.2.4'
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
