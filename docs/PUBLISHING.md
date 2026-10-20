@@ -12,6 +12,8 @@ They are an unofficial fork of Autumn Note (`autumnnote`). Keep the fork notice 
 
 ## How releases normally happen
 
+Changes reach `main` only through `dev` → `staging` → `main` (see "Branches" in [CONTRIBUTING.md](../CONTRIBUTING.md#branches)), so a release is checked on the staging Preview before it goes out.
+
 1. A commit to `main` changes the version in `package.json`.
 2. **Auto Release** (`.github/workflows/auto-release.yml`) tags `v<version>`, creates the GitHub Release and starts **Publish to npm**.
 3. **Publish to npm** (`.github/workflows/publish.yml`) runs the browser tests on Chromium, Firefox and WebKit, checks that all three `package.json` versions match the tag, runs `pnpm check` and `pnpm audit`, and publishes each package whose version is not on npm yet, through npm trusted publishing (no token; every version gets a provenance attestation).
@@ -83,7 +85,11 @@ Publish to npm will then start from the release event and skip every package tha
 
 1. Update `CHANGELOG.md`: move the entries under `## [Unreleased]` into a new `## [x.y.z] - YYYY-MM-DD` section.
 2. Set the same version in `package.json`, `packages/react/package.json` and `packages/vue/package.json`. If the core's major version changes, update the wrappers' `peerDependencies` range for `autumnnote-plus` too.
-3. Commit and push to `main`. Auto Release and Publish to npm do the rest; watch both runs in the Actions tab.
+3. Commit on `dev`, open a pull request from `dev` to `staging`, and merge it once CI is green.
+4. Check the staging Preview at <https://staging-autumnnote-plus.habibiahmadaziz.workers.dev> once the Cloudflare check on the merge commit is green.
+5. Open a pull request from `staging` to `main` and merge it once CI is green. That merge is the release: Auto Release and Publish to npm do the rest; watch both runs in the Actions tab.
+
+`staging` and `main` are protected: a direct push is refused, and the branch-policy check rejects a pull request into `main` from anywhere but `staging`.
 
 Follow semantic versioning: a change that breaks existing pages or imports is a new major version.
 

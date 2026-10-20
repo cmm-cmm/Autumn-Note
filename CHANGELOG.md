@@ -9,14 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-20
+
+Redrawn icons, a fully themeable dark mode, styled dropdowns and a 4.3 KiB lighter `autumnnote-plus/core`, plus fixes for Markdown shortcuts on mobile keyboards, headings, and code blocks loaded as HTML (now readable and syntax-highlighted). No breaking changes: options, events and the API are the same as 4.0.0, with one addition, `codeTooltip.detectLanguage(pre)`.
+
 ### Changed
 
 - **Built-in icons are redrawn.** The toolbar and shared icons (`core/icon-paths.js`) are a new set drawn for square line caps and mitred joins: sharp frames, 45° cuts where a corner needs softening, square list bullets and a 1.75px stroke. The remaining dialog, tooltip and table icons follow the same rules. `svgIcon()` and the new `ICON_STROKE` constant in `core/dom.js` hold the stroke style in one place. Custom icons set through the `icons` option are unaffected. The ES build is about 0.3 KiB gzip smaller.
 - The demo site is redesigned and moves to `autumnnote.habibiahmada.dev`. It is English only; the editor keeps its nine languages, and the demos let you switch them. Install commands switch between npm, pnpm, yarn and Bun, and the Open Graph image and favicons are new.
 - **The dark theme is themeable everywhere.** Dialogs, menus, popovers, inputs, the filled primary button and the pressed-toggle accent read new tokens (`--an-bg-raised`, `--an-bg-subtle`, `--an-border-strong`, `--an-text-soft`, `--an-primary-strong`, `--an-active` and their tints) instead of literal colours, so `themeVars` and `.an-theme-dark` overrides reach them. Defaults are unchanged; see README "Theming".
-
 - **Dropdown lists are styled.** Where the browser supports customizable selects (Chromium 135+), the toolbar's Style, Font, Size and Line height lists, the code-block language list and the icon dialog's lists open in the editor's own colours and radius, with font previews; other browsers keep their native picker. Toolbar dropdowns keep the width they have natively, so the toolbar does not shift as the value changes (`lockSelectWidth()` in `core/dom.js`).
-
 - **`autumnnote-plus/core` is about 4.3 KiB gzip lighter in an app bundle.** `editor.formatBlock('pre')` ran the code-language detector itself, so every app on the core entry shipped `detectLang` even though only the code tooltip (not in core) can apply what it finds. Detection moves to the new `codeTooltip.detectLanguage(pre)`, and a bundler now drops `detectLang` from a core app that does not call it. The full builds are unchanged. In the core preset, formatting a code block no longer logs a missing-module warning.
 - **The README shows the new look.** The `autumnnote+` wordmark replaces the old leaf banner, and a typing demo GIF and a screenshot of the site (light or dark, following the reader's theme) replace the 3.x screenshot. The Minimal build table now lists both the size an app ships (46.1 KiB for `autumnnote-plus/core`, 94.5 KiB for everything) and the size of the unminified `dist` files.
 - **The site publishes `/llms.txt` and `/llms-full.txt`** for AI assistants and coding agents. `llms.txt` is a short overview in the llmstxt.org format; `llms-full.txt` adds the README's complete reference (options, API, events, toolbar, shortcuts, theming, languages). Both are generated at site build time from `demo/llms.txt` and the README (`scripts/vite-plugin-llms.mjs`), so they cannot drift from the docs.

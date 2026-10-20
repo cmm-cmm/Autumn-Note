@@ -1,6 +1,11 @@
 name = "autumnnote-plus"
 compatibility_date = "2026-06-30"
 workers_dev = false
+# Production is only on the custom domain below, but the staging Preview
+# (scripts/cloudflare-preview.mjs) is served at
+# staging-autumnnote-plus.habibiahmadaziz.workers.dev. Without this, Preview
+# URLs follow workers_dev and answer "error code: 1042".
+preview_urls = true
 
 routes = [
   { pattern = "autumnnote.habibiahmada.dev", custom_domain = true },
@@ -12,8 +17,8 @@ not_found_handling = "404-page"
 # Default html_handling: pages are served at /docs and /playground (the site
 # links them that way); /docs.html redirects there.
 
-# Builds of non-production branches (dev) deploy with `wrangler preview`,
-# which refuses to run without this block. It may stay empty: assets and
-# compatibility settings above apply to previews too. A preview is its own
-# deployment named after the branch; it never touches the production site.
+# Previews of the staging branch (scripts/cloudflare-preview.mjs runs
+# `wrangler preview`, which refuses to run without this block). It may stay
+# empty: assets and compatibility settings above apply to previews too. A
+# Preview is its own deployment; it never touches the production site.
 [previews]

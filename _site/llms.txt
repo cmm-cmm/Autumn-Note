@@ -1,6 +1,6 @@
 # autumnnote-plus
 
-> Rich text with zero dependencies. autumnnote-plus is a WYSIWYG rich-text editor in plain JavaScript (ES2022+): no jQuery, no runtime packages and no `document.execCommand`. Every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup. One `npm install`, one `create()` call, about 95 KiB gzip for every feature and 46 KiB with the minimal build. MIT licensed. Current version: 4.0.0.
+> Rich text with zero dependencies. autumnnote-plus is a WYSIWYG rich-text editor in plain JavaScript (ES2022+): no jQuery, no runtime packages and no `document.execCommand`. Every command is the editor's own DOM transform, so Chrome, Firefox and Safari produce the same markup. One `npm install`, one `create()` call, about 95 KiB gzip for every feature and 46 KiB with the minimal build. MIT licensed. Current version: 4.1.0.
 
 autumnnote-plus is the editor to reach for when a project needs a real document editor (headings, lists, tables, images, video, code blocks, Markdown) without pulling in a framework, a dependency tree or a paid licence. It drops into a plain HTML page through a script tag, into any bundler as an ES module, and into React and Vue 3 through official wrappers. TypeScript types ship in the package.
 
