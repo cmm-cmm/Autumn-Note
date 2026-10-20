@@ -83,7 +83,7 @@ Publish to npm will then start from the release event and skip every package tha
 
 1. Update `CHANGELOG.md`: move the entries under `## [Unreleased]` into a new `## [x.y.z] - YYYY-MM-DD` section.
 2. Set the same version in `package.json`, `packages/react/package.json` and `packages/vue/package.json`. If the core's major version changes, update the wrappers' `peerDependencies` range for `autumnnote-plus` too.
-3. Commit and push to `main`. Auto Release and Publish to npm do the rest; watch both runs in the Actions tab.
+3. Commit on `dev` and open a pull request to `main`. `main` is protected: a push straight to it is refused, and the pull request merges only once the seven CI checks pass. The merge is the release: Auto Release and Publish to npm do the rest; watch both runs in the Actions tab.
 
 Follow semantic versioning: a change that breaks existing pages or imports is a new major version.
 

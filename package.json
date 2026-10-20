@@ -1,6 +1,6 @@
 {
   "name": "autumnnote-plus",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Unofficial fork of Autumn Note with security fixes. WYSIWYG rich-text editor built with vanilla JavaScript: zero dependencies, no jQuery. Dark mode, @mention, markdown shortcuts, bubble toolbar. React and Vue 3 wrappers: autumnnote-plus-react, autumnnote-plus-vue.",
   "type": "module",
   "main": "dist/autumnnote.cjs",
