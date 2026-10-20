@@ -7,6 +7,12 @@ workers_dev = false
 # URLs follow workers_dev and answer "error code: 1042".
 preview_urls = true
 
+# The Worker's only hostname. habibiahmada.dev and www.habibiahmada.dev are a
+# separate site (hosted on Vercel) in the same Cloudflare zone, so never give
+# this Worker a zone route there: a pattern such as `*.habibiahmada.dev/*`
+# also matches www and replaces that site with this one. That happened once
+# through a route added in the dashboard; wrangler deploy does not remove
+# routes it did not create, so check with the command in docs/PUBLISHING.md.
 routes = [
   { pattern = "autumnnote.habibiahmada.dev", custom_domain = true },
 ]

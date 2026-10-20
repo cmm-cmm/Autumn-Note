@@ -93,6 +93,19 @@ Publish to npm will then start from the release event and skip every package tha
 
 Follow semantic versioning: a change that breaks existing pages or imports is a new major version.
 
+## The site's domain
+
+The demo site is the Cloudflare Worker `autumnnote-plus`, and it should answer on one hostname only: the custom domain `autumnnote.habibiahmada.dev` (in `wrangler.toml`). The zone `habibiahmada.dev` also holds a separate personal site at `habibiahmada.dev` and `www.habibiahmada.dev`, hosted on Vercel.
+
+**Never add a Worker route for that zone.** A route such as `*.habibiahmada.dev/*` also matches `www`, so it replaced the personal site with this one until the route was deleted. Custom domains don't need routes. `wrangler deploy` neither creates nor removes routes it didn't define, so a route added in the dashboard stays until someone deletes it.
+
+To check, look at **Workers & Pages → autumnnote-plus → Settings → Domains & Routes**: it should list `autumnnote.habibiahmada.dev` and no routes. From a shell:
+
+```bash
+curl -sI https://www.habibiahmada.dev | grep -i x-vercel                  # personal site: answers from Vercel
+curl -s https://autumnnote.habibiahmada.dev | grep -o '<title>[^<]*'      # this site
+```
+
 ## Using a build without publishing
 
 To try a commit in another project before releasing it:
