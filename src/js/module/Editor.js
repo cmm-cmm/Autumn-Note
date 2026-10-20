@@ -14,7 +14,10 @@ import { isRawText, on } from '../core/dom.js';
 import { sanitiseHTML, sanitiseToBody, sanitiseUrl } from '../core/sanitise.js';
 import { TextCounter } from '../core/count.js';
 import { markdownToHTML, htmlToMarkdown } from '../core/markdown.js';
-import { detectLang } from '../core/detectLang.js';
+// Not used here: CodeTooltip runs the detector. Importing it next to markdown
+// keeps the two side by side in the full bundle, where they gzip ~0.3 KiB
+// smaller; the module has no side effects, so a core build still drops it.
+import '../core/detectLang.js';
 
 /** Formatting elements that are dropped from output when empty and attribute-less. */
 const EMPTY_INLINE_TAGS = new Set(['B', 'I', 'U', 'S', 'SUP', 'SUB', 'STRONG', 'EM', 'STRIKE']);
@@ -702,13 +705,11 @@ export class Editor {
             ? /** @type {Element} */ (container).closest('pre')
             : (/** @type {Element|null} */ (container.parentElement))?.closest('pre')
         );
-        if (pre && !/** @type {HTMLElement} */ (pre).dataset.language) {
-          const code = pre.textContent || '';
-          const lang = detectLang(code);
-          if (lang) {
-            this.context.invoke('codeTooltip.applyLanguage', pre, lang);
-            return; // applyLanguage already calls afterCommand internally
-          }
+        // The detector lives in CodeTooltip, so a build without that module
+        // (the core preset) does not pull it in.
+        if (pre && this.context._modules.has('codeTooltip')
+          && this.context.invoke('codeTooltip.detectLanguage', pre)) {
+          return; // applyLanguage already calls afterCommand internally
         }
       }
     }

@@ -5,6 +5,7 @@ import { createElement, on, portalOf, setIcon, svgIcon } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 import { writeClipboard } from '../core/clipboard.js';
 import { PATHS } from '../core/icon-paths.js';
+import { detectLang } from '../core/detectLang.js';
 
 const SHOW_DELAY = 100;
 const HIDE_DELAY = 180;
@@ -64,12 +65,24 @@ export class CodeTooltip {
     this._langSelect = null;
     this._prismScript = null; // script element while Prism is loading
     this._asyncDisposers = [];
+    /** <code> elements already highlighted or queued, so each is done once. */
+    this._highlighted = new WeakSet();
   }
 
   initialize() {
     this._el = this._buildTooltip();
     portalOf(this.context).appendChild(this._el);
     this._ensurePrism();
+
+    // Code that arrives as HTML (the initial content, setHTML(), a paste, a
+    // restored draft) names its language but was never highlighted: Prism
+    // otherwise runs only when someone picks a language in this tooltip.
+    if (this.context.options.codeHighlight) {
+      const off = this.context.on?.('change', () => this._highlightPending());
+      if (off) this._disposers.push(off);
+      if (this._prismScript) this._onScriptLoad(this._prismScript, () => this._highlightPending());
+      else this._highlightPending();
+    }
 
     const editable = this.context.layoutInfo.editable;
 
@@ -338,6 +351,63 @@ export class CodeTooltip {
     pre.classList.toggle('an-code-line-numbers');
     this._syncLineNumbersBtn();
     this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Highlights every code block that names a language (`<code class=
+   * "language-…">`) but holds no Prism tokens yet, and mirrors the language
+   * onto its `<pre>` the way picking it in the tooltip does.
+   *
+   * A block holding the caret is skipped: re-rendering it would move the caret
+   * under the user. This never fires `change` itself, so running it from the
+   * change event cannot loop.
+   */
+  _highlightPending() {
+    const _w = /** @type {any} */ (globalThis);
+    if (!this.context.options.codeHighlight || !_w.Prism || !this.context._alive) return;
+    const sel = globalThis.getSelection();
+    const caret = sel?.rangeCount ? sel.getRangeAt(0).startContainer : null;
+
+    for (const codeEl of this.context.layoutInfo.editable.querySelectorAll('pre > code[class*="language-"]')) {
+      if (this._highlighted.has(codeEl) || codeEl.querySelector('.token')) continue;
+      if (caret && codeEl.contains(caret)) continue;
+      const lang = _LANG_CLASS_RE.exec(codeEl.className)?.[1];
+      if (!lang) continue;
+      this._highlighted.add(codeEl);
+
+      const pre = /** @type {HTMLElement} */ (codeEl.parentElement);
+      _setLanguageClass(pre, lang);
+      // Store the picker's own id, so `language-js` reads as JavaScript there
+      // rather than Plain text: an alias shares its grammar object with it.
+      const grammar = _w.Prism.languages[lang];
+      const known = LANGUAGES.find(([value]) => value === lang)
+        ?? (grammar ? LANGUAGES.find(([value]) => value && _w.Prism.languages[value] === grammar) : undefined);
+      if (!pre.dataset.language) pre.dataset.language = known?.[0] ?? lang;
+
+      const run = () => {
+        if (!this.context._alive || !codeEl.isConnected || codeEl.querySelector('.token')) return;
+        codeEl.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+        _w.Prism.highlightElement(codeEl);
+      };
+      if (_w.Prism.languages[lang]) run();
+      // Fetch a grammar only for a language the picker offers; any other
+      // class name would request a file that does not exist.
+      else if (LANGUAGES.some(([value]) => value === lang)) this._loadPrismComponent(lang, run);
+    }
+  }
+
+  /**
+   * Detects the language of a code block that has none yet and applies it.
+   * Called by `editor.formatBlock('pre')`.
+   * @param {HTMLElement} pre
+   * @returns {boolean} true when a language was applied
+   */
+  detectLanguage(pre) {
+    if (!pre || pre.dataset.language) return false;
+    const lang = detectLang(pre.textContent || '');
+    if (!lang) return false;
+    this.applyLanguage(pre, lang);
+    return true;
   }
 
   /**

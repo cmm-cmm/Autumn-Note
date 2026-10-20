@@ -663,3 +663,109 @@ describe('CodeTooltip language picker coverage', () => {
     expect(new Set(values).size).toBe(values.length);
   });
 });
+
+describe('CodeTooltip.detectLanguage', () => {
+  const PLAIN = '<pre>const x = 1;\nconsole.log(x);</pre>';
+
+  it('detects and applies a language to a block that has none', () => {
+    const { ct, ctx } = makeTooltip(PLAIN);
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(ct.detectLanguage(pre)).toBe(true);
+    expect(pre.dataset.language).toBe('javascript');
+    expect(pre.querySelector('code').classList.contains('language-javascript')).toBe(true);
+  });
+
+  it('leaves a block that already has a language alone', () => {
+    const { ct, ctx } = makeTooltip(PLAIN);
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    pre.dataset.language = 'python';
+    expect(ct.detectLanguage(pre)).toBe(false);
+    expect(pre.dataset.language).toBe('python');
+  });
+
+  it('returns false when nothing is detected', () => {
+    const { ct, ctx } = makeTooltip('<pre>hello</pre>');
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(ct.detectLanguage(pre)).toBe(false);
+    expect(pre.dataset.language).toBeUndefined();
+    expect(ct.detectLanguage(null)).toBe(false);
+  });
+});
+
+describe('CodeTooltip highlights code loaded as HTML', () => {
+  const fakePrism = () => ({
+    languages: { javascript: {} },
+    highlightElement: vi.fn((el) => { el.innerHTML = `<span class="token keyword">${el.textContent}</span>`; }),
+  });
+  const withPrism = (html) => {
+    const Prism = fakePrism();
+    vi.stubGlobal('Prism', Prism);
+    const ctx = makeContext(html);
+    ctx.options.codeHighlight = true;
+    let onChange = null;
+    ctx.on = vi.fn((name, fn) => { if (name === 'change') onChange = fn; return () => {}; });
+    const ct = new CodeTooltip(ctx);
+    ct.initialize();
+    return { ctx, ct, Prism, change: () => onChange?.() };
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('highlights a block that names its language on <code> only, on initialize', () => {
+    const { ctx, Prism } = withPrism('<pre><code class="language-javascript">const x = 1;</code></pre>');
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(Prism.highlightElement).toHaveBeenCalledTimes(1);
+    expect(pre.querySelector('.token')).not.toBeNull();
+    // Mirrored the way the language picker does it.
+    expect(pre.classList.contains('language-javascript')).toBe(true);
+    expect(pre.dataset.language).toBe('javascript');
+  });
+
+  it('highlights blocks added later when the content changes, once each', () => {
+    const { ctx, Prism, change } = withPrism('<p>text</p>');
+    expect(Prism.highlightElement).not.toHaveBeenCalled();
+    ctx.layoutInfo.editable.innerHTML = '<pre><code class="language-javascript">let a;</code></pre>';
+    change();
+    change();
+    expect(Prism.highlightElement).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the block holding the caret, plain blocks and unknown languages alone', () => {
+    const html = '<pre><code class="language-javascript">typing</code></pre><pre>plain</pre>'
+      + '<pre><code class="language-foo">x</code></pre>';
+    const Prism = fakePrism();
+    vi.stubGlobal('Prism', Prism);
+    const ctx = makeContext(html);
+    ctx.options.codeHighlight = true;
+    const code = ctx.layoutInfo.editable.querySelector('code');
+    const r = document.createRange();
+    r.setStart(code.firstChild, 2);
+    r.collapse(true);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    const appended = vi.spyOn(document.head, 'appendChild');
+    new CodeTooltip(ctx).initialize();
+    expect(Prism.highlightElement).not.toHaveBeenCalled();
+    expect(appended).not.toHaveBeenCalled();
+  });
+
+  it('records an alias under the id the language picker uses', () => {
+    const Prism = fakePrism();
+    Prism.languages.js = Prism.languages.javascript;
+    vi.stubGlobal('Prism', Prism);
+    const ctx = makeContext('<pre><code class="language-js">let a;</code></pre>');
+    ctx.options.codeHighlight = true;
+    new CodeTooltip(ctx).initialize();
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(pre.dataset.language).toBe('javascript');
+    expect(pre.classList.contains('language-js')).toBe(true);
+  });
+
+  it('does nothing with codeHighlight off', () => {
+    vi.stubGlobal('Prism', fakePrism());
+    const ctx = makeContext('<pre><code class="language-javascript">x</code></pre>');
+    ctx.on = vi.fn();
+    new CodeTooltip(ctx).initialize();
+    expect(globalThis.Prism.highlightElement).not.toHaveBeenCalled();
+    expect(ctx.on).not.toHaveBeenCalled();
+  });
+});
