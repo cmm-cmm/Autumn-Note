@@ -663,3 +663,31 @@ describe('CodeTooltip language picker coverage', () => {
     expect(new Set(values).size).toBe(values.length);
   });
 });
+
+describe('CodeTooltip.detectLanguage', () => {
+  const PLAIN = '<pre>const x = 1;\nconsole.log(x);</pre>';
+
+  it('detects and applies a language to a block that has none', () => {
+    const { ct, ctx } = makeTooltip(PLAIN);
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(ct.detectLanguage(pre)).toBe(true);
+    expect(pre.dataset.language).toBe('javascript');
+    expect(pre.querySelector('code').classList.contains('language-javascript')).toBe(true);
+  });
+
+  it('leaves a block that already has a language alone', () => {
+    const { ct, ctx } = makeTooltip(PLAIN);
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    pre.dataset.language = 'python';
+    expect(ct.detectLanguage(pre)).toBe(false);
+    expect(pre.dataset.language).toBe('python');
+  });
+
+  it('returns false when nothing is detected', () => {
+    const { ct, ctx } = makeTooltip('<pre>hello</pre>');
+    const pre = ctx.layoutInfo.editable.querySelector('pre');
+    expect(ct.detectLanguage(pre)).toBe(false);
+    expect(pre.dataset.language).toBeUndefined();
+    expect(ct.detectLanguage(null)).toBe(false);
+  });
+});

@@ -5,6 +5,7 @@ import { createElement, on, portalOf, setIcon, svgIcon } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 import { writeClipboard } from '../core/clipboard.js';
 import { PATHS } from '../core/icon-paths.js';
+import { detectLang } from '../core/detectLang.js';
 
 const SHOW_DELAY = 100;
 const HIDE_DELAY = 180;
@@ -338,6 +339,20 @@ export class CodeTooltip {
     pre.classList.toggle('an-code-line-numbers');
     this._syncLineNumbersBtn();
     this.context.invoke('editor.afterCommand');
+  }
+
+  /**
+   * Detects the language of a code block that has none yet and applies it.
+   * Called by `editor.formatBlock('pre')`.
+   * @param {HTMLElement} pre
+   * @returns {boolean} true when a language was applied
+   */
+  detectLanguage(pre) {
+    if (!pre || pre.dataset.language) return false;
+    const lang = detectLang(pre.textContent || '');
+    if (!lang) return false;
+    this.applyLanguage(pre, lang);
+    return true;
   }
 
   /**

@@ -2,7 +2,7 @@
  * test/core/presets.test.js
  * The module tables behind the `autumnnote-plus` and `autumnnote-plus/core` entries.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CORE_MODULES } from '../../src/js/presets/core.js';
 import { FULL_MODULES } from '../../src/js/presets/full.js';
 import { Context, setModuleDefs, getModuleDefs } from '../../src/js/Context.js';
@@ -84,6 +84,28 @@ describe('Context module table', () => {
     const ctx = new Context(target, {}).initialize();
     expect(() => ctx.invoke('emojiDialog.show')).not.toThrow();
     expect(ctx.invoke('emojiDialog.show')).toBeUndefined();
+    ctx.destroy();
+  });
+
+  it('formats a code block without the code tooltip and without a warning', () => {
+    setModuleDefs(CORE_MODULES);
+    const ctx = new Context(target, {}).initialize();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const editable = ctx.layoutInfo.editable;
+    editable.innerHTML = '<p>const x = 1;\nconsole.log(x);</p>';
+    const range = document.createRange();
+    range.selectNodeContents(editable.querySelector('p'));
+    getSelection().removeAllRanges();
+    getSelection().addRange(range);
+
+    ctx.invoke('editor.formatBlock', 'pre');
+
+    const pre = editable.querySelector('pre');
+    expect(pre).not.toBeNull();
+    // Detection belongs to CodeTooltip, which core leaves out.
+    expect(pre.dataset.language).toBeUndefined();
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
     ctx.destroy();
   });
 

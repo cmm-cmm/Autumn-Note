@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Dropdown lists are styled.** Where the browser supports customizable selects (Chromium 135+), the toolbar's Style, Font, Size and Line height lists, the code-block language list and the icon dialog's lists open in the editor's own colours and radius, with font previews; other browsers keep their native picker. Toolbar dropdowns keep the width they have natively, so the toolbar does not shift as the value changes (`lockSelectWidth()` in `core/dom.js`).
 
+- **`autumnnote-plus/core` is about 4.3 KiB gzip lighter in an app bundle.** `editor.formatBlock('pre')` ran the code-language detector itself, so every app on the core entry shipped `detectLang` even though only the code tooltip (not in core) can apply what it finds. Detection moves to the new `codeTooltip.detectLanguage(pre)`, and a bundler now drops `detectLang` from a core app that does not call it. The full builds are unchanged. In the core preset, formatting a code block no longer logs a missing-module warning.
+
 ### Fixed
 
 - **Markdown block shortcuts work on every keyboard.** `1. `, `- `, `> `, `# ` and the other block shortcuts fired only on a Space `keydown`. Virtual keyboards (which report `key: "Unidentified"`), IMEs, autocorrect and dictation insert text without one, so on them typing `1. ` stayed plain text. The rules now also run on the `input` event when the inserted text ends in a space (including the no-break space Chrome inserts).
