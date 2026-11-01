@@ -185,6 +185,11 @@
       font-size: 13px; background: #fff; cursor: pointer; color: #20252B;
       transition: border-color .15s;
     }
+    #menu-transparency { width: 110px; accent-color: #E87824; cursor: pointer; }
+    #menu-transparency-val {
+      font-size: 12px; font-variant-numeric: tabular-nums; color: #57534e; min-width: 34px;
+    }
+    #demo-outer.is-dark #menu-transparency-val { color: #a6adc8; }
     #lang-select:focus, #menu-select:focus { outline: none; border-color: #E87824; }
 
     /* Spacer to push theme toggle to the right */

@@ -364,3 +364,8 @@
     body.dark .pg-about h2 { color: #334155; }
     body.dark .pg-about code { background: #1e293b; }
     body.dark .pg-about a { color: #334155; }
+
+/* Menu transparency slider */
+.cfg-range-wrap { display: inline-flex; align-items: center; gap: 8px; }
+.cfg-range { width: 120px; accent-color: #E87824; cursor: pointer; }
+.cfg-range-val { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }

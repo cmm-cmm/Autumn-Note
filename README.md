@@ -716,6 +716,7 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
 | `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs. Accepts `transparent` or a translucent colour |
+| `--an-menu-opacity` | `100%` | How opaque those surfaces are, `0%`–`100%`: each mixes its own background colour (light or dark) with transparent. Ignored when `--an-menu-bg` is set; browsers without `color-mix()` stay opaque |
 | `--an-menu-border` | `--an-border` (dialogs: none) | Border colour of the same surfaces. `transparent` hides it without changing their size |
 | `--an-menu-shadow` | per surface | Their drop shadow; `none` removes it |
 | `--an-menu-backdrop` | `none` | Their `backdrop-filter`, e.g. `blur(10px)` for frosted glass behind a translucent `--an-menu-bg` |
@@ -750,6 +751,11 @@ AutumnNote.create('#editor', {
     'menu-border': 'rgba(255, 255, 255, 0.4)',
     'menu-backdrop': 'blur(10px) saturate(1.4)',
   },
+});
+
+// 40% transparent, in light and dark themes alike
+AutumnNote.create('#editor', {
+  themeVars: { 'menu-opacity': '60%' },
 });
 
 // Fully transparent, borderless menus

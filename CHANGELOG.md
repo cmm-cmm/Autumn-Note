@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Adjustable menu transparency: `--an-menu-opacity`.** Set it from `0%` (see-through) to `100%` (opaque, the default), and every menu, popover, tooltip and dialog mixes its own background colour with transparent by that amount. It follows the light and dark themes on its own, so `themeVars: { 'menu-opacity': '60%' }` needs no colour of its own. `--an-menu-bg` still overrides it outright. Browsers without `color-mix()` keep opaque menus: the mix sits behind an `@supports` check, since an unsupported `color-mix()` inside `var()` would otherwise leave the menu with no background at all.
+
+### Fixed
+
+- **Demo site: transparent menus kept their border.** The **Transparent** menu style also cleared the border, and switching from **Frosted glass** carried glass's border over. **Transparent** now keeps the border, and **Transparent, no border** is a separate choice. The landing demo and the playground both gain a **Transparency** slider built on `--an-menu-opacity`.
+
 ## [3.2.0] - 2026-11-01
 
 Minor: new opt-in theming tokens and a colour-picker choice; the public API only gains the optional `transparent` flag on `colorpicker` buttons.

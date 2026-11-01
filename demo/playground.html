@@ -131,6 +131,13 @@
             </select>
           </div>
           <div class="cfg-row">
+            <label class="cfg-label" for="cfg-menu-t">Transparency</label>
+            <span class="cfg-range-wrap">
+              <input type="range" id="cfg-menu-t" class="cfg-range" min="0" max="100" step="5" value="0" />
+              <output id="cfg-menu-t-val" for="cfg-menu-t" class="cfg-range-val">0%</output>
+            </span>
+          </div>
+          <div class="cfg-row">
             <span class="cfg-label">Language</span>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
@@ -455,19 +462,55 @@ const editor = AutumnNote.create('#editor');
 [repo]: https://github.com/cmm-cmm/Autumn-Note "Autumn Note repository"
 [^1]: Footnotes render as superscript markers.`;
 
-// Menu looks for the "Menu style" option. Each is a themeVars preset over the
-// --an-menu-* tokens, so every menu, tooltip and dialog changes at once.
+// Menu presets. Each sets a default transparency (0% = opaque, 100% = fully
+// see-through) that the slider then adjusts, plus its other --an-menu-* tokens.
+// Transparency goes to the editor as --an-menu-opacity (its complement), which
+// every menu, tooltip, popover and dialog mixes into its own background.
 const MENU_STYLES = {
-  solid: null,
+  solid: { transparency: 0, vars: {} },
   glass: {
-    'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
-    'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
-    'menu-backdrop': 'blur(12px) saturate(1.5)',
+    transparency: 40,
+    vars: {
+      'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
+      'menu-backdrop': 'blur(12px) saturate(1.5)',
+    },
   },
   // Transparent background, border kept so the menu still has an outline.
-  transparent: { 'menu-bg': 'transparent', 'menu-shadow': 'none' },
-  borderless: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+  transparent: { transparency: 100, vars: { 'menu-shadow': 'none' } },
+  borderless: { transparency: 100, vars: { 'menu-border': 'transparent', 'menu-shadow': 'none' } },
 };
+/** themeVars for a preset at a transparency, or null for the plain default. */
+function menuThemeVars(style, transparency) {
+  const preset = MENU_STYLES[style] || MENU_STYLES.solid;
+  const t = Math.min(100, Math.max(0, Number(transparency) || 0));
+  const vars = { ...preset.vars };
+  if (t > 0) vars['menu-opacity'] = `${100 - t}%`;
+  return Object.keys(vars).length ? vars : null;
+}
+
+function setMenuTransparency(value) {
+  const range = document.getElementById('cfg-menu-t');
+  range.value = String(value);
+  document.getElementById('cfg-menu-t-val').textContent = `${range.value}%`;
+}
+// Picking a preset resets the slider to that preset's transparency; both
+// apply live, without the Apply button, since they only change themeVars.
+document.getElementById('cfg-menu').addEventListener('change', (e) => {
+  setMenuTransparency(MENU_STYLES[e.target.value]?.transparency ?? 0);
+  if (editor) { editor.updateOptions({ themeVars: null }); applyMenuLive(); }
+});
+document.getElementById('cfg-menu-t').addEventListener('input', (e) => {
+  setMenuTransparency(e.target.value);
+  applyMenuLive();
+});
+function applyMenuLive() {
+  if (!editor) return;
+  const cfg = buildConfig();
+  editor.updateOptions({ themeVars: null });
+  const vars = menuThemeVars(cfg.menuStyle, cfg.menuTransparency);
+  if (vars) editor.updateOptions({ themeVars: vars });
+  saveState();
+}
 
 // ── State ─────────────────────────────────────────────────
 let editor = null;
@@ -485,6 +528,7 @@ function buildConfig() {
     maxChars:          Number.parseInt(document.getElementById('cfg-maxchars').value) || 0,
     focusColor:        document.getElementById('cfg-color').value,
     menuStyle:         document.getElementById('cfg-menu').value,
+    menuTransparency:  Number(document.getElementById('cfg-menu-t').value),
   };
   const h = Number.parseInt(document.getElementById('cfg-height').value);
   cfg.height = h > 0 ? h : 300;
@@ -517,10 +561,10 @@ function createEditor(html) {
   }
 
   // menuStyle is a playground setting, not an editor option: it picks themeVars.
-  const { menuStyle, ...options } = cfg;
+  const { menuStyle, menuTransparency, ...options } = cfg;
   editor = AutumnNote.create('#editor-el', {
     ...options,
-    themeVars: MENU_STYLES[menuStyle] || null,
+    themeVars: menuThemeVars(menuStyle, menuTransparency),
     placeholder: 'Start typing…',
     codeHighlight: true,
     resizable: true,
@@ -630,6 +674,7 @@ function loadFromHash() {
       if (c.focusColor) document.getElementById('cfg-color').value    = c.focusColor;
       if (c.height)     document.getElementById('cfg-height').value   = c.height;
       if (MENU_STYLES[c.menuStyle] !== undefined) document.getElementById('cfg-menu').value = c.menuStyle;
+      setMenuTransparency(Number.isFinite(c.menuTransparency) ? c.menuTransparency : (MENU_STYLES[c.menuStyle]?.transparency ?? 0));
     }
     return state.html || null;
   } catch (_) { void _; return null; }
@@ -655,6 +700,7 @@ function loadSavedConfig() {
     if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
     if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
     if (MENU_STYLES[saved.menuStyle] !== undefined) document.getElementById('cfg-menu').value = saved.menuStyle;
+    setMenuTransparency(Number.isFinite(saved.menuTransparency) ? saved.menuTransparency : (MENU_STYLES[saved.menuStyle]?.transparency ?? 0));
   } catch (_) { void _; }
 }
 

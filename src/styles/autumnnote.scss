@@ -15,6 +15,21 @@
   }
 }
 
+// Background of a floating surface (menu, popover, tooltip, dialog).
+// --an-menu-bg replaces it outright; otherwise --an-menu-opacity (0%–100%,
+// default 100%) mixes the surface's own colour with transparent, so one token
+// makes every menu translucent in light and dark themes alike. Browsers
+// without color-mix() keep the opaque colour: an unsupported color-mix inside
+// var() would make the declaration invalid at computed time and drop the
+// background entirely, hence the @supports guard.
+@mixin an-menu-bg($base) {
+  background: var(--an-menu-bg, #{$base});
+
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    background: var(--an-menu-bg, color-mix(in srgb, #{$base} var(--an-menu-opacity, 100%), transparent));
+  }
+}
+
 // =============================================================================
 // Portal — one per editor, holds its dialogs, tooltips, popovers and menus.
 // No box of its own: it only carries the theme class and --an-* variables for
@@ -247,7 +262,7 @@
 .an-table-picker-popup {
   display: none;
   position: fixed; // top/left set dynamically by JS — escapes overflow-clipping ancestors
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 6px;
   padding: 8px;
@@ -338,7 +353,7 @@
   // top / left are set dynamically by JS (getBoundingClientRect) so the popup
   // escapes overflow:hidden / overflow:auto ancestors (toolbar scroll mode, etc.)
   z-index: calc(1100 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 6px;
   padding: 8px;
@@ -752,7 +767,7 @@
   gap: 2px;
   height: 30px;
   padding: 0 6px;
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
   box-shadow: var(--an-menu-shadow, 0 2px 10px rgba(0, 0, 0, 0.12));
@@ -896,7 +911,7 @@
 // Size popover (column width / row height)
 .an-size-popover {
   position: fixed;
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 12px 14px;
@@ -955,7 +970,7 @@
 .an-cell-shade-popover {
   position: fixed;
   z-index: calc(1200 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 10px 10px 6px;
@@ -1091,7 +1106,7 @@
 }
 
 .an-dialog-box {
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, transparent);
   border-radius: $an-dialog-radius;
   padding: 24px;
@@ -1313,7 +1328,7 @@
 .an-contextmenu {
   position: fixed;
   z-index: calc(10050 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
@@ -2225,7 +2240,7 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-link-tooltip,
   .an-contextmenu {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     border-color: var(--an-menu-border, var(--an-border));
     color: var(--an-text);
   }
@@ -2244,7 +2259,7 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
 
   .an-dialog-box {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     color: var(--an-text);
     border: 1px solid var(--an-menu-border, var(--an-border));
   }
@@ -2302,7 +2317,7 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-table-picker-popup,
   .an-size-popover,
   .an-cell-shade-popover {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     border-color: var(--an-menu-border, var(--an-border));
     color: var(--an-text);
   }
@@ -2442,7 +2457,7 @@ $an-video-accent: #8b5cf6; // violet-500
 
   // Bubble toolbar color picker
   .an-bubble-color-picker {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     border-color: var(--an-menu-border, var(--an-border));
 
     .an-context-color-custom {
@@ -2452,10 +2467,16 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 
   // Table tooltip (extends link-tooltip dark rules)
-  .an-table-tooltip { background: var(--an-menu-bg, #24273a); border-color: var(--an-menu-border, var(--an-border)); }
+  .an-table-tooltip {
+    @include an-menu-bg(#24273a);
+    border-color: var(--an-menu-border, var(--an-border));
+  }
 
   // Find & Replace floating panel box
-  .an-fr-box { background: var(--an-menu-bg, var(--an-bg)); border-color: var(--an-menu-border, #45475a); }
+  .an-fr-box {
+    @include an-menu-bg(var(--an-bg));
+    border-color: var(--an-menu-border, #45475a);
+  }
 
   .an-editable ul.an-checklist li:has(input[type='checkbox']:checked) {
     color: var(--an-muted);
@@ -2701,7 +2722,7 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(10040 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 4px 6px;
@@ -2714,7 +2735,7 @@ $an-video-accent: #8b5cf6; // violet-500
   user-select: none;
 
   @include an-dark-scope {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     border-color: var(--an-menu-border, #3f3f5f);
   }
 }
@@ -2795,7 +2816,7 @@ $an-video-accent: #8b5cf6; // violet-500
 .an-bubble-color-picker {
   position: fixed;
   z-index: calc(10041 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
@@ -2804,7 +2825,7 @@ $an-video-accent: #8b5cf6; // violet-500
   min-width: 160px;
 
   @include an-dark-scope {
-    background: var(--an-menu-bg, #24273a);
+    @include an-menu-bg(#24273a);
     border-color: var(--an-menu-border, #3f3f5f);
   }
 }
@@ -2817,7 +2838,7 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(9998 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius, #{$an-radius});
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
@@ -2878,7 +2899,7 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(9998 + var(--an-z-offset, 0));
-  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  @include an-menu-bg(var(--an-bg, #{$an-bg}));
   border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius, #{$an-radius});
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
