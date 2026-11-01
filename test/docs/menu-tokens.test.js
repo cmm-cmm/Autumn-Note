@@ -1,5 +1,6 @@
 import { compile } from 'sass';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 // Every floating surface — menus, popovers, tooltips, dialogs — must read its
 // background, border, shadow and backdrop from the --an-menu-* tokens, so a
@@ -27,6 +28,14 @@ describe('menu surface tokens', () => {
     expect(body).toMatch(/border: 1px solid var\(--an-menu-border,/);
     expect(body).toMatch(/box-shadow: var\(--an-menu-shadow,/);
     expect(body).toMatch(/backdrop-filter: var\(--an-menu-backdrop, none\)/);
+  });
+
+  it('leaves the -webkit- prefix to the build', () => {
+    // Writing both backdrop-filter and -webkit-backdrop-filter with var()
+    // values made the CSS minifier drop the unprefixed one, so Chromium and
+    // Firefox never blurred. The build adds the prefix itself.
+    const scss = readFileSync(resolve(__dirname, '..', '..', 'src/styles/autumnnote.scss'), 'utf8');
+    expect(scss).not.toMatch(/-webkit-backdrop-filter/);
   });
 
   it('dark-theme surface colours stay overridable by --an-menu-bg', () => {

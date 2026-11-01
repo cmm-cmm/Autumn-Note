@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-01
+
+Minor: new opt-in theming tokens and a colour-picker choice; the public API only gains the optional `transparent` flag on `colorpicker` buttons.
+
+Site: the landing demo has a **Menus** switch (solid / frosted glass / transparent), the playground gains a **Menu style** option and a *Transparent table* snippet, and the docs have a What's New 3.2 section, in EN and VI.
+
 ### Added
 
 - **Transparent menus.** Every menu and popup — the toolbar's colour and table pickers, the context menu, the bubble toolbar and its colour picker, the link/image/video/table/code tooltips and their popovers, the mention and slash menus, and dialogs — now takes its background, border, shadow and backdrop from four new tokens: `--an-menu-bg`, `--an-menu-border`, `--an-menu-shadow` and `--an-menu-backdrop`. One `themeVars` setting makes them all transparent, borderless or frosted glass (`'menu-backdrop': 'blur(10px)'`), in light and dark themes alike. Unset, they fall back to the values each surface had before, so nothing changes until you opt in. `test/docs/menu-tokens.test.js` fails if a surface stops reading them.

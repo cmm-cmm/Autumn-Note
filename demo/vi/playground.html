@@ -123,6 +123,14 @@
             </select>
           </div>
           <div class="cfg-row">
+            <span class="cfg-label">Kiểu menu</span>
+            <select id="cfg-menu" class="cfg-select">
+              <option value="solid">Đặc</option>
+              <option value="glass">Kính mờ</option>
+              <option value="transparent">Trong suốt</option>
+            </select>
+          </div>
+          <div class="cfg-row">
             <span class="cfg-label">Ngôn ngữ</span>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
@@ -205,6 +213,9 @@
             <button class="snippet-btn" onclick="loadSnippet('markdown')">
               <span class="snippet-icon">📄</span>Markdown
             </button>
+            <button class="snippet-btn" onclick="loadSnippet('transparent')">
+              <span class="snippet-icon">🫥</span>Bảng trong suốt
+            </button>
             <button class="snippet-btn" onclick="loadSnippet('empty')">
               <span class="snippet-icon">🗑</span>Xóa
             </button>
@@ -260,6 +271,8 @@
     <li><strong>@mention</strong> — gõ <code>@</code> để kích hoạt gợi ý tự động</li>
     <li><strong>Xuất nội dung</strong> — tải nội dung editor dưới dạng HTML hoặc Markdown</li>
     <li><strong>Thanh công cụ nổi</strong> — chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
+    <li><strong>Menu trong suốt</strong> — đổi <em>Kiểu menu</em> sang kính mờ hoặc trong suốt hoàn toàn; mọi menu, tooltip và hộp thoại đều đổi theo</li>
+    <li><strong>Màu trong suốt</strong> — ô caro trong bảng chọn màu highlight, nền ô và màu viền bảng áp dụng <code>transparent</code></li>
   </ul>
   <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
 </section>
@@ -303,6 +316,15 @@ const MENTION_USERS = [
 // ── Snippets ──────────────────────────────────────────────
 const SNIPPETS = {
   empty: '',
+  transparent: `<h2>Bảng bố cục không viền</h2>
+<p>Bảng này có <strong>viền trong suốt</strong> và tiêu đề nền trong suốt — các đường nét đứt chỉ là đường gợi ý khi soạn, không được lưu. Rê chuột vào một ô rồi mở bảng chọn màu viền hoặc màu nền ô trên thanh công cụ bảng để thử ô caro.</p>
+<table class="an-table"><thead><tr><th style="border-color: transparent; background-color: transparent">Gói</th><th style="border-color: transparent; background-color: transparent">Giá</th><th style="border-color: transparent; background-color: transparent">Số editor</th></tr></thead>
+<tbody>
+<tr><td style="border-color: transparent">Khởi đầu</td><td style="border-color: transparent">Miễn phí</td><td style="border-color: transparent">1</td></tr>
+<tr><td style="border-color: transparent">Nhóm</td><td style="border-color: transparent">$9</td><td style="border-color: transparent">10</td></tr>
+<tr><td style="border-color: transparent">Studio</td><td style="border-color: transparent">$29</td><td style="border-color: transparent">Không giới hạn</td></tr>
+</tbody></table>
+<p>Chọn một đoạn chữ và tô màu <span style="background-color: #fff2cc">highlight</span>, rồi chọn <em>Trong suốt</em> để bỏ màu.</p>`,
   article: `<h1>Bắt đầu với Autumn Note</h1>
 <p>Autumn Note là một <strong>trình soạn thảo WYSIWYG không phụ thuộc</strong>, được xây dựng bằng vanilla JavaScript. Cài đặt chỉ trong vài giây:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
@@ -433,6 +455,18 @@ const editor = AutumnNote.create('#editor');
 [repo]: https://github.com/cmm-cmm/Autumn-Note "Autumn Note repository"
 [^1]: Footnotes render as superscript markers.`;
 
+// Menu looks for the "Menu style" option. Each is a themeVars preset over the
+// --an-menu-* tokens, so every menu, tooltip and dialog changes at once.
+const MENU_STYLES = {
+  solid: null,
+  glass: {
+    'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
+    'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
+    'menu-backdrop': 'blur(12px) saturate(1.5)',
+  },
+  transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+};
+
 // ── State ─────────────────────────────────────────────────
 let editor = null;
 let currentTab = 'html';
@@ -448,6 +482,7 @@ function buildConfig() {
     readOnly:          document.getElementById('cfg-readonly').checked,
     maxChars:          Number.parseInt(document.getElementById('cfg-maxchars').value) || 0,
     focusColor:        document.getElementById('cfg-color').value,
+    menuStyle:         document.getElementById('cfg-menu').value,
   };
   const h = Number.parseInt(document.getElementById('cfg-height').value);
   cfg.height = h > 0 ? h : 300;
@@ -479,8 +514,11 @@ function createEditor(html) {
     panel.style.setProperty('--pg-focus-shadow', `rgba(${r},${g},${b},.2)`);
   }
 
+  // menuStyle is a playground setting, not an editor option: it picks themeVars.
+  const { menuStyle, ...options } = cfg;
   editor = AutumnNote.create('#editor-el', {
-    ...cfg,
+    ...options,
+    themeVars: MENU_STYLES[menuStyle] || null,
     placeholder: 'Bắt đầu gõ…',
     codeHighlight: true,
     resizable: true,
@@ -589,6 +627,7 @@ function loadFromHash() {
       if (c.maxChars)   document.getElementById('cfg-maxchars').value = c.maxChars;
       if (c.focusColor) document.getElementById('cfg-color').value    = c.focusColor;
       if (c.height)     document.getElementById('cfg-height').value   = c.height;
+      if (MENU_STYLES[c.menuStyle] !== undefined) document.getElementById('cfg-menu').value = c.menuStyle;
     }
     return state.html || null;
   } catch (_) { void _; return null; }
@@ -613,6 +652,7 @@ function loadSavedConfig() {
     if (saved.maxChars)   document.getElementById('cfg-maxchars').value = saved.maxChars;
     if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
     if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
+    if (MENU_STYLES[saved.menuStyle] !== undefined) document.getElementById('cfg-menu').value = saved.menuStyle;
   } catch (_) { void _; }
 }
 

@@ -117,7 +117,8 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Tính năng</div>
-        <a class="sidebar-link" href="#whats-new-3-1">Có gì mới v3.1.0</a>
+        <a class="sidebar-link" href="#whats-new-3-2">Có gì mới v3.2.0</a>
+        <a class="sidebar-link sub" href="#whats-new-3-1">Có gì mới v3.1.0</a>
         <a class="sidebar-link sub" href="#whats-new">Có gì mới v3.0.0</a>
         <a class="sidebar-link sub" href="#whats-new-1-8">Điểm nổi bật v1.8.0</a>
         <a class="sidebar-link" href="#events">Callback &amp; Sự kiện</a>
@@ -643,6 +644,43 @@ const editor = AutumnNote.create('#editor', {
           <tr><td class="opt-name">defaultToolbar</td><td>Full default toolbar array</td><td>array</td></tr>
         </tbody>
       </table></div>
+    </section>
+
+    <!-- ── Có gì mới v3.2.0 ── -->
+    <section class="docs-section" id="whats-new-3-2" aria-label="Có gì mới">
+      <h2 class="section-h">Có gì mới <span class="badge">v3.2.0</span></h2>
+      <p class="docs-p">Phiên bản 3.2 bổ sung menu trong suốt và kính mờ, cùng lựa chọn <em>Trong suốt</em> trong mọi bảng chọn màu nền và màu viền. Không có gì thay đổi cho đến khi bạn bật.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Menu trong suốt và kính mờ</h3>
+      <p class="docs-p">Mọi bề mặt nổi — bảng chọn màu và bảng chọn kích thước bảng trên toolbar, context menu, bubble toolbar, tooltip link/ảnh/video/bảng/code cùng popover của chúng, menu @mention và menu <code>/</code>, và hộp thoại — đều đọc bốn token mới. Một thiết lập <code>themeVars</code> đổi kiểu cho tất cả, ở cả giao diện sáng và tối.</p>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li><code>--an-menu-bg</code> — nền; <code>transparent</code> hoặc màu bán trong suốt</li>
+        <li><code>--an-menu-border</code> — màu viền; <code>transparent</code> ẩn viền mà không đổi kích thước</li>
+        <li><code>--an-menu-shadow</code> — đổ bóng; <code>none</code> để bỏ</li>
+        <li><code>--an-menu-backdrop</code> — <code>backdrop-filter</code>, ví dụ <code>blur(10px)</code> cho hiệu ứng kính mờ</li>
+      </ul>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">// Kính mờ
+AutumnNote.create('#editor', {
+  themeVars: {
+    'menu-bg': 'rgba(255, 255, 255, 0.72)',
+    'menu-border': 'rgba(255, 255, 255, 0.4)',
+    'menu-backdrop': 'blur(10px) saturate(1.4)',
+  },
+});
+
+// Menu trong suốt hoàn toàn, không viền
+editor.updateOptions({
+  themeVars: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+});</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Ô màu trong suốt</h3>
+      <p class="docs-p">Bảng chọn màu highlight trên toolbar, bảng màu highlight của context menu và bubble toolbar, cùng bảng chọn màu nền ô và màu viền trên thanh công cụ bảng đều có thêm ô caro áp dụng <code>transparent</code> — dùng cho bảng bố cục không viền, hoặc ô nền trong suốt đè lên kiểu sọc của stylesheet. Bảng chọn màu chữ không có ô này; nút <code>colorpicker</code> tự định nghĩa bật/tắt bằng <code>transparent: true | false</code>. Ô có viền trong suốt được vẽ nét đứt khi soạn thảo, nét này không được lưu.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Build</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li>Bản UMD chỉ build một lần; <code>autumnnote.cjs</code> và <code>autumnnote.min.js</code> là bản sao của nó.</li>
+        <li><code>dist/autumnnote.min.js</code> không còn được khuyến nghị — hãy dùng <code>dist/autumnnote.umd.js</code>. File này được giữ đến bản major tiếp theo.</li>
+      </ul>
+      <p class="docs-p">Thử ngay trong <a href="playground.html">Playground</a> (<em>Kiểu menu</em> và mẫu <em>Bảng trong suốt</em>). Danh sách đầy đủ trong <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
     </section>
 
     <!-- ── What's New v3.1.0 ── -->

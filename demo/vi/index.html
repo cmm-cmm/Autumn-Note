@@ -191,6 +191,7 @@
       <li class="feat">✦ Giao diện Sáng / Tối / Tự động</li>
       <li class="feat">✦ Định dạng giống nhau trên mọi trình duyệt</li>
       <li class="feat">✦ Theming bằng biến CSS</li>
+      <li class="feat">✦ Menu trong suốt &amp; kính mờ</li>
       <li class="feat">✦ Tùy chỉnh phím tắt</li>
       <li class="feat">✦ Icon &amp; nút riêng từng editor</li>
       <li class="feat">✦ 8 ngôn ngữ (i18n)</li>
@@ -217,6 +218,7 @@
       <li class="feat" aria-hidden="true">✦ Giao diện Sáng / Tối / Tự động</li>
       <li class="feat" aria-hidden="true">✦ Định dạng giống nhau trên mọi trình duyệt</li>
       <li class="feat" aria-hidden="true">✦ Theming bằng biến CSS</li>
+      <li class="feat" aria-hidden="true">✦ Menu trong suốt &amp; kính mờ</li>
       <li class="feat" aria-hidden="true">✦ Tùy chỉnh phím tắt</li>
       <li class="feat" aria-hidden="true">✦ Icon &amp; nút riêng từng editor</li>
       <li class="feat" aria-hidden="true">✦ 8 ngôn ngữ (i18n)</li>
@@ -265,6 +267,12 @@
         <option value="es">Español</option>
         <option value="ko">한국어</option>
       </select>
+      <label for="menu-select">🪟 Menu:</label>
+      <select id="menu-select">
+        <option value="solid">Đặc</option>
+        <option value="glass">Kính mờ</option>
+        <option value="transparent">Trong suốt</option>
+      </select>
       <span class="bar-spacer"></span>
       <button id="theme-btn" aria-label="Chuyển chế độ tối" aria-pressed="false">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -285,7 +293,7 @@
     </div>
 
     <div id="editor-wrapper">
-      <textarea id="editor"><p>Xin chào, <strong>Autumn Note</strong>! ✨</p><p>Chọn bất kỳ đoạn văn bản nào để xem <em>thanh công cụ nổi</em>. Gõ <code>@</code> để nhắc đến ai đó, hoặc bắt đầu dòng với <code>## </code> để tạo tiêu đề.</p></textarea>
+      <textarea id="editor"><p>Xin chào, <strong>Autumn Note</strong>! ✨</p><p>Chọn bất kỳ đoạn văn bản nào để xem <em>thanh công cụ nổi</em>. Gõ <code>@</code> để nhắc đến ai đó, hoặc bắt đầu dòng với <code>## </code> để tạo tiêu đề.</p><p>Mới trong 3.2: đổi <strong>Menu</strong> sang kính mờ hoặc trong suốt, rồi nhấp chuột phải, chọn chữ hoặc mở bảng chọn màu — mọi menu đều đổi theo. Bảng chọn màu nền và màu viền có thêm ô <em>Trong suốt</em>.</p></textarea>
     </div>
 
     <div class="output-row">
@@ -448,6 +456,24 @@ import '../../src/js/i18n/all.js';
 
     let isDark = false;
 
+    // "Menus" select: themeVars presets over the --an-menu-* tokens, which
+    // every menu, tooltip, popover and dialog reads.
+    const menuSelect = document.getElementById('menu-select');
+    const MENU_STYLES = {
+      solid: null,
+      glass: {
+        'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
+        'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
+        'menu-backdrop': 'blur(12px) saturate(1.5)',
+      },
+      transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+    };
+    function applyMenuStyle() {
+      const themeVars = MENU_STYLES[menuSelect.value] || null;
+      [window.editor, window.editorRO].forEach((ctx) => ctx?.updateOptions({ themeVars }));
+    }
+    menuSelect.addEventListener('change', applyMenuStyle);
+
     function applyTheme(editorCtx, editorROCtx) {
       // Switch both editors (and their dialogs/tooltips) between themes
       [editorCtx, editorROCtx].forEach((ctx) => {
@@ -542,12 +568,14 @@ import '../../src/js/i18n/all.js';
       editor.setHTML(html);
       document.getElementById('output').textContent = html;
 
-      // Re-apply current theme to newly created editors
+      // Re-apply current theme and menu style to newly created editors
       applyTheme(editor, editorRO);
+      applyMenuStyle();
     });
 
     window.editor = editor;
     window.editorRO = editorRO;
+    applyMenuStyle(); // the browser may restore the select's value on reload
     document.getElementById('output').textContent = editor.getHTML();
   </script>
 </body>

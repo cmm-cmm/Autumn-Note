@@ -253,7 +253,6 @@
   padding: 8px;
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   z-index: calc(1100 + var(--an-z-offset, 0));
   user-select: none;
 }
@@ -345,7 +344,6 @@
   padding: 8px;
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 184px;
   user-select: none;
 }
@@ -759,7 +757,6 @@
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
   box-shadow: var(--an-menu-shadow, 0 2px 10px rgba(0, 0, 0, 0.12));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   white-space: nowrap;
   pointer-events: all;
 
@@ -905,7 +902,6 @@
   padding: 12px 14px;
   box-shadow: var(--an-menu-shadow, 0 4px 20px rgba(0, 0, 0, 0.15));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   z-index: calc(1200 + var(--an-z-offset, 0));
   min-width: 200px;
 
@@ -965,7 +961,6 @@
   padding: 10px 10px 6px;
   box-shadow: var(--an-menu-shadow, 0 4px 20px rgba(0, 0, 0, 0.15));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 166px;
 
   .an-size-popover-title {
@@ -1103,7 +1098,6 @@
   width: min($an-dialog-width, 95vw);
   box-shadow: var(--an-menu-shadow, 0 20px 60px rgba(0, 0, 0, 0.3));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1324,7 +1318,6 @@
   border-radius: 8px;
   box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   padding: 5px 4px;
   display: none;
@@ -2715,7 +2708,6 @@ $an-video-accent: #8b5cf6; // violet-500
   gap: 2px;
   box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   align-items: center;
   animation: an-bubble-in 0.1s ease;
   pointer-events: auto;
@@ -2808,7 +2800,6 @@ $an-video-accent: #8b5cf6; // violet-500
   border-radius: 8px;
   box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   padding: 4px 0;
   min-width: 160px;
 
@@ -2831,7 +2822,6 @@ $an-video-accent: #8b5cf6; // violet-500
   border-radius: var(--an-radius, #{$an-radius});
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   max-width: 280px;
   max-height: 240px;
@@ -2893,7 +2883,6 @@ $an-video-accent: #8b5cf6; // violet-500
   border-radius: var(--an-radius, #{$an-radius});
   box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
   backdrop-filter: var(--an-menu-backdrop, none);
-  -webkit-backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   max-width: 260px;
   max-height: 260px;

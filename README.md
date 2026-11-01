@@ -118,6 +118,8 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
 - **Dark / light / auto theme** — `theme: 'dark'`, `'light'` (default), or `'auto'` (follows OS `prefers-color-scheme`); full SCSS variable coverage; dark styles propagate to all floating elements (dialogs, tooltips, colour pickers)
+- **Transparent and frosted menus** — every menu, popover, tooltip and dialog reads `--an-menu-bg`, `--an-menu-border`, `--an-menu-shadow` and `--an-menu-backdrop`, so one `themeVars` setting makes them all transparent, borderless or frosted glass (see [Theming](#theming))
+- **Transparent colour swatch** — background and border colour pickers (toolbar highlight, context menu, bubble toolbar, table cell background and border) end with a checkerboard swatch that applies `transparent`; cells with transparent borders get a dashed editing guide that is not saved
 - **Draggable dialogs** — all dialogs (Link, Image, Video, Emoji, Icon, Find & Replace) can be repositioned by dragging their title bar; position is clamped to the viewport
 - **Image resizer** — drag handle on selected image to resize proportionally
 - **Video resizer** — drag handle on selected video embed to resize
@@ -754,6 +756,12 @@ AutumnNote.create('#editor', {
 AutumnNote.create('#editor', {
   themeVars: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
 });
+```
+
+To derive a translucent colour from the editor's own tokens, give each `var()` a fallback — in the light theme `--an-bg` and `--an-border` are not defined, so a bare `var(--an-bg)` makes the whole value invalid and the menu falls back to opaque:
+
+```js
+themeVars: { 'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)' }
 ```
 
 Native `<select>` lists (font family, font size) are drawn by the browser and keep their own background.
