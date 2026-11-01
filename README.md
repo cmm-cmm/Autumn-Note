@@ -717,8 +717,11 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
 | `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, the lists of `<select>` controls (see below), context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs, the image-crop toolbar. Accepts `transparent` or a translucent colour |
 | `--an-menu-opacity` | `100%` | How opaque those surfaces are, `0%`–`100%`: each mixes its own background colour (light or dark) with transparent. Ignored when `--an-menu-bg` is set; browsers without `color-mix()` stay opaque |
-| `--an-toolbar-opacity` | `100%` | How opaque the editor toolbar is, `0%`–`100%`, in light and dark themes; most useful with `stickyToolbar`, where content scrolls under it |
+| `--an-toolbar-bg` | `--an-bg-toolbar` | The editor toolbar ("menu bar") has its own set, separate from the menus': this replaces its background outright |
+| `--an-toolbar-opacity` | `100%` | How opaque the toolbar is, `0%`–`100%`, in light and dark themes; most useful with `stickyToolbar`, where content scrolls under it |
 | `--an-toolbar-backdrop` | `none` | The toolbar's `backdrop-filter`, e.g. `blur(10px)` to frost what shows through it |
+| `--an-toolbar-border` | `--an-border` | The line under the toolbar; `transparent` hides it |
+| `--an-toolbar-shadow` | `0 2px 8px …` | The sticky toolbar's shadow; `none` removes it |
 | `--an-menu-border` | `--an-border` (dialogs: none) | Border colour of the same surfaces. `transparent` hides it without changing their size |
 | `--an-menu-shadow` | per surface | Their drop shadow; `none` removes it |
 | `--an-menu-backdrop` | `none` | Their `backdrop-filter`, e.g. `blur(10px)` for frosted glass behind a translucent `--an-menu-bg` |
@@ -760,10 +763,13 @@ AutumnNote.create('#editor', {
   themeVars: { 'menu-opacity': '60%' },
 });
 
-// A frosted sticky toolbar
+// A frosted sticky toolbar, set separately from the menus
 AutumnNote.create('#editor', {
   stickyToolbar: true,
-  themeVars: { 'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(10px)' },
+  themeVars: {
+    'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(10px)', 'toolbar-border': 'transparent',
+    'menu-opacity': '85%', 'menu-backdrop': 'blur(14px)',
+  },
 });
 
 // Fully transparent, borderless menus

@@ -45,25 +45,24 @@ describe('menu surface tokens', () => {
     expect(body).toMatch(/background: var\(--an-menu-bg, color-mix\(in srgb, .+ var\(--an-menu-opacity, 100%\), transparent\)\)/);
   });
 
-  it('the toolbar reads --an-toolbar-opacity and --an-toolbar-backdrop', () => {
-    expect(rule('an-toolbar')).toMatch(/backdrop-filter: var\(--an-toolbar-backdrop, none\)/);
+  it('the toolbar has its own set: --an-toolbar-bg/-opacity/-backdrop/-border/-shadow', () => {
+    const body = rule('an-toolbar');
+    expect(body).toMatch(/background: var\(--an-toolbar-bg, var\(--an-bg-toolbar, #f9fafb\)\)/);
+    expect(body).toMatch(/backdrop-filter: var\(--an-toolbar-backdrop, none\)/);
+    expect(body).toMatch(/border-bottom: 1px solid var\(--an-toolbar-border, var\(--an-border, #d1d5db\)\)/);
     expect(supportsRule('an-toolbar')).toMatch(
-      /background: color-mix\(in srgb, var\(--an-bg-toolbar, #f9fafb\) var\(--an-toolbar-opacity, 100%\), transparent\)/,
+      /background: var\(--an-toolbar-bg, color-mix\(in srgb, var\(--an-bg-toolbar, #f9fafb\) var\(--an-toolbar-opacity, 100%\), transparent\)\)/,
     );
-    // Dark theme too, or the token would only work in light mode.
-    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{\s*background: color-mix\(in srgb, var\(--an-bg-toolbar\) var\(--an-toolbar-opacity, 100%\), transparent\)/);
+    // Dark theme too, or the tokens would only work in light mode.
+    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{\s*background: var\(--an-toolbar-bg, color-mix\(in srgb, var\(--an-bg-toolbar\) var\(--an-toolbar-opacity, 100%\), transparent\)\)/);
+    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{[^}]*border-color: var\(--an-toolbar-border, var\(--an-border\)\)/);
+    expect(css).toMatch(/\.an-sticky-toolbar \.an-toolbar \{[^}]*box-shadow: var\(--an-toolbar-shadow,/);
   });
 
-  it('select dropdown lists read the menu tokens where customizable selects exist', () => {
-    const block = css.slice(css.indexOf('@supports (appearance: base-select)'));
-    expect(block.length).toBeGreaterThan(0);
-    for (const cls of ['an-select', 'an-code-lang-select', 'an-icon-option-select']) {
-      expect(block).toContain(`.${cls}::picker(select)`);
-    }
-    expect(block).toMatch(/::picker\(select\)[^}]*border: 1px solid var\(--an-menu-border,/);
-    expect(block).toMatch(/::picker\(select\)[^}]*backdrop-filter: var\(--an-menu-backdrop, none\)/);
-    expect(block).toMatch(/::picker\(select\)[^}]*background: var\(--an-menu-bg, color-mix\(in srgb, .+ var\(--an-menu-opacity, 100%\), transparent\)\)/);
-    expect(block).toMatch(/\.an-theme-dark \.an-select::picker\(select\)/);
+  it('keeps the toolbar and the menus independent', () => {
+    // The menu bar is configured on its own: no --an-menu-* token may reach it.
+    expect(rule('an-toolbar')).not.toMatch(/--an-menu-/);
+    expect(supportsRule('an-toolbar')).not.toMatch(/--an-menu-/);
   });
 
   it('leaves the -webkit- prefix to the build', () => {

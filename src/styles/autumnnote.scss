@@ -15,18 +15,11 @@
   }
 }
 
-// A background that can be made translucent through an opacity token
-// (0%-100%, default 100%): the colour is mixed with transparent by that much.
-// Browsers without color-mix() keep the opaque colour: an unsupported
-// color-mix() inside var() would make the declaration invalid at computed time
-// and drop the background entirely, hence the @supports guard.
-@mixin an-translucent-bg($base, $opacity-var) {
-  background: #{$base};
-
-  @supports (color: color-mix(in srgb, red 50%, transparent)) {
-    background: color-mix(in srgb, #{$base} var(#{$opacity-var}, 100%), transparent);
-  }
-}
+// Translucent backgrounds (an-menu-bg, an-toolbar-bg): an opacity token
+// (0%-100%, default 100%) mixes the colour with transparent. Browsers without
+// color-mix() keep the opaque colour: an unsupported color-mix() inside var()
+// would make the declaration invalid at computed time and drop the background
+// entirely, hence the @supports guard.
 
 // Background of a floating surface (menu, popover, tooltip, dialog).
 // --an-menu-bg replaces it outright; otherwise --an-menu-opacity makes every
@@ -39,13 +32,19 @@
   }
 }
 
-// The editor toolbar: --an-toolbar-opacity makes it translucent and
-// --an-toolbar-backdrop blurs what shows through — content scrolling under a
-// sticky toolbar. Its popups live in the portal, so the containing block a
-// backdrop-filter creates does not move them.
+// The editor toolbar ("menu bar") has its own set of tokens, separate from the
+// menus': --an-toolbar-bg replaces its background outright, otherwise
+// --an-toolbar-opacity makes it translucent; --an-toolbar-backdrop blurs what
+// shows through (content scrolling under a sticky toolbar). --an-toolbar-border
+// and --an-toolbar-shadow (sticky only) are set where those are drawn. Its
+// popups live in the portal, so the containing block a backdrop-filter creates
+// does not move them.
 @mixin an-toolbar-bg($base) {
-  @include an-translucent-bg($base, --an-toolbar-opacity);
-  backdrop-filter: var(--an-toolbar-backdrop, none);
+  background: var(--an-toolbar-bg, #{$base});
+
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    background: var(--an-toolbar-bg, color-mix(in srgb, #{$base} var(--an-toolbar-opacity, 100%), transparent));
+  }
 }
 
 // =============================================================================
@@ -173,7 +172,8 @@
   gap: $an-toolbar-gap;
   padding: $an-toolbar-pad;
   @include an-toolbar-bg(var(--an-bg-toolbar, #{$an-bg-toolbar}));
-  border-bottom: 1px solid var(--an-border, #{$an-border});
+  backdrop-filter: var(--an-toolbar-backdrop, none);
+  border-bottom: 1px solid var(--an-toolbar-border, var(--an-border, #{$an-border}));
   user-select: none;
   // Round the top corners to match the container border-radius
   border-radius: var(--an-radius, #{$an-radius}) var(--an-radius, #{$an-radius}) 0 0;
@@ -2023,7 +2023,7 @@ $an-video-accent: #8b5cf6; // violet-500
     top: var(--an-sticky-top, 0px);
     z-index: 100;
     border-radius: var(--an-radius, #{$an-radius}) var(--an-radius, #{$an-radius}) 0 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    box-shadow: var(--an-toolbar-shadow, 0 2px 8px rgba(0, 0, 0, 0.10));
   }
 }
 
@@ -2176,8 +2176,8 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 
   .an-toolbar {
-    @include an-translucent-bg(var(--an-bg-toolbar), --an-toolbar-opacity);
-    border-color: var(--an-border);
+    @include an-toolbar-bg(var(--an-bg-toolbar));
+    border-color: var(--an-toolbar-border, var(--an-border));
   }
 
   .an-btn {
