@@ -52,6 +52,7 @@ export const ja = {
     chooseTextColor: '文字色を選択',
     chooseHighlightColor: 'ハイライト色を選択',
     customColor: 'カスタムカラー',
+    transparent: '透明',
     insertTableLabel: 'テーブルを挿入',
     paragraphItems: {
       p:          '標準',
@@ -236,6 +237,7 @@ export const ja = {
     table:           'テーブルを挿入',
     back:            '戻る',
     noHighlight:     'ハイライトなし',
+    transparent: '透明',
     customColor:     'カスタムカラー',
     customColorLabel: 'カスタム\u2026',
   },
@@ -315,6 +317,7 @@ export const ja = {
       cellBackground:     'セル背景色',
       noShading:          '背景色なし',
       noBorderColor:      '枠線色なし',
+      transparent: '透明',
       columnWidthPx:      '列幅 (px)',
       rowHeightPx:        '行の高さ (px)',
       tableBorderWidthPx: 'テーブルの枠幅 (px)',

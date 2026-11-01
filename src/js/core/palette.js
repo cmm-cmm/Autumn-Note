@@ -26,3 +26,34 @@ export function resolvePalette(options) {
   const extra = Array.isArray(options?.colorSwatches) ? options.colorSwatches : [];
   return [...new Set([...extra, ...base].filter((c) => typeof c === 'string' && c))];
 }
+
+/** The value every picker writes for its "Transparent" swatch. */
+export const TRANSPARENT = 'transparent';
+
+/**
+ * True for a colour that paints nothing: `transparent`, or any fully
+ * transparent `rgba()`/`hsla()` as `getComputedStyle()` reports it
+ * (`rgba(0, 0, 0, 0)`). Empty means "unset", not transparent.
+ * @param {string|null|undefined} color
+ * @returns {boolean}
+ */
+export function isTransparentColor(color) {
+  const c = String(color ?? '').trim().toLowerCase();
+  if (c === TRANSPARENT) return true;
+  // Alpha is the 4th comma-separated value, or follows a slash.
+  return /^(rgba?|hsla?)\((?:[^,/()]+,){3}\s*0(\.0+)?%?\s*\)$/.test(c)
+    || /^(rgba?|hsla?)\([^,/()]+\/\s*0(\.0+)?%?\s*\)$/.test(c);
+}
+
+/**
+ * Shows `color` on a swatch or colour strip. A transparent colour gets the
+ * `an-swatch-transparent` checkerboard instead of an invisible fill, so it can
+ * be told apart from white and from "no colour".
+ * @param {HTMLElement} el
+ * @param {string|null|undefined} color
+ */
+export function paintSwatch(el, color) {
+  const clear = isTransparentColor(color);
+  el.classList.toggle('an-swatch-transparent', clear);
+  el.style.background = clear ? '' : (color || 'transparent');
+}

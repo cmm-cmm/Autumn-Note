@@ -418,7 +418,7 @@ export const foreColorBtn = {
   action: (ctx, color) => Style.foreColor(color),
 };
 
-/** @type {{ name: string, type: 'colorpicker', icon: string, tooltip: string, defaultColor: string, action: Function }} */
+/** @type {{ name: string, type: 'colorpicker', icon: string, tooltip: string, defaultColor: string, transparent?: boolean, action: Function }} */
 export const backColorBtn = {
   name: 'backColor',
   type: 'colorpicker',

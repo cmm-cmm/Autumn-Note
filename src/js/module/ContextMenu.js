@@ -1,7 +1,7 @@
 ﻿// ContextMenu.js - Right-click context menu for editor actions
 import { createElement, on, portalOf } from '../core/dom.js';
 import { sanitiseHTML } from '../core/sanitise.js';
-import { resolvePalette } from '../core/palette.js';
+import { resolvePalette, TRANSPARENT } from '../core/palette.js';
 import { copySelection, cutSelection } from '../core/clipboard.js';
 import * as Style from '../editing/Style.js';
 import { insertHTMLNative, insertTextNative } from '../editing/insert.js';
@@ -37,7 +37,6 @@ const ICONS = {
   // Color
   textColor:      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L12 4L20 20"/><line x1="7.5" y1="14" x2="16.5" y2="14"/></svg>`,
   highlightColor: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-4l9-9 4 4-9 9z"/><path d="M12 8l4 4"/><line x1="3" y1="21" x2="21" y2="21"/></svg>`,
-  noColor:        `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`,
   back:           `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
 };
 
@@ -235,14 +234,16 @@ export class ContextMenu {
           palette.appendChild(sw);
         });
         if (it.colorType === 'hiliteColor') {
+          // Transparent background, shown as a checkerboard. Text colour has no
+          // such swatch: transparent text is invisible, not "no colour".
+          const label = this.context.locale.contextMenu.transparent || 'Transparent';
           const noColor = createElement('div', {
-            class: 'an-context-color-swatch an-context-color-none',
-            title: this.context.locale.contextMenu.noHighlight || 'No highlight',
+            class: 'an-context-color-swatch an-context-color-none an-swatch-transparent',
+            title: label,
             role: 'button',
-            'aria-label': this.context.locale.contextMenu.noHighlight || 'No highlight',
+            'aria-label': label,
           });
-          noColor.innerHTML = ICONS.noColor;
-          const offNo = on(noColor, 'click', (e) => { e.stopPropagation(); this._applyColor('hiliteColor', 'transparent'); });
+          const offNo = on(noColor, 'click', (e) => { e.stopPropagation(); this._applyColor('hiliteColor', TRANSPARENT); });
           this._menuDisposers.push(offNo);
           palette.appendChild(noColor);
         }

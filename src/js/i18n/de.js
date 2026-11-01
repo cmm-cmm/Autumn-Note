@@ -51,6 +51,7 @@ export const de = {
     chooseTextColor: 'Textfarbe auswählen',
     chooseHighlightColor: 'Hervorhebungsfarbe auswählen',
     customColor: 'Benutzerdefinierte Farbe',
+    transparent: 'Transparent',
     insertTableLabel: 'Tabelle einfügen',
     paragraphItems: {
       p:          'Normal',
@@ -235,6 +236,7 @@ export const de = {
     table:            'Tabelle einfügen',
     back:             'Zurück',
     noHighlight:      'Keine Hervorhebung',
+    transparent: 'Transparent',
     customColor:      'Benutzerdefinierte Farbe',
     customColorLabel: 'Benutzerdefiniert…',
   },
@@ -314,6 +316,7 @@ export const de = {
       cellBackground:     'Zellhintergrund',
       noShading:          'Kein Hintergrund',
       noBorderColor:      'Keine Rahmenfarbe',
+      transparent: 'Transparent',
       columnWidthPx:      'Spaltenbreite (px)',
       rowHeightPx:        'Zeilenhöhe (px)',
       tableBorderWidthPx: 'Tabellenrahmenbreite (px)',

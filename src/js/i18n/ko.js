@@ -51,6 +51,7 @@ export const ko = {
     chooseTextColor: '글자 색 선택',
     chooseHighlightColor: '강조 색 선택',
     customColor: '사용자 지정 색',
+    transparent: '투명',
     insertTableLabel: '표 삽입',
     paragraphItems: {
       p:          '기본',
@@ -235,6 +236,7 @@ export const ko = {
     table:            '표 삽입',
     back:             '뒤로',
     noHighlight:      '강조 없음',
+    transparent: '투명',
     customColor:      '사용자 지정 색',
     customColorLabel: '사용자 지정…',
   },
@@ -314,6 +316,7 @@ export const ko = {
       cellBackground:     '셀 배경색',
       noShading:          '배경 없음',
       noBorderColor:      '테두리 색 없음',
+      transparent: '투명',
       columnWidthPx:      '열 너비 (px)',
       rowHeightPx:        '행 높이 (px)',
       tableBorderWidthPx: '표 테두리 너비 (px)',

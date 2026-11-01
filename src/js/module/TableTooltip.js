@@ -2,6 +2,7 @@
 // Shows a horizontal action bar above (or below) the hovered table,
 // similar in appearance and interaction to ImageTooltip / VideoTooltip.
 import { createElement, on, portalOf } from '../core/dom.js';
+import { paintSwatch, TRANSPARENT } from '../core/palette.js';
 import { ICONS } from './table-icons.js';
 import {
   getVisualColIndex,
@@ -500,7 +501,7 @@ export class TableTooltip {
   _syncShadeStrip() {
     if (!this._shadeColorStrip || !this._el || this._el.style.display === 'none') return;
     const cell = this._getCell();
-    this._shadeColorStrip.style.background = cell?.style.backgroundColor || 'transparent';
+    paintSwatch(this._shadeColorStrip, cell?.style.backgroundColor);
   }
 
   _hide() {
@@ -1113,6 +1114,20 @@ export class TableTooltip {
       }));
       palette.appendChild(sw);
     });
+    // "Transparent" swatch: an explicit see-through colour, unlike the reset
+    // row below, which removes the inline colour so the stylesheet's applies.
+    const clearLabel = this.context.locale.tooltips.table.transparent || 'Transparent';
+    const clearSw = createElement('div', {
+      class: 'an-context-color-swatch an-swatch-transparent',
+      title: clearLabel,
+      role: 'button',
+      'aria-label': clearLabel,
+    });
+    this._disposers.push(on(clearSw, 'click', (e) => {
+      e.stopPropagation();
+      apply(TRANSPARENT);
+    }));
+    palette.appendChild(clearSw);
     pop.appendChild(palette);
 
     // Reset row — clears the colour
@@ -1211,7 +1226,7 @@ export class TableTooltip {
     });
     // Update the color strip on the shade button to reflect the applied color
     if (this._shadeColorStrip) {
-      this._shadeColorStrip.style.background = color || 'transparent';
+      paintSwatch(this._shadeColorStrip, color);
     }
     this._hideCellShadePopover();
     this.context.invoke('editor.afterCommand');
@@ -1248,7 +1263,7 @@ export class TableTooltip {
     if (!table) return;
     Array.from(table.querySelectorAll('td, th')).forEach((c) => { c.style.borderColor = color; });
     if (this._borderColorStrip) {
-      this._borderColorStrip.style.background = color || 'transparent';
+      paintSwatch(this._borderColorStrip, color);
     }
     this._hideBorderColorPopover();
     this.context.invoke('editor.afterCommand');
@@ -1257,7 +1272,7 @@ export class TableTooltip {
   _syncBorderColorStrip() {
     if (!this._borderColorStrip || !this._el || this._el.style.display === 'none') return;
     const firstCell = this._activeTable?.querySelector('td, th');
-    this._borderColorStrip.style.background = firstCell?.style.borderColor || 'transparent';
+    paintSwatch(this._borderColorStrip, /** @type {HTMLElement|undefined} */ (firstCell)?.style.borderColor);
   }
 
   // ---------------------------------------------------------------------------

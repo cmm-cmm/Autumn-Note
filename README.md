@@ -713,6 +713,10 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
 | `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
+| `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs. Accepts `transparent` or a translucent colour |
+| `--an-menu-border` | `--an-border` (dialogs: none) | Border colour of the same surfaces. `transparent` hides it without changing their size |
+| `--an-menu-shadow` | per surface | Their drop shadow; `none` removes it |
+| `--an-menu-backdrop` | `none` | Their `backdrop-filter`, e.g. `blur(10px)` for frosted glass behind a translucent `--an-menu-bg` |
 
 Three ways to set them, from broadest to narrowest:
 
@@ -733,6 +737,26 @@ const editor = AutumnNote.create('#editor', {
 editor.updateOptions({ themeVars: null });          // drop all overrides
 editor.updateOptions({ themeVars: { primary: '#10b981' } });
 ```
+
+Transparent and frosted-glass menus are a `themeVars` setting, so they apply to every menu at once:
+
+```js
+// Frosted glass
+AutumnNote.create('#editor', {
+  themeVars: {
+    'menu-bg': 'rgba(255, 255, 255, 0.72)',
+    'menu-border': 'rgba(255, 255, 255, 0.4)',
+    'menu-backdrop': 'blur(10px) saturate(1.4)',
+  },
+});
+
+// Fully transparent, borderless menus
+AutumnNote.create('#editor', {
+  themeVars: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+});
+```
+
+Native `<select>` lists (font family, font size) are drawn by the browser and keep their own background.
 
 Each editor mounts its dialogs, tooltips and menus in its own portal element (`.an-portal`), which carries the editor's theme class and `themeVars`. Use `popupContainer` to put that portal somewhere other than `document.body`.
 

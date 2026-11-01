@@ -52,6 +52,7 @@ export const vi = {
     chooseTextColor: 'Chọn màu chữ',
     chooseHighlightColor: 'Chọn màu nền',
     customColor: 'Màu tùy chỉnh',
+    transparent: 'Trong suốt',
     insertTableLabel: 'Chèn bảng',
     paragraphItems: {
       p:          'Bình thường',
@@ -236,6 +237,7 @@ export const vi = {
     table:         'Chèn bảng',
     back:          'Quay lại',
     noHighlight:   'Không tô màu',
+    transparent: 'Trong suốt',
     customColor:   'Màu tùy chỉnh',
     customColorLabel: 'Tùy ch\u1ec9nh\u2026',
   },
@@ -315,6 +317,7 @@ export const vi = {
       cellBackground:     'Màu Nền Ô',
       noShading:          'Xóa Màu Nền',
       noBorderColor:      'Xóa màu viền',
+      transparent: 'Trong suốt',
       columnWidthPx:      'Chiều rộng cột (px)',
       rowHeightPx:        'Chiều cao hàng (px)',
       tableBorderWidthPx: 'Độ rộng viền bảng (px)',
