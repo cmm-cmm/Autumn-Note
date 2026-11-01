@@ -12,10 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Adjustable menu transparency: `--an-menu-opacity`.** Set it from `0%` (see-through) to `100%` (opaque, the default), and every menu, popover, tooltip and dialog mixes its own background colour with transparent by that amount. It follows the light and dark themes on its own, so `themeVars: { 'menu-opacity': '60%' }` needs no colour of its own. `--an-menu-bg` still overrides it outright. Browsers without `color-mix()` keep opaque menus: the mix sits behind an `@supports` check, since an unsupported `color-mix()` inside `var()` would otherwise leave the menu with no background at all.
+- **Adjustable toolbar transparency: `--an-toolbar-opacity` and `--an-toolbar-backdrop`.** They work the same way for the editor toolbar, in both themes. They are most useful with `stickyToolbar`, where content scrolls under the toolbar: `themeVars: { 'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(10px)' }` gives a frosted header. The toolbar's dropdowns and pickers live in the portal, so the containing block a backdrop filter creates does not move them.
 
 ### Fixed
 
-- **Demo site: transparent menus kept their border.** The **Transparent** menu style also cleared the border, and switching from **Frosted glass** carried glass's border over. **Transparent** now keeps the border, and **Transparent, no border** is a separate choice. The landing demo and the playground both gain a **Transparency** slider built on `--an-menu-opacity`.
+- **Demo site: transparent menus kept their border.** The **Transparent** menu style also cleared the border, and switching from **Frosted glass** carried glass's border over. **Transparent** now keeps the border, and **Transparent, no border** is a separate choice. The landing demo and the playground both gain **Transparency** sliders for menus and for the toolbar.
+- **Demo site: the playground's sticky toolbar never stuck.** The editor panel's `overflow: hidden` made it a scroll container, so `position: sticky` had nothing to stick to, and a stuck toolbar would have sat under the site's own sticky header. The panel now uses `overflow: clip`, and the toolbar is offset by the header's height.
 
 ## [3.2.0] - 2026-11-01
 

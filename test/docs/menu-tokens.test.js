@@ -45,6 +45,15 @@ describe('menu surface tokens', () => {
     expect(body).toMatch(/background: var\(--an-menu-bg, color-mix\(in srgb, .+ var\(--an-menu-opacity, 100%\), transparent\)\)/);
   });
 
+  it('the toolbar reads --an-toolbar-opacity and --an-toolbar-backdrop', () => {
+    expect(rule('an-toolbar')).toMatch(/backdrop-filter: var\(--an-toolbar-backdrop, none\)/);
+    expect(supportsRule('an-toolbar')).toMatch(
+      /background: color-mix\(in srgb, var\(--an-bg-toolbar, #f9fafb\) var\(--an-toolbar-opacity, 100%\), transparent\)/,
+    );
+    // Dark theme too, or the token would only work in light mode.
+    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{\s*background: color-mix\(in srgb, var\(--an-bg-toolbar\) var\(--an-toolbar-opacity, 100%\), transparent\)/);
+  });
+
   it('leaves the -webkit- prefix to the build', () => {
     // Writing both backdrop-filter and -webkit-backdrop-filter with var()
     // values made the CSS minifier drop the unprefixed one, so Chromium and

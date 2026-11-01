@@ -15,19 +15,37 @@
   }
 }
 
+// A background that can be made translucent through an opacity token
+// (0%-100%, default 100%): the colour is mixed with transparent by that much.
+// Browsers without color-mix() keep the opaque colour: an unsupported
+// color-mix() inside var() would make the declaration invalid at computed time
+// and drop the background entirely, hence the @supports guard.
+@mixin an-translucent-bg($base, $opacity-var) {
+  background: #{$base};
+
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    background: color-mix(in srgb, #{$base} var(#{$opacity-var}, 100%), transparent);
+  }
+}
+
 // Background of a floating surface (menu, popover, tooltip, dialog).
-// --an-menu-bg replaces it outright; otherwise --an-menu-opacity (0%–100%,
-// default 100%) mixes the surface's own colour with transparent, so one token
-// makes every menu translucent in light and dark themes alike. Browsers
-// without color-mix() keep the opaque colour: an unsupported color-mix inside
-// var() would make the declaration invalid at computed time and drop the
-// background entirely, hence the @supports guard.
+// --an-menu-bg replaces it outright; otherwise --an-menu-opacity makes every
+// menu translucent in light and dark themes alike.
 @mixin an-menu-bg($base) {
   background: var(--an-menu-bg, #{$base});
 
   @supports (color: color-mix(in srgb, red 50%, transparent)) {
     background: var(--an-menu-bg, color-mix(in srgb, #{$base} var(--an-menu-opacity, 100%), transparent));
   }
+}
+
+// The editor toolbar: --an-toolbar-opacity makes it translucent and
+// --an-toolbar-backdrop blurs what shows through — content scrolling under a
+// sticky toolbar. Its popups live in the portal, so the containing block a
+// backdrop-filter creates does not move them.
+@mixin an-toolbar-bg($base) {
+  @include an-translucent-bg($base, --an-toolbar-opacity);
+  backdrop-filter: var(--an-toolbar-backdrop, none);
 }
 
 // =============================================================================
@@ -154,7 +172,7 @@
   align-items: center;
   gap: $an-toolbar-gap;
   padding: $an-toolbar-pad;
-  background: var(--an-bg-toolbar, #{$an-bg-toolbar});
+  @include an-toolbar-bg(var(--an-bg-toolbar, #{$an-bg-toolbar}));
   border-bottom: 1px solid var(--an-border, #{$an-border});
   user-select: none;
   // Round the top corners to match the container border-radius
@@ -2152,7 +2170,7 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 
   .an-toolbar {
-    background: var(--an-bg-toolbar);
+    @include an-translucent-bg(var(--an-bg-toolbar), --an-toolbar-opacity);
     border-color: var(--an-border);
   }
 
