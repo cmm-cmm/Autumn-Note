@@ -264,6 +264,7 @@ describe('ImageTooltip editable event handlers', () => {
   it('mouseover image schedules show', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     vi.spyOn(it2, '_scheduleShow');
     const img = ctx.layoutInfo.editable.querySelector('img');
@@ -276,6 +277,7 @@ describe('ImageTooltip editable event handlers', () => {
   it('mouseover skips when container is disabled', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     vi.spyOn(it2, '_scheduleShow');
     ctx.layoutInfo.container.classList.add('an-disabled');
@@ -290,6 +292,7 @@ describe('ImageTooltip editable event handlers', () => {
   it('mouseover skips image inside a link', () => {
     const ctx = makeContext('<p><a href="#"><img src="test.png" alt="test"></a></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     vi.spyOn(it2, '_scheduleShow');
     const img = ctx.layoutInfo.editable.querySelector('img');
@@ -302,6 +305,7 @@ describe('ImageTooltip editable event handlers', () => {
   it('mouseout schedules hide when leaving editable', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     vi.spyOn(it2, '_scheduleHide');
     const outside = document.createElement('div');
@@ -314,6 +318,7 @@ describe('ImageTooltip editable event handlers', () => {
   it('document click outside active image hides tooltip', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 0, left: 0, width: 100, height: 100, bottom: 100, right: 100 });
@@ -361,6 +366,7 @@ describe('ImageTooltip._resetSize', () => {
   it('clears width and height styles on the active image', () => {
     const ctx = makeContext('<p><img src="test.png" style="width:300px;height:200px"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -384,6 +390,7 @@ describe('ImageTooltip._rotate', () => {
   it('sets rotate transform on the active image', () => {
     const ctx = makeContext('<p><img src="test.png"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -397,6 +404,7 @@ describe('ImageTooltip._rotate', () => {
   it('accumulates rotation across multiple calls', () => {
     const ctx = makeContext('<p><img src="test.png"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -410,6 +418,7 @@ describe('ImageTooltip._rotate', () => {
   it('clears transform when rotation reaches 0 (360 mod 360)', () => {
     const ctx = makeContext('<p><img src="test.png"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -434,6 +443,7 @@ describe('ImageTooltip._delete (non-figure image)', () => {
   it('removes img directly when not inside a figure', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -467,6 +477,7 @@ describe('ImageTooltip._toggleCaption', () => {
   it('wraps a bare image in figure+figcaption', () => {
     const ctx = makeContext('<p><img src="test.png" alt="test"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -481,6 +492,7 @@ describe('ImageTooltip._toggleCaption', () => {
   it('transfers float style from img to figure when wrapping', () => {
     const ctx = makeContext('<p><img src="test.png" style="float:left;margin-right:1em"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
@@ -495,6 +507,7 @@ describe('ImageTooltip._toggleCaption', () => {
   it('transfers centered display style from img to figure when wrapping', () => {
     const ctx = makeContext('<p><img src="test.png" style="display:block;margin-left:auto;margin-right:auto"></p>');
     const it2 = new ImageTooltip(ctx);
+    live.push(it2);
     it2.initialize();
     const img = ctx.layoutInfo.editable.querySelector('img');
     img.getBoundingClientRect = () => ({ top: 50, bottom: 290, left: 40, right: 360, width: 320, height: 240 });
