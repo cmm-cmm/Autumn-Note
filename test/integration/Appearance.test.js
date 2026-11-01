@@ -196,3 +196,34 @@ describe('other runtime options', () => {
     editor.destroy();
   });
 });
+
+describe('toolbar <select> widths with customizable selects', () => {
+  const realCSS = globalThis.CSS;
+  const realRect = HTMLSelectElement.prototype.getBoundingClientRect;
+
+  afterEach(() => {
+    globalThis.CSS = realCSS;
+    HTMLSelectElement.prototype.getBoundingClientRect = realRect;
+  });
+
+  it('pins every toolbar select to its native width while create() runs', () => {
+    globalThis.CSS = { supports: (p, v) => p === 'appearance' && v === 'base-select' };
+    // Native appearance measures the widest option; base-select would not.
+    HTMLSelectElement.prototype.getBoundingClientRect = function () {
+      return { width: this.style.appearance === 'none' ? 96.4 : 40 };
+    };
+    const editor = makeEditor();
+    const selects = [...editor.layoutInfo.toolbar.querySelectorAll('select')];
+    expect(selects.length).toBeGreaterThan(0);
+    // Synchronous: no frame where the toolbar shows the content-sized width.
+    for (const s of selects) expect(s.style.width).toBe('97px');
+    editor.destroy();
+  });
+
+  it('leaves selects alone where base-select is unsupported', () => {
+    globalThis.CSS = { supports: () => false };
+    const editor = makeEditor();
+    for (const s of editor.layoutInfo.toolbar.querySelectorAll('select')) expect(s.style.width).toBe('');
+    editor.destroy();
+  });
+});

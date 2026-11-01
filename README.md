@@ -715,7 +715,13 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
 | `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
-| `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs. Accepts `transparent` or a translucent colour |
+| `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, the lists of `<select>` controls (see below), context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs, the image-crop toolbar. Accepts `transparent` or a translucent colour |
+| `--an-menu-opacity` | `100%` | How opaque those surfaces are, `0%`–`100%`: each mixes its own background colour (light or dark) with transparent. Ignored when `--an-menu-bg` is set; browsers without `color-mix()` stay opaque |
+| `--an-toolbar-bg` | `--an-bg-toolbar` | The editor toolbar ("menu bar") has its own set, separate from the menus': this replaces its background outright |
+| `--an-toolbar-opacity` | `100%` | How opaque the toolbar is, `0%`–`100%`, in light and dark themes; most useful with `stickyToolbar`, where content scrolls under it |
+| `--an-toolbar-backdrop` | `none` | The toolbar's `backdrop-filter`, e.g. `blur(10px)` to frost what shows through it |
+| `--an-toolbar-border` | `--an-border` | The line under the toolbar; `transparent` hides it |
+| `--an-toolbar-shadow` | `0 2px 8px …` | The sticky toolbar's shadow; `none` removes it |
 | `--an-menu-border` | `--an-border` (dialogs: none) | Border colour of the same surfaces. `transparent` hides it without changing their size |
 | `--an-menu-shadow` | per surface | Their drop shadow; `none` removes it |
 | `--an-menu-backdrop` | `none` | Their `backdrop-filter`, e.g. `blur(10px)` for frosted glass behind a translucent `--an-menu-bg` |
@@ -752,6 +758,20 @@ AutumnNote.create('#editor', {
   },
 });
 
+// 40% transparent, in light and dark themes alike
+AutumnNote.create('#editor', {
+  themeVars: { 'menu-opacity': '60%' },
+});
+
+// A frosted sticky toolbar, set separately from the menus
+AutumnNote.create('#editor', {
+  stickyToolbar: true,
+  themeVars: {
+    'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(10px)', 'toolbar-border': 'transparent',
+    'menu-opacity': '85%', 'menu-backdrop': 'blur(14px)',
+  },
+});
+
 // Fully transparent, borderless menus
 AutumnNote.create('#editor', {
   themeVars: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
@@ -764,7 +784,7 @@ To derive a translucent colour from the editor's own tokens, give each `var()` a
 themeVars: { 'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)' }
 ```
 
-Native `<select>` lists (font family, font size) are drawn by the browser and keep their own background.
+The dropdown lists of `<select>` controls — the toolbar's Style, Font, Size and Line, the code block's language, the icon dialog's options — follow the same tokens in browsers with customizable selects (`appearance: base-select`, Chromium 135+). Each control is pinned to the width it would have natively, so the toolbar does not shift as the value changes. Other browsers draw the list themselves, natively and opaque; the control looks the same either way.
 
 Each editor mounts its dialogs, tooltips and menus in its own portal element (`.an-portal`), which carries the editor's theme class and `themeVars`. Use `popupContainer` to put that portal somewhere other than `document.body`.
 

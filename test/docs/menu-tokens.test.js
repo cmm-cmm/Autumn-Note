@@ -9,15 +9,24 @@ import { readFileSync } from 'node:fs';
 const SURFACES = [
   'an-table-picker-popup', 'an-color-popup', 'an-link-tooltip', 'an-size-popover',
   'an-cell-shade-popover', 'an-dialog-box', 'an-contextmenu', 'an-bubble-toolbar',
-  'an-bubble-color-picker', 'an-mention-dropdown', 'an-slash-menu',
+  'an-bubble-color-picker', 'an-mention-dropdown', 'an-slash-menu', 'an-crop-toolbar',
 ];
 
 const css = compile(resolve(__dirname, '..', '..', 'src/styles/autumnnote.scss')).css;
 
-/** The declarations of the top-level `.cls {…}` rule. */
+/**
+ * The declarations of every top-level `.cls {…}` block, joined: Sass splits a
+ * rule into several blocks around the nested @supports of `an-menu-bg`.
+ */
 function rule(cls) {
-  const m = css.match(new RegExp(String.raw`(?:^|\n)\.${cls} \{([^}]*)\}`));
-  return m ? m[1] : null;
+  const blocks = [...css.matchAll(new RegExp(String.raw`(?:^|\n)\.${cls} \{([^}]*)\}`, 'g'))];
+  return blocks.length ? blocks.map((m) => m[1]).join('\n') : null;
+}
+
+/** The declarations of `.cls {…}` inside the color-mix @supports block. */
+function supportsRule(cls) {
+  const re = new RegExp(String.raw`@supports \(color: color-mix\(in srgb, red 50%, transparent\)\) \{\s*\.${cls} \{([^}]*)\}`);
+  return css.match(re)?.[1] ?? null;
 }
 
 describe('menu surface tokens', () => {
@@ -28,6 +37,32 @@ describe('menu surface tokens', () => {
     expect(body).toMatch(/border: 1px solid var\(--an-menu-border,/);
     expect(body).toMatch(/box-shadow: var\(--an-menu-shadow,/);
     expect(body).toMatch(/backdrop-filter: var\(--an-menu-backdrop, none\)/);
+  });
+
+  it.each(SURFACES)('.%s mixes its background with --an-menu-opacity where color-mix() exists', (cls) => {
+    const body = supportsRule(cls);
+    expect(body, `.${cls} has no @supports color-mix block`).not.toBeNull();
+    expect(body).toMatch(/background: var\(--an-menu-bg, color-mix\(in srgb, .+ var\(--an-menu-opacity, 100%\), transparent\)\)/);
+  });
+
+  it('the toolbar has its own set: --an-toolbar-bg/-opacity/-backdrop/-border/-shadow', () => {
+    const body = rule('an-toolbar');
+    expect(body).toMatch(/background: var\(--an-toolbar-bg, var\(--an-bg-toolbar, #f9fafb\)\)/);
+    expect(body).toMatch(/backdrop-filter: var\(--an-toolbar-backdrop, none\)/);
+    expect(body).toMatch(/border-bottom: 1px solid var\(--an-toolbar-border, var\(--an-border, #d1d5db\)\)/);
+    expect(supportsRule('an-toolbar')).toMatch(
+      /background: var\(--an-toolbar-bg, color-mix\(in srgb, var\(--an-bg-toolbar, #f9fafb\) var\(--an-toolbar-opacity, 100%\), transparent\)\)/,
+    );
+    // Dark theme too, or the tokens would only work in light mode.
+    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{\s*background: var\(--an-toolbar-bg, color-mix\(in srgb, var\(--an-bg-toolbar\) var\(--an-toolbar-opacity, 100%\), transparent\)\)/);
+    expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{[^}]*border-color: var\(--an-toolbar-border, var\(--an-border\)\)/);
+    expect(css).toMatch(/\.an-sticky-toolbar \.an-toolbar \{[^}]*box-shadow: var\(--an-toolbar-shadow,/);
+  });
+
+  it('keeps the toolbar and the menus independent', () => {
+    // The menu bar is configured on its own: no --an-menu-* token may reach it.
+    expect(rule('an-toolbar')).not.toMatch(/--an-menu-/);
+    expect(supportsRule('an-toolbar')).not.toMatch(/--an-menu-/);
   });
 
   it('leaves the -webkit- prefix to the build', () => {

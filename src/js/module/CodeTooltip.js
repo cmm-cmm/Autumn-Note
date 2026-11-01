@@ -1,7 +1,7 @@
 // CodeTooltip.js - Hover tooltip for <pre> code blocks inside the editor
 // Shows a horizontal action bar above (or below) the hovered code block,
 // consistent in appearance and interaction with ImageTooltip / TableTooltip.
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, fitSelectWidth } from '../core/dom.js';
 import { secureExternalAsset } from '../core/externalAsset.js';
 import { writeClipboard } from '../core/clipboard.js';
 
@@ -233,6 +233,9 @@ export class CodeTooltip {
 
   _show(pre) {
     this._el.style.display = 'flex';
+    // The tooltip is hidden until now, so this is the first chance to measure
+    // the language select; once pinned it keeps its width.
+    if (this._langSelect && !this._langSelect.style.width) fitSelectWidth(this._langSelect);
     this._positionNear(pre);
   }
 

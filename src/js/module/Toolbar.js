@@ -3,7 +3,8 @@
  * Inspired by Summernote's Toolbar module — rewritten without jQuery
  */
 
-import { createElement, on, portalOf } from '../core/dom.js';
+import { createElement, on, portalOf, fitSelectWidth } from '../core/dom.js';
+import { debounce } from '../core/func.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
 import { resolvePalette, paintSwatch, isTransparentColor, TRANSPARENT } from '../core/palette.js';
 
@@ -149,12 +150,32 @@ export class Toolbar {
       (this.options.toolbar || []).flat()
         .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),
     );
+    // Context mounts the toolbar after initialize() and then calls
+    // fitSelects() in the same task, so the selects never paint at the wrong
+    // width. They are re-fitted when web fonts finish loading (a wider face
+    // means wider labels) and on resize across the narrow breakpoint, where
+    // the font size changes.
+    const onResize = /** @type {EventListener} */ (debounce(() => this.fitSelects(), 150));
+    globalThis.addEventListener('resize', onResize, { passive: true });
+    this._resizeOff = () => globalThis.removeEventListener('resize', onResize);
+    document.fonts?.ready?.then(() => this.fitSelects());
     return this;
+  }
+
+  /**
+   * Pins every toolbar <select> to its native width, so a customizable-select
+   * dropdown (styled with the menu tokens) does not resize the toolbar as the
+   * value changes. See fitSelectWidth(); a no-op in other browsers.
+   */
+  fitSelects() {
+    this.el?.querySelectorAll('select').forEach((s) => fitSelectWidth(/** @type {HTMLSelectElement} */ (s)));
   }
 
   destroy() {
     if (this._refreshRaf) cancelAnimationFrame(this._refreshRaf);
     this._refreshRaf = null;
+    this._resizeOff?.();
+    this._resizeOff = null;
     this._disposers.forEach((d) => d());
     this._disposers = [];
     if (this.el?.parentNode) {
@@ -822,6 +843,12 @@ export class Toolbar {
     if (!this.el) return;
     const btnMap = this._btnMap || new Map();
 
+    // A select that could not be measured at mount (toolbar hidden then) is
+    // fitted the first time a refresh finds it laid out. Fitted ones are skipped.
+    this.el.querySelectorAll('select:not([style*="width"])').forEach((sel) => {
+      fitSelectWidth(/** @type {HTMLSelectElement} */ (sel));
+    });
+
     // Sync button active states
     this.el.querySelectorAll('button[data-btn]').forEach((btn) => {
       const def = btnMap.get(/** @type {HTMLElement} */ (btn).dataset.btn);
@@ -893,5 +920,6 @@ export class Toolbar {
         .map((item) => this._resolveBtn(item)).filter(Boolean).map((b) => [b.name, b]),
     );
     this.refresh();
+    this.fitSelects();
   }
 }

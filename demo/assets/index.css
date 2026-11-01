@@ -180,12 +180,26 @@
       flex-wrap: wrap;
     }
     #lang-bar label { font-size: 13px; font-weight: 600; color: #57534e; }
-    #lang-select, #menu-select {
+    #lang-select, #look-bar select {
       padding: 5px 10px; border: 1px solid #e7e5e4; border-radius: 7px;
       font-size: 13px; background: #fff; cursor: pointer; color: #20252B;
       transition: border-color .15s;
     }
-    #lang-select:focus, #menu-select:focus { outline: none; border-color: #E87824; }
+    /* Appearance controls: menus and toolbar, each set separately */
+    #look-bar { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: -4px 0 14px; }
+    .look-group {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px;
+      margin: 0; padding: 6px 12px 8px; border: 1px solid #e7e5e4; border-radius: 8px;
+    }
+    .look-group legend { padding: 0 4px; font-size: 12px; font-weight: 700; color: #57534e; }
+    .look-group label { font-size: 12px; color: #57534e; }
+    .look-group input[type="range"] { width: 96px; accent-color: #E87824; cursor: pointer; }
+    .look-group output { font-size: 12px; font-variant-numeric: tabular-nums; color: #57534e; min-width: 34px; }
+    #demo-outer.is-dark .look-group { border-color: #313244; }
+    #demo-outer.is-dark .look-group legend,
+    #demo-outer.is-dark .look-group label,
+    #demo-outer.is-dark .look-group output { color: #a6adc8; }
+    #lang-select:focus, #look-bar select:focus { outline: none; border-color: #E87824; }
 
     /* Spacer to push theme toggle to the right */
     #lang-bar .bar-spacer { flex: 1; }
@@ -213,7 +227,7 @@
     #demo-outer.is-dark .section-sub { color: #6c7086; }
     #demo-outer.is-dark .section-sub code { background: #313244; color: #cdd6f4; }
     #demo-outer.is-dark #lang-bar label { color: #a6adc8; }
-    #demo-outer.is-dark #lang-select, #demo-outer.is-dark #menu-select {
+    #demo-outer.is-dark #lang-select, #demo-outer.is-dark #look-bar select {
       background: #1e1e2e; border-color: #45475a; color: #cdd6f4;
     }
     #demo-outer.is-dark .out-label { color: #6c7086; }

@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-11-01
+
+Minor: new CSS tokens and select styling. No API changes. Every menu can be transparent, frosted or opacity-adjusted, and the toolbar is configured separately from the menus.
+
+### Added
+
+- **Adjustable menu transparency: `--an-menu-opacity`.** Set it from `0%` (see-through) to `100%` (opaque, the default), and every menu, popover, tooltip and dialog mixes its own background colour with transparent by that amount. It follows the light and dark themes on its own, so `themeVars: { 'menu-opacity': '60%' }` needs no colour of its own. `--an-menu-bg` still overrides it outright. Browsers without `color-mix()` keep opaque menus: the mix sits behind an `@supports` check, since an unsupported `color-mix()` inside `var()` would otherwise leave the menu with no background at all.
+- **`<select>` dropdown lists follow the menu tokens.** The lists behind the toolbar's Style, Font, Size and Line selects, the code block's language select and the icon dialog's selects are now customizable selects (`appearance: base-select`) where the browser supports them (Chromium 135+). They become transparent, frosted or opacity-adjusted along with every other menu, in light and dark themes. A base-select control sizes itself to the selected option, which would make the toolbar shift whenever the value changed, so each select is pinned to its native width. The width is set while `create()` runs, before the first paint, and refitted after web fonts load and on resize. Firefox and Safari keep the native, opaque list; nothing changes there.
+- **The image-crop toolbar reads the menu tokens.** Its background, border, shadow and backdrop moved from inline styles to the stylesheet. Its default look is unchanged: the dark crop chrome in either theme.
+- **The toolbar ("menu bar") has its own appearance tokens, separate from the menus':** `--an-toolbar-bg`, `--an-toolbar-opacity`, `--an-toolbar-backdrop`, `--an-toolbar-border` (the line under it) and `--an-toolbar-shadow` (when sticky), in both themes. No `--an-menu-*` token reaches the toolbar and no toolbar token reaches the menus, so each can be transparent, frosted or solid on its own. They are most useful with `stickyToolbar`, where content scrolls under the toolbar: `themeVars: { 'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(10px)' }` gives a frosted header. The toolbar's dropdowns and pickers live in the portal, so the containing block a backdrop filter creates does not move them.
+
+### Fixed
+
+- **Demo site: transparent menus kept their border.** The **Transparent** menu style also cleared the border, and switching from **Frosted glass** carried glass's border over. **Transparent** now keeps the border, and **Transparent, no border** is a separate choice. The landing demo and the playground both gain two separate appearance groups, **Menus** and **Toolbar**. Each group has its own style (solid, frosted glass, transparent, transparent without a border), transparency slider and blur slider.
+- **Demo site: the playground's sticky toolbar never stuck.** The editor panel's `overflow: hidden` made it a scroll container, so `position: sticky` had nothing to stick to, and a stuck toolbar would have sat under the site's own sticky header. The panel now uses `overflow: clip`, and the toolbar is offset by the header's height.
+
 ## [3.2.0] - 2026-11-01
 
 Minor: new opt-in theming tokens and a colour-picker choice; the public API only gains the optional `transparent` flag on `colorpicker` buttons.

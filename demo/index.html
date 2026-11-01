@@ -265,12 +265,6 @@
         <option value="es">Español</option>
         <option value="ko">한국어</option>
       </select>
-      <label for="menu-select">🪟 Menus:</label>
-      <select id="menu-select">
-        <option value="solid">Solid</option>
-        <option value="glass">Frosted glass</option>
-        <option value="transparent">Transparent</option>
-      </select>
       <span class="bar-spacer"></span>
       <button id="theme-btn" aria-label="Toggle dark mode" aria-pressed="false">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -290,8 +284,41 @@
       </button>
     </div>
 
+    <div id="look-bar">
+      <fieldset class="look-group">
+        <legend>🪟 Menus</legend>
+        <select id="menu-style" aria-label="Menus: Style">
+          <option value="solid">Solid</option>
+          <option value="glass">Frosted glass</option>
+          <option value="transparent">Transparent</option>
+          <option value="borderless">Transparent, no border</option>
+        </select>
+        <label for="menu-transparency">Transparency</label>
+        <input type="range" id="menu-transparency" min="0" max="100" step="5" value="0" />
+        <output id="menu-transparency-val" for="menu-transparency">0%</output>
+        <label for="menu-blur">Blur</label>
+        <input type="range" id="menu-blur" min="0" max="30" step="1" value="0" />
+        <output id="menu-blur-val" for="menu-blur">0px</output>
+      </fieldset>
+      <fieldset class="look-group">
+        <legend>🧰 Toolbar</legend>
+        <select id="toolbar-style" aria-label="Toolbar: Style">
+          <option value="solid">Solid</option>
+          <option value="glass">Frosted glass</option>
+          <option value="transparent">Transparent</option>
+          <option value="borderless">Transparent, no border</option>
+        </select>
+        <label for="toolbar-transparency">Transparency</label>
+        <input type="range" id="toolbar-transparency" min="0" max="100" step="5" value="0" />
+        <output id="toolbar-transparency-val" for="toolbar-transparency">0%</output>
+        <label for="toolbar-blur">Blur</label>
+        <input type="range" id="toolbar-blur" min="0" max="30" step="1" value="0" />
+        <output id="toolbar-blur-val" for="toolbar-blur">0px</output>
+      </fieldset>
+    </div>
+
     <div id="editor-wrapper">
-      <textarea id="editor"><p>Hello, <strong>Autumn Note</strong>! ✨</p><p>Select any text to see the <em>bubble toolbar</em>. Type <code>@</code> to mention someone, or start a line with <code>## </code> for a heading.</p><p>New in 3.2: switch <strong>Menus</strong> to frosted glass or transparent, then right-click, select text or open a colour picker — every menu follows. Background and border pickers now end with a <em>Transparent</em> swatch.</p></textarea>
+      <textarea id="editor"><p>Hello, <strong>Autumn Note</strong>! ✨</p><p>Select any text to see the <em>bubble toolbar</em>. Type <code>@</code> to mention someone, or start a line with <code>## </code> for a heading.</p><p>New in 3.3: style the <strong>Menus</strong> and the <strong>Toolbar</strong> separately — frosted glass, transparent, any transparency and blur — then right-click, select text or open a dropdown. Background and border pickers now end with a <em>Transparent</em> swatch.</p></textarea>
     </div>
 
     <div class="output-row">
@@ -454,23 +481,68 @@ import '../src/js/i18n/all.js';
 
     let isDark = false;
 
-    // "Menus" select: themeVars presets over the --an-menu-* tokens, which
-    // every menu, tooltip, popover and dialog reads.
-    const menuSelect = document.getElementById('menu-select');
-    const MENU_STYLES = {
-      solid: null,
-      glass: {
-        'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
-        'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
-        'menu-backdrop': 'blur(12px) saturate(1.5)',
-      },
-      transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+    // Appearance: the menus and the toolbar ("menu bar") are styled separately,
+    // each with a preset, a transparency (0% opaque - 100% see-through) and a
+    // frosted-glass blur. A preset sets its family's sliders; everything ends up as
+    // themeVars over the --an-menu-* or --an-toolbar-* tokens.
+    const LOOK_PRESETS = {
+      solid: { transparency: 0, blur: 0 },
+      glass: { transparency: 40, blur: 12, border: 'soft' },
+      // Transparent background, border kept so the surface still has an outline.
+      transparent: { transparency: 100, blur: 0, shadow: 'none' },
+      borderless: { transparency: 100, blur: 0, border: 'none', shadow: 'none' },
     };
-    function applyMenuStyle() {
-      const themeVars = MENU_STYLES[menuSelect.value] || null;
-      [window.editor, window.editorRO].forEach((ctx) => ctx?.updateOptions({ themeVars }));
+    const clampNum = (v, max) => Math.min(max, Math.max(0, Number(v) || 0));
+    /** themeVars for one family ('menu' or 'toolbar'): [style, transparency, blur]. */
+    function surfaceVars(prefix, [style, transparency, blur] = []) {
+      const preset = LOOK_PRESETS[style] || LOOK_PRESETS.solid;
+      const t = clampNum(transparency, 100);
+      const px = clampNum(blur, 30);
+      const vars = {};
+      if (t > 0) vars[`${prefix}-opacity`] = `${100 - t}%`;
+      if (px > 0) vars[`${prefix}-backdrop`] = `blur(${px}px) saturate(1.4)`;
+      if (preset.border === 'soft') vars[`${prefix}-border`] = 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)';
+      if (preset.border === 'none') vars[`${prefix}-border`] = 'transparent';
+      if (preset.shadow) vars[`${prefix}-shadow`] = preset.shadow;
+      return vars;
     }
-    menuSelect.addEventListener('change', applyMenuStyle);
+    /** The editor's themeVars for both families, or null for the default look. */
+    function lookThemeVars(menu, toolbar) {
+      const vars = { ...surfaceVars('menu', menu), ...surfaceVars('toolbar', toolbar) };
+      return Object.keys(vars).length ? vars : null;
+    }
+    const lookControls = (prefix) => ({
+      style: document.getElementById(`${prefix}-style`),
+      range: document.getElementById(`${prefix}-transparency`),
+      rangeOut: document.getElementById(`${prefix}-transparency-val`),
+      blur: document.getElementById(`${prefix}-blur`),
+      blurOut: document.getElementById(`${prefix}-blur-val`),
+    });
+    const LOOK = { menu: lookControls('menu'), toolbar: lookControls('toolbar') };
+    const lookArgs = (c) => [c.style.value, c.range.value, c.blur.value];
+    function applyMenuStyle() {
+      for (const c of Object.values(LOOK)) {
+        c.rangeOut.textContent = `${c.range.value}%`;
+        c.blurOut.textContent = `${c.blur.value}px`;
+      }
+      const themeVars = lookThemeVars(lookArgs(LOOK.menu), lookArgs(LOOK.toolbar));
+      // updateOptions() deep-merges objects, so clear the previous look first —
+      // otherwise glass's border would survive a switch to transparent.
+      [window.editor, window.editorRO].forEach((ctx) => {
+        ctx?.updateOptions({ themeVars: null });
+        if (themeVars) ctx?.updateOptions({ themeVars });
+      });
+    }
+    for (const c of Object.values(LOOK)) {
+      c.style.addEventListener('change', () => {
+        const preset = LOOK_PRESETS[c.style.value] || LOOK_PRESETS.solid;
+        c.range.value = String(preset.transparency);
+        c.blur.value = String(preset.blur);
+        applyMenuStyle();
+      });
+      c.range.addEventListener('input', applyMenuStyle);
+      c.blur.addEventListener('input', applyMenuStyle);
+    }
 
     function applyTheme(editorCtx, editorROCtx) {
       // Switch both editors (and their dialogs/tooltips) between themes

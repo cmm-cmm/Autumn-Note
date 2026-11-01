@@ -152,6 +152,8 @@ export class Context {
     if (toolbar?.el) {
       container.insertBefore(toolbar.el, editable);
       this.layoutInfo.toolbar = toolbar.el;
+      // Measurable only now that it is in the document; see Toolbar.fitSelects.
+      this.invoke('toolbar.fitSelects');
     }
 
     const statusbar = this._modules.get('statusbar');
