@@ -9,7 +9,18 @@ if (typeof document.execCommand !== 'function') {
   Object.defineProperty(document, 'execCommand', { value: vi.fn(() => true), configurable: true, writable: true });
 }
 
+/**
+ * Every tooltip a test creates, destroyed after it. Some tests start a real
+ * show/hide timer and end without destroying the instance; the timer then
+ * fired after the file's environment was torn down and threw
+ * `requestAnimationFrame is not defined` as an unhandled error, which fails
+ * the run even though every test passed. destroy() clears the timers, as it
+ * does in production.
+ */
+const live = [];
+
 afterEach(() => {
+  while (live.length) live.pop().destroy();
   document.body.innerHTML = '';
   window.getSelection().removeAllRanges();
   vi.useRealTimers();
@@ -37,6 +48,7 @@ const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const it2 = new ImageTooltip(ctx);
   it2.initialize();
+  live.push(it2);
   return { ctx, it2 };
 };
 
