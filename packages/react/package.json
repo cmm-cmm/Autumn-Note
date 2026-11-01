@@ -63,11 +63,11 @@
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
-    "autumnnote": "^3.1.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "vite": "^8.3.5"
+    "@types/react": "^19.2.18",
+    "@vitejs/plugin-react": "^6.0.5",
+    "autumnnote": "workspace:*",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vite": "^8.2.1"
   }
 }
