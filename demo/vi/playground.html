@@ -146,6 +146,13 @@
             </span>
           </div>
           <div class="cfg-row">
+            <label class="cfg-label" for="cfg-menu-blur">Độ mờ kính</label>
+            <span class="cfg-range-wrap">
+              <input type="range" id="cfg-menu-blur" class="cfg-range" min="0" max="30" step="1" value="0" />
+              <output id="cfg-menu-blur-val" for="cfg-menu-blur" class="cfg-range-val">0px</output>
+            </span>
+          </div>
+          <div class="cfg-row">
             <span class="cfg-label">Ngôn ngữ</span>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
@@ -471,33 +478,37 @@ const editor = AutumnNote.create('#editor');
 [^1]: Footnotes render as superscript markers.`;
 
 // Menu presets. Each sets a default transparency (0% = opaque, 100% = fully
-// see-through) that the slider then adjusts, plus its other --an-menu-* tokens.
-// Transparency goes to the editor as --an-menu-opacity (its complement), which
-// every menu, tooltip, popover and dialog mixes into its own background.
+// see-through) and frosted-glass blur that the sliders then adjust, plus its
+// other --an-menu-* tokens. Transparency goes to the editor as --an-menu-opacity
+// (its complement), which every menu, tooltip, popover, dialog and <select>
+// list mixes into its own background; blur goes to --an-menu-backdrop.
 const MENU_STYLES = {
-  solid: { transparency: 0, vars: {} },
+  solid: { transparency: 0, blur: 0, vars: {} },
   glass: {
     transparency: 40,
-    vars: {
-      'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
-      'menu-backdrop': 'blur(12px) saturate(1.5)',
-    },
+    blur: 12,
+    vars: { 'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)' },
   },
   // Transparent background, border kept so the menu still has an outline.
-  transparent: { transparency: 100, vars: { 'menu-shadow': 'none' } },
-  borderless: { transparency: 100, vars: { 'menu-border': 'transparent', 'menu-shadow': 'none' } },
+  transparent: { transparency: 100, blur: 0, vars: { 'menu-shadow': 'none' } },
+  borderless: { transparency: 100, blur: 0, vars: { 'menu-border': 'transparent', 'menu-shadow': 'none' } },
 };
-/** themeVars for a menu preset and the two transparencies, or null for the plain default. */
-function menuThemeVars(style, transparency, toolbarTransparency = 0) {
+const clampPct = (v, max = 100) => Math.min(max, Math.max(0, Number(v) || 0));
+/** themeVars for a menu preset, the two transparencies and the blur, or null for the plain default. */
+function menuThemeVars(style, transparency, toolbarTransparency = 0, blur = 0) {
   const preset = MENU_STYLES[style] || MENU_STYLES.solid;
-  const t = Math.min(100, Math.max(0, Number(transparency) || 0));
+  const t = clampPct(transparency);
+  const tt = clampPct(toolbarTransparency);
+  const px = clampPct(blur, 30);
+  const backdrop = px > 0 ? `blur(${px}px) saturate(1.4)` : null;
   const vars = { ...preset.vars };
   if (t > 0) vars['menu-opacity'] = `${100 - t}%`;
-  // The toolbar has its own token; frosted so content under a sticky toolbar blurs.
-  const tt = Math.min(100, Math.max(0, Number(toolbarTransparency) || 0));
+  if (backdrop) vars['menu-backdrop'] = backdrop;
+  // The toolbar has its own tokens; the same blur frosts content scrolling
+  // under a sticky toolbar.
   if (tt > 0) {
     vars['toolbar-opacity'] = `${100 - tt}%`;
-    vars['toolbar-backdrop'] = 'blur(10px) saturate(1.4)';
+    if (backdrop) vars['toolbar-backdrop'] = backdrop;
   }
   return Object.keys(vars).length ? vars : null;
 }
@@ -511,6 +522,7 @@ function setMenuTransparency(value) {
 // apply live, without the Apply button, since they only change themeVars.
 document.getElementById('cfg-menu').addEventListener('change', (e) => {
   setMenuTransparency(MENU_STYLES[e.target.value]?.transparency ?? 0);
+  setMenuBlur(MENU_STYLES[e.target.value]?.blur ?? 0);
   if (editor) { editor.updateOptions({ themeVars: null }); applyMenuLive(); }
 });
 function setToolbarTransparency(value) {
@@ -518,6 +530,15 @@ function setToolbarTransparency(value) {
   range.value = String(Number(value) || 0);
   document.getElementById('cfg-toolbar-t-val').textContent = `${range.value}%`;
 }
+function setMenuBlur(value) {
+  const range = document.getElementById('cfg-menu-blur');
+  range.value = String(Number(value) || 0);
+  document.getElementById('cfg-menu-blur-val').textContent = `${range.value}px`;
+}
+document.getElementById('cfg-menu-blur').addEventListener('input', (e) => {
+  setMenuBlur(e.target.value);
+  applyMenuLive();
+});
 document.getElementById('cfg-toolbar-t').addEventListener('input', (e) => {
   setToolbarTransparency(e.target.value);
   applyMenuLive();
@@ -530,7 +551,7 @@ function applyMenuLive() {
   if (!editor) return;
   const cfg = buildConfig();
   editor.updateOptions({ themeVars: null });
-  const vars = menuThemeVars(cfg.menuStyle, cfg.menuTransparency, cfg.toolbarTransparency);
+  const vars = menuThemeVars(cfg.menuStyle, cfg.menuTransparency, cfg.toolbarTransparency, cfg.menuBlur);
   if (vars) editor.updateOptions({ themeVars: vars });
   saveState();
 }
@@ -553,6 +574,7 @@ function buildConfig() {
     menuStyle:         document.getElementById('cfg-menu').value,
     menuTransparency:  Number(document.getElementById('cfg-menu-t').value),
     toolbarTransparency: Number(document.getElementById('cfg-toolbar-t').value),
+    menuBlur:          Number(document.getElementById('cfg-menu-blur').value),
   };
   const h = Number.parseInt(document.getElementById('cfg-height').value);
   cfg.height = h > 0 ? h : 300;
@@ -585,10 +607,10 @@ function createEditor(html) {
   }
 
   // menuStyle is a playground setting, not an editor option: it picks themeVars.
-  const { menuStyle, menuTransparency, toolbarTransparency, ...options } = cfg;
+  const { menuStyle, menuTransparency, toolbarTransparency, menuBlur, ...options } = cfg;
   editor = AutumnNote.create('#editor-el', {
     ...options,
-    themeVars: menuThemeVars(menuStyle, menuTransparency, toolbarTransparency),
+    themeVars: menuThemeVars(menuStyle, menuTransparency, toolbarTransparency, menuBlur),
     // The site header is sticky too; park a sticky toolbar just below it.
     stickyToolbarOffset: document.querySelector('.site-header')?.offsetHeight || 0,
     placeholder: 'Bắt đầu gõ…',
@@ -702,6 +724,7 @@ function loadFromHash() {
       if (MENU_STYLES[c.menuStyle] !== undefined) document.getElementById('cfg-menu').value = c.menuStyle;
       setMenuTransparency(Number.isFinite(c.menuTransparency) ? c.menuTransparency : (MENU_STYLES[c.menuStyle]?.transparency ?? 0));
       setToolbarTransparency(c.toolbarTransparency);
+      setMenuBlur(Number.isFinite(c.menuBlur) ? c.menuBlur : (MENU_STYLES[c.menuStyle]?.blur ?? 0));
     }
     return state.html || null;
   } catch (_) { void _; return null; }
@@ -729,6 +752,7 @@ function loadSavedConfig() {
     if (MENU_STYLES[saved.menuStyle] !== undefined) document.getElementById('cfg-menu').value = saved.menuStyle;
     setMenuTransparency(Number.isFinite(saved.menuTransparency) ? saved.menuTransparency : (MENU_STYLES[saved.menuStyle]?.transparency ?? 0));
     setToolbarTransparency(saved.toolbarTransparency);
+    setMenuBlur(Number.isFinite(saved.menuBlur) ? saved.menuBlur : (MENU_STYLES[saved.menuStyle]?.blur ?? 0));
   } catch (_) { void _; }
 }
 

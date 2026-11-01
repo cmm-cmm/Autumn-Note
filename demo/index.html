@@ -278,6 +278,9 @@
       <label for="toolbar-transparency">Toolbar:</label>
       <input type="range" id="toolbar-transparency" min="0" max="100" step="5" value="0" aria-label="Toolbar transparency" />
       <output id="toolbar-transparency-val" for="toolbar-transparency">0%</output>
+      <label for="menu-blur">Blur:</label>
+      <input type="range" id="menu-blur" min="0" max="30" step="1" value="0" aria-label="Frosted-glass blur" />
+      <output id="menu-blur-val" for="menu-blur">0px</output>
       <span class="bar-spacer"></span>
       <button id="theme-btn" aria-label="Toggle dark mode" aria-pressed="false">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -465,33 +468,37 @@ import '../src/js/i18n/all.js';
     // every menu, tooltip, popover and dialog reads.
     const menuSelect = document.getElementById('menu-select');
     // Menu presets. Each sets a default transparency (0% = opaque, 100% = fully
-    // see-through) that the slider then adjusts, plus its other --an-menu-* tokens.
-    // Transparency goes to the editor as --an-menu-opacity (its complement), which
-    // every menu, tooltip, popover and dialog mixes into its own background.
+    // see-through) and frosted-glass blur that the sliders then adjust, plus its
+    // other --an-menu-* tokens. Transparency goes to the editor as --an-menu-opacity
+    // (its complement), which every menu, tooltip, popover, dialog and <select>
+    // list mixes into its own background; blur goes to --an-menu-backdrop.
     const MENU_STYLES = {
-      solid: { transparency: 0, vars: {} },
+      solid: { transparency: 0, blur: 0, vars: {} },
       glass: {
         transparency: 40,
-        vars: {
-          'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
-          'menu-backdrop': 'blur(12px) saturate(1.5)',
-        },
+        blur: 12,
+        vars: { 'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)' },
       },
       // Transparent background, border kept so the menu still has an outline.
-      transparent: { transparency: 100, vars: { 'menu-shadow': 'none' } },
-      borderless: { transparency: 100, vars: { 'menu-border': 'transparent', 'menu-shadow': 'none' } },
+      transparent: { transparency: 100, blur: 0, vars: { 'menu-shadow': 'none' } },
+      borderless: { transparency: 100, blur: 0, vars: { 'menu-border': 'transparent', 'menu-shadow': 'none' } },
     };
-    /** themeVars for a menu preset and the two transparencies, or null for the plain default. */
-    function menuThemeVars(style, transparency, toolbarTransparency = 0) {
+    const clampPct = (v, max = 100) => Math.min(max, Math.max(0, Number(v) || 0));
+    /** themeVars for a menu preset, the two transparencies and the blur, or null for the plain default. */
+    function menuThemeVars(style, transparency, toolbarTransparency = 0, blur = 0) {
       const preset = MENU_STYLES[style] || MENU_STYLES.solid;
-      const t = Math.min(100, Math.max(0, Number(transparency) || 0));
+      const t = clampPct(transparency);
+      const tt = clampPct(toolbarTransparency);
+      const px = clampPct(blur, 30);
+      const backdrop = px > 0 ? `blur(${px}px) saturate(1.4)` : null;
       const vars = { ...preset.vars };
       if (t > 0) vars['menu-opacity'] = `${100 - t}%`;
-      // The toolbar has its own token; frosted so content under a sticky toolbar blurs.
-      const tt = Math.min(100, Math.max(0, Number(toolbarTransparency) || 0));
+      if (backdrop) vars['menu-backdrop'] = backdrop;
+      // The toolbar has its own tokens; the same blur frosts content scrolling
+      // under a sticky toolbar.
       if (tt > 0) {
         vars['toolbar-opacity'] = `${100 - tt}%`;
-        vars['toolbar-backdrop'] = 'blur(10px) saturate(1.4)';
+        if (backdrop) vars['toolbar-backdrop'] = backdrop;
       }
       return Object.keys(vars).length ? vars : null;
     }
@@ -499,10 +506,13 @@ import '../src/js/i18n/all.js';
     const menuRangeOut = document.getElementById('menu-transparency-val');
     const toolbarRange = document.getElementById('toolbar-transparency');
     const toolbarRangeOut = document.getElementById('toolbar-transparency-val');
+    const blurRange = document.getElementById('menu-blur');
+    const blurRangeOut = document.getElementById('menu-blur-val');
     function applyMenuStyle() {
       menuRangeOut.textContent = `${menuRange.value}%`;
       toolbarRangeOut.textContent = `${toolbarRange.value}%`;
-      const themeVars = menuThemeVars(menuSelect.value, menuRange.value, toolbarRange.value);
+      blurRangeOut.textContent = `${blurRange.value}px`;
+      const themeVars = menuThemeVars(menuSelect.value, menuRange.value, toolbarRange.value, blurRange.value);
       // updateOptions() deep-merges objects, so clear the previous preset
       // first — otherwise glass's border would survive a switch to transparent.
       [window.editor, window.editorRO].forEach((ctx) => {
@@ -512,10 +522,12 @@ import '../src/js/i18n/all.js';
     }
     menuSelect.addEventListener('change', () => {
       menuRange.value = String(MENU_STYLES[menuSelect.value]?.transparency ?? 0);
+      blurRange.value = String(MENU_STYLES[menuSelect.value]?.blur ?? 0);
       applyMenuStyle();
     });
     menuRange.addEventListener('input', applyMenuStyle);
     toolbarRange.addEventListener('input', applyMenuStyle);
+    blurRange.addEventListener('input', applyMenuStyle);
 
     function applyTheme(editorCtx, editorROCtx) {
       // Switch both editors (and their dialogs/tooltips) between themes

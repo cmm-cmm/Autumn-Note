@@ -275,12 +275,13 @@ export class ImageCropOverlay {
     toolbar.className = 'an-crop-toolbar';
     toolbar.style.cssText = `
       position:fixed; z-index:calc(10102 + var(--an-z-offset, 0));
-      background:#1e1e2e; border-radius:6px;
+      border-radius:6px;
       padding:5px 8px; display:flex; gap:6px;
       align-items:center;
-      box-shadow:0 4px 16px rgba(0,0,0,.4);
       font:13px system-ui,sans-serif;
     `;
+    // Background, border, shadow and backdrop come from .an-crop-toolbar in the
+    // stylesheet, so the --an-menu-* tokens reach it like every other menu.
 
     const confirmBtn = this._makeToolbarBtn('✓ Crop', '#22c55e', () => this._confirm());
     const cancelBtn  = this._makeToolbarBtn('✕ Cancel', '#94a3b8', () => this._close(false));

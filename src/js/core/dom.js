@@ -409,3 +409,27 @@ export function makeDraggable(handle, box) {
 export function portalOf(context) {
   return context?.layoutInfo?.portal || document.body;
 }
+
+/**
+ * Pins a `<select>` to the width it has as a native control (wide enough for
+ * its longest option) in browsers that support customizable selects.
+ *
+ * The stylesheet gives `.an-select` and friends `appearance: base-select` where
+ * supported, so their dropdown list can take the --an-menu-* tokens. A
+ * base-select control sizes itself to the *selected* option instead of the
+ * widest one, so a toolbar would narrow to "Arial" and shift sideways every
+ * time a choice changed. Measuring once with the native appearance and fixing
+ * that width keeps the toolbar steady.
+ *
+ * No-op where base-select is unsupported (the control stays native), and while
+ * the select is detached or hidden (nothing to measure).
+ * @param {HTMLSelectElement} select
+ */
+export function fitSelectWidth(select) {
+  if (!select?.isConnected || !globalThis.CSS?.supports?.('appearance', 'base-select')) return;
+  select.style.width = '';
+  select.style.appearance = 'none';
+  const width = select.getBoundingClientRect().width;
+  select.style.appearance = '';
+  if (width > 0) select.style.width = `${Math.ceil(width)}px`;
+}

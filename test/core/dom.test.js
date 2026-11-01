@@ -680,7 +680,7 @@ describe('trapFocus', () => {
 // placeCaret
 // ---------------------------------------------------------------------------
 
-import { placeCaret, repairListNesting } from '../../src/js/core/dom.js';
+import { placeCaret, repairListNesting, fitSelectWidth } from '../../src/js/core/dom.js';
 
 describe('placeCaret', () => {
   it('places caret at end of element', () => {
@@ -755,5 +755,42 @@ describe('repairListNesting', () => {
     expect(() => repairListNesting(null)).not.toThrow();
     expect(() => repairListNesting(undefined)).not.toThrow();
     expect(() => repairListNesting(document.createTextNode('x'))).not.toThrow();
+  });
+});
+
+describe('fitSelectWidth', () => {
+  const realCSS = globalThis.CSS;
+  afterEach(() => { globalThis.CSS = realCSS; document.body.innerHTML = ''; });
+
+  function makeSelect(width) {
+    const select = document.createElement('select');
+    document.body.appendChild(select);
+    // Native appearance (none) measures the widest option; base-select would not.
+    select.getBoundingClientRect = () => ({ width: select.style.appearance === 'none' ? width : 40 });
+    return select;
+  }
+
+  it('pins the native width where customizable selects are supported', () => {
+    globalThis.CSS = { supports: (p, v) => p === 'appearance' && v === 'base-select' };
+    const select = makeSelect(97.2);
+    fitSelectWidth(select);
+    expect(select.style.width).toBe('98px');
+    expect(select.style.appearance).toBe('');
+  });
+
+  it('does nothing where base-select is unsupported, or while detached or hidden', () => {
+    globalThis.CSS = { supports: () => false };
+    const native = makeSelect(97);
+    fitSelectWidth(native);
+    expect(native.style.width).toBe('');
+
+    globalThis.CSS = { supports: () => true };
+    const detached = document.createElement('select');
+    fitSelectWidth(detached);
+    expect(detached.style.width).toBe('');
+
+    const hidden = makeSelect(0);
+    fitSelectWidth(hidden);
+    expect(hidden.style.width).toBe('');
   });
 });

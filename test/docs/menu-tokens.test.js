@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 const SURFACES = [
   'an-table-picker-popup', 'an-color-popup', 'an-link-tooltip', 'an-size-popover',
   'an-cell-shade-popover', 'an-dialog-box', 'an-contextmenu', 'an-bubble-toolbar',
-  'an-bubble-color-picker', 'an-mention-dropdown', 'an-slash-menu',
+  'an-bubble-color-picker', 'an-mention-dropdown', 'an-slash-menu', 'an-crop-toolbar',
 ];
 
 const css = compile(resolve(__dirname, '..', '..', 'src/styles/autumnnote.scss')).css;
@@ -52,6 +52,18 @@ describe('menu surface tokens', () => {
     );
     // Dark theme too, or the token would only work in light mode.
     expect(css).toMatch(/\.an-theme-dark \.an-toolbar \{\s*background: color-mix\(in srgb, var\(--an-bg-toolbar\) var\(--an-toolbar-opacity, 100%\), transparent\)/);
+  });
+
+  it('select dropdown lists read the menu tokens where customizable selects exist', () => {
+    const block = css.slice(css.indexOf('@supports (appearance: base-select)'));
+    expect(block.length).toBeGreaterThan(0);
+    for (const cls of ['an-select', 'an-code-lang-select', 'an-icon-option-select']) {
+      expect(block).toContain(`.${cls}::picker(select)`);
+    }
+    expect(block).toMatch(/::picker\(select\)[^}]*border: 1px solid var\(--an-menu-border,/);
+    expect(block).toMatch(/::picker\(select\)[^}]*backdrop-filter: var\(--an-menu-backdrop, none\)/);
+    expect(block).toMatch(/::picker\(select\)[^}]*background: var\(--an-menu-bg, color-mix\(in srgb, .+ var\(--an-menu-opacity, 100%\), transparent\)\)/);
+    expect(block).toMatch(/\.an-theme-dark \.an-select::picker\(select\)/);
   });
 
   it('leaves the -webkit- prefix to the build', () => {

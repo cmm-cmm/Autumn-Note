@@ -1631,7 +1631,13 @@
 }
 
 .an-crop-toolbar {
-  // Inline styles handle position; add a subtle entrance animation.
+  // Inline styles handle position and layout. The surface itself is always the
+  // dark crop chrome, whatever the editor theme, but reads the --an-menu-*
+  // tokens like every other menu.
+  @include an-menu-bg(#1e1e2e);
+  border: 1px solid var(--an-menu-border, transparent);
+  box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.4));
+  backdrop-filter: var(--an-menu-backdrop, none);
   animation: an-crop-toolbar-in 0.12s ease;
 }
 
@@ -2563,6 +2569,84 @@ $an-video-accent: #8b5cf6; // violet-500
   // wider select costs a swipe; an unreadable one costs the feature.
   .an-select {
     font-size: 11px;
+  }
+}
+
+// =============================================================================
+// Dropdown lists of <select> controls (toolbar Style/Font/Size/Line, the code
+// block's language, the icon dialog's options)
+// =============================================================================
+//
+// A native <select> list is drawn by the OS and ignores CSS. Where the browser
+// supports customizable selects (appearance: base-select, Chromium 135+), the
+// list becomes a styleable ::picker(select) and reads the same --an-menu-*
+// tokens as every other menu: transparent, frosted or opacity-adjusted along
+// with them. Elsewhere the list stays native and opaque; the control itself is
+// unchanged either way.
+
+@supports (appearance: base-select) {
+  .an-select,
+  .an-code-lang-select,
+  .an-icon-option-select {
+    appearance: base-select;
+    // A base-select control lays its label out as a flex box at the top; a
+    // native one centres it vertically. Keep the native look.
+    display: inline-flex;
+    align-items: center;
+
+    &::picker(select) {
+      appearance: base-select;
+      @include an-menu-bg(var(--an-bg, #{$an-bg}));
+      border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
+      border-radius: var(--an-radius-sm, #{$an-radius-sm});
+      box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
+      backdrop-filter: var(--an-menu-backdrop, none);
+      color: var(--an-text, #{$an-text});
+      padding: 4px 0;
+      max-block-size: min(60vh, 360px);
+    }
+
+    option {
+      padding: 4px 12px;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:hover,
+      &:focus-visible {
+        background: var(--an-bg-btn-hover, #{$an-bg-btn-hover});
+        outline: none;
+      }
+
+      &:checked {
+        color: var(--an-primary, #{$an-primary});
+        font-weight: 600;
+      }
+
+      &:disabled {
+        color: var(--an-muted, #{$an-muted});
+        cursor: default;
+        background: none;
+      }
+
+      &::checkmark { display: none; }
+    }
+  }
+
+  // These two draw their own arrow as a background image.
+  .an-select::picker-icon,
+  .an-code-lang-select::picker-icon {
+    display: none;
+  }
+
+  .an-select,
+  .an-code-lang-select,
+  .an-icon-option-select {
+    @include an-dark-scope {
+      &::picker(select) {
+        @include an-menu-bg(#24273a);
+        border-color: var(--an-menu-border, var(--an-border));
+      }
+    }
   }
 }
 
