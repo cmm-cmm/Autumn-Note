@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **New logo: the leaf and nib.** The project mark is now an autumn leaf with a writing nib cut through it, in an amber gradient, replacing the two maple leaves. The demo site, its favicons, the README and the social card all use it.
+  - Favicons are the full set — SVG for browsers that take one, multi-resolution ICO as the fallback, the Apple touch icon, and Android/PWA icons including a maskable one — wired up through a web manifest, with `theme-color` set to the brand Ink. Below 32 px the favicon uses the simplified mark, which drops the nib's inner strokes so it stays legible.
+  - The nav icon is 32 px on every page, the smallest size the brand guide allows for the full mark.
+  - The README wordmark switches to the light-on-dark variant under GitHub's dark theme.
+  - The social card keeps its URL, so links that platforms have already cached pick up the new image rather than breaking.
+  - The demo site's own colours move onto the brand palette: Amber `#E87824`, Amber Light `#FA8D26`, Ink `#20252B` and Ivory `#FBFAF7` replace the near-miss values the site had drifted to.
+
+  Nothing in the published package changes. The library build does not copy `public/`, and the editor's default theme is still its own blue — the brand palette is for the project, not a default imposed on every editor that embeds it.
+
+---
+
 ## [3.1.0] - 2026-09-19
 
 The editor no longer uses `document.execCommand`. Every formatting command is

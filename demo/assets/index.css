@@ -3,8 +3,8 @@
     html { scroll-behavior: smooth; }
     body {
       font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: #faf9f7;
-      color: #1c1917;
+      background: #FBFAF7;
+      color: #20252B;
       line-height: 1.55;
     }
     a { color: inherit; text-decoration: none; }
@@ -18,7 +18,7 @@
     /* === Skip link (a11y) === */
     .skip-link {
       position: absolute; left: -9999px; top: 8px; z-index: 9999;
-      background: #e8751a; color: #fff; padding: 6px 14px; border-radius: 6px;
+      background: #E87824; color: #fff; padding: 6px 14px; border-radius: 6px;
     }
     .skip-link:focus { left: 8px; }
 
@@ -27,7 +27,7 @@
     ========================================================= */
     .site-header {
       position: sticky; top: 0; z-index: 50;
-      background: #1c1917;
+      background: #20252B;
       border-bottom: 1px solid rgba(255,255,255,.07);
       backdrop-filter: blur(8px);
     }
@@ -39,12 +39,12 @@
     .brand {
       display: flex; align-items: center; gap: 10px; color: #fff;
     }
-    .brand img { width: 30px; height: 30px; border-radius: 7px; }
+    .brand img { width: 32px; height: 32px; }
     .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
     .brand-version {
       font-size: 11px; font-weight: 600; padding: 2px 8px;
-      background: rgba(232,117,26,.2); color: #fb923c;
-      border-radius: 999px; border: 1px solid rgba(232,117,26,.35);
+      background: rgba(232,120,36,.2); color: #FA8D26;
+      border-radius: 999px; border: 1px solid rgba(232,120,36,.35);
     }
     .header-nav { display: flex; gap: 2px; }
     .nav-link {
@@ -62,19 +62,19 @@
       padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s;
     }
     .lang-switch a:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .lang-switch a.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .lang-switch a.active { color: #FA8D26; background: rgba(232,120,36,.15); }
 
     /* =========================================================
        HERO
     ========================================================= */
     .hero {
-      background: linear-gradient(155deg, #1c1917 0%, #292524 55%, #3b1a08 100%);
+      background: linear-gradient(155deg, #20252B 0%, #272C33 55%, #3A1C0C 100%);
       color: #fff; padding: 72px 24px 60px; text-align: center;
     }
     .hero-eyebrow {
       display: inline-block; margin-bottom: 16px;
       font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-      color: #fb923c;
+      color: #FA8D26;
     }
     .hero-title {
       font-size: clamp(32px, 5.5vw, 56px); font-weight: 800; line-height: 1.08;
@@ -99,7 +99,7 @@
       font-size: 13px; font-weight: 600; padding: 11px 18px;
       cursor: pointer; transition: background .15s; white-space: nowrap;
     }
-    .install-copy:hover { background: rgba(232,117,26,.25); color: #fb923c; }
+    .install-copy:hover { background: rgba(232,120,36,.25); color: #FA8D26; }
     .hero-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .btn {
       display: inline-flex; align-items: center; gap: 6px;
@@ -107,7 +107,7 @@
       cursor: pointer; transition: opacity .15s, transform .12s; border: none;
     }
     .btn:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-primary { background: #e8751a; color: #fff; }
+    .btn-primary { background: #E87824; color: #fff; }
     .btn-secondary {
       background: rgba(255,255,255,.09); color: #e7e5e4;
       border: 1px solid rgba(255,255,255,.14);
@@ -159,7 +159,7 @@
       background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
       transition: color .15s, border-color .15s;
     }
-    .feat:hover { color: #fb923c; border-color: rgba(232,117,26,.35); }
+    .feat:hover { color: #FA8D26; border-color: rgba(232,120,36,.35); }
 
     /* =========================================================
        DEMO SECTION
@@ -182,10 +182,10 @@
     #lang-bar label { font-size: 13px; font-weight: 600; color: #57534e; }
     #lang-select {
       padding: 5px 10px; border: 1px solid #e7e5e4; border-radius: 7px;
-      font-size: 13px; background: #fff; cursor: pointer; color: #1c1917;
+      font-size: 13px; background: #fff; cursor: pointer; color: #20252B;
       transition: border-color .15s;
     }
-    #lang-select:focus { outline: none; border-color: #e8751a; }
+    #lang-select:focus { outline: none; border-color: #E87824; }
 
     /* Spacer to push theme toggle to the right */
     #lang-bar .bar-spacer { flex: 1; }
@@ -198,7 +198,7 @@
       cursor: pointer; transition: background .15s, border-color .15s, color .15s;
       white-space: nowrap;
     }
-    #theme-btn:hover { border-color: #e8751a; color: #e8751a; }
+    #theme-btn:hover { border-color: #E87824; color: #E87824; }
     #theme-btn svg { flex-shrink: 0; transition: transform .35s; }
     #theme-btn.is-dark {
       background: #1e1e2e; border-color: #313244; color: #cdd6f4;
@@ -272,11 +272,11 @@
       border: 1px solid #e7e5e4; border-radius: 10px; padding: 14px 18px; background: #fff;
     }
     .faq-item summary {
-      cursor: pointer; font-weight: 600; font-size: 15px; color: #1c1917;
+      cursor: pointer; font-weight: 600; font-size: 15px; color: #20252B;
       list-style: none;
     }
     .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::before { content: '+ '; color: #e8751a; font-weight: 700; }
+    .faq-item summary::before { content: '+ '; color: #E87824; font-weight: 700; }
     .faq-item[open] summary::before { content: '– '; }
     .faq-item p { margin-top: 10px; font-size: 14px; color: #57534e; line-height: 1.6; }
     .faq-item code {
@@ -308,7 +308,7 @@
       font-size: 13px; line-height: 1.65;
     }
     .code-block code { color: #c9b99a; }
-    .code-block code .kw { color: #fb923c; }
+    .code-block code .kw { color: #FA8D26; }
     .code-block code .str { color: #86efac; }
     .code-block code .cm { color: #57534e; }
 

@@ -4,7 +4,7 @@
       font-family: system-ui, -apple-system, sans-serif;
       background: #f9fafb; color: #111827; line-height: 1.65;
     }
-    a { color: #e8751a; text-decoration: none; }
+    a { color: #E87824; text-decoration: none; }
     a:hover { text-decoration: underline; }
     code { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; font-size: .88em; }
     p code, li code, td code {
@@ -15,7 +15,7 @@
     /* ── Header ── */
     .site-header {
       position: sticky; top: 0; z-index: 100;
-      background: #1c1917; border-bottom: 1px solid rgba(255,255,255,.07);
+      background: #20252B; border-bottom: 1px solid rgba(255,255,255,.07);
       backdrop-filter: blur(8px);
     }
     .header-inner {
@@ -24,12 +24,12 @@
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .brand { display: flex; align-items: center; gap: 8px; color: #fff; }
-    .brand img { width: 26px; height: 26px; border-radius: 6px; }
+    .brand img { width: 32px; height: 32px; }
     .brand-name { font-size: 16px; font-weight: 700; }
     .brand-version {
       font-size: 11px; font-weight: 600; padding: 2px 7px;
-      background: rgba(232,117,26,.2); color: #fb923c;
-      border-radius: 999px; border: 1px solid rgba(232,117,26,.35);
+      background: rgba(232,120,36,.2); color: #FA8D26;
+      border-radius: 999px; border: 1px solid rgba(232,120,36,.35);
     }
     .header-nav { display: flex; gap: 2px; align-items: center; }
     .nav-link {
@@ -37,7 +37,7 @@
       padding: 5px 11px; border-radius: 6px; transition: background .15s, color .15s;
     }
     .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-link.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .nav-link.active { color: #FA8D26; background: rgba(232,120,36,.15); }
     .lang-switch {
       display: flex; align-items: center; gap: 2px;
       margin-left: 6px; padding-left: 10px;
@@ -48,7 +48,7 @@
       padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s;
     }
     .lang-switch a:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .lang-switch a.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .lang-switch a.active { color: #FA8D26; background: rgba(232,120,36,.15); }
 
     /* ── Layout ── */
     .docs-layout {
@@ -87,8 +87,8 @@
     }
     .sidebar-link:hover { background: #f3f4f6; color: #111827; text-decoration: none; }
     .sidebar-link.active {
-      color: #e8751a; background: #fff7ed;
-      border-left-color: #e8751a; font-weight: 600;
+      color: #E87824; background: #fff7ed;
+      border-left-color: #E87824; font-weight: 600;
     }
     .sidebar-link.sub { padding-left: 28px; font-size: 12px; color: #6b7280; }
     .sidebar-link.sub:hover { color: #374151; }
@@ -116,7 +116,7 @@
     }
     h2.section-h .badge {
       font-size: 11px; font-weight: 600; padding: 2px 8px;
-      border-radius: 999px; background: #fff7ed; color: #e8751a;
+      border-radius: 999px; background: #fff7ed; color: #E87824;
       border: 1px solid #fed7aa; vertical-align: middle;
     }
     h3.method-h {
@@ -149,7 +149,7 @@
       border: 1px solid rgba(255,255,255,.15); border-radius: 5px;
       cursor: pointer; transition: background .15s, color .15s;
     }
-    .copy-btn:hover { background: rgba(232,117,26,.3); color: #fb923c; }
+    .copy-btn:hover { background: rgba(232,120,36,.3); color: #FA8D26; }
 
     /* Table */
     .docs-table-wrap { overflow-x: auto; margin: 16px 0; }
@@ -158,7 +158,7 @@
     }
     table.docs-table th {
       text-align: left; padding: 8px 12px;
-      background: #1c1917; color: #d6d3d1;
+      background: #20252B; color: #d6d3d1;
       font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
       white-space: nowrap;
     }
@@ -183,7 +183,7 @@
 
     /* Callout */
     .callout {
-      border-left: 3px solid #e8751a; background: #fff7ed;
+      border-left: 3px solid #E87824; background: #fff7ed;
       padding: 10px 16px; border-radius: 0 7px 7px 0;
       margin: 14px 0; font-size: 13px; color: #374151;
     }
@@ -191,7 +191,7 @@
 
     /* Footer */
     .site-footer {
-      background: #1c1917; color: #78716c;
+      background: #20252B; color: #78716c;
       padding: 14px 20px; font-size: 12px; margin-top: 40px;
     }
     .footer-inner {

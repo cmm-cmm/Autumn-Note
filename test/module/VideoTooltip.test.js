@@ -5,7 +5,18 @@ import { en } from '../../src/js/i18n/en.js';
 vi.stubGlobal('requestAnimationFrame', (cb) => { cb(); return 0; });
 vi.stubGlobal('cancelAnimationFrame', () => {});
 
+/**
+ * Every tooltip a test creates, destroyed after it. Some tests start a real
+ * show/hide timer and end without destroying the instance; the timer then
+ * fired after the file's environment was torn down and threw
+ * `requestAnimationFrame is not defined` as an unhandled error, which fails
+ * the run even though every test passed. destroy() clears the timers, as it
+ * does in production.
+ */
+const live = [];
+
 afterEach(() => {
+  while (live.length) live.pop().destroy();
   document.body.innerHTML = '';
   vi.useRealTimers();
   vi.clearAllMocks();
@@ -37,6 +48,7 @@ const makeTooltip = (html) => {
   const ctx = makeContext(html);
   const vt = new VideoTooltip(ctx);
   vt.initialize();
+  live.push(vt);
   return { ctx, vt };
 };
 
