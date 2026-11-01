@@ -10,15 +10,19 @@
   <meta name="robots" content="noindex, follow" />
   <link rel="canonical" href="https://autumn.konexforge.com/404.html" />
 
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="manifest" href="/image/site.webmanifest" />
+  <meta name="theme-color" content="#20252B" />
+  <link rel="apple-touch-icon" href="/image/apple-touch-icon.png" sizes="180x180" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: #faf9f7;
-      color: #1c1917;
+      background: #FBFAF7;
+      color: #20252B;
       line-height: 1.55;
       min-height: 100vh;
       display: flex;
@@ -28,7 +32,7 @@
 
     /* === Header (matches site-wide header) === */
     .site-header {
-      background: #1c1917;
+      background: #20252B;
       border-bottom: 1px solid rgba(255,255,255,.07);
     }
     .header-inner {
@@ -37,7 +41,7 @@
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
     }
     .brand { display: flex; align-items: center; gap: 10px; color: #fff; }
-    .brand img { width: 30px; height: 30px; border-radius: 7px; }
+    .brand img { width: 32px; height: 32px; }
     .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
     .header-nav { display: flex; gap: 2px; }
     .nav-link {
@@ -54,12 +58,12 @@
     }
     .nf-code {
       font-size: clamp(56px, 10vw, 96px); font-weight: 800;
-      letter-spacing: -.03em; color: #e8751a; line-height: 1;
+      letter-spacing: -.03em; color: #E87824; line-height: 1;
       margin-bottom: 12px;
     }
     .nf-title {
       font-size: clamp(20px, 3vw, 28px); font-weight: 700;
-      margin-bottom: 12px; color: #1c1917;
+      margin-bottom: 12px; color: #20252B;
     }
     .nf-sub {
       font-size: 15px; color: #57534e; max-width: 460px;
@@ -72,14 +76,14 @@
       cursor: pointer; transition: opacity .15s, transform .12s; border: none;
     }
     .btn:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-primary { background: #e8751a; color: #fff; }
+    .btn-primary { background: #E87824; color: #fff; }
     .btn-secondary {
-      background: #fff; color: #1c1917;
+      background: #fff; color: #20252B;
       border: 1px solid #e7e5e4;
     }
 
     /* === Footer (matches site-wide footer) === */
-    .site-footer { background: #1c1917; color: #a8a29e; }
+    .site-footer { background: #20252B; color: #a8a29e; }
     .footer-inner {
       max-width: 1100px; margin: 0 auto; padding: 20px 24px;
       display: flex; align-items: center; justify-content: space-between;
@@ -100,7 +104,7 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="https://autumn.konexforge.com/" aria-label="Autumn Note home">
-        <img src="/image/banner.png" width="30" height="30" alt="Autumn Note logo" />
+        <img src="/image/logo-icon.svg" width="32" height="32" alt="Autumn Note logo" />
         <span class="brand-name">Autumn Note</span>
       </a>
       <nav class="header-nav" aria-label="Site links">

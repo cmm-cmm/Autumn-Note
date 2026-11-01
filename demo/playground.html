@@ -52,8 +52,11 @@
   }
   </script>
 
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/image/banner.png" />
+  <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="manifest" href="/image/site.webmanifest" />
+  <meta name="theme-color" content="#20252B" />
+  <link rel="apple-touch-icon" href="/image/apple-touch-icon.png" sizes="180x180" />
   <link rel="stylesheet" href="../src/styles/autumnnote.scss" />
   <link rel="stylesheet" href="assets/playground.css" />
 </head>
@@ -72,7 +75,7 @@
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="./" aria-label="Autumn Note home">
-      <img src="/image/banner.png" width="26" height="26" alt="" />
+      <img src="/image/logo-icon.svg" width="32" height="32" alt="" />
       <span class="brand-name">Autumn Note</span>
       <span class="brand-version">v__ASN_VERSION__</span>
     </a>
@@ -165,7 +168,7 @@
           </div>
           <div class="cfg-row">
             <label class="cfg-label" for="cfg-color">Focus color</label>
-            <input type="color" id="cfg-color" class="cfg-input" value="#e8751a" />
+            <input type="color" id="cfg-color" class="cfg-input" value="#E87824" />
           </div>
           <div class="cfg-row">
             <label class="cfg-label" for="cfg-height">Height (px)</label>
@@ -466,7 +469,7 @@ function createEditor(html) {
 
   // Set CSS variables on the panel before create() so they're ready on first focus
   const panel = document.getElementById('editor-panel');
-  const fc = cfg.focusColor || '#e8751a';
+  const fc = cfg.focusColor || '#E87824';
   panel.style.setProperty('--pg-focus-color', fc);
   if (/^#[0-9a-f]{6}$/i.test(fc)) {
     const r = Number.parseInt(fc.slice(1, 3), 16);

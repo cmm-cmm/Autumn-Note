@@ -1,6 +1,11 @@
 # Autumn Note — WYSIWYG Rich Text Editor
 
-<p align="center"><img src="public/image/banner.png" width="120" alt="Autumn Note Banner"/></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/image/logo-horizontal-dark.svg">
+    <img src="public/image/logo-horizontal.svg" width="320" alt="Autumn Note">
+  </picture>
+</p>
 
 [![npm](https://img.shields.io/npm/v/autumnnote?label=version&color=blue&logo=npm)](https://www.npmjs.com/package/autumnnote)
 [![npm downloads](https://img.shields.io/npm/dw/autumnnote?label=downloads%2Fweek&logo=npm&color=cb3837)](https://www.npmjs.com/package/autumnnote)

@@ -1,0 +1,27 @@
+{
+  "name": "Autumn Note",
+  "short_name": "Autumn Note",
+  "icons": [
+    {
+      "src": "/image/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/image/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/image/maskable-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#20252B",
+  "background_color": "#FBFAF7",
+  "display": "standalone"
+}

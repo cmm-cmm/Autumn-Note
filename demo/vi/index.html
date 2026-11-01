@@ -127,8 +127,11 @@
   }
   </script>
 
-  <link rel="icon" href="/image/favicon.ico" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="/image/banner.png" />
+  <link rel="icon" href="/image/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/image/favicon.ico" sizes="any" />
+  <link rel="manifest" href="/image/site.webmanifest" />
+  <meta name="theme-color" content="#20252B" />
+  <link rel="apple-touch-icon" href="/image/apple-touch-icon.png" sizes="180x180" />
 
   <link rel="stylesheet" href="../assets/index.css" />
 </head>
@@ -139,7 +142,7 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="https://autumn.konexforge.com/vi/" aria-label="Trang chủ Autumn Note">
-        <img src="/image/banner.png" width="30" height="30" alt="Logo Autumn Note" />
+        <img src="/image/logo-icon.svg" width="32" height="32" alt="Logo Autumn Note" />
         <span class="brand-name">Autumn Note</span>
         <span class="brand-version">v__ASN_VERSION__</span>
       </a>
@@ -482,7 +485,7 @@ import '../../src/js/i18n/all.js';
     let editor = AutumnNote.create('#editor', {
       ...sharedOptions(),
       placeholder: 'Bắt đầu gõ ở đây…',
-      focusColor: '#e8751a',
+      focusColor: '#E87824',
       bubbleToolbar: true,
       mention: {
         onSearch(query, callback) {
@@ -514,7 +517,7 @@ import '../../src/js/i18n/all.js';
       editor = AutumnNote.create(editorEl, {
         ...sharedOptions(),
         placeholder: 'Bắt đầu gõ ở đây…',
-        focusColor: '#e8751a',
+        focusColor: '#E87824',
         bubbleToolbar: true,
         mention: {
           onSearch(query, callback) {

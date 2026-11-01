@@ -11,7 +11,7 @@
     /* ── Header ── */
     .site-header {
       position: sticky; top: 0; z-index: 100;
-      background: #1c1917; border-bottom: 1px solid rgba(255,255,255,.07);
+      background: #20252B; border-bottom: 1px solid rgba(255,255,255,.07);
       backdrop-filter: blur(8px);
     }
     .header-inner {
@@ -20,12 +20,12 @@
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .brand { display: flex; align-items: center; gap: 8px; color: #fff; }
-    .brand img { width: 26px; height: 26px; border-radius: 6px; }
+    .brand img { width: 32px; height: 32px; }
     .brand-name { font-size: 16px; font-weight: 700; }
     .brand-version {
       font-size: 11px; font-weight: 600; padding: 2px 7px;
-      background: rgba(232,117,26,.2); color: #fb923c;
-      border-radius: 999px; border: 1px solid rgba(232,117,26,.35);
+      background: rgba(232,120,36,.2); color: #FA8D26;
+      border-radius: 999px; border: 1px solid rgba(232,120,36,.35);
     }
     .header-nav { display: flex; gap: 2px; align-items: center; }
     .nav-link {
@@ -33,7 +33,7 @@
       padding: 5px 11px; border-radius: 6px; transition: background .15s, color .15s;
     }
     .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .nav-link.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .nav-link.active { color: #FA8D26; background: rgba(232,120,36,.15); }
     .lang-switch {
       display: flex; align-items: center; gap: 2px;
       margin-left: 6px; padding-left: 10px;
@@ -44,7 +44,7 @@
       padding: 4px 8px; border-radius: 6px; transition: background .15s, color .15s;
     }
     .lang-switch a:hover { background: rgba(255,255,255,.08); color: #fff; }
-    .lang-switch a.active { color: #fb923c; background: rgba(232,117,26,.15); }
+    .lang-switch a.active { color: #FA8D26; background: rgba(232,120,36,.15); }
 
     /* ── Layout ── */
     .pg-layout {
@@ -60,7 +60,7 @@
       font-size: 15px; font-weight: 700; color: #111827;
       margin-right: auto;
     }
-    .pg-toolbar-bar h1 span { color: #e8751a; }
+    .pg-toolbar-bar h1 span { color: #E87824; }
     .pg-panels {
       flex: 1; display: flex; gap: 12px; min-height: 0;
       padding-bottom: 16px;
@@ -84,8 +84,8 @@
       box-shadow: none !important;
     }
     .panel-editor.is-focused {
-      border-color: var(--pg-focus-color, #e8751a);
-      box-shadow: 0 0 0 3px var(--pg-focus-shadow, rgba(232,117,26,.2));
+      border-color: var(--pg-focus-color, #E87824);
+      box-shadow: 0 0 0 3px var(--pg-focus-shadow, rgba(232,120,36,.2));
       transition: border-color .15s, box-shadow .15s;
     }
     #editor-el { height: 100%; }
@@ -124,7 +124,7 @@
       border-radius: 6px; background: #fff; color: #111827;
       outline: none; transition: border-color .15s;
     }
-    .cfg-select:focus, .cfg-input:focus { border-color: #e8751a; }
+    .cfg-select:focus, .cfg-input:focus { border-color: #E87824; }
     .cfg-input[type="number"] { width: 70px; }
     .cfg-input[type="color"] { width: 40px; height: 26px; padding: 2px; cursor: pointer; }
     .cfg-toggle {
@@ -140,7 +140,7 @@
       background: #fff; border-radius: 50%; top: 2.5px; left: 2.5px;
       transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
     }
-    .cfg-toggle input:checked + .cfg-track { background: #e8751a; }
+    .cfg-toggle input:checked + .cfg-track { background: #E87824; }
     .cfg-toggle input:checked + .cfg-track::after { transform: translateX(16px); }
 
     /* ── Snippet loader ── */
@@ -154,7 +154,7 @@
       text-align: left; transition: background .15s, border-color .15s;
       line-height: 1.3;
     }
-    .snippet-btn:hover { background: #fff3e8; border-color: #e8751a; color: #e8751a; }
+    .snippet-btn:hover { background: #fff3e8; border-color: #E87824; color: #E87824; }
     .snippet-icon { font-size: 14px; display: block; margin-bottom: 2px; }
 
     /* ── Output panel ── */
@@ -169,7 +169,7 @@
       background: transparent; transition: color .15s, background .15s;
     }
     .output-tab.active {
-      color: #e8751a; background: #fff;
+      color: #E87824; background: #fff;
       border-color: #e5e7eb; border-bottom-color: #fff;
       margin-bottom: -1px;
     }
@@ -183,7 +183,7 @@
     .stats-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
     .stats-row:last-child { border-bottom: none; }
     .stats-key { font-weight: 600; color: #6b7280; }
-    .stats-val { font-weight: 700; color: #e8751a; }
+    .stats-val { font-weight: 700; color: #E87824; }
 
     /* ── Action buttons ── */
     .action-row {
@@ -197,22 +197,22 @@
       transition: background .15s, border-color .15s, color .15s;
       display: flex; align-items: center; justify-content: center; gap: 4px;
     }
-    .act-btn:hover { background: #fff3e8; border-color: #e8751a; color: #e8751a; }
-    .act-btn.primary { background: #e8751a; color: #fff; border-color: #e8751a; }
+    .act-btn:hover { background: #fff3e8; border-color: #E87824; color: #E87824; }
+    .act-btn.primary { background: #E87824; color: #fff; border-color: #E87824; }
     .act-btn.primary:hover { background: #d4611a; }
 
     /* ── Apply btn ── */
     .apply-btn {
       width: 100%; font-size: 12px; font-weight: 700;
       padding: 8px; border-radius: 7px; cursor: pointer;
-      background: #e8751a; color: #fff; border: none;
+      background: #E87824; color: #fff; border: none;
       transition: background .15s, transform .1s;
     }
     .apply-btn:hover { background: #d4611a; transform: translateY(-1px); }
 
     /* ── Footer ── */
     .site-footer {
-      background: #1c1917; color: #78716c;
+      background: #20252B; color: #78716c;
       padding: 14px 20px; font-size: 12px;
     }
     .footer-inner {
@@ -250,7 +250,7 @@
       color: #cdd6f4;
     }
     body.dark .pg-toolbar-bar h1 span {
-      color: #e8751a;
+      color: #E87824;
     }
     body.dark .card {
       background: #181825;
@@ -279,7 +279,7 @@
       background: #45475a;
     }
     body.dark .cfg-toggle input:checked + .cfg-track {
-      background: #e8751a;
+      background: #E87824;
     }
     body.dark .snippet-btn {
       background: #313244;
@@ -339,7 +339,7 @@
       border-color: #45475a;
     }
     body.dark .apply-btn {
-      background: #e8751a;
+      background: #E87824;
     }
     body.dark .apply-btn:hover {
       background: #d4611a;
