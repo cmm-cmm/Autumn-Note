@@ -189,6 +189,7 @@
       <li class="feat">✦ Dark / Light / Auto theme</li>
       <li class="feat">✦ Same formatting on every browser</li>
       <li class="feat">✦ CSS-variable theming</li>
+      <li class="feat">✦ Transparent &amp; frosted menus</li>
       <li class="feat">✦ Custom keyboard shortcuts</li>
       <li class="feat">✦ Per-editor icons &amp; buttons</li>
       <li class="feat">✦ 8 languages (i18n)</li>
@@ -215,6 +216,7 @@
       <li class="feat" aria-hidden="true">✦ Dark / Light / Auto theme</li>
       <li class="feat" aria-hidden="true">✦ Same formatting on every browser</li>
       <li class="feat" aria-hidden="true">✦ CSS-variable theming</li>
+      <li class="feat" aria-hidden="true">✦ Transparent &amp; frosted menus</li>
       <li class="feat" aria-hidden="true">✦ Custom keyboard shortcuts</li>
       <li class="feat" aria-hidden="true">✦ Per-editor icons &amp; buttons</li>
       <li class="feat" aria-hidden="true">✦ 8 languages (i18n)</li>
@@ -263,6 +265,12 @@
         <option value="es">Español</option>
         <option value="ko">한국어</option>
       </select>
+      <label for="menu-select">🪟 Menus:</label>
+      <select id="menu-select">
+        <option value="solid">Solid</option>
+        <option value="glass">Frosted glass</option>
+        <option value="transparent">Transparent</option>
+      </select>
       <span class="bar-spacer"></span>
       <button id="theme-btn" aria-label="Toggle dark mode" aria-pressed="false">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -283,7 +291,7 @@
     </div>
 
     <div id="editor-wrapper">
-      <textarea id="editor"><p>Hello, <strong>Autumn Note</strong>! ✨</p><p>Select any text to see the <em>bubble toolbar</em>. Type <code>@</code> to mention someone, or start a line with <code>## </code> for a heading.</p></textarea>
+      <textarea id="editor"><p>Hello, <strong>Autumn Note</strong>! ✨</p><p>Select any text to see the <em>bubble toolbar</em>. Type <code>@</code> to mention someone, or start a line with <code>## </code> for a heading.</p><p>New in 3.2: switch <strong>Menus</strong> to frosted glass or transparent, then right-click, select text or open a colour picker — every menu follows. Background and border pickers now end with a <em>Transparent</em> swatch.</p></textarea>
     </div>
 
     <div class="output-row">
@@ -446,6 +454,24 @@ import '../src/js/i18n/all.js';
 
     let isDark = false;
 
+    // "Menus" select: themeVars presets over the --an-menu-* tokens, which
+    // every menu, tooltip, popover and dialog reads.
+    const menuSelect = document.getElementById('menu-select');
+    const MENU_STYLES = {
+      solid: null,
+      glass: {
+        'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
+        'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
+        'menu-backdrop': 'blur(12px) saturate(1.5)',
+      },
+      transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+    };
+    function applyMenuStyle() {
+      const themeVars = MENU_STYLES[menuSelect.value] || null;
+      [window.editor, window.editorRO].forEach((ctx) => ctx?.updateOptions({ themeVars }));
+    }
+    menuSelect.addEventListener('change', applyMenuStyle);
+
     function applyTheme(editorCtx, editorROCtx) {
       // Switch both editors (and their dialogs/tooltips) between themes
       [editorCtx, editorROCtx].forEach((ctx) => {
@@ -540,12 +566,14 @@ import '../src/js/i18n/all.js';
       editor.setHTML(html);
       document.getElementById('output').textContent = html;
 
-      // Re-apply current theme to newly created editors
+      // Re-apply current theme and menu style to newly created editors
       applyTheme(editor, editorRO);
+      applyMenuStyle();
     });
 
     window.editor = editor;
     window.editorRO = editorRO;
+    applyMenuStyle(); // the browser may restore the select's value on reload
     document.getElementById('output').textContent = editor.getHTML();
   </script>
 </body>

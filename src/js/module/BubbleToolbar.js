@@ -12,7 +12,7 @@
  */
 
 import { on, portalOf } from '../core/dom.js';
-import { resolvePalette } from '../core/palette.js';
+import { resolvePalette, paintSwatch, TRANSPARENT } from '../core/palette.js';
 import * as Style from '../editing/Style.js';
 import { resolveIcon } from './Buttons.js';
 
@@ -218,16 +218,17 @@ export class BubbleToolbar {
       palette.appendChild(sw);
     });
 
-    // "No highlight" swatch — only shown for hiliteColor
+    // "Transparent" swatch (checkerboard) — only shown for hiliteColor, since
+    // transparent text would be invisible.
+    const transparentLabel = this.context.locale?.contextMenu?.transparent || 'Transparent';
     const noColorBtn = document.createElement('div');
-    noColorBtn.className = 'an-context-color-swatch an-context-color-none';
-    noColorBtn.title = 'No highlight';
+    noColorBtn.className = 'an-context-color-swatch an-context-color-none an-swatch-transparent';
+    noColorBtn.title = transparentLabel;
     noColorBtn.setAttribute('role', 'button');
-    noColorBtn.setAttribute('aria-label', 'No highlight');
-    noColorBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>`;
+    noColorBtn.setAttribute('aria-label', transparentLabel);
     noColorBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this._applyColor('hiliteColor', 'transparent');
+      this._applyColor('hiliteColor', TRANSPARENT);
     });
 
     // Custom color input row
@@ -321,7 +322,7 @@ export class BubbleToolbar {
     const name = type === 'hiliteColor' ? 'hiliteColor' : 'foreColor';
     const btn = this._el?.querySelector(`[data-name="${name}"]`);
     const strip = btn?.querySelector('.an-bubble-color-strip');
-    if (strip) /** @type {HTMLElement} */ (strip).style.background = color === 'transparent' ? 'transparent' : color;
+    if (strip) paintSwatch(/** @type {HTMLElement} */ (strip), color);
 
     this._closeColorPicker();
     this._syncActive();

@@ -51,6 +51,7 @@ export const es = {
     chooseTextColor: 'Elegir color del texto',
     chooseHighlightColor: 'Elegir color de resaltado',
     customColor: 'Color personalizado',
+    transparent: 'Transparente',
     insertTableLabel: 'Insertar tabla',
     paragraphItems: {
       p:          'Normal',
@@ -235,6 +236,7 @@ export const es = {
     table:            'Insertar tabla',
     back:             'Atrás',
     noHighlight:      'Sin resaltado',
+    transparent: 'Transparente',
     customColor:      'Color personalizado',
     customColorLabel: 'Personalizado…',
   },
@@ -314,6 +316,7 @@ export const es = {
       cellBackground:     'Fondo de celda',
       noShading:          'Sin fondo',
       noBorderColor:      'Sin color de borde',
+      transparent: 'Transparente',
       columnWidthPx:      'Ancho de columna (px)',
       rowHeightPx:        'Alto de fila (px)',
       tableBorderWidthPx: 'Grosor del borde (px)',

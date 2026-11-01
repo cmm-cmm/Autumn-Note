@@ -273,7 +273,15 @@ describe('ContextMenu navigate submenu interactions', () => {
       { colorPalette: true, colorType: 'hiliteColor' },
     ];
     const { cm } = makeMenu(items);
-    expect(cm.el.querySelector('.an-context-color-none')).not.toBeNull();
+    const sw = cm.el.querySelector('.an-context-color-none');
+    expect(sw).not.toBeNull();
+    expect(sw.classList.contains('an-swatch-transparent')).toBe(true);
+    expect(sw.getAttribute('aria-label')).toBe('Transparent');
+  });
+
+  it('colorPalette foreColor type has no transparent swatch', () => {
+    const { cm } = makeMenu([{ colorPalette: true, colorType: 'foreColor' }]);
+    expect(cm.el.querySelector('.an-swatch-transparent')).toBeNull();
   });
 
   it('custom color input change applies color', () => {

@@ -500,6 +500,11 @@ export interface ColorPickerDef {
   tooltip: string;
   /** Default color shown in the picker. */
   defaultColor: string;
+  /**
+   * Show a "Transparent" swatch, which calls `action` with `'transparent'`.
+   * Defaults to `true` for every picker except `foreColor` (transparent text is invisible).
+   */
+  transparent?: boolean;
   /** Action executed when a color is selected/applied. */
   action: (context: Context, color: string) => void;
 }

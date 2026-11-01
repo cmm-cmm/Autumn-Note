@@ -5,7 +5,7 @@
 
 import { createElement, on, portalOf } from '../core/dom.js';
 import { resolveButton, resolveIcon } from './Buttons.js';
-import { resolvePalette } from '../core/palette.js';
+import { resolvePalette, paintSwatch, isTransparentColor, TRANSPARENT } from '../core/palette.js';
 
 // Module-level cache for FontAwesome detection.
 // Evaluated once per page load so all Toolbar instances on the same page agree
@@ -355,7 +355,7 @@ export class Toolbar {
   /**
    * Creates a split color-picker widget:
    *   [icon + strip | ▾] — left applies current color, right opens swatch popup.
-   * @param {{ name: string, type: 'colorpicker', icon?: string, tooltip: string, defaultColor: string, action: Function }} def
+   * @param {{ name: string, type: 'colorpicker', icon?: string, tooltip: string, defaultColor: string, transparent?: boolean, action: Function }} def
    * @returns {HTMLDivElement}
    */
   _createColorPicker(def) {
@@ -382,7 +382,7 @@ export class Toolbar {
 
     applyBtn.innerHTML = resolveIcon(this.options, [def.name, def.icon]) ?? iconSvg;
     const strip = createElement('span', { class: 'an-color-strip' });
-    strip.style.background = currentColor;
+    paintSwatch(strip, currentColor);
     applyBtn.appendChild(strip);
 
     // ---- Arrow button (open popup) ----
@@ -407,6 +407,18 @@ export class Toolbar {
       sw.style.background = color;
       swatches.appendChild(sw);
     });
+    // Background pickers end with a "Transparent" swatch. Text colour opts out
+    // by default: transparent text is invisible, not "no colour".
+    if (def.transparent ?? def.name !== 'foreColor') {
+      const label = this.context.locale.toolbar.transparent || 'Transparent';
+      const sw = createElement('div', {
+        class: 'an-color-swatch an-swatch-transparent',
+        title: label,
+        'aria-label': label,
+        'data-color': TRANSPARENT,
+      });
+      swatches.appendChild(sw);
+    }
 
     const customRow = createElement('div', { class: 'an-color-custom' });
     const colorInput = /** @type {HTMLInputElement} */ (createElement('input', { type: 'color', value: currentColor, title: this.context.locale.toolbar.customColor || 'Custom color' }));
@@ -466,8 +478,9 @@ export class Toolbar {
 
     const applyColor = (color) => {
       currentColor = color;
-      strip.style.background = color;
-      colorInput.value = color;
+      paintSwatch(strip, color);
+      // <input type="color"> only takes #rrggbb; keep its last real colour.
+      if (!isTransparentColor(color)) colorInput.value = color;
       if (!this._allow(def.name, color)) { closePopup(); return; }
       restoreSelection();
       def.action(this.context, color);

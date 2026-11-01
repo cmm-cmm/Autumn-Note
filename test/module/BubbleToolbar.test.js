@@ -589,6 +589,7 @@ describe('BubbleToolbar color picker interactions', () => {
 
     const picker = openPicker(bt, 'hiliteColor');
     const noColor = picker?.querySelector('.an-context-color-none');
+    expect(noColor.classList.contains('an-swatch-transparent')).toBe(true);
     if (noColor) {
       noColor.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(ctx.invoke).toHaveBeenCalledWith('editor.afterCommand');

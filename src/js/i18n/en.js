@@ -51,6 +51,7 @@ export const en = {
     chooseTextColor: 'Choose text color',
     chooseHighlightColor: 'Choose highlight color',
     customColor: 'Custom color',
+    transparent: 'Transparent',
     insertTableLabel: 'Insert Table',
     /** Map of paragraph-style value → label (only values needing translation) */
     paragraphItems: {
@@ -244,6 +245,7 @@ export const en = {
     table:         'Insert Table',
     back:          'Back',
     noHighlight:   'No highlight',
+    transparent: 'Transparent',
     customColor:   'Custom color',
     customColorLabel: 'Custom\u2026',
   },
@@ -327,6 +329,7 @@ export const en = {
       cellBackground:     'Cell Background',
       noShading:          'No Shading',
       noBorderColor:      'No Border Color',
+      transparent: 'Transparent',
       columnWidthPx:      'Column Width (px)',
       rowHeightPx:        'Row Height (px)',
       tableBorderWidthPx: 'Table Border Width (px)',

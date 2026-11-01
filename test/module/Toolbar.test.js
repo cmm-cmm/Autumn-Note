@@ -220,6 +220,40 @@ describe('Toolbar._createColorPicker', () => {
     toolbar.destroy();
   });
 
+  it('backColor picker ends with a Transparent swatch that applies "transparent"', () => {
+    const ctx = makeColorContext('backColor');
+    const toolbar = new Toolbar(ctx);
+    toolbar.initialize();
+    const arrowBtn = toolbar.el.querySelector('.an-color-arrow');
+    arrowBtn.getBoundingClientRect = () => ({ bottom: 50, left: 100, right: 200, top: 30, width: 100, height: 20 });
+    arrowBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const sw = document.body.querySelector('.an-color-popup .an-swatch-transparent');
+    expect(sw).not.toBeNull();
+    expect(sw.getAttribute('aria-label')).toBe(en.toolbar.transparent);
+    sw.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const def = ctx.options.toolbar[0][0];
+    expect(def.action).toHaveBeenCalledWith(ctx, 'transparent');
+    // The strip shows the checkerboard and the colour input keeps a valid value.
+    expect(toolbar.el.querySelector('.an-color-strip').classList.contains('an-swatch-transparent')).toBe(true);
+    expect(document.body.querySelector('.an-color-popup input[type="color"]').value).toMatch(/^#[0-9a-f]{6}$/);
+    toolbar.destroy();
+  });
+
+  it('foreColor picker has no Transparent swatch unless the definition asks for one', () => {
+    const fore = makeColorContext('foreColor');
+    const t1 = new Toolbar(fore);
+    t1.initialize();
+    expect(document.body.querySelector('.an-color-popup .an-swatch-transparent')).toBeNull();
+    t1.destroy();
+
+    const custom = makeColorContext('foreColor');
+    custom.options.toolbar[0][0].transparent = true;
+    const t2 = new Toolbar(custom);
+    t2.initialize();
+    expect(document.body.querySelector('.an-color-popup .an-swatch-transparent')).not.toBeNull();
+    t2.destroy();
+  });
+
   it('backColor type creates apply button', () => {
     const ctx = makeColorContext('backColor');
     const toolbar = new Toolbar(ctx);

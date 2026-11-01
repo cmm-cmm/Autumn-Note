@@ -52,6 +52,7 @@ export const zh = {
     chooseTextColor: '选择文字颜色',
     chooseHighlightColor: '选择高亮颜色',
     customColor: '自定义颜色',
+    transparent: '透明',
     insertTableLabel: '插入表格',
     paragraphItems: {
       p:          '正文',
@@ -236,6 +237,7 @@ export const zh = {
     table:           '插入表格',
     back:            '返回',
     noHighlight:     '无高亮',
+    transparent: '透明',
     customColor:     '自定义颜色',
     customColorLabel: '自定义\u2026',
   },
@@ -315,6 +317,7 @@ export const zh = {
       cellBackground:     '单元格背景',
       noShading:          '无底纹',
       noBorderColor:      '无边框颜色',
+      transparent: '透明',
       columnWidthPx:      '列宽 (px)',
       rowHeightPx:        '行高 (px)',
       tableBorderWidthPx: '表格边框宽度 (px)',

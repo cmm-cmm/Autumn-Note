@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-11-01
+
+Minor: new opt-in theming tokens and a colour-picker choice; the public API only gains the optional `transparent` flag on `colorpicker` buttons.
+
+Site: the landing demo has a **Menus** switch (solid / frosted glass / transparent), the playground gains a **Menu style** option and a *Transparent table* snippet, and the docs have a What's New 3.2 section, in EN and VI.
+
+### Added
+
+- **Transparent menus.** Every menu and popup — the toolbar's colour and table pickers, the context menu, the bubble toolbar and its colour picker, the link/image/video/table/code tooltips and their popovers, the mention and slash menus, and dialogs — now takes its background, border, shadow and backdrop from four new tokens: `--an-menu-bg`, `--an-menu-border`, `--an-menu-shadow` and `--an-menu-backdrop`. One `themeVars` setting makes them all transparent, borderless or frosted glass (`'menu-backdrop': 'blur(10px)'`), in light and dark themes alike. Unset, they fall back to the values each surface had before, so nothing changes until you opt in. `test/docs/menu-tokens.test.js` fails if a surface stops reading them.
+- **A "Transparent" swatch in every background and border colour picker.** The toolbar's highlight picker, the context menu's and bubble toolbar's highlight palettes, and the table tooltip's cell background and border-colour popovers end with a checkerboard swatch that applies `transparent`. On a table, that gives borderless cells or a see-through cell background that overrides a stylesheet's striping. It sits next to the existing reset buttons, which still remove the inline colour so the stylesheet's own applies. Text-colour pickers leave it out, since transparent text is invisible; a custom `colorpicker` button can opt in or out with `transparent: true | false`.
+  - Colour strips show a checkerboard after a transparent pick instead of looking empty, and the custom `<input type="color">` keeps its last real colour rather than receiving a value it cannot hold.
+  - Cells with a transparent border get a dashed guide while editing, so they can still be found and clicked. It is an outline drawn by the editor's stylesheet, not part of the saved HTML.
+  - The context menu's and bubble toolbar's former "No highlight" ✕ swatch is this swatch now (it already applied `transparent`), and the bubble toolbar's label is localised instead of hardcoded English.
+
 ### Changed
 
 - **New logo: the leaf and nib.** The project mark is now an autumn leaf with a writing nib cut through it, in an amber gradient, replacing the two maple leaves. The demo site, its favicons, the README and the social card all use it.
@@ -19,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The demo site's own colours move onto the brand palette: Amber `#E87824`, Amber Light `#FA8D26`, Ink `#20252B` and Ivory `#FBFAF7` replace the near-miss values the site had drifted to.
 
   Nothing in the published package changes. The library build does not copy `public/`, and the editor's default theme is still its own blue — the brand palette is for the project, not a default imposed on every editor that embeds it.
+
+- **The UMD bundle is built once.** `dist/autumnnote.min.js` came from a third Vite build (`vite.cdn.config.js`) that compiled the same entry with the same minifier, so it was byte-for-byte the same file as `autumnnote.cjs`. Both are now copied from `autumnnote.umd.js` after the UMD build, and `pnpm check:bundle` fails if either drifts from it. The `build:cdn` script and `vite.cdn.config.js` are gone.
+- **Bundle budgets fit what each bundle carries.** The UMD build inlines all eight locales (about 17 KiB gzip) and the emoji/icon data that the ES build lazy-loads, yet it shared the ES build's 110 KiB ceiling. That left it under 2 KiB of room, so the translations for one more feature would have failed CI. The UMD ceiling is now 125 KiB, the ES ceiling is still 110 KiB, and the check warns once any bundle has less than 5% of its budget left instead of only failing at the limit.
+
+### Deprecated
+
+- **`dist/autumnnote.min.js`.** It is identical to `dist/autumnnote.umd.js`; point `<script>` tags at that file instead. The alias stays until the next major version.
 
 ---
 

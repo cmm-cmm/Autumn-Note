@@ -1044,6 +1044,32 @@ describe('TableTooltip integrated event paths', () => {
     expect(tt._shadePopover.style.display).toBe('none');
   });
 
+  it('applies a transparent cell background and border from the Transparent swatch', () => {
+    const { tt, ctx } = makeTooltip();
+    const table = activateTable(tt, ctx);
+    const cell = table.querySelector('td');
+    tt._activeCell = cell;
+
+    tt._openCellShadePopover();
+    const shadeSw = tt._shadePopover.querySelector('.an-swatch-transparent');
+    expect(shadeSw.getAttribute('aria-label')).toBe(en.tooltips.table.transparent);
+    shadeSw.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(cell.style.backgroundColor).toBe('transparent');
+    expect(tt._shadeColorStrip.classList.contains('an-swatch-transparent')).toBe(true);
+
+    tt._openBorderColorPopover();
+    tt._borderColorPopover.querySelector('.an-swatch-transparent')
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    table.querySelectorAll('td').forEach((c) => expect(c.style.borderColor).toBe('transparent'));
+    expect(tt._borderColorStrip.classList.contains('an-swatch-transparent')).toBe(true);
+
+    // "No border colour" still removes the inline colour, and the strip clears.
+    tt._openBorderColorPopover();
+    tt._borderColorNoBtn.click();
+    expect(cell.style.borderColor).toBe('');
+    expect(tt._borderColorStrip.classList.contains('an-swatch-transparent')).toBe(false);
+  });
+
   it('opens, applies, and dismisses border-color controls', () => {
     const { tt, ctx } = makeTooltip();
     const table = activateTable(tt, ctx);

@@ -122,6 +122,14 @@
             </select>
           </div>
           <div class="cfg-row">
+            <span class="cfg-label">Menu style</span>
+            <select id="cfg-menu" class="cfg-select">
+              <option value="solid">Solid</option>
+              <option value="glass">Frosted glass</option>
+              <option value="transparent">Transparent</option>
+            </select>
+          </div>
+          <div class="cfg-row">
             <span class="cfg-label">Language</span>
             <select id="cfg-lang" class="cfg-select">
               <option value="en">English</option>
@@ -204,6 +212,9 @@
             <button class="snippet-btn" onclick="loadSnippet('markdown')">
               <span class="snippet-icon">📄</span>Markdown
             </button>
+            <button class="snippet-btn" onclick="loadSnippet('transparent')">
+              <span class="snippet-icon">🫥</span>Transparent table
+            </button>
             <button class="snippet-btn" onclick="loadSnippet('empty')">
               <span class="snippet-icon">🗑</span>Clear
             </button>
@@ -259,6 +270,8 @@
     <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
     <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
     <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
+    <li><strong>Transparent menus</strong> — switch <em>Menu style</em> to frosted glass or fully transparent; every menu, tooltip and dialog follows</li>
+    <li><strong>Transparent colours</strong> — the checkerboard swatch in highlight, cell-background and border-colour pickers applies <code>transparent</code></li>
   </ul>
   <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
 </section>
@@ -302,6 +315,15 @@ const MENTION_USERS = [
 // ── Snippets ──────────────────────────────────────────────
 const SNIPPETS = {
   empty: '',
+  transparent: `<h2>Borderless layout table</h2>
+<p>This table has <strong>transparent borders</strong> and a transparent header — the dashed lines are an editing guide only and are not saved. Hover a cell and open the border-colour or cell-background picker in the table toolbar to try the checkerboard swatch.</p>
+<table class="an-table"><thead><tr><th style="border-color: transparent; background-color: transparent">Plan</th><th style="border-color: transparent; background-color: transparent">Price</th><th style="border-color: transparent; background-color: transparent">Editors</th></tr></thead>
+<tbody>
+<tr><td style="border-color: transparent">Starter</td><td style="border-color: transparent">Free</td><td style="border-color: transparent">1</td></tr>
+<tr><td style="border-color: transparent">Team</td><td style="border-color: transparent">$9</td><td style="border-color: transparent">10</td></tr>
+<tr><td style="border-color: transparent">Studio</td><td style="border-color: transparent">$29</td><td style="border-color: transparent">Unlimited</td></tr>
+</tbody></table>
+<p>Select some text and pick the <span style="background-color: #fff2cc">highlight</span> colour, then choose <em>Transparent</em> to clear it.</p>`,
   article: `<h1>Getting Started with Autumn Note</h1>
 <p>Autumn Note is a <strong>zero-dependency WYSIWYG editor</strong> built with vanilla JavaScript. Install it in seconds:</p>
 <pre><code class="language-bash">npm install autumnnote</code></pre>
@@ -432,6 +454,18 @@ const editor = AutumnNote.create('#editor');
 [repo]: https://github.com/cmm-cmm/Autumn-Note "Autumn Note repository"
 [^1]: Footnotes render as superscript markers.`;
 
+// Menu looks for the "Menu style" option. Each is a themeVars preset over the
+// --an-menu-* tokens, so every menu, tooltip and dialog changes at once.
+const MENU_STYLES = {
+  solid: null,
+  glass: {
+    'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)',
+    'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
+    'menu-backdrop': 'blur(12px) saturate(1.5)',
+  },
+  transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+};
+
 // ── State ─────────────────────────────────────────────────
 let editor = null;
 let currentTab = 'html';
@@ -447,6 +481,7 @@ function buildConfig() {
     readOnly:          document.getElementById('cfg-readonly').checked,
     maxChars:          Number.parseInt(document.getElementById('cfg-maxchars').value) || 0,
     focusColor:        document.getElementById('cfg-color').value,
+    menuStyle:         document.getElementById('cfg-menu').value,
   };
   const h = Number.parseInt(document.getElementById('cfg-height').value);
   cfg.height = h > 0 ? h : 300;
@@ -478,8 +513,11 @@ function createEditor(html) {
     panel.style.setProperty('--pg-focus-shadow', `rgba(${r},${g},${b},.2)`);
   }
 
+  // menuStyle is a playground setting, not an editor option: it picks themeVars.
+  const { menuStyle, ...options } = cfg;
   editor = AutumnNote.create('#editor-el', {
-    ...cfg,
+    ...options,
+    themeVars: MENU_STYLES[menuStyle] || null,
     placeholder: 'Start typing…',
     codeHighlight: true,
     resizable: true,
@@ -588,6 +626,7 @@ function loadFromHash() {
       if (c.maxChars)   document.getElementById('cfg-maxchars').value = c.maxChars;
       if (c.focusColor) document.getElementById('cfg-color').value    = c.focusColor;
       if (c.height)     document.getElementById('cfg-height').value   = c.height;
+      if (MENU_STYLES[c.menuStyle] !== undefined) document.getElementById('cfg-menu').value = c.menuStyle;
     }
     return state.html || null;
   } catch (_) { void _; return null; }
@@ -612,6 +651,7 @@ function loadSavedConfig() {
     if (saved.maxChars)   document.getElementById('cfg-maxchars').value = saved.maxChars;
     if (saved.focusColor) document.getElementById('cfg-color').value    = saved.focusColor;
     if (saved.height)     document.getElementById('cfg-height').value   = saved.height;
+    if (MENU_STYLES[saved.menuStyle] !== undefined) document.getElementById('cfg-menu').value = saved.menuStyle;
   } catch (_) { void _; }
 }
 

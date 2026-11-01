@@ -247,11 +247,12 @@
 .an-table-picker-popup {
   display: none;
   position: fixed; // top/left set dynamically by JS — escapes overflow-clipping ancestors
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 6px;
   padding: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
+  backdrop-filter: var(--an-menu-backdrop, none);
   z-index: calc(1100 + var(--an-z-offset, 0));
   user-select: none;
 }
@@ -337,11 +338,12 @@
   // top / left are set dynamically by JS (getBoundingClientRect) so the popup
   // escapes overflow:hidden / overflow:auto ancestors (toolbar scroll mode, etc.)
   z-index: calc(1100 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 6px;
   padding: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
+  backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 184px;
   user-select: none;
 }
@@ -750,10 +752,11 @@
   gap: 2px;
   height: 30px;
   padding: 0 6px;
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius-sm, #{$an-radius-sm});
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--an-menu-shadow, 0 2px 10px rgba(0, 0, 0, 0.12));
+  backdrop-filter: var(--an-menu-backdrop, none);
   white-space: nowrap;
   pointer-events: all;
 
@@ -893,11 +896,12 @@
 // Size popover (column width / row height)
 .an-size-popover {
   position: fixed;
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 12px 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--an-menu-shadow, 0 4px 20px rgba(0, 0, 0, 0.15));
+  backdrop-filter: var(--an-menu-backdrop, none);
   z-index: calc(1200 + var(--an-z-offset, 0));
   min-width: 200px;
 
@@ -951,11 +955,12 @@
 .an-cell-shade-popover {
   position: fixed;
   z-index: calc(1200 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 10px 10px 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--an-menu-shadow, 0 4px 20px rgba(0, 0, 0, 0.15));
+  backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 166px;
 
   .an-size-popover-title {
@@ -1086,11 +1091,13 @@
 }
 
 .an-dialog-box {
-  background: var(--an-bg, #{$an-bg});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, transparent);
   border-radius: $an-dialog-radius;
   padding: 24px;
   width: min($an-dialog-width, 95vw);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--an-menu-shadow, 0 20px 60px rgba(0, 0, 0, 0.3));
+  backdrop-filter: var(--an-menu-backdrop, none);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1306,10 +1313,11 @@
 .an-contextmenu {
   position: fixed;
   z-index: calc(10050 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
+  backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   padding: 5px 4px;
   display: none;
@@ -1466,16 +1474,26 @@
   }
 }
 
-.an-context-color-none {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff !important;
-  color: #999;
+// "Transparent" swatches and colour strips: a checkerboard, so a see-through
+// colour reads differently from white and from "no colour" (an empty strip).
+.an-swatch-transparent {
+  background-color: #fff;
+  background-image: conic-gradient(#d1d5db 25%, #fff 0 50%, #d1d5db 0 75%, #fff 0);
+  background-size: 8px 8px;
 
-  svg { display: block; }
+  @include an-dark-scope {
+    background-color: #45475a;
+    background-image: conic-gradient(#6c7086 25%, #45475a 0 50%, #6c7086 0 75%, #45475a 0);
+  }
+}
 
-  &:hover { color: #333; }
+// A table cell whose border was set to transparent would leave nothing to aim
+// at while editing, so the editor draws a dashed guide in its place. It is
+// editor chrome only (an outline, not a border), so saved HTML is unchanged.
+// :where() keeps it at zero specificity so cell selection still wins.
+:where(.an-editable) :where(td, th):where([style*='border-color: transparent']) {
+  outline: 1px dashed var(--an-border, #{$an-border});
+  outline-offset: -1px;
 }
 
 .an-context-color-custom {
@@ -2207,8 +2225,8 @@ $an-video-accent: #8b5cf6; // violet-500
 
   .an-link-tooltip,
   .an-contextmenu {
-    background: #24273a;
-    border-color: var(--an-border);
+    background: var(--an-menu-bg, #24273a);
+    border-color: var(--an-menu-border, var(--an-border));
     color: var(--an-text);
   }
 
@@ -2226,9 +2244,9 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-dialog-overlay { background: rgba(0, 0, 0, 0.65); }
 
   .an-dialog-box {
-    background: #24273a;
+    background: var(--an-menu-bg, #24273a);
     color: var(--an-text);
-    border: 1px solid var(--an-border);
+    border: 1px solid var(--an-menu-border, var(--an-border));
   }
 
   .an-dialog-title { color: var(--an-text); }
@@ -2284,8 +2302,8 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-table-picker-popup,
   .an-size-popover,
   .an-cell-shade-popover {
-    background: #24273a;
-    border-color: var(--an-border);
+    background: var(--an-menu-bg, #24273a);
+    border-color: var(--an-menu-border, var(--an-border));
     color: var(--an-text);
   }
 
@@ -2337,12 +2355,6 @@ $an-video-accent: #8b5cf6; // violet-500
   .an-context-color-swatch {
     border-color: rgba(255, 255, 255, 0.15);
     &:hover { border-color: rgba(255, 255, 255, 0.5); }
-  }
-
-  .an-context-color-none {
-    background: var(--an-bg) !important;
-    color: #888;
-    &:hover { color: #ccc; }
   }
 
   .an-context-color-custom {
@@ -2430,8 +2442,8 @@ $an-video-accent: #8b5cf6; // violet-500
 
   // Bubble toolbar color picker
   .an-bubble-color-picker {
-    background: #24273a;
-    border-color: var(--an-border);
+    background: var(--an-menu-bg, #24273a);
+    border-color: var(--an-menu-border, var(--an-border));
 
     .an-context-color-custom {
       border-color: var(--an-border);
@@ -2440,10 +2452,10 @@ $an-video-accent: #8b5cf6; // violet-500
   }
 
   // Table tooltip (extends link-tooltip dark rules)
-  .an-table-tooltip { background: #24273a; border-color: var(--an-border); }
+  .an-table-tooltip { background: var(--an-menu-bg, #24273a); border-color: var(--an-menu-border, var(--an-border)); }
 
   // Find & Replace floating panel box
-  .an-fr-box { background: var(--an-bg); border-color: #45475a; }
+  .an-fr-box { background: var(--an-menu-bg, var(--an-bg)); border-color: var(--an-menu-border, #45475a); }
 
   .an-editable ul.an-checklist li:has(input[type='checkbox']:checked) {
     color: var(--an-muted);
@@ -2689,20 +2701,21 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(10040 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
   padding: 4px 6px;
   gap: 2px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
+  backdrop-filter: var(--an-menu-backdrop, none);
   align-items: center;
   animation: an-bubble-in 0.1s ease;
   pointer-events: auto;
   user-select: none;
 
   @include an-dark-scope {
-    background: #24273a;
-    border-color: #3f3f5f;
+    background: var(--an-menu-bg, #24273a);
+    border-color: var(--an-menu-border, #3f3f5f);
   }
 }
 
@@ -2782,16 +2795,17 @@ $an-video-accent: #8b5cf6; // violet-500
 .an-bubble-color-picker {
   position: fixed;
   z-index: calc(10041 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: 8px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--an-menu-shadow, 0 8px 28px rgba(0, 0, 0, 0.14));
+  backdrop-filter: var(--an-menu-backdrop, none);
   padding: 4px 0;
   min-width: 160px;
 
   @include an-dark-scope {
-    background: #24273a;
-    border-color: #3f3f5f;
+    background: var(--an-menu-bg, #24273a);
+    border-color: var(--an-menu-border, #3f3f5f);
   }
 }
 
@@ -2803,10 +2817,11 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(9998 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius, #{$an-radius});
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
+  backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   max-width: 280px;
   max-height: 240px;
@@ -2863,10 +2878,11 @@ $an-video-accent: #8b5cf6; // violet-500
   display: none;
   position: fixed;
   z-index: calc(9998 + var(--an-z-offset, 0));
-  background: var(--an-bg, #{$an-bg});
-  border: 1px solid var(--an-border, #{$an-border});
+  background: var(--an-menu-bg, var(--an-bg, #{$an-bg}));
+  border: 1px solid var(--an-menu-border, var(--an-border, #{$an-border}));
   border-radius: var(--an-radius, #{$an-radius});
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--an-menu-shadow, 0 4px 16px rgba(0, 0, 0, 0.12));
+  backdrop-filter: var(--an-menu-backdrop, none);
   min-width: 180px;
   max-width: 260px;
   max-height: 260px;

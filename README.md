@@ -118,6 +118,8 @@ Right-click inside the editor opens a context menu with: **Undo**, **Redo**, **C
 - **Toolbar** — fully configurable button groups; overflow strategy: `wrap` (default) or `scroll`; on viewports ≤ 640 px the toolbar automatically switches to a single horizontally-scrollable row regardless of the `toolbarOverflow` setting; FontAwesome icons with built-in SVG fallback
 - **Sticky toolbar** — `stickyToolbar: true` pins the toolbar to the viewport top; configurable offset for fixed nav bars
 - **Dark / light / auto theme** — `theme: 'dark'`, `'light'` (default), or `'auto'` (follows OS `prefers-color-scheme`); full SCSS variable coverage; dark styles propagate to all floating elements (dialogs, tooltips, colour pickers)
+- **Transparent and frosted menus** — every menu, popover, tooltip and dialog reads `--an-menu-bg`, `--an-menu-border`, `--an-menu-shadow` and `--an-menu-backdrop`, so one `themeVars` setting makes them all transparent, borderless or frosted glass (see [Theming](#theming))
+- **Transparent colour swatch** — background and border colour pickers (toolbar highlight, context menu, bubble toolbar, table cell background and border) end with a checkerboard swatch that applies `transparent`; cells with transparent borders get a dashed editing guide that is not saved
 - **Draggable dialogs** — all dialogs (Link, Image, Video, Emoji, Icon, Find & Replace) can be repositioned by dragging their title bar; position is clamped to the viewport
 - **Image resizer** — drag handle on selected image to resize proportionally
 - **Video resizer** — drag handle on selected video embed to resize
@@ -713,6 +715,10 @@ Every colour, radius and font the editor uses is a CSS custom property with a bu
 | `--an-font-family` / `--an-font-size` / `--an-line-height` | system UI / `14px` / `1.6` | Editor UI typography |
 | `--an-focus-color` | `--an-primary` | Focus ring (also the `focusColor` option) |
 | `--an-z-offset` | `0` | Added to floating z-indexes (also the `zIndexOffset` option) |
+| `--an-menu-bg` | `--an-bg` (dark: `#24273a`) | Background of every menu and popup: toolbar dropdowns and colour pickers, context menu, bubble toolbar, tooltips and their popovers, mention and slash menus, dialogs. Accepts `transparent` or a translucent colour |
+| `--an-menu-border` | `--an-border` (dialogs: none) | Border colour of the same surfaces. `transparent` hides it without changing their size |
+| `--an-menu-shadow` | per surface | Their drop shadow; `none` removes it |
+| `--an-menu-backdrop` | `none` | Their `backdrop-filter`, e.g. `blur(10px)` for frosted glass behind a translucent `--an-menu-bg` |
 
 Three ways to set them, from broadest to narrowest:
 
@@ -733,6 +739,32 @@ const editor = AutumnNote.create('#editor', {
 editor.updateOptions({ themeVars: null });          // drop all overrides
 editor.updateOptions({ themeVars: { primary: '#10b981' } });
 ```
+
+Transparent and frosted-glass menus are a `themeVars` setting, so they apply to every menu at once:
+
+```js
+// Frosted glass
+AutumnNote.create('#editor', {
+  themeVars: {
+    'menu-bg': 'rgba(255, 255, 255, 0.72)',
+    'menu-border': 'rgba(255, 255, 255, 0.4)',
+    'menu-backdrop': 'blur(10px) saturate(1.4)',
+  },
+});
+
+// Fully transparent, borderless menus
+AutumnNote.create('#editor', {
+  themeVars: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+});
+```
+
+To derive a translucent colour from the editor's own tokens, give each `var()` a fallback — in the light theme `--an-bg` and `--an-border` are not defined, so a bare `var(--an-bg)` makes the whole value invalid and the menu falls back to opaque:
+
+```js
+themeVars: { 'menu-bg': 'color-mix(in srgb, var(--an-bg, #ffffff) 62%, transparent)' }
+```
+
+Native `<select>` lists (font family, font size) are drawn by the browser and keep their own background.
 
 Each editor mounts its dialogs, tooltips and menus in its own portal element (`.an-portal`), which carries the editor's theme class and `themeVars`. Use `popupContainer` to put that portal somewhere other than `document.body`.
 
@@ -1081,8 +1113,10 @@ Build output in `dist/`:
 |---|---|---|
 | `autumnnote.es.js` | ES Module | `import` in bundlers (tree-shakeable) |
 | `autumnnote.umd.js` | UMD | Browser `<script>` tag |
-| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
-| `autumnnote.css` | CSS | Styles for both builds |
+| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js (same code as the UMD build) |
+| `autumnnote.core.es.js` | ES Module | `import 'autumnnote/core'` — the minimal preset |
+| `autumnnote.css` | CSS | Styles for every build |
+| `autumnnote.min.js` | UMD | Deprecated alias of `autumnnote.umd.js`, kept for existing CDN links |
 
 ### Runtime integrations
 
