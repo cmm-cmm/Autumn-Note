@@ -128,6 +128,7 @@
               <option value="solid">Đặc</option>
               <option value="glass">Kính mờ</option>
               <option value="transparent">Trong suốt</option>
+              <option value="borderless">Trong suốt, không viền</option>
             </select>
           </div>
           <div class="cfg-row">
@@ -271,7 +272,7 @@
     <li><strong>@mention</strong> — gõ <code>@</code> để kích hoạt gợi ý tự động</li>
     <li><strong>Xuất nội dung</strong> — tải nội dung editor dưới dạng HTML hoặc Markdown</li>
     <li><strong>Thanh công cụ nổi</strong> — chọn bất kỳ văn bản nào để xem thanh công cụ ngữ cảnh nổi</li>
-    <li><strong>Menu trong suốt</strong> — đổi <em>Kiểu menu</em> sang kính mờ hoặc trong suốt hoàn toàn; mọi menu, tooltip và hộp thoại đều đổi theo</li>
+    <li><strong>Menu trong suốt</strong> — đổi <em>Kiểu menu</em> sang kính mờ, trong suốt, hoặc trong suốt không viền; mọi menu, tooltip và hộp thoại đều đổi theo</li>
     <li><strong>Màu trong suốt</strong> — ô caro trong bảng chọn màu highlight, nền ô và màu viền bảng áp dụng <code>transparent</code></li>
   </ul>
   <p>Autumn Note là một trình soạn thảo WYSIWYG rich text không phụ thuộc, được xây dựng bằng vanilla JavaScript. <a href="docs.html">Xem đầy đủ tài liệu API →</a></p>
@@ -464,7 +465,9 @@ const MENU_STYLES = {
     'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
     'menu-backdrop': 'blur(12px) saturate(1.5)',
   },
-  transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+  // Transparent background, border kept so the menu still has an outline.
+  transparent: { 'menu-bg': 'transparent', 'menu-shadow': 'none' },
+  borderless: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
 };
 
 // ── State ─────────────────────────────────────────────────

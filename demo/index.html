@@ -270,6 +270,7 @@
         <option value="solid">Solid</option>
         <option value="glass">Frosted glass</option>
         <option value="transparent">Transparent</option>
+        <option value="borderless">Transparent, no border</option>
       </select>
       <span class="bar-spacer"></span>
       <button id="theme-btn" aria-label="Toggle dark mode" aria-pressed="false">
@@ -464,11 +465,18 @@ import '../src/js/i18n/all.js';
         'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
         'menu-backdrop': 'blur(12px) saturate(1.5)',
       },
-      transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+      // Transparent background, border kept so the menu still has an outline.
+      transparent: { 'menu-bg': 'transparent', 'menu-shadow': 'none' },
+      borderless: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
     };
     function applyMenuStyle() {
       const themeVars = MENU_STYLES[menuSelect.value] || null;
-      [window.editor, window.editorRO].forEach((ctx) => ctx?.updateOptions({ themeVars }));
+      // updateOptions() deep-merges objects, so clear the previous preset
+      // first — otherwise glass's border would survive a switch to transparent.
+      [window.editor, window.editorRO].forEach((ctx) => {
+        ctx?.updateOptions({ themeVars: null });
+        if (themeVars) ctx?.updateOptions({ themeVars });
+      });
     }
     menuSelect.addEventListener('change', applyMenuStyle);
 

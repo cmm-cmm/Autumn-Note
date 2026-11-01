@@ -127,6 +127,7 @@
               <option value="solid">Solid</option>
               <option value="glass">Frosted glass</option>
               <option value="transparent">Transparent</option>
+              <option value="borderless">Transparent, no border</option>
             </select>
           </div>
           <div class="cfg-row">
@@ -270,7 +271,7 @@
     <li><strong>@mention</strong> — type <code>@</code> to trigger the mention autocomplete</li>
     <li><strong>Export</strong> — download the editor content as HTML or Markdown</li>
     <li><strong>Bubble toolbar</strong> — select any text to see the floating context toolbar</li>
-    <li><strong>Transparent menus</strong> — switch <em>Menu style</em> to frosted glass or fully transparent; every menu, tooltip and dialog follows</li>
+    <li><strong>Transparent menus</strong> — switch <em>Menu style</em> to frosted glass, transparent, or transparent without a border; every menu, tooltip and dialog follows</li>
     <li><strong>Transparent colours</strong> — the checkerboard swatch in highlight, cell-background and border-colour pickers applies <code>transparent</code></li>
   </ul>
   <p>Autumn Note is a zero-dependency WYSIWYG rich text editor built with vanilla JavaScript. <a href="docs.html">Read the full API docs →</a></p>
@@ -463,7 +464,9 @@ const MENU_STYLES = {
     'menu-border': 'color-mix(in srgb, var(--an-border, #d1d5db) 55%, transparent)',
     'menu-backdrop': 'blur(12px) saturate(1.5)',
   },
-  transparent: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
+  // Transparent background, border kept so the menu still has an outline.
+  transparent: { 'menu-bg': 'transparent', 'menu-shadow': 'none' },
+  borderless: { 'menu-bg': 'transparent', 'menu-border': 'transparent', 'menu-shadow': 'none' },
 };
 
 // ── State ─────────────────────────────────────────────────
