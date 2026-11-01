@@ -117,7 +117,8 @@
       </div>
       <div class="sidebar-group">
         <div class="sidebar-group-title">Tính năng</div>
-        <a class="sidebar-link" href="#whats-new-3-2">Có gì mới v3.2.0</a>
+        <a class="sidebar-link" href="#whats-new-3-3">Có gì mới v3.3.0</a>
+        <a class="sidebar-link sub" href="#whats-new-3-2">Có gì mới v3.2.0</a>
         <a class="sidebar-link sub" href="#whats-new-3-1">Có gì mới v3.1.0</a>
         <a class="sidebar-link sub" href="#whats-new">Có gì mới v3.0.0</a>
         <a class="sidebar-link sub" href="#whats-new-1-8">Điểm nổi bật v1.8.0</a>
@@ -644,6 +645,31 @@ const editor = AutumnNote.create('#editor', {
           <tr><td class="opt-name">defaultToolbar</td><td>Full default toolbar array</td><td>array</td></tr>
         </tbody>
       </table></div>
+    </section>
+
+    <!-- ── Có gì mới v3.3.0 ── -->
+    <section class="docs-section" id="whats-new-3-3" aria-label="Có gì mới">
+      <h2 class="section-h">Có gì mới <span class="badge">v3.3.0</span></h2>
+      <p class="docs-p">Mọi menu giờ đều có thể trong suốt, kính mờ hoặc ở bất kỳ mức nào giữa hai kiểu đó, và thanh công cụ (menu bar) được thiết lập riêng, tách khỏi các menu khác. Tất cả là token CSS đặt qua <code>themeVars</code>; không có gì thay đổi cho đến khi bạn đặt chúng.</p>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Hai bộ token độc lập</h3>
+      <ul style="margin:0 0 12px 20px;font-size:14px;color:#374151;line-height:1.8">
+        <li><strong>Menu</strong> — <code>--an-menu-opacity</code> (0%–100%), <code>--an-menu-backdrop</code>, <code>--an-menu-border</code>, <code>--an-menu-shadow</code>, <code>--an-menu-bg</code>: context menu, bubble toolbar, tooltip và popover, bảng chọn màu và kích thước bảng, menu @mention và <code>/</code>, hộp thoại, thanh cắt ảnh, danh sách <code>&lt;select&gt;</code>.</li>
+        <li><strong>Thanh công cụ</strong> — <code>--an-toolbar-opacity</code>, <code>--an-toolbar-backdrop</code>, <code>--an-toolbar-border</code>, <code>--an-toolbar-shadow</code>, <code>--an-toolbar-bg</code>. Kính mờ rõ nhất khi bật <code>stickyToolbar</code>, lúc nội dung cuộn bên dưới.</li>
+      </ul>
+      <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-js">AutumnNote.create('#editor', {
+  stickyToolbar: true,
+  themeVars: {
+    // Menu
+    'menu-opacity': '60%', 'menu-backdrop': 'blur(12px)',
+    // Thanh công cụ, thiết lập riêng
+    'toolbar-opacity': '55%', 'toolbar-backdrop': 'blur(8px)', 'toolbar-border': 'transparent',
+  },
+});</code></pre>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin:24px 0 10px;color:#111827">Danh sách select</h3>
+      <p class="docs-p">Danh sách thả xuống của Kiểu, Font, Cỡ chữ, Dòng trên toolbar, của ngôn ngữ khối code và của hộp thoại icon dùng token menu trên trình duyệt hỗ trợ customizable select (Chromium 135+). Các select giữ nguyên độ rộng gốc nên toolbar không bị xô lệch. Firefox và Safari vẫn dùng danh sách gốc.</p>
+      <p class="docs-p">Thử ngay trong <a href="playground.html">Playground</a>: nhóm <em>Menu</em> và <em>Thanh công cụ</em> mỗi nhóm có kiểu, độ trong suốt và độ mờ kính riêng. Danh sách đầy đủ trong <a href="https://github.com/cmm-cmm/Autumn-Note/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.</p>
     </section>
 
     <!-- ── Có gì mới v3.2.0 ── -->

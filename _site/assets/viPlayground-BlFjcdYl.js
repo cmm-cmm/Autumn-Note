@@ -1,4 +1,4 @@
-import{t as e}from"./all-DGKRxML4.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,transparent:`<h2>Bảng bố cục không viền</h2>
+import{t as e}from"./all-BIf6diL4.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,transparent:`<h2>Bảng bố cục không viền</h2>
 <p>Bảng này có <strong>viền trong suốt</strong> và tiêu đề nền trong suốt — các đường nét đứt chỉ là đường gợi ý khi soạn, không được lưu. Rê chuột vào một ô rồi mở bảng chọn màu viền hoặc màu nền ô trên thanh công cụ bảng để thử ô caro.</p>
 <table class="an-table"><thead><tr><th style="border-color: transparent; background-color: transparent">Gói</th><th style="border-color: transparent; background-color: transparent">Giá</th><th style="border-color: transparent; background-color: transparent">Số editor</th></tr></thead>
 <tbody>

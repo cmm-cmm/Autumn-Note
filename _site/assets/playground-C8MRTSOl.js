@@ -1,4 +1,4 @@
-import{t as e}from"./all-DGKRxML4.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,transparent:`<h2>Borderless layout table</h2>
+import{t as e}from"./all-BIf6diL4.js";/* empty css                   */var t=[{id:1,label:`Minh Pham`},{id:2,label:`An Nguyen`},{id:3,label:`Linh Tran`},{id:4,label:`Duc Le`},{id:5,label:`Hoa Vo`}],n={empty:``,transparent:`<h2>Borderless layout table</h2>
 <p>This table has <strong>transparent borders</strong> and a transparent header — the dashed lines are an editing guide only and are not saved. Hover a cell and open the border-colour or cell-background picker in the table toolbar to try the checkerboard swatch.</p>
 <table class="an-table"><thead><tr><th style="border-color: transparent; background-color: transparent">Plan</th><th style="border-color: transparent; background-color: transparent">Price</th><th style="border-color: transparent; background-color: transparent">Editors</th></tr></thead>
 <tbody>

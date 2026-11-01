@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-11-01
+
+Minor: new CSS tokens and select styling. No API changes. Every menu can be transparent, frosted or opacity-adjusted, and the toolbar is configured separately from the menus.
+
 ### Added
 
 - **Adjustable menu transparency: `--an-menu-opacity`.** Set it from `0%` (see-through) to `100%` (opaque, the default), and every menu, popover, tooltip and dialog mixes its own background colour with transparent by that amount. It follows the light and dark themes on its own, so `themeVars: { 'menu-opacity': '60%' }` needs no colour of its own. `--an-menu-bg` still overrides it outright. Browsers without `color-mix()` keep opaque menus: the mix sits behind an `@supports` check, since an unsupported `color-mix()` inside `var()` would otherwise leave the menu with no background at all.
