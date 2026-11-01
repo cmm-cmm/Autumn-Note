@@ -39,7 +39,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --config vite.umd.config.js && vite build --config vite.cdn.config.js && vite build --config vite.core.config.js && node scripts/create-cjs-alias.mjs",
+    "build": "vite build && vite build --config vite.umd.config.js && vite build --config vite.core.config.js && node scripts/create-umd-aliases.mjs",
     "build:demo": "vite build --config vite.demo.config.js",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
@@ -48,7 +48,6 @@
     "test:watch": "vitest",
     "lint": "eslint src test scripts packages/react/src packages/react/test packages/vue/src packages/vue/test \"*.config.js\" \"packages/*/*.config.js\"",
     "typecheck": "tsc --noEmit && pnpm --filter autumnnote-react typecheck && pnpm --filter autumnnote-vue typecheck",
-    "build:cdn": "vite build --config vite.cdn.config.js",
     "analyze": "cross-env ANALYZE=1 vite build",
     "bench": "vitest bench",
     "test:coverage": "vitest run --coverage",

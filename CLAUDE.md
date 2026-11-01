@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Autumn Note** is a zero-dependency WYSIWYG rich-text editor written in vanilla JavaScript (ES2022+). It builds to ES Module and UMD formats and is published to npm as `autumnnote`.
+**Autumn Note** is a zero-dependency WYSIWYG rich-text editor written in vanilla JavaScript (ES2022+). It builds to ES Module, UMD and CommonJS formats and is published to npm as `autumnnote`. React and Vue 3 wrappers live in `packages/react` and `packages/vue` (pnpm workspace).
 
 ## Commands
 
 ```bash
 pnpm dev                # Vite dev server with HMR
-pnpm build              # Build ES + UMD + CSS → dist/
-pnpm build:demo         # Build demo site (vite.demo.config.js)
-pnpm build:cdn          # CDN build with bundle visualizer
+pnpm build              # ES + UMD + core + CSS → dist/, then copies UMD → .cjs / .min.js
+pnpm build:core         # Only the minimal-preset ES build (vite.core.config.js)
+pnpm build:demo         # Build demo site (vite.demo.config.js) → _site/
+pnpm build:wrappers     # Build the React and Vue wrappers
 pnpm preview            # Preview dist/ locally
 
 pnpm test               # Run Vitest once (jsdom)
@@ -21,8 +22,14 @@ pnpm test:coverage      # Vitest with v8 coverage
 
 pnpm lint               # ESLint on library, tests, wrappers, scripts, configs
 pnpm typecheck          # tsc --noEmit for core + React/Vue wrapper consumers
-pnpm analyze            # Bundle size visualization
+pnpm test:browser       # Vitest browser mode via Playwright (Chromium; BROWSER=firefox|webkit for others)
+pnpm test:wrappers      # React and Vue wrapper tests
+pnpm analyze            # Bundle size visualization (rollup-plugin-visualizer)
 pnpm bench              # Vitest benchmarks
+
+pnpm check:bundle       # Gzip budgets per bundle (needs pnpm build first)
+pnpm check:package      # npm tarball is self-contained
+pnpm check              # Everything CI runs: lint, typecheck, coverage, build, wrappers, budgets, package, demo
 ```
 
 Run a single test file:
@@ -45,23 +52,37 @@ context.invoke('ModuleName.method', arg)   // call a method on another module
 context.on('eventName', callback)           // subscribe to editor events
 ```
 
-### Public API (`src/js/index.js`)
+### Entry points and presets
+
+| File | Role |
+|---|---|
+| `src/js/index.js` | Full ES entry: `factory.js` + `presets/full.js` (every module) |
+| `src/js/core.js` | `autumnnote/core` entry: `factory.js` + `presets/core.js` (Editor, Toolbar, Statusbar, Clipboard, Placeholder) |
+| `src/js/index.umd.js` | UMD entry: the full entry plus `i18n/all.js`, since script-tag users cannot import locales |
+| `src/js/factory.js` | `AutumnNote.create()`, `registerModule()`, `registerButton()` and the re-exported helpers |
+| `src/js/renderer.js` | Builds the editor DOM; `applyAppearance()` keeps container and portal theme in sync |
+| `src/js/settings.js` | Default options and their JSDoc |
 
 `AutumnNote.create(target, options)` resolves any selector/element/NodeList, caches instances in a `WeakMap`, and returns the `Context` or an array of `Context` objects.
 
 ### Module Inventory (`src/js/module/`)
 
-30 modules split by responsibility:
+32 module files plus 4 data/helper files, split by responsibility:
 - **Core UI**: `Editor`, `Toolbar`, `Buttons`, `Statusbar`
 - **Dialogs**: `BaseDialog`, `LinkDialog`, `ImageDialog`, `VideoDialog`, `EmojiDialog`, `IconDialog`, `FindReplace`, `ShortcutsDialog`
-- **Floating toolbars**: `LinkTooltip`, `ImageTooltip`, `VideoTooltip`, `TableTooltip`, `CodeTooltip`, `BubbleToolbar`
-- **Editing behaviors**: `Clipboard`, `ContextMenu`, `MarkdownShortcuts`, `Codeview`, `Fullscreen`, `ImageResizer`, `ImageCropOverlay`, `VideoResizer`
+- **Floating toolbars**: `BaseMediaTooltip` (shared by Image/Video), `LinkTooltip`, `ImageTooltip`, `VideoTooltip`, `TableTooltip`, `CodeTooltip`, `BubbleToolbar`
+- **Editing behaviors**: `Clipboard`, `ContextMenu`, `MarkdownShortcuts`, `Codeview`, `Fullscreen`, `BaseResizer` (shared by Image/Video), `ImageResizer`, `ImageCropOverlay`, `VideoResizer`
 - **UX**: `Placeholder`, `AutoSaveRestore`, `Mention`, `SlashMenu`
+- **Data/helpers** (not modules): `emoji-data.js` and `icon-data.js` (loaded with dynamic `import()`, so the ES build splits them into lazy chunks), `table-grid.js`, `table-icons.js`
 
 ### Core Utilities (`src/js/core/`)
 
 | File | Purpose |
 |---|---|
+| `detectLang.js` | Scored heuristic that guesses a code block's Prism language (or returns null) |
+| `env.js` | Lazy browser/platform detection getters |
+| `externalAsset.js` | Applies `cspNonce` / crossorigin / referrer policy to injected scripts and stylesheets |
+| `lists.js` | Small array helpers |
 | `count.js` | Word/character counting — one implementation for the statusbar and the maxWords/maxChars limits |
 | `keymap.js` | Keyboard shortcut table (`DEFAULT_KEYMAP`), combo parsing/matching; `keyMap` option merges over it |
 | `palette.js` | The one colour palette shared by toolbar, bubble toolbar and context menu (`colorPalette`/`colorSwatches`) |
@@ -84,7 +105,7 @@ context.on('eventName', callback)           // subscribe to editor events
 
 ### Styles (`src/styles/`)
 
-Single SCSS entry point `autumnnote.scss` (~2000 lines). Design tokens live in `_variables.scss`.
+Single SCSS entry point `autumnnote.scss` (~2900 lines). Design tokens live in `_variables.scss`.
 
 ### Localization (`src/js/i18n/`)
 
@@ -96,18 +117,24 @@ Types and JSDoc in JS source; `tsconfig.json` uses `noEmit: true`. TypeScript is
 
 ## Build Outputs
 
-| File | Entry | Format |
-|---|---|---|
-| `dist/autumnnote.es.js` | `src/js/index.js` | ES Module |
-| `dist/autumnnote.umd.js` | `src/js/index.umd.js` | UMD |
-| `dist/autumnnote.css` | `src/styles/autumnnote.scss` | CSS |
+| File | Entry / source | Format | Gzip budget |
+|---|---|---|---|
+| `dist/autumnnote.es.js` (+ `emoji-data-*.js`, `icon-data-*.js` chunks) | `src/js/index.js` | ES Module | 110 KiB |
+| `dist/autumnnote.core.es.js` | `src/js/core.js` | ES Module | 60 KiB |
+| `dist/autumnnote.umd.js` | `src/js/index.umd.js` | UMD (all locales and data inlined) | 125 KiB |
+| `dist/autumnnote.cjs` | copy of the UMD build | `require` entry | identical to UMD |
+| `dist/autumnnote.min.js` | copy of the UMD build | deprecated CDN alias | identical to UMD |
+| `dist/autumnnote.css` | `src/styles/autumnnote.scss` | CSS | — |
 
-Source maps are generated; minification is intentionally disabled (consumers minify).
+All JS builds are minified with oxc and ship source maps (except the `.cjs` / `.min.js` copies). `scripts/create-umd-aliases.mjs` writes the copies; `scripts/check-bundle-size.mjs` enforces the budgets, warns under 5% headroom, and fails if a copy drifts from the UMD build. The `.cjs` copy must stay a `.cjs` file: the package is `"type": "module"`, so Node would load a `.js` copy as ESM and the UMD wrapper would export nothing.
 
 ## Testing
 
 Tests live in `test/` mirroring the `src/js/` structure:
 - `test/core/`, `test/editing/`, `test/module/`, `test/integration/`, `test/perf/`
+- `test/browser/` — real-browser suites run by `pnpm test:browser`
+- `test/docs/` — documentation guards (every option documented)
+- `test/scripts/` — the build/check scripts in `scripts/`
 
 Environment is jsdom (simulated browser). Use `globals: true` — no explicit imports of `describe`/`it`/`expect` needed.
 

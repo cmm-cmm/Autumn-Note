@@ -20,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Nothing in the published package changes. The library build does not copy `public/`, and the editor's default theme is still its own blue — the brand palette is for the project, not a default imposed on every editor that embeds it.
 
+- **The UMD bundle is built once.** `dist/autumnnote.min.js` came from a third Vite build (`vite.cdn.config.js`) that compiled the same entry with the same minifier, so it was byte-for-byte the same file as `autumnnote.cjs`. Both are now copied from `autumnnote.umd.js` after the UMD build, and `pnpm check:bundle` fails if either drifts from it. The `build:cdn` script and `vite.cdn.config.js` are gone.
+- **Bundle budgets fit what each bundle carries.** The UMD build inlines all eight locales (about 17 KiB gzip) and the emoji/icon data that the ES build lazy-loads, yet it shared the ES build's 110 KiB ceiling. That left it under 2 KiB of room, so the translations for one more feature would have failed CI. The UMD ceiling is now 125 KiB, the ES ceiling is still 110 KiB, and the check warns once any bundle has less than 5% of its budget left instead of only failing at the limit.
+
+### Deprecated
+
+- **`dist/autumnnote.min.js`.** It is identical to `dist/autumnnote.umd.js`; point `<script>` tags at that file instead. The alias stays until the next major version.
+
 ---
 
 ## [3.1.0] - 2026-09-19

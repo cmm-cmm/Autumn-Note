@@ -1081,8 +1081,10 @@ Build output in `dist/`:
 |---|---|---|
 | `autumnnote.es.js` | ES Module | `import` in bundlers (tree-shakeable) |
 | `autumnnote.umd.js` | UMD | Browser `<script>` tag |
-| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js |
-| `autumnnote.css` | CSS | Styles for both builds |
+| `autumnnote.cjs` | CommonJS | `require('autumnnote')` in Node.js (same code as the UMD build) |
+| `autumnnote.core.es.js` | ES Module | `import 'autumnnote/core'` — the minimal preset |
+| `autumnnote.css` | CSS | Styles for every build |
+| `autumnnote.min.js` | UMD | Deprecated alias of `autumnnote.umd.js`, kept for existing CDN links |
 
 ### Runtime integrations
 
